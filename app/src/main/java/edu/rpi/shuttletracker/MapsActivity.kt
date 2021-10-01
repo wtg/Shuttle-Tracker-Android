@@ -9,6 +9,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.net.URL
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -33,6 +34,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      * installed Google Play services and returned to the app.
      */
     override fun onMapReady(googleMap: GoogleMap) {
+
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL("https://shuttletracker.app/stops")
+                val jsonString = url.readText()
+                print(jsonString)
+            }
+        })
+        thread.start()
         mMap = googleMap
 
         // Add a marker in Sydney and move the camera
