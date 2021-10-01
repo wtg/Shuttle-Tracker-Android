@@ -1,4 +1,4 @@
-package com.example.rpishuttletracker
+package edu.rpi.shuttletracker
 
 import org.junit.Test
 

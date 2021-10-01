@@ -1,4 +1,4 @@
-package com.example.rpishuttletracker
+package edu.rpi.shuttletracker
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
