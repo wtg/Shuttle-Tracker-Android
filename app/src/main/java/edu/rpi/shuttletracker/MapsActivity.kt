@@ -10,6 +10,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import java.net.URL
+import org.json.JSONArray
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -39,7 +40,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             kotlin.run {
                 val url = URL("https://shuttletracker.app/stops")
                 val jsonString = url.readText()
-                print(jsonString)
+                var jsonArray = JSONArray(jsonString)
+                for(i in 0 until jsonArray.length()) {
+                    val stop = jsonArray.getJSONObject(i)
+                    val coordinate = stop.getJSONObject("coordinate")
+                    val latitude = coordinate.getDouble("latitude")
+                    val longitude = coordinate.getDouble("longitude")
+                    val name = stop.getString("name")
+                }
             }
         })
         thread.start()
@@ -51,3 +59,4 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
     }
 }
+
