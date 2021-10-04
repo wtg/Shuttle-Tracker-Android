@@ -36,6 +36,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
 
+        val stopArray = ArrayList<Stop>()
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL("https://shuttletracker.app/stops")
@@ -47,6 +48,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val latitude = coordinate.getDouble("latitude")
                     val longitude = coordinate.getDouble("longitude")
                     val name = stop.getString("name")
+                    val stopObject = Stop(latitude, longitude, name)
+                    stopArray.add(stopObject)
+                }
+                for(i in 0 until stopArray.size) {
+                    val current = stopArray.get(i)
+                    val stopPos = LatLng(current.latitude, current.longitude)
+                    runOnUiThread{mMap.addMarker(MarkerOptions().position(stopPos).title(current.name))}
                 }
             }
         })
@@ -54,9 +62,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
 
         // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        val Union = LatLng(42.730426, -73.676573)
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
     }
 }
 
