@@ -9,6 +9,8 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.net.URL
+import org.json.JSONArray
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -33,11 +35,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      * installed Google Play services and returned to the app.
      */
     override fun onMapReady(googleMap: GoogleMap) {
+
+        val stopArray = ArrayList<Stop>()
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL("https://shuttletracker.app/stops")
+                val jsonString = url.readText()
+                var jsonArray = JSONArray(jsonString)
+                for(i in 0 until jsonArray.length()) {
+                    val stop = jsonArray.getJSONObject(i)
+                    val coordinate = stop.getJSONObject("coordinate")
+                    val latitude = coordinate.getDouble("latitude")
+                    val longitude = coordinate.getDouble("longitude")
+                    val name = stop.getString("name")
+                    val stopObject = Stop(latitude, longitude, name)
+                    stopArray.add(stopObject)
+                }
+                for(i in 0 until stopArray.size) {
+                    val current = stopArray.get(i)
+                    val stopPos = LatLng(current.latitude, current.longitude)
+                    runOnUiThread{mMap.addMarker(MarkerOptions().position(stopPos).title(current.name))}
+                }
+            }
+        })
+        thread.start()
         mMap = googleMap
 
         // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        val Union = LatLng(42.730426, -73.676573)
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
     }
 }
+
