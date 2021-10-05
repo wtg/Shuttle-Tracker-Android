@@ -9,6 +9,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import java.net.URL
 import org.json.JSONArray
 
@@ -37,6 +38,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
 
         val stopArray = ArrayList<Stop>()
+        mMap = googleMap
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL("https://shuttletracker.app/stops")
@@ -59,7 +61,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
         thread.start()
-        mMap = googleMap
+        val thread2 = Thread(Runnable {
+            kotlin.run {
+                val url = URL("https://shuttletracker.app/routes")
+                val jsonString = url.readText()
+                var jsonArray = JSONArray(jsonString)
+                var routeObject = jsonArray.getJSONObject(0)
+                var coordArray = routeObject.getJSONArray("coordinates")
+                var latlngarr = ArrayList<LatLng>()
+                for(i in 0 until coordArray.length()) {
+                    val waypoint = coordArray.getJSONObject(i)
+                    val latitude = waypoint.getDouble("latitude")
+                    val longitude = waypoint.getDouble("longitude")
+                    val latlng = LatLng(latitude, longitude)
+                    latlngarr.add(latlng)
+                }
+                runOnUiThread {
+                    val polyline1 = mMap.addPolyline(
+                        PolylineOptions()
+                            .clickable(true)
+                            .addAll(latlngarr)
+                    )
+                }
+            }
+        })
+        thread2.start()
 
         // Add a marker in Sydney and move the camera
         val Union = LatLng(42.730426, -73.676573)
