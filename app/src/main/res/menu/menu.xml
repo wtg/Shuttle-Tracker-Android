@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!--        go into ic_shuttletracker_menu.xml and change the-->
+    <!--        apptheme to make the menu icon white-->
+    <!-- TODO: finish tutorial https://youtu.be/oh4YOj9VkVE?t=210 -->
+    <item android:id="@+id/settings_icon"
+        android:icon="@drawable/ic_shuttletracker_menu"
+        android:title="Settings"
+        app:showAsAction="ifRoom" />
+    <item android:id="@+id/item2"
+        android:title="option1"
+        app:showAsAction="never" />
+    <item android:id="@+id/item3"
+        android:title="option2"
+        app:showAsAction="never">
+        <menu>
+            <item android:id="@+id/sub_option1"
+                android:title="sub_option1"/>
+            <item android:id="@+id/sub_option2"
+                android:title="sub_option2"/>
+        </menu>
+    </item>
 </menu>
