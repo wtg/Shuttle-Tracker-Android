@@ -1,17 +1,22 @@
 package edu.rpi.shuttletracker
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
-import java.net.URL
+import com.google.android.gms.maps.model.*
 import org.json.JSONArray
+import java.net.URL
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.concurrent.scheduleAtFixedRate
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -26,25 +31,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    override fun onMapReady(googleMap: GoogleMap) {
 
+    fun drawStops(url: String) {
         val stopArray = ArrayList<Stop>()
-        mMap = googleMap
         val thread = Thread(Runnable {
             kotlin.run {
-                val url = URL("https://shuttletracker.app/stops")
+                val url = URL(url)
                 val jsonString = url.readText()
                 var jsonArray = JSONArray(jsonString)
-                for(i in 0 until jsonArray.length()) {
+                for (i in 0 until jsonArray.length()) {
                     val stop = jsonArray.getJSONObject(i)
                     val coordinate = stop.getJSONObject("coordinate")
                     val latitude = coordinate.getDouble("latitude")
@@ -53,23 +48,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val stopObject = Stop(latitude, longitude, name)
                     stopArray.add(stopObject)
                 }
-                for(i in 0 until stopArray.size) {
+                for (i in 0 until stopArray.size) {
                     val current = stopArray.get(i)
                     val stopPos = LatLng(current.latitude, current.longitude)
-                    runOnUiThread{mMap.addMarker(MarkerOptions().position(stopPos).title(current.name))}
+                    runOnUiThread {
+                        mMap.addMarker(
+                            MarkerOptions().position(stopPos).title(current.name).icon(
+                                BitmapDescriptorFactory.fromAsset("simplecircle.png")
+                            )
+                        )
+                    }
                 }
             }
         })
         thread.start()
+    }
+    fun drawRoutes(url: String) {
         val thread2 = Thread(Runnable {
             kotlin.run {
-                val url = URL("https://shuttletracker.app/routes")
+                val url = URL(url)
                 val jsonString = url.readText()
                 var jsonArray = JSONArray(jsonString)
                 var routeObject = jsonArray.getJSONObject(0)
                 var coordArray = routeObject.getJSONArray("coordinates")
                 var latlngarr = ArrayList<LatLng>()
-                for(i in 0 until coordArray.length()) {
+                for (i in 0 until coordArray.length()) {
                     val waypoint = coordArray.getJSONObject(i)
                     val latitude = waypoint.getDouble("latitude")
                     val longitude = waypoint.getDouble("longitude")
@@ -86,10 +89,155 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
         thread2.start()
+    }
 
+    //@RequiresApi(Build.VERSION_CODES.O)
+    fun drawBuses(url: String): ArrayList<Marker> {
+        val busArray = ArrayList<Bus>()
+        var markerArray = ArrayList<Marker>()
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL(url)
+                val jsonString = url.readText()
+                var jsonArray = JSONArray(jsonString)
+                for (i in 0 until jsonArray.length()) {
+                    val bus = jsonArray.getJSONObject(i)
+                    val location = bus.getJSONObject("location")
+                    val date = location.getString("date")
+                    val coordinate = location.getJSONObject("coordinate")
+                    val latitude = coordinate.getDouble("latitude")
+                    val longitude = coordinate.getDouble("longitude")
+                    val id = bus.getInt("id")
+                    val busObject = Bus(latitude, longitude, id)
+                    val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                    val busDate: LocalDateTime = LocalDateTime.parse(
+                        date,
+                        format//DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                    )
+                    val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+//                    println(busDate)
+//                    println(currentDate)
+                    val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+                    val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+                    val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+                    if (days == 0.toLong() && hours == 0.toLong() && minutes < 5) {
+                        busArray.add(busObject)
+                    }
+                }
+                for (i in 0 until busArray.size) {
+                    val current = busArray.get(i)
+                    val stopPos = LatLng(current.latitude, current.longitude)
+                    runOnUiThread {
+                        markerArray.add(
+                            mMap.addMarker(
+                                MarkerOptions().position(stopPos).title(
+                                    "Bus " + current.id
+                                ).icon(
+                                    BitmapDescriptorFactory.fromAsset("bus.png")
+                                )
+                            )
+                        )
+                        markerArray.get(i).tag = current.id;
+                    }
+                }
+            }
+        })
+        thread.start()
+        return markerArray
+    }
+    //@RequiresApi(Build.VERSION_CODES.O)
+    fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
+        val busArray = ArrayList<Bus>()
+        //var markerArray = ArrayList<Marker>()
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL(url)
+                val jsonString = url.readText()
+                var jsonArray = JSONArray(jsonString)
+                for (i in 0 until jsonArray.length()) {
+                    val bus = jsonArray.getJSONObject(i)
+                    val id = bus.getInt("id")
+                    val location = bus.getJSONObject("location")
+                    val date = location.getString("date")
+                    val coordinate = location.getJSONObject("coordinate")
+                    val latitude = coordinate.getDouble("latitude")
+                    val longitude = coordinate.getDouble("longitude")
+                    val busObject = Bus(latitude, longitude, id)
+                    var found = false
+                    val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                    val busDate = LocalDateTime.parse(date, format)
+                    for (i in 0 until markerArray.size) {
+                        runOnUiThread {
+                            if (markerArray.get(i).tag == id) {
+                                found = true
+                                markerArray.get(i).setPosition(LatLng(latitude, longitude))
+                                println("Bus " + id + " updated.")
+                            }
+                            if (!found) {
+                                val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC);
+                                val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+                                val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+                                val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+                                if (days == 0.toLong() && hours == 0.toLong() && minutes < 5) {
+                                    busArray.add(busObject)
+                                }
+                            }
+                        }
+                    }
+                    for (i in 0 until busArray.size) {
+                        val current = busArray.get(i)
+                        val stopPos = LatLng(current.latitude, current.longitude)
+                        runOnUiThread {
+                            markerArray.add(
+                                mMap.addMarker(
+                                    MarkerOptions().position(stopPos).title(
+                                        "Bus " + current.id
+                                    ).icon(
+                                        BitmapDescriptorFactory.fromAsset("bus.png")
+                                    )
+                                )
+                            )
+                            markerArray.get(i).tag = current.id;
+                        }
+                    }
+                }
+            }
+        })
+        thread.start()
+        return markerArray
+    }
+
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    //@RequiresApi(Build.VERSION_CODES.O)
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+        drawStops("https://shuttletracker.app/stops")
+        drawRoutes("https://shuttletracker.app/routes")
+//        fixedRateTimer("timer", false, 0L, 60 * 1000) {
+//            runOnUiThread {
+//                tvTime.text = SimpleDateFormat("dd MMM - HH:mm", Locale.US).format(Date())
+//            }
+//        }
         // Add a marker in Sydney and move the camera
         val Union = LatLng(42.730426, -73.676573)
+        mMap.setMinZoomPreference(13.5f)
+        mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
+        val busTimer = Timer("busTimer", true)
+        var busMarkerArray: ArrayList<Marker>
+        busMarkerArray = drawBuses("https://shuttletracker.app/buses")
+        busTimer.scheduleAtFixedRate(0, 5000) {
+            busMarkerArray = updateBuses("https://shuttletracker.app/buses", busMarkerArray)
+            //println("Updated bus locations.")
+        }
     }
 }
 
