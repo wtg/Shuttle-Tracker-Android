@@ -3,7 +3,9 @@ package edu.rpi.shuttletracker
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.requestPermissions
@@ -16,6 +18,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import org.json.JSONArray
 import java.net.URL
+import java.security.AccessController.getContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -241,6 +244,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMinZoomPreference(13.5f)
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
+//        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+//        actionBar?.hide()
+        val currentNightMode =  resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        when (currentNightMode) {
+            Configuration.UI_MODE_NIGHT_NO -> {} // Night mode is not active, we're using the light theme
+            Configuration.UI_MODE_NIGHT_YES -> {googleMap.setMapStyle(MapStyleOptions(getResources()
+                .getString(R.string.style_json)));} // Night mode is active, we're using dark theme
+        }
         val busTimer = Timer("busTimer", true)
         var busMarkerArray: ArrayList<Marker>
         busMarkerArray = drawBuses("https://shuttletracker.app/buses")
