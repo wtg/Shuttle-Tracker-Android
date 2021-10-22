@@ -17,7 +17,7 @@
         android:clickable="true"
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
-        android:src="@drawable/ic_launcher_foreground"
+        android:src="@drawable/ic_menu_hamburger"
          />
 </fragment>
 
