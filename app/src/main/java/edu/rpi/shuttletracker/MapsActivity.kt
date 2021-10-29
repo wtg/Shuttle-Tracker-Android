@@ -16,6 +16,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONArray
 import java.net.URL
 import java.security.AccessController.getContext
@@ -27,8 +28,14 @@ import java.util.*
 import java.util.jar.Manifest
 import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
-
-
+import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
+import kotlinx.android.synthetic.main.activity_maps.fab
+import kotlinx.android.synthetic.main.activity_maps.fabLayout1
+import kotlinx.android.synthetic.main.activity_maps.fabLayout2
+import kotlinx.android.synthetic.main.activity_maps.fabLayout3
+import android.animation.Animator
+import android.view.Menu
+import android.view.MenuItem
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -41,8 +48,67 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        fab.setOnClickListener {
+            if (View.GONE == fabBGLayout.visibility) {
+                showFABMenu()
+            } else {
+                closeFABMenu()
+            }
+        }
+
+        fabBGLayout.setOnClickListener { closeFABMenu() }
     }
 
+
+    private fun showFABMenu() {
+        fabLayout1.visibility = View.VISIBLE
+        fabLayout2.visibility = View.VISIBLE
+        fabLayout3.visibility = View.VISIBLE
+        fabBGLayout.visibility = View.VISIBLE
+        fab.animate().rotationBy(180F)
+        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
+        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_120))
+        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_180))
+    }
+
+    private fun closeFABMenu() {
+        fabBGLayout.visibility = View.GONE
+        fab.animate().rotation(0F)
+        fabLayout1.animate().translationY(0f)
+        fabLayout2.animate().translationY(0f)
+        fabLayout3.animate().translationY(0f)
+        fabLayout3.animate().translationY(0f)
+            .setListener(object : Animator.AnimatorListener {
+                override fun onAnimationStart(animator: Animator) {}
+                override fun onAnimationEnd(animator: Animator) {
+                    if (View.GONE == fabBGLayout.visibility) {
+                        fabLayout1.visibility = View.GONE
+                        fabLayout2.visibility = View.GONE
+                        fabLayout3.visibility = View.GONE
+                    }
+                }
+
+                override fun onAnimationCancel(animator: Animator) {}
+                override fun onAnimationRepeat(animator: Animator) {}
+            })
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        //menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            //R.id.action_settings -> true
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     fun drawStops(url: String) {
         val stopArray = ArrayList<Stop>()

@@ -1,0 +1,10 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="child_fab_margin">40dp</dimen>
+    <dimen name="standard_12">12dp</dimen>
+    <dimen name="standard_23">23dp</dimen>
+    <dimen name="standard_75">75dp</dimen>
+    <dimen name="standard_120">120dp</dimen>
+    <dimen name="standard_165">165dp</dimen>
+    <dimen name="standard_180">180dp</dimen>
+</resources>
