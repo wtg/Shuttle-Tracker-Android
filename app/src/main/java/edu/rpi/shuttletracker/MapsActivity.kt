@@ -120,7 +120,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val latitude = coordinate.getDouble("latitude")
                     val longitude = coordinate.getDouble("longitude")
                     val id = bus.getInt("id")
-                    val busObject = Bus(latitude, longitude, id)
+                    val busType = location.getString("type")
+                    var busIcon = "redbus.png"
+                    if(busType == "user") {
+                        busIcon = "greenbus.png"
+                    }
+                    val busObject = Bus(latitude, longitude, id, busIcon)
                     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                     val busDate: LocalDateTime = LocalDateTime.parse(
                         date,
@@ -145,7 +150,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 MarkerOptions().position(stopPos).title(
                                     "Bus " + current.id
                                 ).icon(
-                                    BitmapDescriptorFactory.fromAsset("bus.png")
+                                    BitmapDescriptorFactory.fromAsset(current.busIcon)
                                 )
                             )
                         )
@@ -174,7 +179,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val coordinate = location.getJSONObject("coordinate")
                     val latitude = coordinate.getDouble("latitude")
                     val longitude = coordinate.getDouble("longitude")
-                    val busObject = Bus(latitude, longitude, id)
+                    val busType = location.getString("type")
+                    var busIcon = "redbus.png"
+                    if(busType == "user") {
+                        busIcon = "greenbus.png"
+                    }
+                    val busObject = Bus(latitude, longitude, id, busIcon)
                     var found = false
                     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                     val busDate = LocalDateTime.parse(date, format)
@@ -183,6 +193,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             if (markerArray.get(i).tag == id) {
                                 found = true
                                 markerArray.get(i).setPosition(LatLng(latitude, longitude))
+                                markerArray.get(i).setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                 println("Bus " + id + " updated.")
                             }
                             if (!found) {
@@ -205,7 +216,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     MarkerOptions().position(stopPos).title(
                                         "Bus " + current.id
                                     ).icon(
-                                        BitmapDescriptorFactory.fromAsset("bus.png")
+                                        BitmapDescriptorFactory.fromAsset(current.busIcon)
                                     )
                                 )
                             )
