@@ -34,8 +34,11 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout1
 import kotlinx.android.synthetic.main.activity_maps.fabLayout2
 import kotlinx.android.synthetic.main.activity_maps.fabLayout3
 import android.animation.Animator
+import android.content.Intent
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
+import android.widget.LinearLayout
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -69,6 +72,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_85))
         fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_132))
         fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_195))
+
+        var btn_new_activity = findViewById(R.id.fabLayout1) as LinearLayout
+
+        btn_new_activity.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent);
+        }
     }
 
     private fun closeFABMenu() {
