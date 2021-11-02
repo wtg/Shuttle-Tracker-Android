@@ -3,8 +3,7 @@
     <dimen name="child_fab_margin">40dp</dimen>
     <dimen name="standard_12">12dp</dimen>
     <dimen name="standard_23">23dp</dimen>
-    <dimen name="standard_75">75dp</dimen>
-    <dimen name="standard_120">120dp</dimen>
-    <dimen name="standard_165">165dp</dimen>
-    <dimen name="standard_180">180dp</dimen>
+    <dimen name="standard_85">85dp</dimen>
+    <dimen name="standard_132">132dp</dimen>
+    <dimen name="standard_195">195dp</dimen>
 </resources>

@@ -66,9 +66,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabLayout3.visibility = View.VISIBLE
         fabBGLayout.visibility = View.VISIBLE
         fab.animate().rotationBy(180F)
-        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
-        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_120))
-        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_180))
+        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_85))
+        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_132))
+        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_195))
     }
 
     private fun closeFABMenu() {
