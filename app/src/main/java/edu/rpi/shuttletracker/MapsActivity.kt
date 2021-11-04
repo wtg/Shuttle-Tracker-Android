@@ -284,7 +284,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setPositiveButton("Update") { dialog, which ->
                     val browserIntent = Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("http://www.google.com")
+                        Uri.parse("https://play.google.com/store/apps/details?id=com.duckduckgo.mobile.android&hl=en_US&gl=US")
                     )
                     startActivity(browserIntent)
                 }
