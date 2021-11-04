@@ -260,7 +260,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //@RequiresApi(Build.VERSION_CODES.O)
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        val currentAPI = 69
+        val currentAPI = 0
         val APIMatch = APIVersionMatch(currentAPI, "https://shuttletracker.app/version")
         if(APIMatch) {
             drawStops("https://shuttletracker.app/stops")
