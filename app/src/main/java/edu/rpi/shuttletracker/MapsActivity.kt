@@ -260,7 +260,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //@RequiresApi(Build.VERSION_CODES.O)
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        val currentAPI = 0
+        val currentAPI = 69
         val APIMatch = APIVersionMatch(currentAPI, "https://shuttletracker.app/version")
         if(APIMatch) {
             drawStops("https://shuttletracker.app/stops")
@@ -284,7 +284,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setPositiveButton("Update") { dialog, which ->
                     val browserIntent = Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("http://www.google.com")
+                        Uri.parse("https://play.google.com/store/apps/details?id=com.duckduckgo.mobile.android&hl=en_US&gl=US")
                     )
                     startActivity(browserIntent)
                 }
