@@ -44,9 +44,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
 
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
@@ -60,19 +64,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         fabBGLayout.setOnClickListener { closeFABMenu() }
-    }
 
-
-    private fun showFABMenu() {
-        fabLayout1.visibility = View.VISIBLE
-        fabLayout2.visibility = View.VISIBLE
-        fabLayout3.visibility = View.VISIBLE
-        fabBGLayout.visibility = View.VISIBLE
-        fab.animate().rotationBy(180F)
-        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_85))
-        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_132))
-        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_195))
-        //TODO: move the buttons outside of showfabmenu
         var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
         var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
         var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
@@ -89,6 +81,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent);
         }
+    }
+
+
+    private fun showFABMenu() {
+        fabLayout1.visibility = View.VISIBLE
+        fabLayout2.visibility = View.VISIBLE
+        fabLayout3.visibility = View.VISIBLE
+        fabBGLayout.visibility = View.VISIBLE
+        fab.animate().rotationBy(180F)
+        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_85))
+        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_132))
+        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_195))
     }
 
     private fun closeFABMenu() {
