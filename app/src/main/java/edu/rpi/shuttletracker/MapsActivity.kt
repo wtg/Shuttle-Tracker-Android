@@ -69,9 +69,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabLayout3.visibility = View.VISIBLE
         fabBGLayout.visibility = View.VISIBLE
         fab.animate().rotationBy(180F)
-        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_85))
-        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_132))
-        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_195))
+        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
+        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_122))
+        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_185))
         //TODO: move the buttons outside of showfabmenu
         var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
         var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
