@@ -72,11 +72,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_85))
         fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_132))
         fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_195))
+        //TODO: move the buttons outside of showfabmenu
+        var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
+        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
 
-        var btn_new_activity = findViewById(R.id.fabLayout1) as LinearLayout
-
-        btn_new_activity.setOnClickListener {
+        btn_settings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent);
+        }
+        btn_info.setOnClickListener {
+            val intent = Intent(this, InfoActivity::class.java)
+            startActivity(intent);
+        }
+        btn_about.setOnClickListener {
+            val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent);
         }
     }
