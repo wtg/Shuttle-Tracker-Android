@@ -2,3 +2,16 @@
 /.idea/
 /local.properties
 google_maps_api.xml
+/app/src/.DS_Store
+/app/src/debug/.DS_Store
+/app/src/debug/res/.DS_Store
+/app/src/main/.DS_Store
+/app/src/main/assets/.DS_Store
+/app/src/debug/.DS_Store
+/app/src/debug/res/.DS_Store
+/.DS_Store
+/app/.DS_Store
+
+/app/src/main/java/.DS_Store
+/app/src/main/java/edu/.DS_Store
+/app/src/main/java/edu/rpi/.DS_Store

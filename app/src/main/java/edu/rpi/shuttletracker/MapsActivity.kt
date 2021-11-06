@@ -16,6 +16,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.snackbar.Snackbar.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONArray
 import java.net.URL
@@ -28,13 +30,16 @@ import java.util.*
 import java.util.jar.Manifest
 import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
+import android.content.Intent
+import android.net.Uri
+import android.system.Os.accept
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
 import kotlinx.android.synthetic.main.activity_maps.fab
 import kotlinx.android.synthetic.main.activity_maps.fabLayout1
 import kotlinx.android.synthetic.main.activity_maps.fabLayout2
 import kotlinx.android.synthetic.main.activity_maps.fabLayout3
 import android.animation.Animator
-import android.content.Intent
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -205,7 +210,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val latitude = coordinate.getDouble("latitude")
                     val longitude = coordinate.getDouble("longitude")
                     val id = bus.getInt("id")
-                    val busObject = Bus(latitude, longitude, id)
+                    val busType = location.getString("type")
+                    var busIcon = "redbus.png"
+                    if(busType == "user") {
+                        busIcon = "greenbus.png"
+                    }
+                    val busObject = Bus(latitude, longitude, id, busIcon)
                     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                     val busDate: LocalDateTime = LocalDateTime.parse(
                         date,
@@ -230,7 +240,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 MarkerOptions().position(stopPos).title(
                                     "Bus " + current.id
                                 ).icon(
-                                    BitmapDescriptorFactory.fromAsset("bus.png")
+                                    BitmapDescriptorFactory.fromAsset(current.busIcon)
                                 )
                             )
                         )
@@ -259,7 +269,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val coordinate = location.getJSONObject("coordinate")
                     val latitude = coordinate.getDouble("latitude")
                     val longitude = coordinate.getDouble("longitude")
-                    val busObject = Bus(latitude, longitude, id)
+                    val busType = location.getString("type")
+                    var busIcon = "redbus.png"
+                    if(busType == "user") {
+                        busIcon = "greenbus.png"
+                    }
+                    val busObject = Bus(latitude, longitude, id, busIcon)
                     var found = false
                     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                     val busDate = LocalDateTime.parse(date, format)
@@ -268,6 +283,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             if (markerArray.get(i).tag == id) {
                                 found = true
                                 markerArray.get(i).setPosition(LatLng(latitude, longitude))
+                                markerArray.get(i).setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                 println("Bus " + id + " updated.")
                             }
                             if (!found) {
@@ -290,7 +306,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     MarkerOptions().position(stopPos).title(
                                         "Bus " + current.id
                                     ).icon(
-                                        BitmapDescriptorFactory.fromAsset("bus.png")
+                                        BitmapDescriptorFactory.fromAsset(current.busIcon)
                                     )
                                 )
                             )
@@ -304,6 +320,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return markerArray
     }
 
+    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
+        var number = 0
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL(website)
+                val data = url.readText()
+                number = data.toInt()
+            }
+        })
+        thread.start()
+        return currentAPI == number
+    }
 
     /**
      * Manipulates the map once available.
@@ -317,8 +345,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //@RequiresApi(Build.VERSION_CODES.O)
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        drawStops("https://shuttletracker.app/stops")
-        drawRoutes("https://shuttletracker.app/routes")
+        val currentAPI = 0
+        val APIMatch = APIVersionMatch(currentAPI, "https://shuttletracker.app/version")
+        if(APIMatch) {
+            drawStops("https://shuttletracker.app/stops")
+            drawRoutes("https://shuttletracker.app/routes")
+        } else {
+            val contextView = findViewById<View>(R.id.map)
+//            Snackbar.make(contextView, "Your app is outdated and no longer works.", Snackbar.LENGTH_LONG)
+//                .setAction("Update") {
+//                    val browserIntent = Intent(
+//                        Intent.ACTION_VIEW,
+//                        Uri.parse("http://www.google.com")
+//                    )
+//                    startActivity(browserIntent)
+//                }
+//                .show()
+            MaterialAlertDialogBuilder(this)
+                .setMessage("Your app is outdated and no longer works. Please update it to restore shuttle tracking functionality.")
+//                .setNegativeButton("Later") { dialog, which ->
+//                    // Respond to negative button press
+//                }
+                .setPositiveButton("Update") { dialog, which ->
+                    val browserIntent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=com.duckduckgo.mobile.android&hl=en_US&gl=US")
+                    )
+                    startActivity(browserIntent)
+                }
+                .show()
+        }
 //        fixedRateTimer("timer", false, 0L, 60 * 1000) {
 //            runOnUiThread {
 //                tvTime.text = SimpleDateFormat("dd MMM - HH:mm", Locale.US).format(Date())
@@ -338,8 +394,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .getString(R.string.style_json)));} // Night mode is active, we're using dark theme
         }
         val busTimer = Timer("busTimer", true)
-        var busMarkerArray: ArrayList<Marker>
-        busMarkerArray = drawBuses("https://shuttletracker.app/buses")
+        var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
+        if(APIMatch)
+            busMarkerArray = drawBuses("https://shuttletracker.app/buses")
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
@@ -350,7 +407,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
-            busMarkerArray = updateBuses("https://shuttletracker.app/buses", busMarkerArray)
+            if(APIMatch)
+                busMarkerArray = updateBuses("https://shuttletracker.app/buses", busMarkerArray)
             //println("Updated bus locations.")
         }
     }
