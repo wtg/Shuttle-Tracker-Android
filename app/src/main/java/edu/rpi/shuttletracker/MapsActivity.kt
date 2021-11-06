@@ -18,6 +18,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONArray
 import java.net.URL
 import java.security.AccessController.getContext
@@ -33,21 +34,105 @@ import android.content.Intent
 import android.net.Uri
 import android.system.Os.accept
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-
+import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
+import kotlinx.android.synthetic.main.activity_maps.fab
+import kotlinx.android.synthetic.main.activity_maps.fabLayout1
+import kotlinx.android.synthetic.main.activity_maps.fabLayout2
+import kotlinx.android.synthetic.main.activity_maps.fabLayout3
+import android.animation.Animator
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Button
+import android.widget.LinearLayout
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
+            .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        fab.setOnClickListener {
+            if (View.GONE == fabBGLayout.visibility) {
+                showFABMenu()
+            } else {
+                closeFABMenu()
+            }
+        }
+
+        fabBGLayout.setOnClickListener { closeFABMenu() }
+        var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
+        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
+
+        btn_settings.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent);
+        }
+        btn_info.setOnClickListener {
+            val intent = Intent(this, InfoActivity::class.java)
+            startActivity(intent);
+        }
+        btn_about.setOnClickListener {
+            val intent = Intent(this, AboutActivity::class.java)
+            startActivity(intent);
+        }
     }
 
+    private fun showFABMenu() {
+        fabLayout1.visibility = View.VISIBLE
+        fabLayout2.visibility = View.VISIBLE
+        fabLayout3.visibility = View.VISIBLE
+        fabBGLayout.visibility = View.VISIBLE
+        fab.animate().rotationBy(180F)
+        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
+        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_122))
+        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_185))
+    }
+
+    private fun closeFABMenu() {
+        fabBGLayout.visibility = View.GONE
+        fab.animate().rotation(0F)
+        fabLayout1.animate().translationY(0f)
+        fabLayout2.animate().translationY(0f)
+        fabLayout3.animate().translationY(0f)
+        fabLayout3.animate().translationY(0f)
+            .setListener(object : Animator.AnimatorListener {
+                override fun onAnimationStart(animator: Animator) {}
+                override fun onAnimationEnd(animator: Animator) {
+                    if (View.GONE == fabBGLayout.visibility) {
+                        fabLayout1.visibility = View.GONE
+                        fabLayout2.visibility = View.GONE
+                        fabLayout3.visibility = View.GONE
+                    }
+                }
+
+                override fun onAnimationCancel(animator: Animator) {}
+                override fun onAnimationRepeat(animator: Animator) {}
+            })
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        //menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            //R.id.action_settings -> true
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     fun drawStops(url: String) {
         val stopArray = ArrayList<Stop>()
