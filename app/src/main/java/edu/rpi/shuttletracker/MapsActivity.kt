@@ -40,6 +40,10 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout1
 import kotlinx.android.synthetic.main.activity_maps.fabLayout2
 import kotlinx.android.synthetic.main.activity_maps.fabLayout3
 import android.animation.Animator
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import android.graphics.Color
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -48,7 +52,15 @@ import android.widget.LinearLayout
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-    
+    object colorblindMode : Application() {
+        var colorblind : Boolean = false
+        fun getMode() : Boolean {
+            return colorblind
+        }
+        fun setMode(mode : Boolean) {
+            colorblind = mode
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -186,6 +198,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         PolylineOptions()
                             .clickable(true)
                             .addAll(latlngarr)
+                            .color(Color.RED)
+                            .width(4F)
                     )
                 }
             }
@@ -211,10 +225,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val longitude = coordinate.getDouble("longitude")
                     val id = bus.getInt("id")
                     val busType = location.getString("type")
-                    var busIcon = "redbus.png"
-                    if(busType == "user") {
-                        busIcon = "greenbus.png"
+                    var busIcon = getString(R.string.GPS_bus)
+                    if(colorblindMode.getMode()) {
+                        if(busType == "user") {
+                            busIcon = getString(R.string.colorblind_crowdsourced_bus)
+                        } else {
+                            busIcon = getString(R.string.colorblind_GPS_bus)
+                        }
+                    } else {
+                        if(busType == "user") {
+                            busIcon = getString(R.string.crowdsourced_bus)
+                        }
                     }
+
                     val busObject = Bus(latitude, longitude, id, busIcon)
                     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                     val busDate: LocalDateTime = LocalDateTime.parse(
@@ -270,9 +293,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val latitude = coordinate.getDouble("latitude")
                     val longitude = coordinate.getDouble("longitude")
                     val busType = location.getString("type")
-                    var busIcon = "redbus.png"
-                    if(busType == "user") {
-                        busIcon = "greenbus.png"
+                    var busIcon = getString(R.string.GPS_bus)
+                    if(colorblindMode.getMode()) {
+                        if(busType == "user") {
+                            busIcon = getString(R.string.colorblind_crowdsourced_bus)
+                        } else {
+                            busIcon = getString(R.string.colorblind_GPS_bus)
+                        }
+                    } else {
+                        if(busType == "user") {
+                            busIcon = getString(R.string.crowdsourced_bus)
+                        }
                     }
                     val busObject = Bus(latitude, longitude, id, busIcon)
                     var found = false
@@ -345,9 +376,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //@RequiresApi(Build.VERSION_CODES.O)
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap.getUiSettings().setMapToolbarEnabled(false)
         val currentAPI = 0
         val APIMatch = APIVersionMatch(currentAPI, "https://shuttletracker.app/version")
         if(APIMatch) {
+            val sharedPreferences: SharedPreferences =
+                this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+            if(sharedPreferences.contains("toggle_value")) {
+                colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
+            }
             drawStops("https://shuttletracker.app/stops")
             drawRoutes("https://shuttletracker.app/routes")
         } else {

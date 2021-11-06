@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Shuttle Tracker</string>
     <string name="title_activity_maps">Shuttle Tracker</string>
+    <string name="GPS_bus">redbus.png</string>
+    <string name="crowdsourced_bus">greenbus.png</string>
+    <string name="colorblind_GPS_bus">cbredbus.png</string>
+    <string name="colorblind_crowdsourced_bus">cbgreenbus.png</string>
 </resources>
