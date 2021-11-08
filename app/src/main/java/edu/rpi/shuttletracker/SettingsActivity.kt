@@ -1,15 +1,13 @@
 package edu.rpi.shuttletracker;
 
-import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.activity_maps.*
 import android.content.SharedPreferences
-
-
-
+import android.view.MenuItem
+import androidx.appcompat.widget.Toolbar
 
 
 public class SettingsActivity: AppCompatActivity() {
@@ -32,6 +30,17 @@ public class SettingsActivity: AppCompatActivity() {
                 saveToggle(this, false)
             }
         }
+        val toolbar: Toolbar = findViewById(R.id.settingsToolbar)
+        setSupportActionBar(toolbar)
+        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
+        getSupportActionBar()?.setDisplayShowHomeEnabled(true)
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // handle arrow click here
+        if (item.getItemId() == android.R.id.home) {
+            finish() // close this activity and return to preview activity (if there is any)
+        }
+        return super.onOptionsItemSelected(item)
     }
     override fun onResume() {
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)

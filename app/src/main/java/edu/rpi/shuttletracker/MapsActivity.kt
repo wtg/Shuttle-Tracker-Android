@@ -43,7 +43,10 @@ import android.animation.Animator
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Resources
 import android.graphics.Color
+import android.provider.Settings.Global.getString
+import android.provider.Settings.System.getString
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -377,16 +380,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.getUiSettings().setMapToolbarEnabled(false)
+        val currentNightMode =  resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        when (currentNightMode) {
+            Configuration.UI_MODE_NIGHT_NO -> {} // Night mode is not active, we're using the light theme
+            Configuration.UI_MODE_NIGHT_YES -> {googleMap.setMapStyle(MapStyleOptions(getResources()
+                .getString(R.string.style_json)));} // Night mode is active, we're using dark theme
+        }
+        val Union = LatLng(42.730426, -73.676573)
+        mMap.setMinZoomPreference(13.5f)
+        mMap.setMaxZoomPreference(20.0f)
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
+        val res : Resources = getResources()
         val currentAPI = 0
-        val APIMatch = APIVersionMatch(currentAPI, "https://shuttletracker.app/version")
+        val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
         if(APIMatch) {
             val sharedPreferences: SharedPreferences =
                 this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
             if(sharedPreferences.contains("toggle_value")) {
                 colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
             }
-            drawStops("https://shuttletracker.app/stops")
-            drawRoutes("https://shuttletracker.app/routes")
+            drawStops(res.getString(R.string.stops_url))
+            drawRoutes(res.getString(R.string.routes_url))
         } else {
             val contextView = findViewById<View>(R.id.map)
 //            Snackbar.make(contextView, "Your app is outdated and no longer works.", Snackbar.LENGTH_LONG)
@@ -418,22 +432,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //            }
 //        }
         // Add a marker in Sydney and move the camera
-        val Union = LatLng(42.730426, -73.676573)
-        mMap.setMinZoomPreference(13.5f)
-        mMap.setMaxZoomPreference(20.0f)
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
 //        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 //        actionBar?.hide()
-        val currentNightMode =  resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        when (currentNightMode) {
-            Configuration.UI_MODE_NIGHT_NO -> {} // Night mode is not active, we're using the light theme
-            Configuration.UI_MODE_NIGHT_YES -> {googleMap.setMapStyle(MapStyleOptions(getResources()
-                .getString(R.string.style_json)));} // Night mode is active, we're using dark theme
-        }
         val busTimer = Timer("busTimer", true)
         var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
         if(APIMatch)
-            busMarkerArray = drawBuses("https://shuttletracker.app/buses")
+            busMarkerArray = drawBuses(res.getString(R.string.buses_url))
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
@@ -445,7 +449,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
             if(APIMatch)
-                busMarkerArray = updateBuses("https://shuttletracker.app/buses", busMarkerArray)
+                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             //println("Updated bus locations.")
         }
     }
