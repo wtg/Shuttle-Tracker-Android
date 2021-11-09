@@ -1,19 +1,39 @@
 package edu.rpi.shuttletracker;
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.view.MenuItem
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.activity_maps.*
-import android.content.SharedPreferences
-import android.view.MenuItem
-import androidx.appcompat.widget.Toolbar
 
 
 public class SettingsActivity: AppCompatActivity() {
+//    fun drawBusIcons() {
+//        val GPSbus : ImageView = findViewById(R.id.IMG_GPSbus)
+//        var bMap = BitmapFactory.decodeFile(getString(R.string.GPS_bus))
+//        GPSbus.setImageBitmap(bMap)
+//
+//        val crowdbus : ImageView = findViewById(R.id.IMG_crowdbus)
+//        bMap = BitmapFactory.decodeFile(getString(R.string.crowdsourced_bus))
+//        crowdbus.setImageBitmap(bMap)
+//
+//        val cbGPSbus : ImageView = findViewById(R.id.IMG_cbGPSbus)
+//        bMap = BitmapFactory.decodeFile(getString(R.string.colorblind_GPS_bus))
+//        cbGPSbus.setImageBitmap(bMap)
+//
+//        val cbcrowdbus : ImageView = findViewById(R.id.IMG_cbcrowdbus)
+//        bMap = BitmapFactory.decodeFile(getString(R.string.colorblind_crowdsourced_bus))
+//        cbcrowdbus.setImageBitmap(bMap)
+//    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings)
+//        drawBusIcons()
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)

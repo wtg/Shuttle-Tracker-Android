@@ -17,9 +17,10 @@
         \n\nInstructions
         \nThe map is automatically refreshed every 5 seconds.
         Green buses have high-quality location data,
-        and red buses have low-quality location data.
-        When boarding a bus, tap \"Board Bus\", and when getting off, tap \"Leave Bus\".
-        You must be within 20 meters of a stop to board a bus.
+        and red buses have low-quality location data. In colorblind mode, the green buses
+        are replaced by buses with an aqua target/scope icon, and the red buses are replaced by
+        a purple dial icon. When boarding a bus, tap \"Board Bus\", and when getting off,
+        tap \"Leave Bus\". You must be within 20 meters of a stop to board a bus.
 
         \n\nPrivacy
         \nShuttle Tracker sends your location data to our server only when you tap \"Board Bus\"
@@ -33,6 +34,7 @@
         using a combination of system and user-reported data indefinitely,
         but these resolved data don\'t correspond with any
         specific user-reported coordinates.
+        \n\n\n\n
     </string>
     <string name="about_page">Shuttle tracker is developed by the Rensselaer Center for Open Source
         by your fellow RPI students. As an open source application, anyone can help develop the RPI Shuttle Tracker

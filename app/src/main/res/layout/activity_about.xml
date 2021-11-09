@@ -17,6 +17,7 @@
         app:titleTextColor="#FFFFFF"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp" />
+
     <TextView
         android:id="@+id/aboutTextView"
         android:layout_width="match_parent"
@@ -26,7 +27,7 @@
         android:layout_marginTop="72dp"
         android:text="@string/about_page"
         android:textDirection="ltr"
-        android:textSize="12sp"
+        android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -36,6 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="@string/github_button_text"
+        android:layout_marginTop="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/aboutTextView" />
