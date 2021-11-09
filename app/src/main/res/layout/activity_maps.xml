@@ -115,7 +115,32 @@
                 android:gravity="center_vertical"
                 android:src="@drawable/ic_baseline_info_24" />
         </LinearLayout>
+        <LinearLayout
+            android:id="@+id/fabLayout4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            >
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="23dp"
+                android:layout_marginBottom="48dp"
+                app:fabSize="mini"
+                android:layout_gravity="bottom|end"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_settings" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
