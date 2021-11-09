@@ -135,11 +135,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="23dp"
-                android:layout_marginBottom="48dp"
+                android:layout_marginBottom="84dp"
                 app:fabSize="mini"
                 android:layout_gravity="bottom|end"
                 android:gravity="center_vertical"
-                android:src="@drawable/ic_settings" />
+                android:src="@drawable/ic_baseline_refresh_24" />
         </LinearLayout>
 
         <LinearLayout
