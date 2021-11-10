@@ -33,8 +33,7 @@
         We may retain resolved location data that are calculated
         using a combination of system and user-reported data indefinitely,
         but these resolved data don\'t correspond with any
-        specific user-reported coordinates.
-        \n\n\n\n
+        specific user-reported coordinates.\n\n\n\n
     </string>
     <string name="about_page">Shuttle tracker is developed by the Rensselaer Center for Open Source
         by your fellow RPI students. As an open source application, anyone can help develop the RPI Shuttle Tracker

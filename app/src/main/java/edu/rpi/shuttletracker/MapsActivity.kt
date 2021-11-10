@@ -113,10 +113,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
         fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
         fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
+        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        btn_info.bringToFront()
     }
 
     private fun closeFABMenu() {
         fabBGLayout.visibility = View.GONE
+        fab.bringToFront()
         fab.animate().rotation(0F)
         fabLayout1.animate().translationY(0f)
         fabLayout2.animate().translationY(0f)
