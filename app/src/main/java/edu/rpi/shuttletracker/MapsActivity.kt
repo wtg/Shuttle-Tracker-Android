@@ -52,6 +52,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.LinearLayout
+import kotlinx.coroutines.*
+import kotlin.system.*
+import kotlin.coroutines.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -361,19 +364,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         thread.start()
         return markerArray
     }
-
-    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
-        var number = 0
-        val thread = Thread(Runnable {
-            kotlin.run {
-                val url = URL(website)
-                val data = url.readText()
-                number = data.toInt()
-            }
-        })
-        thread.start()
-        return currentAPI == number
-    }
+//    fun APIPull(result: Data<Int>, website: String): Int {
+//        val thread = Thread(Runnable {
+//            kotlin.run {
+//                val url = URL(website)
+//                val data = url.readText()
+//                result.value = data.toInt()
+//            }
+//        })
+//        thread.start()
+//        return result.value
+//    }
+//    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
+//        val data = Data<Int>(0)
+//        var number : Int
+//        number = async { APIPull(data, website) }
+//        return data.value == currentAPI
+//    }
 
     /**
      * Manipulates the map once available.
@@ -399,41 +406,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
         val res : Resources = getResources()
-        val currentAPI = 1
-        val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
-        if(APIMatch) {
-            val sharedPreferences: SharedPreferences =
-                this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-            if(sharedPreferences.contains("toggle_value")) {
-                colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
-            }
-            drawStops(res.getString(R.string.stops_url))
-            drawRoutes(res.getString(R.string.routes_url))
-        } else {
-            val contextView = findViewById<View>(R.id.map)
-//            Snackbar.make(contextView, "Your app is outdated and no longer works.", Snackbar.LENGTH_LONG)
-//                .setAction("Update") {
+        //val currentAPI = 1
+        //val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
+//        if(APIMatch) {
+
+//        } else {
+//            val contextView = findViewById<View>(R.id.map)
+////            Snackbar.make(contextView, "Your app is outdated and no longer works.", Snackbar.LENGTH_LONG)
+////                .setAction("Update") {
+////                    val browserIntent = Intent(
+////                        Intent.ACTION_VIEW,
+////                        Uri.parse("http://www.google.com")
+////                    )
+////                    startActivity(browserIntent)
+////                }
+////                .show()
+//            MaterialAlertDialogBuilder(this)
+//                .setMessage("Your app is outdated and no longer works. Please update it to restore shuttle tracking functionality.")
+////                .setNegativeButton("Later") { dialog, which ->
+////                    // Respond to negative button press
+////                }
+//                .setPositiveButton("Update") { dialog, which ->
 //                    val browserIntent = Intent(
 //                        Intent.ACTION_VIEW,
-//                        Uri.parse("http://www.google.com")
+//                        Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
 //                    )
 //                    startActivity(browserIntent)
 //                }
 //                .show()
-            MaterialAlertDialogBuilder(this)
-                .setMessage("Your app is outdated and no longer works. Please update it to restore shuttle tracking functionality.")
-//                .setNegativeButton("Later") { dialog, which ->
-//                    // Respond to negative button press
-//                }
-                .setPositiveButton("Update") { dialog, which ->
-                    val browserIntent = Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
-                    )
-                    startActivity(browserIntent)
-                }
-                .show()
-        }
+//        }
 //        fixedRateTimer("timer", false, 0L, 60 * 1000) {
 //            runOnUiThread {
 //                tvTime.text = SimpleDateFormat("dd MMM - HH:mm", Locale.US).format(Date())
@@ -442,9 +443,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Add a marker in Sydney and move the camera
 //        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 //        actionBar?.hide()
+        val sharedPreferences: SharedPreferences =
+            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        if(sharedPreferences.contains("toggle_value")) {
+            colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
+        }
+        drawStops(res.getString(R.string.stops_url))
+        drawRoutes(res.getString(R.string.routes_url))
         val busTimer = Timer("busTimer", true)
         var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
-        if(APIMatch)
+//        if(APIMatch)
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
@@ -456,7 +464,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
-            if(APIMatch)
+            //if(APIMatch)
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             //println("Updated bus locations.")
         }
