@@ -161,6 +161,17 @@
                 android:src="@drawable/ic_menu_hamburger" />
         </LinearLayout>
 
+        <Button
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:text="Board Bus"
+            android:textAlignment="center"
+            android:layout_gravity="bottom|center_horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="33dp"
+            android:background="@drawable/roundedbutton"
+        />
+
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </fragment>
