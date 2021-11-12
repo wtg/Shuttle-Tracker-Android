@@ -399,7 +399,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
         val res : Resources = getResources()
-        val currentAPI = 0
+        val currentAPI = 1
         val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
         if(APIMatch) {
             val sharedPreferences: SharedPreferences =
@@ -428,7 +428,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setPositiveButton("Update") { dialog, which ->
                     val browserIntent = Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=com.duckduckgo.mobile.android&hl=en_US&gl=US")
+                        Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
                     )
                     startActivity(browserIntent)
                 }
