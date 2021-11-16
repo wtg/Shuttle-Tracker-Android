@@ -1,61 +1,46 @@
 package edu.rpi.shuttletracker
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.annotation.SuppressLint
+import android.animation.Animator
+import android.app.Application
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Transformations.map
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.snackbar.Snackbar.*
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.android.synthetic.main.activity_maps.*
 import org.json.JSONArray
 import java.net.URL
-import java.security.AccessController.getContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.jar.Manifest
 import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
-import android.content.Intent
-import android.net.Uri
-import android.system.Os.accept
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
-import kotlinx.android.synthetic.main.activity_maps.fab
-import kotlinx.android.synthetic.main.activity_maps.fabLayout1
-import kotlinx.android.synthetic.main.activity_maps.fabLayout2
-import kotlinx.android.synthetic.main.activity_maps.fabLayout3
-import kotlinx.android.synthetic.main.activity_maps.fabLayout4
-import android.animation.Animator
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
-import android.content.res.Resources
-import android.graphics.Color
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.Button
-import android.widget.LinearLayout
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
+    private var INTERNET = "android.permission.INTERNET" // allow this app to connect to the network
     object colorblindMode : Application() {
         var colorblind : Boolean = false
         fun getMode() : Boolean {
@@ -82,10 +67,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         fabBGLayout.setOnClickListener { closeFABMenu() }
-        var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
-        var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
-        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
-
+        var btn_settings = findViewById<LinearLayout>(R.id.fabLayout1)
+        var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
+        var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
+        val boardBusButton = findViewById<Button>(R.id.board_bus_button)
 
         btn_settings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -99,7 +84,53 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent);
         }
+        boardBusButton.setOnClickListener {
 
+            if (boardBusButton.getText() == "Board Bus") { // Don't change it to button.text, it won't work, though idk why.
+                /**
+                 *  1. get available bus numbers from server
+                 *  2. start a pop-up window to let user choose which bus to board
+                 *  3. send data to server
+                 *  4. update this client's state and change the button to "leave bus"
+                 */
+                val busNumberArray = getAvailableBusNumbers()
+
+                // Create a pop-up window to let the user
+                // choose which bus to board.
+
+                boardBusButton.setText("Leave Bus")
+            } else if (boardBusButton.getText() == "Leave Bus") {
+                boardBusButton.setText("Board Bus")
+            }
+        }
+    }
+
+    /**
+     * Get all available bus numbers from server.
+     * A request is sent to [https://shuttletracker.app/buses/all].
+     *
+     * @return An array of bus numbers.
+     */
+    private fun getAvailableBusNumbers(): ArrayList<Int> {
+        val res : Resources = resources
+        val url = res.getString(R.string.bus_numbers_url)
+        val busNumberArray = ArrayList<Int>()
+
+        // start the thread and wait for it to finish
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL(url)
+                val jsonString = url.readText()
+                var jsonArray = JSONArray(jsonString)
+                for (i in 0 until jsonArray.length()) {
+                    busNumberArray.add(jsonArray.getInt(i))
+                }
+            }
+        })
+        thread.start()
+        thread.join()
+
+        return busNumberArray
     }
 
     private fun showFABMenu() {

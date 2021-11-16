@@ -162,9 +162,11 @@
         </LinearLayout>
 
         <Button
+            android:id="@+id/board_bus_button"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:text="Board Bus"
+            android:text="@string/board_bus_button_text"
+            android:textAllCaps="false"
             android:textAlignment="center"
             android:layout_gravity="bottom|center_horizontal"
             android:gravity="center_vertical"
