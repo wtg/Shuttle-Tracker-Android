@@ -71,6 +71,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
         var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
+        val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
 
         btn_settings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -85,23 +86,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivity(intent);
         }
         boardBusButton.setOnClickListener {
+            /**
+             *  1. get available bus numbers from server
+             *  2. start a pop-up window to let user choose which bus to board
+             *  3. send data to server
+             *  4. update this client's state and change the button to "leave bus"
+             */
+            val busNumberArray = getAvailableBusNumbers()
 
-            if (boardBusButton.getText() == "Board Bus") { // Don't change it to button.text, it won't work, though idk why.
-                /**
-                 *  1. get available bus numbers from server
-                 *  2. start a pop-up window to let user choose which bus to board
-                 *  3. send data to server
-                 *  4. update this client's state and change the button to "leave bus"
-                 */
-                val busNumberArray = getAvailableBusNumbers()
+            // Create a pop-up window to let the user
+            // choose which bus to board.
 
-                // Create a pop-up window to let the user
-                // choose which bus to board.
-
-                boardBusButton.setText("Leave Bus")
-            } else if (boardBusButton.getText() == "Leave Bus") {
-                boardBusButton.setText("Board Bus")
-            }
+            boardBusButton.visibility = View.GONE
+            leaveBusButton.visibility = View.VISIBLE
+        }
+        leaveBusButton.setOnClickListener {
+            boardBusButton.visibility = View.VISIBLE
+            leaveBusButton.visibility = View.GONE
         }
     }
 

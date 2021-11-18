@@ -174,10 +174,11 @@
             android:background="@drawable/roundedbutton"
         />
         <Button
-            android:id="@+id/leavebusbutton"
+            android:id="@+id/leave_bus_button"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:text="Leave Bus"
+            android:text="@string/leave_bus_button_text"
+            android:textAllCaps="false"
             android:textAlignment="center"
             android:layout_gravity="bottom|center_horizontal"
             android:gravity="center_vertical"
