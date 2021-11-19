@@ -7,4 +7,161 @@
     android:configChanges="uiMode"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivity" />
+    tools:context=".MapsActivity"
+    >
+
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <include layout="@layout/content_main" />
+
+        <View
+            android:id="@+id/fabBGLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/fabLayout1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                 />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="23dp"
+                android:layout_marginBottom="28dp"
+                app:fabSize="mini"
+                android:layout_gravity="bottom|end"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_settings" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/fabLayout2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="23dp"
+                android:layout_marginBottom="28dp"
+                app:fabSize="mini"
+                android:layout_gravity="bottom|end"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_baseline_more_24"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/fabLayout3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginRight="16dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="23dp"
+                android:layout_marginBottom="28dp"
+                app:fabSize="mini"
+                android:layout_gravity="bottom|end"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_baseline_info_24" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/fabLayout4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="23dp"
+                android:layout_marginBottom="84dp"
+                app:fabSize="mini"
+                android:layout_gravity="bottom|end"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_baseline_refresh_24" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            >
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:gravity="center_vertical"
+                android:layout_margin="16dp"
+                android:src="@drawable/ic_menu_hamburger" />
+        </LinearLayout>
+
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</fragment>
+

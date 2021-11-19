@@ -18,6 +18,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONArray
 import java.net.URL
 import java.security.AccessController.getContext
@@ -33,21 +34,132 @@ import android.content.Intent
 import android.net.Uri
 import android.system.Os.accept
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-
+import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
+import kotlinx.android.synthetic.main.activity_maps.fab
+import kotlinx.android.synthetic.main.activity_maps.fabLayout1
+import kotlinx.android.synthetic.main.activity_maps.fabLayout2
+import kotlinx.android.synthetic.main.activity_maps.fabLayout3
+import kotlinx.android.synthetic.main.activity_maps.fabLayout4
+import android.animation.Animator
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import android.content.res.Resources
+import android.graphics.Color
+import android.provider.Settings.Global.getString
+import android.provider.Settings.System.getString
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Button
+import android.widget.LinearLayout
+import androidx.core.graphics.rotationMatrix
+import kotlinx.coroutines.*
+import kotlin.system.*
+import kotlin.coroutines.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-
+    object colorblindMode : Application() {
+        var colorblind : Boolean = false
+        fun getMode() : Boolean {
+            return colorblind
+        }
+        fun setMode(mode : Boolean) {
+            colorblind = mode
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
+            .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        fab.setOnClickListener {
+            if (View.GONE == fabBGLayout.visibility) {
+                showFABMenu()
+            } else {
+                closeFABMenu()
+            }
+        }
+
+        fabBGLayout.setOnClickListener { closeFABMenu() }
+        var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
+        var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
+        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+
+
+        btn_settings.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent);
+        }
+        btn_info.setOnClickListener {
+            val intent = Intent(this, InfoActivity::class.java)
+            startActivity(intent);
+        }
+        btn_about.setOnClickListener {
+            val intent = Intent(this, AboutActivity::class.java)
+            startActivity(intent);
+        }
+
     }
 
+    private fun showFABMenu() {
+        fabLayout1.visibility = View.VISIBLE
+        fabLayout2.visibility = View.VISIBLE
+        fabLayout3.visibility = View.VISIBLE
+        //fablayout4 (the refresh button) is already visible at the start
+        fabBGLayout.visibility = View.VISIBLE
+        fab.animate().rotationBy(180F)
+        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
+        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
+        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
+        fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
+        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        btn_info.bringToFront()
+    }
+
+    private fun closeFABMenu() {
+        fabBGLayout.visibility = View.GONE
+        fab.bringToFront()
+        fab.animate().rotation(0F)
+        fabLayout1.animate().translationY(0f)
+        fabLayout2.animate().translationY(0f)
+        fabLayout3.animate().translationY(0f)
+        fabLayout4.animate().translationY(0f)
+            .setListener(object : Animator.AnimatorListener {
+                override fun onAnimationStart(animator: Animator) {}
+                override fun onAnimationEnd(animator: Animator) {
+                    if (View.GONE == fabBGLayout.visibility) {
+                        fabLayout1.visibility = View.GONE
+                        fabLayout2.visibility = View.GONE
+                        fabLayout3.visibility = View.GONE
+                    }
+                }
+
+                override fun onAnimationCancel(animator: Animator) {}
+                override fun onAnimationRepeat(animator: Animator) {}
+            })
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        //menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            //R.id.action_settings -> true
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     fun drawStops(url: String) {
         val stopArray = ArrayList<Stop>()
@@ -101,6 +213,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         PolylineOptions()
                             .clickable(true)
                             .addAll(latlngarr)
+                            .color(Color.RED)
+                            .width(4F)
                     )
                 }
             }
@@ -126,10 +240,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val longitude = coordinate.getDouble("longitude")
                     val id = bus.getInt("id")
                     val busType = location.getString("type")
-                    var busIcon = "redbus.png"
-                    if(busType == "user") {
-                        busIcon = "greenbus.png"
+                    var busIcon = getString(R.string.GPS_bus)
+                    if(colorblindMode.getMode()) {
+                        if(busType == "user") {
+                            busIcon = getString(R.string.colorblind_crowdsourced_bus)
+                        } else {
+                            busIcon = getString(R.string.colorblind_GPS_bus)
+                        }
+                    } else {
+                        if(busType == "user") {
+                            busIcon = getString(R.string.crowdsourced_bus)
+                        }
                     }
+
                     val busObject = Bus(latitude, longitude, id, busIcon)
                     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                     val busDate: LocalDateTime = LocalDateTime.parse(
@@ -156,7 +279,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     "Bus " + current.id
                                 ).icon(
                                     BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                )
+                                ).zIndex(1F)
                             )
                         )
                         markerArray.get(i).tag = current.id;
@@ -185,9 +308,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val latitude = coordinate.getDouble("latitude")
                     val longitude = coordinate.getDouble("longitude")
                     val busType = location.getString("type")
-                    var busIcon = "redbus.png"
-                    if(busType == "user") {
-                        busIcon = "greenbus.png"
+                    var busIcon = getString(R.string.GPS_bus)
+                    if(colorblindMode.getMode()) {
+                        if(busType == "user") {
+                            busIcon = getString(R.string.colorblind_crowdsourced_bus)
+                        } else {
+                            busIcon = getString(R.string.colorblind_GPS_bus)
+                        }
+                    } else {
+                        if(busType == "user") {
+                            busIcon = getString(R.string.crowdsourced_bus)
+                        }
                     }
                     val busObject = Bus(latitude, longitude, id, busIcon)
                     var found = false
@@ -222,7 +353,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         "Bus " + current.id
                                     ).icon(
                                         BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                    )
+                                    ).zIndex(1F)
                                 )
                             )
                             markerArray.get(i).tag = current.id;
@@ -234,19 +365,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         thread.start()
         return markerArray
     }
-
-    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
-        var number = 0
-        val thread = Thread(Runnable {
-            kotlin.run {
-                val url = URL(website)
-                val data = url.readText()
-                number = data.toInt()
-            }
-        })
-        thread.start()
-        return currentAPI == number
-    }
+//    fun APIPull(result: Data<Int>, website: String): Int {
+//        val thread = Thread(Runnable {
+//            kotlin.run {
+//                val url = URL(website)
+//                val data = url.readText()
+//                result.value = data.toInt()
+//            }
+//        })
+//        thread.start()
+//        return result.value
+//    }
+//    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
+//        val data = Data<Int>(0)
+//        var number : Int
+//        number = async { APIPull(data, website) }
+//        return data.value == currentAPI
+//    }
 
     /**
      * Manipulates the map once available.
@@ -260,58 +395,66 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //@RequiresApi(Build.VERSION_CODES.O)
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        val currentAPI = 0
-        val APIMatch = APIVersionMatch(currentAPI, "https://shuttletracker.app/version")
-        if(APIMatch) {
-            drawStops("https://shuttletracker.app/stops")
-            drawRoutes("https://shuttletracker.app/routes")
-        } else {
-            val contextView = findViewById<View>(R.id.map)
-//            Snackbar.make(contextView, "Your app is outdated and no longer works.", Snackbar.LENGTH_LONG)
-//                .setAction("Update") {
-//                    val browserIntent = Intent(
-//                        Intent.ACTION_VIEW,
-//                        Uri.parse("http://www.google.com")
-//                    )
-//                    startActivity(browserIntent)
-//                }
-//                .show()
-            MaterialAlertDialogBuilder(this)
-                .setMessage("Your app is outdated and no longer works. Please update it to restore shuttle tracking functionality.")
-//                .setNegativeButton("Later") { dialog, which ->
-//                    // Respond to negative button press
-//                }
-                .setPositiveButton("Update") { dialog, which ->
-                    val browserIntent = Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=com.duckduckgo.mobile.android&hl=en_US&gl=US")
-                    )
-                    startActivity(browserIntent)
-                }
-                .show()
-        }
-//        fixedRateTimer("timer", false, 0L, 60 * 1000) {
-//            runOnUiThread {
-//                tvTime.text = SimpleDateFormat("dd MMM - HH:mm", Locale.US).format(Date())
-//            }
-//        }
-        // Add a marker in Sydney and move the camera
-        val Union = LatLng(42.730426, -73.676573)
-        mMap.setMinZoomPreference(13.5f)
-        mMap.setMaxZoomPreference(20.0f)
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
-//        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
-//        actionBar?.hide()
+        mMap.getUiSettings().setMapToolbarEnabled(false)
         val currentNightMode =  resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         when (currentNightMode) {
             Configuration.UI_MODE_NIGHT_NO -> {} // Night mode is not active, we're using the light theme
             Configuration.UI_MODE_NIGHT_YES -> {googleMap.setMapStyle(MapStyleOptions(getResources()
                 .getString(R.string.style_json)));} // Night mode is active, we're using dark theme
         }
+        val Union = LatLng(42.730426, -73.676573)
+        mMap.setMinZoomPreference(13.5f)
+        mMap.setMaxZoomPreference(20.0f)
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
+        val res : Resources = getResources()
+        //val currentAPI = 1
+        //val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
+//        if(APIMatch) {
+
+//        } else {
+//            val contextView = findViewById<View>(R.id.map)
+////            Snackbar.make(contextView, "Your app is outdated and no longer works.", Snackbar.LENGTH_LONG)
+////                .setAction("Update") {
+////                    val browserIntent = Intent(
+////                        Intent.ACTION_VIEW,
+////                        Uri.parse("http://www.google.com")
+////                    )
+////                    startActivity(browserIntent)
+////                }
+////                .show()
+//            MaterialAlertDialogBuilder(this)
+//                .setMessage("Your app is outdated and no longer works. Please update it to restore shuttle tracking functionality.")
+////                .setNegativeButton("Later") { dialog, which ->
+////                    // Respond to negative button press
+////                }
+//                .setPositiveButton("Update") { dialog, which ->
+//                    val browserIntent = Intent(
+//                        Intent.ACTION_VIEW,
+//                        Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
+//                    )
+//                    startActivity(browserIntent)
+//                }
+//                .show()
+//        }
+//        fixedRateTimer("timer", false, 0L, 60 * 1000) {
+//            runOnUiThread {
+//                tvTime.text = SimpleDateFormat("dd MMM - HH:mm", Locale.US).format(Date())
+//            }
+//        }
+        // Add a marker in Sydney and move the camera
+//        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+//        actionBar?.hide()
+        val sharedPreferences: SharedPreferences =
+            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        if(sharedPreferences.contains("toggle_value")) {
+            colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
+        }
+        drawStops(res.getString(R.string.stops_url))
+        drawRoutes(res.getString(R.string.routes_url))
         val busTimer = Timer("busTimer", true)
         var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
-        if(APIMatch)
-            busMarkerArray = drawBuses("https://shuttletracker.app/buses")
+//        if(APIMatch)
+            busMarkerArray = drawBuses(res.getString(R.string.buses_url))
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
@@ -322,9 +465,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
-            if(APIMatch)
-                busMarkerArray = updateBuses("https://shuttletracker.app/buses", busMarkerArray)
+            //if(APIMatch)
+                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             //println("Updated bus locations.")
+        }
+        var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
+        btn_refresh.setOnClickListener {
+            busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
         }
     }
 
