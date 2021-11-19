@@ -36,10 +36,10 @@ import android.system.Os.accept
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
 import kotlinx.android.synthetic.main.activity_maps.fab
-import kotlinx.android.synthetic.main.activity_maps.fabLayout1
-import kotlinx.android.synthetic.main.activity_maps.fabLayout2
-import kotlinx.android.synthetic.main.activity_maps.fabLayout3
-import kotlinx.android.synthetic.main.activity_maps.fabLayout4
+import kotlinx.android.synthetic.main.activity_maps.settingsFab
+import kotlinx.android.synthetic.main.activity_maps.aboutFab
+import kotlinx.android.synthetic.main.activity_maps.infoFab
+import kotlinx.android.synthetic.main.activity_maps.refreshFab
 import android.animation.Animator
 import android.app.Application
 import android.content.Context
@@ -86,9 +86,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         fabBGLayout.setOnClickListener { closeFABMenu() }
-        var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
-        var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
-        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        var btn_settings = findViewById(R.id.settingsFab) as LinearLayout
+        var btn_about = findViewById(R.id.aboutFab) as LinearLayout
+        var btn_info = findViewById(R.id.infoFab) as LinearLayout
 
 
         btn_settings.setOnClickListener {
@@ -107,17 +107,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun showFABMenu() {
-        fabLayout1.visibility = View.VISIBLE
-        fabLayout2.visibility = View.VISIBLE
-        fabLayout3.visibility = View.VISIBLE
-        //fablayout4 (the refresh button) is already visible at the start
+        settingsFab.visibility = View.VISIBLE
+        aboutFab.visibility = View.VISIBLE
+        infoFab.visibility = View.VISIBLE
+        //refreshFab (the refresh button) is already visible at the start
         fabBGLayout.visibility = View.VISIBLE
         fab.animate().rotationBy(180F)
-        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
-        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
-        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
-        fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
-        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        settingsFab.animate().translationY(-resources.getDimension(R.dimen.standard_75))
+        aboutFab.animate().translationY(-resources.getDimension(R.dimen.standard_135))
+        infoFab.animate().translationY(-resources.getDimension(R.dimen.standard_215))
+        refreshFab.animate().translationY(-resources.getDimension(R.dimen.standard_210))
+        var btn_info = findViewById(R.id.infoFab) as LinearLayout
         btn_info.bringToFront()
     }
 
@@ -125,17 +125,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabBGLayout.visibility = View.GONE
         fab.bringToFront()
         fab.animate().rotation(0F)
-        fabLayout1.animate().translationY(0f)
-        fabLayout2.animate().translationY(0f)
-        fabLayout3.animate().translationY(0f)
-        fabLayout4.animate().translationY(0f)
+        settingsFab.animate().translationY(0f)
+        aboutFab.animate().translationY(0f)
+        infoFab.animate().translationY(0f)
+        refreshFab.animate().translationY(0f)
             .setListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animator: Animator) {}
                 override fun onAnimationEnd(animator: Animator) {
                     if (View.GONE == fabBGLayout.visibility) {
-                        fabLayout1.visibility = View.GONE
-                        fabLayout2.visibility = View.GONE
-                        fabLayout3.visibility = View.GONE
+                        settingsFab.visibility = View.GONE
+                        aboutFab.visibility = View.GONE
+                        infoFab.visibility = View.GONE
                     }
                 }
 
@@ -469,7 +469,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             //println("Updated bus locations.")
         }
-        var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
+        var btn_refresh = findViewById(R.id.refreshFab) as LinearLayout
         btn_refresh.setOnClickListener {
             busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
         }

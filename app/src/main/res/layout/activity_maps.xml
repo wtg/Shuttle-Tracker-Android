@@ -35,7 +35,7 @@
             android:visibility="gone" />
 
         <LinearLayout
-            android:id="@+id/fabLayout1"
+            android:id="@+id/settingsFab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
@@ -62,7 +62,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/fabLayout2"
+            android:id="@+id/aboutFab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
@@ -90,7 +90,7 @@
 
 
         <LinearLayout
-            android:id="@+id/fabLayout3"
+            android:id="@+id/infoFab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
@@ -116,7 +116,7 @@
                 android:src="@drawable/ic_baseline_info_24" />
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/fabLayout4"
+            android:id="@+id/refreshFab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
