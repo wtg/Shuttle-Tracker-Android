@@ -52,6 +52,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.LinearLayout
+import androidx.core.graphics.rotationMatrix
 import kotlinx.coroutines.*
 import kotlin.system.*
 import kotlin.coroutines.*
@@ -278,7 +279,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     "Bus " + current.id
                                 ).icon(
                                     BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                )
+                                ).zIndex(1F)
                             )
                         )
                         markerArray.get(i).tag = current.id;
@@ -352,7 +353,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         "Bus " + current.id
                                     ).icon(
                                         BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                    )
+                                    ).zIndex(1F)
                                 )
                             )
                             markerArray.get(i).tag = current.id;
