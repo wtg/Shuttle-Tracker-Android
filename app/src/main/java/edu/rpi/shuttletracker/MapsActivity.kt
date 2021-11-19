@@ -2,6 +2,7 @@ package edu.rpi.shuttletracker
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.animation.Animator
+import android.app.AlertDialog
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -40,7 +41,7 @@ import kotlin.concurrent.scheduleAtFixedRate
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-    private var INTERNET = "android.permission.INTERNET" // allow this app to connect to the network
+
     object colorblindMode : Application() {
         var colorblind : Boolean = false
         fun getMode() : Boolean {
@@ -72,6 +73,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
         val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
+        val boardedBusNumber: String
 
         btn_settings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -92,15 +94,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  3. send data to server
              *  4. update this client's state and change the button to "leave bus"
              */
-            val busNumberArray = getAvailableBusNumbers()
+            val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }.toTypedArray() // convert Array<Int> to Array<String>
 
-            // Create a pop-up window to let the user
-            // choose which bus to board.
+            // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
+            var selectedBusNumber: String? = null
+            val chooseBusDialogBuilder = AlertDialog.Builder(this)
+            chooseBusDialogBuilder.setTitle("Bus Selection")
+                .setSingleChoiceItems(busNumberArray, -1) { _, which ->
+                    selectedBusNumber = busNumberArray[which]
+                }
+                .setPositiveButton("Continue") { dialog, _ ->
+                    if (selectedBusNumber != null) {
+                        // send request to server, update <boardedBusNumber: String>
 
-            boardBusButton.visibility = View.GONE
-            leaveBusButton.visibility = View.VISIBLE
+
+                        dialog.cancel()
+
+                        boardBusButton.visibility = View.GONE
+                        leaveBusButton.visibility = View.VISIBLE
+                    }
+                }
+                .setNegativeButton("Cancel") {dialog, _ ->
+                    dialog.cancel()
+                }
+            chooseBusDialogBuilder.create()
+            chooseBusDialogBuilder.show()
         }
         leaveBusButton.setOnClickListener {
+            // Send a request to server that this user left this bus.
+
+
             boardBusButton.visibility = View.VISIBLE
             leaveBusButton.visibility = View.GONE
         }
