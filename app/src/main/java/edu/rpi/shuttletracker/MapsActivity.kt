@@ -5,7 +5,6 @@ import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.animation.Animator
 import android.app.AlertDialog
 import android.app.Application
-import android.content.ContentProviderClient
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -33,17 +32,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_maps.*
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.OutputStreamWriter
-import java.lang.Exception
-import java.net.HttpURLConnection
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
