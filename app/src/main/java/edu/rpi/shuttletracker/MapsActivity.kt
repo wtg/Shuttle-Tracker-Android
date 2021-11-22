@@ -166,12 +166,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             var selectedBusNumber: String? = null
             val chooseBusDialogBuilder = AlertDialog.Builder(this)
             chooseBusDialogBuilder.setTitle("Bus Selection")
+
+                // TODO: Find closest bus and recommend this bus to the user.
+                
                 .setSingleChoiceItems(busNumberArray, -1) { _, which ->
                     selectedBusNumber = busNumberArray[which]
                 }
                 .setPositiveButton("Continue") { dialog, _ ->
                     if (selectedBusNumber != null) {
-                        // send request to server, update <boardedBusNumber: String>
+                        // send request to server, and update <boardedBusNumber: String>
                         session_uuid = getRandomSessionUuid()
                         println("session_uuid: $session_uuid") // TODO: remove/comment this testing clause
 
@@ -180,12 +183,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                         val thread = Thread {
                             kotlin.run {
-                                var boardBusJSONObject = parseDataToJSONObject(
-                                    session_uuid!!,
+                                val boardBusJSONObject = parseDataToJSONObject(
+                                    session_uuid,
                                     latitude,
                                     longitude,
                                     type,
-                                    date!!
+                                    date
                                 )
                                 println("parsed JSONObject: $boardBusJSONObject") // TODO: remove/comment this testing clause
                                 val boardBusUrl =
@@ -193,6 +196,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 println("Target URL: $boardBusUrl") // TODO: remove/comment this testing clause
 
                                 // send to server
+                                // FIXME: check if the request or JSON Object has issues, either of them isn't working.
                                 val request = Request.Builder()
                                     .url(boardBusUrl)
                                     .patch(boardBusJSONObject.toString().toRequestBody(mediaType))
@@ -203,7 +207,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     onBus = true
                                 }
                                 println("response: $response") // TODO: remove/comment this testing clause
-
                             }
                         }
                         thread.start()
@@ -260,11 +263,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      *  @return An ISO-8601 date string.
      */
     private fun getCurrentFormattedDate(): String {
-        val date = Date()
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US)
-        sdf.timeZone = TimeZone.getTimeZone("EST")
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+        sdf.timeZone = TimeZone.getTimeZone("UTC") // use UTC as default time zone
 
-        return sdf.format(date)
+        return sdf.format(Date())
     }
 
     /**
