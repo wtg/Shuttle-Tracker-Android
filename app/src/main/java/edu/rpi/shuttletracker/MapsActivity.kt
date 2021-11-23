@@ -51,12 +51,22 @@ import kotlin.concurrent.scheduleAtFixedRate
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val fusedLocationClient: FusedLocationProviderClient by lazy {
+        LocationServices.getFusedLocationProviderClient(this)
+    }
     private val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
     private val httpClient by lazy {
         OkHttpClient.Builder().build()
     }
-    private var onBus: Boolean = false // stores this user's status
+
+    // All data used in a data package which will be sent to server
+    private var onBus: Boolean = false // This user's status. It controls the end of data transmission thread.
+    private var selectedBusNumber: String? = null
+    private lateinit var session_uuid: String
+    private var latitude: Float? = null
+    private var longitude: Float? = null
+    private var type = "user"
+    private lateinit var date: String
 
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -90,12 +100,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
         val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
 
-        var boardedBusNumber: String? = null
-        var session_uuid: String
-        var latitude: Float? = null
-        var longitude: Float? = null
-        val type = "user"
-        var date: String
+
 
         btn_settings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -110,7 +115,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivity(intent)
         }
 
-        // TODO: Consider move all codes under this listener to a separate Activity file.
         boardBusButton.setOnClickListener {
             /**
              *  1. get available bus numbers from server
@@ -118,52 +122,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  3. send data to server
              *  4. update this client's state and change the button to "leave bus"
              */
-            // First of all, initialize FusedLocationProviderClient.
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-            // check location permission
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    MapsActivity.MY_PERMISSIONS_REQUEST_LOCATION
-                )
-            }
-
-            // get user's current location
-            // FIXME: cannot get user's location by the following code blocks
-            val getLocationThread = Thread {
-                kotlin.run {
-                    fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                        println("location: $location") // TODO: remove/comment this testing clause
-                        if (location != null) {
-                            latitude = location.latitude.toFloat()
-                            longitude = location.longitude.toFloat()
-                            println("latitude: $latitude, longitude: $longitude") // TODO: remove/comment this testing clause
-                        } else {
-                            println("location access error!") // TODO: remove/comment this testing clause
-                        }
-                    }
-                }
-            }
-            getLocationThread.start()
-            getLocationThread.join()
 
             // TODO: Check if the user is near a bus stop. If not, pop up an alert dialog.
-
 
             val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
                 .toTypedArray() // convert Array<Int> to Array<String>
 
             // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
-            var selectedBusNumber: String? = null
             val chooseBusDialogBuilder = AlertDialog.Builder(this)
             chooseBusDialogBuilder.setTitle("Bus Selection")
 
@@ -174,47 +139,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 .setPositiveButton("Continue") { dialog, _ ->
                     if (selectedBusNumber != null) {
-                        // send request to server, and update <boardedBusNumber: String>
-                        session_uuid = getRandomSessionUuid()
-                        println("session_uuid: $session_uuid") // TODO: remove/comment this testing clause
+                        val sendDataThread = sendOnBusData()
+                        sendDataThread.start()
 
-                        date = getCurrentFormattedDate()
-                        println("parsed date: $date") // TODO: remove/comment this testing clause
-
-                        val thread = Thread {
-                            kotlin.run {
-                                val boardBusJSONObject = parseDataToJSONObject(
-                                    session_uuid,
-                                    latitude,
-                                    longitude,
-                                    type,
-                                    date
-                                )
-                                println("parsed JSONObject: $boardBusJSONObject") // TODO: remove/comment this testing clause
-                                val boardBusUrl =
-                                    URL(resources.getString(R.string.buses_url) + "/$selectedBusNumber")
-                                println("Target URL: $boardBusUrl") // TODO: remove/comment this testing clause
-
-                                // send to server
-                                // FIXME: check if the request or JSON Object has issues, either of them isn't working.
-                                val request = Request.Builder()
-                                    .url(boardBusUrl)
-                                    .patch(boardBusJSONObject.toString().toRequestBody(mediaType))
-                                    .build()
-                                println("Request: $request") // TODO: remove/comment this testing clause
-
-                                val response = httpClient.newCall(request).execute().use {
-                                    onBus = true
-                                }
-                                println("response: $response") // TODO: remove/comment this testing clause
-                            }
-                        }
-                        thread.start()
-                        thread.join()
-
-                        // TODO: Is this client supposed to send location updates every 5 seconds?
-
+                        // hide the dialog
                         dialog.cancel()
+
+                        // switch buttons by changing their visibility
                         boardBusButton.visibility = View.GONE
                         leaveBusButton.visibility = View.VISIBLE
                     }
@@ -226,14 +157,101 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             chooseBusDialogBuilder.show()
         };
         leaveBusButton.setOnClickListener {
-            onBus = false
+            onBus = false // this variable controls when the data-transmitting thread ends
             boardBusButton.visibility = View.VISIBLE
             leaveBusButton.visibility = View.GONE
         };
     }
 
     /**
-     * Get all available bus numbers from server.
+     *  Access the [fusedLocationClient] to update [latitude] and [longitude].
+     */
+    private fun updateCurrentLocation() {
+        // check location permission
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                MapsActivity.MY_PERMISSIONS_REQUEST_LOCATION
+            )
+        }
+
+        // get user's current location
+        val getLocationThread = Thread {
+            kotlin.run {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                    println("location: $location") // TODO: remove/comment this testing clause
+                    if (location != null) {
+                        latitude = location.latitude.toFloat()
+                        longitude = location.longitude.toFloat()
+                        println("latitude: $latitude, longitude: $longitude") // TODO: remove/comment this testing clause
+                    } else {
+                        println("location access error!") // TODO: remove/comment this testing clause
+                    }
+                }
+            }
+        }
+        getLocationThread.start()
+        getLocationThread.join()
+    }
+
+    /**
+     *  Keep sending data every 5 seconds.
+     *  @return A thread which keeps sending data packs to the server every 5 seconds.
+     */
+    private fun sendOnBusData(): Thread {
+        session_uuid = getRandomSessionUuid()
+        println("session_uuid: $session_uuid") // TODO: remove/comment this testing clause
+
+        val thread = Thread {
+            kotlin.run {
+                onBus = true
+                while (onBus) {
+                    date = getCurrentFormattedDate()
+                    println("parsed date: $date") // TODO: remove/comment this testing clause
+                    updateCurrentLocation()
+
+                    val boardBusJSONObject = parseDataToJSONObject(
+                        session_uuid,
+                        latitude,
+                        longitude,
+                        type,
+                        getCurrentFormattedDate()
+                    )
+                    println("parsed JSONObject: $boardBusJSONObject") // TODO: remove/comment this testing clause
+                    val boardBusUrl =
+                        URL(resources.getString(R.string.buses_url) + "/$selectedBusNumber")
+                    println("Target URL: $boardBusUrl") // TODO: remove/comment this testing clause
+
+                    // send to server
+                    val request = Request.Builder()
+                        .url(boardBusUrl)
+                        .patch(
+                            boardBusJSONObject.toString().toRequestBody(mediaType)
+                        )
+                        .build()
+                    println("Request: $request") // TODO: remove/comment this testing clause
+
+                    val response = httpClient.newCall(request).execute()
+                    println("response: $response") // TODO: remove/comment this testing clause
+
+                    // wait for 5 seconds
+                    Thread.sleep(5000L)
+                }
+            }
+        }
+        return thread
+    }
+
+    /**
+     * Start a thread to get all available bus numbers from server.
      * A request is sent to [https://shuttletracker.app/buses/all].
      *
      * @return An integer array of bus numbers.
@@ -259,22 +277,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     /**
-     *  Get the current date time in the format of ISO-8601 (e.g. 2021-11-12T22:44:55+00:00), excluding milliseconds.
-     *  @return An ISO-8601 date string.
-     */
-    private fun getCurrentFormattedDate(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-        sdf.timeZone = TimeZone.getTimeZone("UTC") // use UTC as default time zone
-
-        return sdf.format(Date())
-    }
-
-    /**
      *  Generate a random session uuid served as this user's identifier.
      *  @return A randomly generated string to be used as session uuid.
      */
     private fun getRandomSessionUuid(): String {
         return UUID.randomUUID().toString()
+    }
+
+    /**
+     *  Get the current date time in the format of ISO-8601 (e.g. 2021-11-12T22:44:55+00:00), excluding milliseconds.
+     *  @return An ISO-8601 date string.
+     */
+    private fun getCurrentFormattedDate(): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+        sdf.timeZone = TimeZone.getTimeZone("UTC") // use UTC as default time zone
+
+        return sdf.format(Date())
     }
 
     /**
