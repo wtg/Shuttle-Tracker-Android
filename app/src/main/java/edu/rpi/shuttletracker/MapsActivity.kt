@@ -14,17 +14,19 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.location.Location
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -51,20 +53,27 @@ import kotlin.concurrent.scheduleAtFixedRate
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-    private val fusedLocationClient: FusedLocationProviderClient by lazy {
-        LocationServices.getFusedLocationProviderClient(this)
-    }
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
+
     private val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
     private val httpClient by lazy {
         OkHttpClient.Builder().build()
     }
 
+    private val stopArray = ArrayList<Stop>()
+    private val busArray = ArrayList<Bus>()
+
+
     // All data used in a data package which will be sent to server
     private var onBus: Boolean = false // This user's status. It controls the end of data transmission thread.
     private var selectedBusNumber: String? = null
     private lateinit var session_uuid: String
-    private var latitude: Float? = null
-    private var longitude: Float? = null
+    private var currentLocation: Location? = null
+    //private var latitude: Float? = null
+    //private var longitude: Float? = null
     private var type = "user"
     private lateinit var date: String
 
@@ -77,9 +86,34 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             colorblind = mode
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
+        // Initialize location updates
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        locationRequest = LocationRequest.create()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest.interval = 5*1000 // refreshes every 5 seconds
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                super.onLocationResult(locationResult)
+                currentLocation = locationResult.lastLocation
+            }
+        }
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
@@ -122,8 +156,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  3. send data to server
              *  4. update this client's state and change the button to "leave bus"
              */
+            println("location: $currentLocation") // TODO: remove/comment this testing clause
 
-            // TODO: Check if the user is near a bus stop. If not, pop up an alert dialog.
+            // Check if the user is near a bus stop. If not, pop up an alert dialog and stop this button's onclick listener.
+            if (!checkNearbyStop()) {
+                return@setOnClickListener
+            }
 
             val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
                 .toTypedArray() // convert Array<Int> to Array<String>
@@ -164,42 +202,43 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     /**
-     *  Access the [fusedLocationClient] to update [latitude] and [longitude].
+     *  Run the is-near-any-stop check. If user is not near any stop, pop up an AlertDialog.
+     *  @return true if the user is within 20 meters of any stop; otherwise false.
      */
-    private fun updateCurrentLocation() {
-        // check location permission
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                MapsActivity.MY_PERMISSIONS_REQUEST_LOCATION
-            )
-        }
-
-        // get user's current location
-        val getLocationThread = Thread {
-            kotlin.run {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                    println("location: $location") // TODO: remove/comment this testing clause
-                    if (location != null) {
-                        latitude = location.latitude.toFloat()
-                        longitude = location.longitude.toFloat()
-                        println("latitude: $latitude, longitude: $longitude") // TODO: remove/comment this testing clause
-                    } else {
-                        println("location access error!") // TODO: remove/comment this testing clause
-                    }
+    private fun checkNearbyStop(): Boolean {
+        return if (!isNearStop()) {
+            val noNearbyStopDialogBuilder = AlertDialog.Builder(this)
+            val noNearbyStopMessage = "You can't board a bus if you're not within 20 meters of a stop."
+            noNearbyStopDialogBuilder.setTitle("No Nearby Stop")
+                .setMessage(noNearbyStopMessage)
+                .setNegativeButton("Continue") { dialog, _ ->
+                    println("Location Check: Not near a stop") // TODO: remove/comment this testing clause
+                    dialog.cancel()
                 }
+            noNearbyStopDialogBuilder.create()
+            noNearbyStopDialogBuilder.show()
+            false
+        } else {
+            true
+        }
+    }
+
+    /**
+     *  Checks if this user is within 20 meters of any bus stop.
+     */
+    private fun isNearStop(): Boolean {
+        //updateCurrentLocation()
+        for (stop in stopArray) {
+            val stopLocation = Location("stop location")
+            stopLocation.altitude = stop.latitude
+            stopLocation.longitude = stop.longitude
+            //println("current location: $currentLocation") // // TODO: remove/comment this testing clause
+            //println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
+            if (currentLocation?.distanceTo(stopLocation)!! <= 20) {
+                return true
             }
         }
-        getLocationThread.start()
-        getLocationThread.join()
+        return false
     }
 
     /**
@@ -216,12 +255,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 while (onBus) {
                     date = getCurrentFormattedDate()
                     println("parsed date: $date") // TODO: remove/comment this testing clause
-                    updateCurrentLocation()
+                    //updateCurrentLocation()
+
+                    // TODO: remove this testing location when committing
+                    //latitude = (42.722886).toFloat()
+                    //longitude = (-73.679665).toFloat()
 
                     val boardBusJSONObject = parseDataToJSONObject(
                         session_uuid,
-                        latitude,
-                        longitude,
+                        currentLocation?.latitude?.toFloat(),
+                        currentLocation?.longitude?.toFloat(),
                         type,
                         getCurrentFormattedDate()
                     )
@@ -361,7 +404,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun drawStops(url: String) {
-        val stopArray = ArrayList<Stop>()
+        //val stopArray = ArrayList<Stop>()
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL(url)
@@ -423,7 +466,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     //@RequiresApi(Build.VERSION_CODES.O)
     fun drawBuses(url: String): ArrayList<Marker> {
-        val busArray = ArrayList<Bus>()
+        //val busArray = ArrayList<Bus>()
         var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
             kotlin.run {
@@ -491,6 +534,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     //@RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
+        println("updateBuses() called")
         val busArray = ArrayList<Bus>()
         //var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
@@ -681,6 +725,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     // permission was granted, yay! Do the
                     // location-related task you need to do.
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location:Location ->
+                        currentLocation = location // update current location
+                        println("current location updated") // TODO: remove/comment this testing clause
+                    }
+
                     if (ActivityCompat.checkSelfPermission(
                             this,
                             ACCESS_FINE_LOCATION
