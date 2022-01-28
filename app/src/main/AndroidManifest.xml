@@ -17,10 +17,10 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".AboutActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".InfoActivity"
-            android:exported="true" />
+            android:exported="false" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -39,14 +39,13 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".SettingsActivity"
+            android:exported="false"
             android:label="@string/title_activity_maps">
         </activity>
     </application>
-
 </manifest>
