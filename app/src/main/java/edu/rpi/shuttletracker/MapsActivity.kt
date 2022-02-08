@@ -72,7 +72,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
-
+        //make an instantiation of announcements
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -89,6 +89,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
         var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
         var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        //button variable initiation
+        var btn_announcements = findViewById(R.id.fabLayout1) as LinearLayout
 
 
         btn_settings.setOnClickListener {
@@ -101,6 +103,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         btn_about.setOnClickListener {
             val intent = Intent(this, AboutActivity::class.java)
+            startActivity(intent);
+        }
+
+        //button reference for announcements section
+        btn_announcements.setOnClickListener {
+            val intent = Intent(this, AnnouncementsActivity::class.java)
             startActivity(intent);
         }
 

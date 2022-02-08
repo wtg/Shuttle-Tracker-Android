@@ -13,7 +13,7 @@
         android:background="?attr/colorAccent"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
-        app:title="About"
+        app:title="Yeetus Deletus the Fetus"
         app:titleTextColor="#FFFFFF"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp" />
