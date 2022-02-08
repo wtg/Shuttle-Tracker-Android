@@ -1,39 +1,28 @@
 package edu.rpi.shuttletracker
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Transformations.map
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.snackbar.Snackbar.*
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONArray
 import java.net.URL
-import java.security.AccessController.getContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.jar.Manifest
 import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
 import android.content.Intent
-import android.net.Uri
-import android.system.Os.accept
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
 import kotlinx.android.synthetic.main.activity_maps.fab
 import kotlinx.android.synthetic.main.activity_maps.fabLayout1
@@ -46,16 +35,16 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
 import android.graphics.Color
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
 import android.widget.LinearLayout
-import androidx.core.graphics.rotationMatrix
 import kotlinx.coroutines.*
-import kotlin.system.*
-import kotlin.coroutines.*
+import android.net.NetworkInfo
+
+import android.net.ConnectivityManager
+
+
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -70,40 +59,49 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_maps)
+        if(!internet_connection()){
+            println("hello")
+            println("hi")
+            println("hola")
+            println("asdf")
+            println("ooooo")
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-        fab.setOnClickListener {
-            if (View.GONE == fabBGLayout.visibility) {
-                showFABMenu()
-            } else {
-                closeFABMenu()
+        }else {
+
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_maps)
+
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            val mapFragment = supportFragmentManager
+                .findFragmentById(R.id.map) as SupportMapFragment
+            mapFragment.getMapAsync(this)
+            fab.setOnClickListener {
+                if (View.GONE == fabBGLayout.visibility) {
+                    showFABMenu()
+                } else {
+                    closeFABMenu()
+                }
+            }
+
+            fabBGLayout.setOnClickListener { closeFABMenu() }
+            var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
+            var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
+            var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+
+
+            btn_settings.setOnClickListener {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent);
+            }
+            btn_info.setOnClickListener {
+                val intent = Intent(this, InfoActivity::class.java)
+                startActivity(intent);
+            }
+            btn_about.setOnClickListener {
+                val intent = Intent(this, AboutActivity::class.java)
+                startActivity(intent);
             }
         }
-
-        fabBGLayout.setOnClickListener { closeFABMenu() }
-        var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
-        var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
-        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
-
-
-        btn_settings.setOnClickListener {
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent);
-        }
-        btn_info.setOnClickListener {
-            val intent = Intent(this, InfoActivity::class.java)
-            startActivity(intent);
-        }
-        btn_about.setOnClickListener {
-            val intent = Intent(this, AboutActivity::class.java)
-            startActivity(intent);
-        }
-
     }
 
     private fun showFABMenu() {
@@ -161,37 +159,54 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+
+    fun internet_connection(): Boolean {
+        //Check if connected to internet, output accordingly
+        val cm =
+            this.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = cm.activeNetworkInfo
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting
+    }
+
     fun drawStops(url: String) {
+
         val stopArray = ArrayList<Stop>()
-        val thread = Thread(Runnable {
-            kotlin.run {
-                val url = URL(url)
-                val jsonString = url.readText()
-                var jsonArray = JSONArray(jsonString)
-                for (i in 0 until jsonArray.length()) {
-                    val stop = jsonArray.getJSONObject(i)
-                    val coordinate = stop.getJSONObject("coordinate")
-                    val latitude = coordinate.getDouble("latitude")
-                    val longitude = coordinate.getDouble("longitude")
-                    val name = stop.getString("name")
-                    val stopObject = Stop(latitude, longitude, name)
-                    stopArray.add(stopObject)
-                }
-                for (i in 0 until stopArray.size) {
-                    val current = stopArray.get(i)
-                    val stopPos = LatLng(current.latitude, current.longitude)
-                    runOnUiThread {
-                        mMap.addMarker(
-                            MarkerOptions().position(stopPos).title(current.name).icon(
-                                BitmapDescriptorFactory.fromAsset("simplecircle.png")
+
+        if(true){
+            val thread = Thread(Runnable {
+                kotlin.run {
+                    val url = URL(url)
+                    val jsonString = url.readText()
+                    var jsonArray = JSONArray(jsonString)
+                    for (i in 0 until jsonArray.length()) {
+                        val stop = jsonArray.getJSONObject(i)
+                        val coordinate = stop.getJSONObject("coordinate")
+                        val latitude = coordinate.getDouble("latitude")
+                        val longitude = coordinate.getDouble("longitude")
+                        val name = stop.getString("name")
+                        val stopObject = Stop(latitude, longitude, name)
+                        stopArray.add(stopObject)
+                    }
+                    for (i in 0 until stopArray.size) {
+                        val current = stopArray.get(i)
+                        val stopPos = LatLng(current.latitude, current.longitude)
+                        runOnUiThread {
+                            mMap.addMarker(
+                                MarkerOptions().position(stopPos).title(current.name).icon(
+                                    BitmapDescriptorFactory.fromAsset("simplecircle.png")
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
-        })
-        thread.start()
+            })
+            thread.start()
+        }else{
+            println("connection be not working")
+        }
     }
+
     fun drawRoutes(url: String) {
         val thread2 = Thread(Runnable {
             kotlin.run {
