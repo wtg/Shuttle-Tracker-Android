@@ -161,6 +161,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    //Updates buses to the proper colorblind setting when the Map gets opened
+    override fun onResume() {
+        super.onResume()
+        val res : Resources = getResources()
+        var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
+        busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+    }
+
     fun drawStops(url: String) {
         val stopArray = ArrayList<Stop>()
         val thread = Thread(Runnable {
