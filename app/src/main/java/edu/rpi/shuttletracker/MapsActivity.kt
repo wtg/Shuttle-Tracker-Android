@@ -56,6 +56,7 @@ import androidx.core.graphics.rotationMatrix
 import kotlinx.coroutines.*
 import kotlin.system.*
 import kotlin.coroutines.*
+import android.view.animation.AnimationUtils
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -469,11 +470,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             //println("Updated bus locations.")
         }
-        var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
+
+        var btn_refresh = findViewById(R.id.fab4) as FloatingActionButton
+        val rotate = AnimationUtils.loadAnimation(this, R.anim.rotate_animation)
         btn_refresh.setOnClickListener {
+
+            btn_refresh.animation = rotate
+            btn_refresh.startAnimation(rotate)
+
             busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
         }
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
