@@ -1,10 +1,23 @@
 package edu.rpi.shuttletracker
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+<<<<<<< Updated upstream
+=======
+import android.animation.Animator
+import android.app.Application
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+>>>>>>> Stashed changes
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.Color
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -13,6 +26,12 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+<<<<<<< Updated upstream
+=======
+import com.google.android.material.snackbar.Snackbar.*
+import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.coroutines.*
+>>>>>>> Stashed changes
 import org.json.JSONArray
 import java.net.URL
 import java.time.LocalDateTime
@@ -20,6 +39,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
+<<<<<<< Updated upstream
 import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
 import android.content.Intent
@@ -45,9 +65,14 @@ import android.net.ConnectivityManager
 
 
 
+=======
+import kotlin.concurrent.scheduleAtFixedRate
+import kotlin.coroutines.*
+import kotlin.system.*
+import android.net.ConnectivityManager
+>>>>>>> Stashed changes
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
-
     private lateinit var mMap: GoogleMap
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -380,6 +405,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         thread.start()
         return markerArray
     }
+
+    fun internet_connection(): Boolean {
+        //Check if connected to internet, output accordingly
+        val cm =
+            this.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = cm.activeNetworkInfo
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting
+    }
 //    fun APIPull(result: Data<Int>, website: String): Int {
 //        val thread = Thread(Runnable {
 //            kotlin.run {
@@ -422,6 +456,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
         val res : Resources = getResources()
+
+
+        //TODO: add networking check
+
+
         //val currentAPI = 1
         //val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
 //        if(APIMatch) {
@@ -459,16 +498,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Add a marker in Sydney and move the camera
 //        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 //        actionBar?.hide()
+
+
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         if(sharedPreferences.contains("toggle_value")) {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
-        drawStops(res.getString(R.string.stops_url))
-        drawRoutes(res.getString(R.string.routes_url))
+        if(internet_connection()){
+            drawStops(res.getString(R.string.stops_url))
+            drawRoutes(res.getString(R.string.routes_url))
+        }
+
+
         val busTimer = Timer("busTimer", true)
         var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
-//        if(APIMatch)
+//        if(internet)
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
@@ -481,13 +526,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
+            if(internet_connection()) {
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
-            //println("Updated bus locations.")
+                //println("Updated bus locations.")
+            }
         }
         var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
         btn_refresh.setOnClickListener {
-            busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            if(internet_connection()){
+                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            }
         }
+
+
     }
 
     override fun onRequestPermissionsResult(
