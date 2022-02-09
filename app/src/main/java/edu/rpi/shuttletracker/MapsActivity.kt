@@ -39,8 +39,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.LinearLayout
 import kotlinx.coroutines.*
-import android.net.NetworkInfo
-
 import android.net.ConnectivityManager
 
 
@@ -59,15 +57,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
-        if(!internet_connection()){
-            println("hello")
-            println("hi")
-            println("hola")
-            println("asdf")
-            println("ooooo")
-
-        }else {
-
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_maps)
 
@@ -101,7 +90,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val intent = Intent(this, AboutActivity::class.java)
                 startActivity(intent);
             }
-        }
+
     }
 
     private fun showFABMenu() {
@@ -464,12 +453,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if(sharedPreferences.contains("toggle_value")) {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
-        drawStops(res.getString(R.string.stops_url))
-        drawRoutes(res.getString(R.string.routes_url))
+        if(internet_connection()) {
+            drawStops(res.getString(R.string.stops_url))
+            drawRoutes(res.getString(R.string.routes_url))
+        }
         val busTimer = Timer("busTimer", true)
         var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
 //        if(APIMatch)
+        if(internet_connection()){
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        }
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
@@ -481,12 +474,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
+            if(internet_connection()) {
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            }
             //println("Updated bus locations.")
         }
         var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
         btn_refresh.setOnClickListener {
-            busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            if(internet_connection()) {
+                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            }
         }
     }
 
