@@ -61,6 +61,8 @@ import android.widget.Toast
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
+
     private lateinit var mMap: GoogleMap
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -161,6 +163,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             //R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    //Updates buses to the proper colorblind setting when the Map gets opened
+    override fun onResume() {
+        super.onResume()
+        val res : Resources = getResources()
+        busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
     }
 
     fun drawStops(url: String) {
@@ -454,7 +464,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         drawStops(res.getString(R.string.stops_url))
         drawRoutes(res.getString(R.string.routes_url))
         val busTimer = Timer("busTimer", true)
-        var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
+
 //        if(APIMatch)
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
