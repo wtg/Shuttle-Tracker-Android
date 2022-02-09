@@ -161,8 +161,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     fun drawStops(url: String) {
 
         val stopArray = ArrayList<Stop>()
-
-        if(true){
+        if(internet_connection()){
             val thread = Thread(Runnable {
                 kotlin.run {
                     val url = URL(url)
@@ -192,12 +191,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             })
             thread.start()
         }else{
-            println("connection be not working")
+            println("connection be not working--drawstops")
         }
     }
 
     fun drawRoutes(url: String) {
         val thread2 = Thread(Runnable {
+            if(internet_connection()){
             kotlin.run {
                 val url = URL(url)
                 val jsonString = url.readText()
@@ -220,7 +220,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             .color(Color.RED)
                             .width(4F)
                     )
-                }
+                }}
+            }else{
+                println("connection be not working--drawroute")
             }
         })
         thread2.start()
@@ -400,6 +402,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.getUiSettings().setMapToolbarEnabled(false)
+        println("Line405!!")
         val currentNightMode =  resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         when (currentNightMode) {
             Configuration.UI_MODE_NIGHT_NO -> {} // Night mode is not active, we're using the light theme
@@ -453,10 +456,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if(sharedPreferences.contains("toggle_value")) {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
-        if(internet_connection()) {
             drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
-        }
         val busTimer = Timer("busTimer", true)
         var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
 //        if(APIMatch)
