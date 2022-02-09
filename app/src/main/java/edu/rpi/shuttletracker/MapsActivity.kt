@@ -59,7 +59,7 @@ import kotlin.coroutines.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
+    private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
 
     private lateinit var mMap: GoogleMap
     object colorblindMode : Application() {
