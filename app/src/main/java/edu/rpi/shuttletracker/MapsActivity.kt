@@ -494,6 +494,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 drawStops(res.getString(R.string.stops_url))
                 drawRoutes(res.getString(R.string.routes_url))
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                finish();
+                startActivity(intent)
+
             }else{
                 AlertDialog.Builder(this).setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again")
