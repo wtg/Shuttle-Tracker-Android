@@ -154,7 +154,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun drawStops(url: String) {
-
         val stopArray = ArrayList<Stop>()
         if(internet_connection()){
             val thread = Thread(Runnable {
@@ -456,8 +455,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if(sharedPreferences.contains("toggle_value")) {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
+        if(internet_connection()) {
             drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
+        }
         val busTimer = Timer("busTimer", true)
         var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
 //        if(APIMatch)
@@ -473,6 +474,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
+
+
+
+
+
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
             if(internet_connection()) {
@@ -491,7 +497,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
         btn_refresh.setOnClickListener {
             if(internet_connection()) {
-                println("busMakerArrayentered")
+                drawStops(res.getString(R.string.stops_url))
+                drawRoutes(res.getString(R.string.routes_url))
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
                 finish();
                 startActivity(intent)
