@@ -88,9 +88,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         fabBGLayout.setOnClickListener { closeFABMenu() }
-        var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
-        var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
-        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        var btn_settings = findViewById(R.id.fab1) as FloatingActionButton
+        var btn_about = findViewById(R.id.fab2) as FloatingActionButton
+        var btn_info = findViewById(R.id.fab3) as FloatingActionButton
 
 
         btn_settings.setOnClickListener {
@@ -119,7 +119,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
         fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
         fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
-        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        var btn_info = findViewById(R.id.fab3) as FloatingActionButton
+        //        var btn_refresh = findViewById(R.id.fab4) as FloatingActionButton
         btn_info.bringToFront()
     }
 
