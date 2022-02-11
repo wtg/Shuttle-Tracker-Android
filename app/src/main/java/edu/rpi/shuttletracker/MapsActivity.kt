@@ -2,6 +2,7 @@ package edu.rpi.shuttletracker
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.animation.Animator
+import android.app.AlertDialog
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -35,6 +36,8 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.scheduleAtFixedRate
+
+
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -477,6 +480,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if(internet_connection()) {
                 println("busMakerArrayentered")
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            }else{
+                AlertDialog.Builder(this).setTitle("No Internet Connection")
+                .setMessage("Please check your internet connection and try again")
+                .setPositiveButton(android.R.string.ok) { _, _ -> }
+                .setIcon(android.R.drawable.ic_dialog_alert).show()
             }
         }
     }
