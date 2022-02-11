@@ -24,3 +24,5 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+//implement "org.jetbrains.anko:anko-common:0.10.8"
