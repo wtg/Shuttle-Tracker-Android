@@ -397,7 +397,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.getUiSettings().setMapToolbarEnabled(false)
-        println("Line405!!")
         val currentNightMode =  resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         when (currentNightMode) {
             Configuration.UI_MODE_NIGHT_NO -> {} // Night mode is not active, we're using the light theme
@@ -475,6 +474,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             //println("Updated bus locations.")
         }
+
+
+
+
+
+
+
+        //btn_refresh
         var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
         btn_refresh.setOnClickListener {
             if(internet_connection()) {
