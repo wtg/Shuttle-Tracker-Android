@@ -41,7 +41,6 @@ import kotlin.concurrent.scheduleAtFixedRate
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
-
     private lateinit var mMap: GoogleMap
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -55,7 +54,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_maps)
-
             // Obtain the SupportMapFragment and get notified when the map is ready to be used.
             val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
@@ -67,12 +65,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     closeFABMenu()
                 }
             }
-
             fabBGLayout.setOnClickListener { closeFABMenu() }
             var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
             var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
             var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
-
 
             btn_settings.setOnClickListener {
                 val intent = Intent(this, SettingsActivity::class.java)
@@ -181,6 +177,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             )
                         }
                     }
+                    println("thread is running")
                 }
             })
             thread.start()
@@ -292,11 +289,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     //@RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
+        //TODO: put the thread to sleep
         val busArray = ArrayList<Bus>()
         //var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL(url)
+                println("updateBuses Called")
                 val jsonString = url.readText()
                 var jsonArray = JSONArray(jsonString)
                 for (i in 0 until jsonArray.length()) {
@@ -365,23 +364,32 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         thread.start()
         return markerArray
     }
-//    fun APIPull(result: Data<Int>, website: String): Int {
-//        val thread = Thread(Runnable {
-//            kotlin.run {
-//                val url = URL(website)
-//                val data = url.readText()
-//                result.value = data.toInt()
-//            }
-//        })
-//        thread.start()
-//        return result.value
-//    }
-//    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
-//        val data = Data<Int>(0)
-//        var number : Int
-//        number = async { APIPull(data, website) }
-//        return data.value == currentAPI
-//    }
+
+    fun APIPull(result: Data<Int>, website: String): Int {
+        //TODO: Find out where to place the API
+        var flag =1
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL(website)
+                val data = url.readText()
+                result.value = data.toInt()
+                flag=0
+                print(result.value)                                                                  //debug print
+            }
+        })
+        thread.start()
+        while(flag==1){//TODO: Timer out prompt and logic needed
+            continue
+        }
+        return result.value
+    }
+
+    fun APIVersionMatch(website: String): Boolean {
+        val data = Data<Int>(0)
+        var number : Int
+        number = APIPull(data, website)
+        return data.value == R.string.app_version.toInt()
+    }
 
     /**
      * Manipulates the map once available.
@@ -407,8 +415,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
         val res : Resources = getResources()
-        //val currentAPI = 1
-        //val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
+        val APIMatch = APIVersionMatch(res.getString(R.string.version_url))
 //        if(APIMatch) {
 
 //        } else {
@@ -450,6 +457,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setPositiveButton(android.R.string.ok) { _, _ -> }
                 .setIcon(android.R.drawable.ic_dialog_alert).show()
         }
+
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         if(sharedPreferences.contains("toggle_value")) {
@@ -502,7 +510,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 drawRoutes(res.getString(R.string.routes_url))
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
                 finish();
-                startActivity(intent)
+                startActivity(intent)//Copium code
 
             }else{
                 AlertDialog.Builder(this).setTitle("No Internet Connection")
