@@ -17,15 +17,21 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
+import android.provider.Settings.Global.getString
+import android.provider.Settings.System.getString
+import android.system.Os.accept
+import android.view.animation.AnimationUtils
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.rotationMatrix
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -34,6 +40,15 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.coroutines.*
+/*
+import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
+import kotlinx.android.synthetic.main.activity_maps.fab
+import kotlinx.android.synthetic.main.activity_maps.fabLayout1
+import kotlinx.android.synthetic.main.activity_maps.fabLayout2
+import kotlinx.android.synthetic.main.activity_maps.fabLayout3
+import kotlinx.android.synthetic.main.activity_maps.fabLayout4
+*/
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -49,8 +64,12 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
+import kotlin.system.*
+import kotlin.coroutines.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+
+    private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
 
     private lateinit var mMap: GoogleMap
 
@@ -403,6 +422,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    //Updates buses to the proper colorblind setting when the Map gets opened
+    override fun onResume() {
+        super.onResume()
+        val res : Resources = getResources()
+        busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+    }
+
     fun drawStops(url: String) {
         //val stopArray = ArrayList<Stop>()
         val thread = Thread(Runnable {
@@ -521,7 +548,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     "Bus " + current.id
                                 ).icon(
                                     BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                )
+                                ).zIndex(1F)
                             )
                         )
                         markerArray.get(i).tag = current.id;
@@ -596,7 +623,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         "Bus " + current.id
                                     ).icon(
                                         BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                    )
+                                    ).zIndex(1F)
                                 )
                             )
                             markerArray.get(i).tag = current.id;
@@ -608,19 +635,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         thread.start()
         return markerArray
     }
-
-    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
-        var number = 0
-        val thread = Thread(Runnable {
-            kotlin.run {
-                val url = URL(website)
-                val data = url.readText()
-                number = data.toInt()
-            }
-        })
-        thread.start()
-        return currentAPI == number
-    }
+//    fun APIPull(result: Data<Int>, website: String): Int {
+//        val thread = Thread(Runnable {
+//            kotlin.run {
+//                val url = URL(website)
+//                val data = url.readText()
+//                result.value = data.toInt()
+//            }
+//        })
+//        thread.start()
+//        return result.value
+//    }
+//    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
+//        val data = Data<Int>(0)
+//        var number : Int
+//        number = async { APIPull(data, website) }
+//        return data.value == currentAPI
+//    }
 
     /**
      * Manipulates the map once available.
@@ -646,41 +677,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
         val res : Resources = getResources()
-        val currentAPI = 0
-        val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
-        if(APIMatch) {
-            val sharedPreferences: SharedPreferences =
-                this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-            if(sharedPreferences.contains("toggle_value")) {
-                colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
-            }
-            drawStops(res.getString(R.string.stops_url))
-            drawRoutes(res.getString(R.string.routes_url))
-        } else {
-            val contextView = findViewById<View>(R.id.map)
-//            Snackbar.make(contextView, "Your app is outdated and no longer works.", Snackbar.LENGTH_LONG)
-//                .setAction("Update") {
+        //val currentAPI = 1
+        //val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
+//        if(APIMatch) {
+
+//        } else {
+//            val contextView = findViewById<View>(R.id.map)
+////            Snackbar.make(contextView, "Your app is outdated and no longer works.", Snackbar.LENGTH_LONG)
+////                .setAction("Update") {
+////                    val browserIntent = Intent(
+////                        Intent.ACTION_VIEW,
+////                        Uri.parse("http://www.google.com")
+////                    )
+////                    startActivity(browserIntent)
+////                }
+////                .show()
+//            MaterialAlertDialogBuilder(this)
+//                .setMessage("Your app is outdated and no longer works. Please update it to restore shuttle tracking functionality.")
+////                .setNegativeButton("Later") { dialog, which ->
+////                    // Respond to negative button press
+////                }
+//                .setPositiveButton("Update") { dialog, which ->
 //                    val browserIntent = Intent(
 //                        Intent.ACTION_VIEW,
-//                        Uri.parse("http://www.google.com")
+//                        Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
 //                    )
 //                    startActivity(browserIntent)
 //                }
 //                .show()
-            MaterialAlertDialogBuilder(this)
-                .setMessage("Your app is outdated and no longer works. Please update it to restore shuttle tracking functionality.")
-//                .setNegativeButton("Later") { dialog, which ->
-//                    // Respond to negative button press
-//                }
-                .setPositiveButton("Update") { dialog, which ->
-                    val browserIntent = Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=com.duckduckgo.mobile.android&hl=en_US&gl=US")
-                    )
-                    startActivity(browserIntent)
-                }
-                .show()
-        }
+//        }
 //        fixedRateTimer("timer", false, 0L, 60 * 1000) {
 //            runOnUiThread {
 //                tvTime.text = SimpleDateFormat("dd MMM - HH:mm", Locale.US).format(Date())
@@ -689,9 +714,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Add a marker in Sydney and move the camera
 //        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 //        actionBar?.hide()
+        val sharedPreferences: SharedPreferences =
+            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        if(sharedPreferences.contains("toggle_value")) {
+            colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
+        }
+        drawStops(res.getString(R.string.stops_url))
+        drawRoutes(res.getString(R.string.routes_url))
         val busTimer = Timer("busTimer", true)
-        var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
-        if(APIMatch)
+
+//        if(APIMatch)
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
@@ -703,15 +735,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
-            if(APIMatch)
+            //if(APIMatch)
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             //println("Updated bus locations.")
         }
-        var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
+
+        var btn_refresh = findViewById(R.id.fab4) as FloatingActionButton
+        val rotate = AnimationUtils.loadAnimation(this, R.anim.rotate_animation)
+        btn_refresh.animation = rotate
         btn_refresh.setOnClickListener {
+
+            btn_refresh.startAnimation(rotate)
+            Toast.makeText(applicationContext, "Refreshed!", Toast.LENGTH_SHORT).show()
+
             busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
         }
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
