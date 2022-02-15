@@ -120,7 +120,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
         fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
         var btn_info = findViewById(R.id.fab3) as FloatingActionButton
-        //        var btn_refresh = findViewById(R.id.fab4) as FloatingActionButton
         btn_info.bringToFront()
     }
 
