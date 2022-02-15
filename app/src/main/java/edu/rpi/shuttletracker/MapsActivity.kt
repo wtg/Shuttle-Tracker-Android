@@ -478,7 +478,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
         btn_refresh.setOnClickListener {
             if(internet_connection()) {
+
                 println("busMakerArrayentered")
+                finish();
+                startActivity(getIntent());
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             }else{
                 AlertDialog.Builder(this).setTitle("No Internet Connection")
