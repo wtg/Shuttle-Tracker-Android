@@ -13,10 +13,11 @@
         android:background="?attr/colorAccent"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
-        app:title="Yeetus Deletus the Fetus"
+        app:title="About"
         app:titleTextColor="#FFFFFF"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp" />
+
 
     <TextView
         android:id="@+id/aboutTextView"
