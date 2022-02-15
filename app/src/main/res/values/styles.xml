@@ -13,9 +13,5 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorSurface">@color/colorPrimary</item>
     </style>
-    <style name="BoardBus.Button" parent="Widget.AppCompat.Button.Colored">
-        <item name="colorButtonNormal">@color/boardBus</item>
-        <item name="android:textColor">@color/colorPrimaryDark</item>
-    </style>
 
 </resources>

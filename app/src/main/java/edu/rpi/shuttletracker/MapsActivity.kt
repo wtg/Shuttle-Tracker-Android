@@ -1,101 +1,69 @@
 package edu.rpi.shuttletracker
 
-import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.animation.Animator
-import android.app.AlertDialog
-import android.app.Application
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.content.res.Resources
-import android.graphics.Color
-import android.location.Location
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Looper
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
-import android.system.Os.accept
-import android.view.animation.AnimationUtils
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.rotationMatrix
-import com.google.android.gms.location.*
+import androidx.lifecycle.Transformations.map
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.snackbar.Snackbar.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.json.JSONArray
+import java.net.URL
+import java.security.AccessController.getContext
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.*
+import java.util.jar.Manifest
+import kotlin.collections.ArrayList
+import kotlin.concurrent.scheduleAtFixedRate
+import android.content.Intent
+import android.net.Uri
+import android.system.Os.accept
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.*
-/*
 import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
 import kotlinx.android.synthetic.main.activity_maps.fab
 import kotlinx.android.synthetic.main.activity_maps.fabLayout1
 import kotlinx.android.synthetic.main.activity_maps.fabLayout2
 import kotlinx.android.synthetic.main.activity_maps.fabLayout3
 import kotlinx.android.synthetic.main.activity_maps.fabLayout4
-*/
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
-import org.json.JSONObject
-import java.net.URL
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.concurrent.scheduleAtFixedRate
+import android.animation.Animator
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import android.content.res.Resources
+import android.graphics.Color
+import android.provider.Settings.Global.getString
+import android.provider.Settings.System.getString
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Button
+import android.widget.LinearLayout
+import androidx.core.graphics.rotationMatrix
+import kotlinx.coroutines.*
 import kotlin.system.*
 import kotlin.coroutines.*
+import android.view.animation.AnimationUtils
+import android.widget.Toast
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
 
     private lateinit var mMap: GoogleMap
-
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationRequest: LocationRequest
-    private lateinit var locationCallback: LocationCallback
-
-    private val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-    private val httpClient by lazy {
-        OkHttpClient.Builder().build()
-    }
-
-    private val stopArray = ArrayList<Stop>()
-    private val busArray = ArrayList<Bus>()
-
-
-    // All data used in a data package which will be sent to server
-    private var onBus: Boolean = false // This user's status. It controls the end of data transmission thread.
-    private var selectedBusNumber: String? = null
-    private lateinit var session_uuid: String
-    private var currentLocation: Location? = null
-    //private var latitude: Float? = null
-    //private var longitude: Float? = null
-    private var type = "user"
-    private lateinit var date: String
-
     object colorblindMode : Application() {
         var colorblind : Boolean = false
         fun getMode() : Boolean {
@@ -105,34 +73,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             colorblind = mode
         }
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
-
-        // Initialize location updates
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        locationRequest = LocationRequest.create()
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        locationRequest.interval = 5*1000 // refreshes every 5 seconds
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                super.onLocationResult(locationResult)
-                currentLocation = locationResult.lastLocation
-            }
-        }
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
-
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
@@ -147,224 +90,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         fabBGLayout.setOnClickListener { closeFABMenu() }
-        var btn_settings = findViewById<LinearLayout>(R.id.fabLayout1)
-        var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
-        var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
-        val boardBusButton = findViewById<Button>(R.id.board_bus_button)
-        val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
-
+        var btn_settings = findViewById(R.id.fabLayout1) as LinearLayout
+        var btn_about = findViewById(R.id.fabLayout2) as LinearLayout
+        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
 
 
         btn_settings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
+            startActivity(intent);
         }
         btn_info.setOnClickListener {
             val intent = Intent(this, InfoActivity::class.java)
-            startActivity(intent)
+            startActivity(intent);
         }
         btn_about.setOnClickListener {
             val intent = Intent(this, AboutActivity::class.java)
-            startActivity(intent)
+            startActivity(intent);
         }
 
-        boardBusButton.setOnClickListener {
-            /**
-             *  1. get available bus numbers from server
-             *  2. start a alert dialog to let user choose which bus to board
-             *  3. send data to server
-             *  4. update this client's state and change the button to "leave bus"
-             */
-            println("location: $currentLocation") // TODO: remove/comment this testing clause
-
-            // Check if the user is near a bus stop. If not, pop up an alert dialog and stop this button's onclick listener.
-            if (!checkNearbyStop()) {
-                return@setOnClickListener
-            }
-
-            val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
-                .toTypedArray() // convert Array<Int> to Array<String>
-
-            // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
-            val chooseBusDialogBuilder = AlertDialog.Builder(this)
-            chooseBusDialogBuilder.setTitle("Bus Selection")
-
-                // TODO: Find closest bus and recommend this bus to the user.
-                
-                .setSingleChoiceItems(busNumberArray, -1) { _, which ->
-                    selectedBusNumber = busNumberArray[which]
-                }
-                .setPositiveButton("Continue") { dialog, _ ->
-                    if (selectedBusNumber != null) {
-                        val sendDataThread = sendOnBusData()
-                        sendDataThread.start()
-
-                        // hide the dialog
-                        dialog.cancel()
-
-                        // switch buttons by changing their visibility
-                        boardBusButton.visibility = View.GONE
-                        leaveBusButton.visibility = View.VISIBLE
-                    }
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.cancel()
-                }
-            chooseBusDialogBuilder.create()
-            chooseBusDialogBuilder.show()
-        };
-        leaveBusButton.setOnClickListener {
-            onBus = false // this variable controls when the data-transmitting thread ends
-            boardBusButton.visibility = View.VISIBLE
-            leaveBusButton.visibility = View.GONE
-        };
-    }
-
-    /**
-     *  Run the is-near-any-stop check. If user is not near any stop, pop up an AlertDialog.
-     *  @return true if the user is within 20 meters of any stop; otherwise false.
-     */
-    private fun checkNearbyStop(): Boolean {
-        return if (!isNearStop()) {
-            val noNearbyStopDialogBuilder = AlertDialog.Builder(this)
-            val noNearbyStopMessage = "You can't board a bus if you're not within 20 meters of a stop."
-            noNearbyStopDialogBuilder.setTitle("No Nearby Stop")
-                .setMessage(noNearbyStopMessage)
-                .setNegativeButton("Continue") { dialog, _ ->
-                    println("Location Check: Not near a stop") // TODO: remove/comment this testing clause
-                    dialog.cancel()
-                }
-            noNearbyStopDialogBuilder.create()
-            noNearbyStopDialogBuilder.show()
-            false
-        } else {
-            true
-        }
-    }
-
-    /**
-     *  Checks if this user is within 20 meters of any bus stop.
-     */
-    private fun isNearStop(): Boolean {
-        //updateCurrentLocation()
-        for (stop in stopArray) {
-            val stopLocation = Location("stop location")
-            stopLocation.altitude = stop.latitude
-            stopLocation.longitude = stop.longitude
-            //println("current location: $currentLocation") // // TODO: remove/comment this testing clause
-            //println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
-            if (currentLocation?.distanceTo(stopLocation)!! <= 20) {
-                return true
-            }
-        }
-        return false
-    }
-
-    /**
-     *  Keep sending data every 5 seconds.
-     *  @return A thread which keeps sending data packs to the server every 5 seconds.
-     */
-    private fun sendOnBusData(): Thread {
-        session_uuid = getRandomSessionUuid()
-        println("session_uuid: $session_uuid") // TODO: remove/comment this testing clause
-
-        val thread = Thread {
-            kotlin.run {
-                onBus = true
-                while (onBus) {
-                    date = getCurrentFormattedDate()
-                    println("parsed date: $date") // TODO: remove/comment this testing clause
-                    //updateCurrentLocation()
-
-                    // TODO: remove this testing location when committing
-                    //latitude = (42.722886).toFloat()
-                    //longitude = (-73.679665).toFloat()
-
-                    val boardBusJSONObject = parseDataToJSONObject(
-                        session_uuid,
-                        currentLocation?.latitude?.toFloat(),
-                        currentLocation?.longitude?.toFloat(),
-                        type,
-                        getCurrentFormattedDate()
-                    )
-                    println("parsed JSONObject: $boardBusJSONObject") // TODO: remove/comment this testing clause
-                    val boardBusUrl =
-                        URL(resources.getString(R.string.buses_url) + "/$selectedBusNumber")
-                    println("Target URL: $boardBusUrl") // TODO: remove/comment this testing clause
-
-                    // send to server
-                    val request = Request.Builder()
-                        .url(boardBusUrl)
-                        .patch(
-                            boardBusJSONObject.toString().toRequestBody(mediaType)
-                        )
-                        .build()
-                    println("Request: $request") // TODO: remove/comment this testing clause
-
-                    val response = httpClient.newCall(request).execute()
-                    println("response: $response") // TODO: remove/comment this testing clause
-
-                    // wait for 5 seconds
-                    Thread.sleep(5000L)
-                }
-            }
-        }
-        return thread
-    }
-
-    /**
-     * Start a thread to get all available bus numbers from server.
-     * A request is sent to [https://shuttletracker.app/buses/all].
-     *
-     * @return An integer array of bus numbers.
-     */
-    private fun getAvailableBusNumbers(): ArrayList<Int> {
-        val busNumberArray = ArrayList<Int>()
-
-        // start the thread and wait for it to finish
-        val thread = Thread {
-            kotlin.run {
-                val url = URL(resources.getString(R.string.bus_numbers_url))
-                val jsonString = url.readText()
-                val jsonArray = JSONArray(jsonString)
-                for (i in 0 until jsonArray.length()) {
-                    busNumberArray.add(jsonArray.getInt(i))
-                }
-            }
-        }
-        thread.start()
-        thread.join()
-
-        return busNumberArray
-    }
-
-    /**
-     *  Generate a random session uuid served as this user's identifier.
-     *  @return A randomly generated string to be used as session uuid.
-     */
-    private fun getRandomSessionUuid(): String {
-        return UUID.randomUUID().toString()
-    }
-
-    /**
-     *  Get the current date time in the format of ISO-8601 (e.g. 2021-11-12T22:44:55+00:00), excluding milliseconds.
-     *  @return An ISO-8601 date string.
-     */
-    private fun getCurrentFormattedDate(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
-        sdf.timeZone = TimeZone.getTimeZone("UTC") // use UTC as default time zone
-
-        return sdf.format(Date())
-    }
-
-    /**
-     *  Parse all data of a board-bus activity into a JSONObject.
-     *  @return A JSONObject including session_uuid, coordinate, type and date.
-     */
-    private fun parseDataToJSONObject(session_uuid: String, latitude: Float?, longitude: Float?, type: String, date: String): JSONObject {
-        val coordinate = mapOf("latitude" to latitude, "longitude" to longitude)
-        var jsonMap = mapOf("id" to session_uuid, "coordinate" to coordinate, "type" to type, "date" to date)
-        return JSONObject(jsonMap)
     }
 
     private fun showFABMenu() {
@@ -431,7 +174,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun drawStops(url: String) {
-        //val stopArray = ArrayList<Stop>()
+        val stopArray = ArrayList<Stop>()
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL(url)
@@ -493,7 +236,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     //@RequiresApi(Build.VERSION_CODES.O)
     fun drawBuses(url: String): ArrayList<Marker> {
-        //val busArray = ArrayList<Bus>()
+        val busArray = ArrayList<Bus>()
         var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
             kotlin.run {
@@ -561,7 +304,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     //@RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
-        println("updateBuses() called")
         val busArray = ArrayList<Bus>()
         //var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
@@ -765,11 +507,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     // permission was granted, yay! Do the
                     // location-related task you need to do.
-                    fusedLocationClient.lastLocation.addOnSuccessListener { location:Location ->
-                        currentLocation = location // update current location
-                        println("current location updated") // TODO: remove/comment this testing clause
-                    }
-
                     if (ActivityCompat.checkSelfPermission(
                             this,
                             ACCESS_FINE_LOCATION
