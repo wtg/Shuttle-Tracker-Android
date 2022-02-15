@@ -71,6 +71,7 @@ import kotlin.coroutines.*
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
+    private var busesDrawn : Boolean = false
 
     private lateinit var mMap: GoogleMap
 
@@ -427,7 +428,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onResume() {
         super.onResume()
         val res : Resources = getResources()
-        busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        if(!busesDrawn) {
+            busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        }
         busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
     }
 
@@ -496,6 +499,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     fun drawBuses(url: String): ArrayList<Marker> {
         //val busArray = ArrayList<Bus>()
         var markerArray = ArrayList<Marker>()
+
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL(url)
@@ -558,6 +562,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
         thread.start()
+        busesDrawn = true
         return markerArray
     }
     //@RequiresApi(Build.VERSION_CODES.O)
@@ -597,20 +602,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val busDate = LocalDateTime.parse(date, format)
                     for (i in 0 until markerArray.size) {
                         runOnUiThread {
-                            if (markerArray.get(i).tag == id) {
+                            if (markerArray.get(i).tag!!.equals(id)) {
                                 found = true
                                 markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                 markerArray.get(i).setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                 println("Bus " + id + " updated.")
                             }
-                            if (!found) {
-                                val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC);
-                                val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
-                                val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
-                                val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
-                                if (days == 0.toLong() && hours == 0.toLong() && minutes < 5) {
-                                    busArray.add(busObject)
-                                }
+                        }
+                    }
+                    runOnUiThread {
+                        if (!found) {
+                            val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC);
+                            val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+                            val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+                            val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+                            if (days == 0.toLong() && hours == 0.toLong() && minutes < 5) {
+                                busArray.add(busObject)
                             }
                         }
                     }
@@ -725,7 +732,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val busTimer = Timer("busTimer", true)
 
 //        if(APIMatch)
+        if(!busesDrawn) {
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        }
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
