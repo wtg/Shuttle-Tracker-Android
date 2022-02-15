@@ -154,7 +154,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun drawStops(url: String) {
-
         val stopArray = ArrayList<Stop>()
         if(internet_connection()){
             val thread = Thread(Runnable {
@@ -397,7 +396,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.getUiSettings().setMapToolbarEnabled(false)
-        println("Line405!!")
         val currentNightMode =  resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         when (currentNightMode) {
             Configuration.UI_MODE_NIGHT_NO -> {} // Night mode is not active, we're using the light theme
@@ -446,13 +444,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Add a marker in Sydney and move the camera
 //        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 //        actionBar?.hide()
+        if (!internet_connection()) {
+            AlertDialog.Builder(this).setTitle("No Internet Connection")
+                .setMessage("Please check your internet connection and try again")
+                .setPositiveButton(android.R.string.ok) { _, _ -> }
+                .setIcon(android.R.drawable.ic_dialog_alert).show()
+        }
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         if(sharedPreferences.contains("toggle_value")) {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
+        if(internet_connection()) {
             drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
+        }
         val busTimer = Timer("busTimer", true)
         var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
 //        if(APIMatch)
@@ -468,6 +474,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
+
+
+
+
+
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
             if(internet_connection()) {
@@ -475,14 +486,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             //println("Updated bus locations.")
         }
+
+
+
+
+
+
+
+        //btn_refresh
         var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
         btn_refresh.setOnClickListener {
             if(internet_connection()) {
 
-                println("busMakerArrayentered")
-                finish();
-                startActivity(getIntent());
+                drawStops(res.getString(R.string.stops_url))
+                drawRoutes(res.getString(R.string.routes_url))
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                finish();
+                startActivity(intent)
+
             }else{
                 AlertDialog.Builder(this).setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again")
