@@ -70,6 +70,16 @@ import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.system.*
 import kotlin.coroutines.*
 
+
+import com.google.android.gms.maps.MapView
+
+import android.view.ViewGroup
+
+import android.view.LayoutInflater
+
+
+
+
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
@@ -113,7 +123,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+        fab.setOnClickListener {
+            if (View.GONE == fabBGLayout.visibility) {
+                showFABMenu()
+            } else {
+                closeFABMenu()
+            }
+        }
 
+        fabBGLayout.setOnClickListener { closeFABMenu() }
+        var btn_settings = findViewById<LinearLayout>(R.id.fabLayout1)
+        var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
+        var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
+        val boardBusButton = findViewById<Button>(R.id.board_bus_button)
+        val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
+
+        //placement
+        val mapFragment = supportFragmentManager
+            .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
         // Initialize location updates
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequest = LocationRequest.create()
@@ -138,24 +166,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
 
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-        fab.setOnClickListener {
-            if (View.GONE == fabBGLayout.visibility) {
-                showFABMenu()
-            } else {
-                closeFABMenu()
-            }
-        }
 
-        fabBGLayout.setOnClickListener { closeFABMenu() }
-        var btn_settings = findViewById<LinearLayout>(R.id.fabLayout1)
-        var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
-        var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
-        val boardBusButton = findViewById<Button>(R.id.board_bus_button)
-        val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
 
 
 
@@ -222,6 +233,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             boardBusButton.visibility = View.VISIBLE
             leaveBusButton.visibility = View.GONE
         };
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
     }
 
     /**
@@ -432,8 +444,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val res : Resources = getResources()
         if(!busesDrawn) {
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        } else {
+            busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
         }
-        busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
     }
 
     fun drawStops(url: String) {
@@ -569,6 +582,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     //@RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
+        if(markerArray.size == 0 && !busesDrawn) {
+            return markerArray
+        }
         println("updateBuses() called")
         val busArray = ArrayList<Bus>()
         //var markerArray = ArrayList<Marker>()

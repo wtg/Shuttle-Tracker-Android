@@ -17,8 +17,8 @@ android {
         applicationId "edu.rpi.shuttletracker"
         minSdkVersion 26
         targetSdkVersion 31
-        versionCode 4
-        versionName "1.01"
+        versionCode 5
+        versionName "1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
