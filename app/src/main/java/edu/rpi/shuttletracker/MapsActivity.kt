@@ -180,7 +180,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             })
             thread.start()
-        }else{
         }
     }
 
@@ -210,7 +209,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             .width(4F)
                     )
                 }}
-            }else{
             }
         })
         thread2.start()
