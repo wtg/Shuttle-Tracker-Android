@@ -180,8 +180,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             })
             thread.start()
-        }else{
-            println("connection be not working--drawstops")
         }
     }
 
@@ -211,8 +209,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             .width(4F)
                     )
                 }}
-            }else{
-                println("connection be not working--drawroute")
             }
         })
         thread2.start()
@@ -327,7 +323,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 found = true
                                 markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                 markerArray.get(i).setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
-                                println("Bus " + id + " updated.")
                             }
                             if (!found) {
                                 val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC);
