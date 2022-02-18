@@ -181,7 +181,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             })
             thread.start()
         }else{
-            println("connection be not working--drawstops")
         }
     }
 
@@ -212,7 +211,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     )
                 }}
             }else{
-                println("connection be not working--drawroute")
             }
         })
         thread2.start()
@@ -256,8 +254,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         format//DateTimeFormatter.ISO_LOCAL_DATE_TIME
                     )
                     val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
-//                    println(busDate)
-//                    println(currentDate)
+
                     val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
                     val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
                     val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
@@ -327,7 +324,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 found = true
                                 markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                 markerArray.get(i).setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
-                                println("Bus " + id + " updated.")
                             }
                             if (!found) {
                                 val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC);
@@ -454,6 +450,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setMessage("Please check your internet connection and try again")
                 .setPositiveButton(android.R.string.ok) { _, _ -> }
                 .setIcon(android.R.drawable.ic_dialog_alert).show()
+
         }
 
         val sharedPreferences: SharedPreferences =
@@ -488,10 +485,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
             if(internet_connection()) {
-                busMarkerArray = drawBuses(res.getString(R.string.buses_url))
-               // busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                //busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+               busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             }
-            //println("Updated bus locations.")
+
         }
 
 
@@ -504,7 +501,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 drawStops(res.getString(R.string.stops_url))
                 drawRoutes(res.getString(R.string.routes_url))
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
-                busMarkerArray = drawBuses(res.getString(R.string.buses_url))
 
             }else{
                 AlertDialog.Builder(this).setTitle("No Internet Connection")
