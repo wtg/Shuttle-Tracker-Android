@@ -44,7 +44,10 @@
     <string name="repo_url">https://github.com/wtg/Shuttle-Tracker-Android</string>
     <string name="version_url">https://shuttletracker.app/version</string>
     <string name="buses_url">https://shuttletracker.app/buses</string>
+    <string name="bus_numbers_url">https://shuttletracker.app/buses/all</string>
     <string name="stops_url">https://shuttletracker.app/stops</string>
     <string name="routes_url">https://shuttletracker.app/routes</string>
     <string name="app_version">1</string>
+    <string name="board_bus_button_text">Board Bus</string>
+    <string name="leave_bus_button_text">Leave Bus</string>
 </resources>
