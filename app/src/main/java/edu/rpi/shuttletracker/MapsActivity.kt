@@ -28,6 +28,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.delay
 import org.json.JSONArray
 import java.net.URL
 import java.time.LocalDateTime
@@ -37,7 +38,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.scheduleAtFixedRate
 
-
+var drawbusdebug=0
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -177,7 +178,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             )
                         }
                     }
-                    println("thread is running")
                 }
             })
             thread.start()
@@ -220,7 +220,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     //@RequiresApi(Build.VERSION_CODES.O)
-    fun drawBuses(url: String): ArrayList<Marker> {
+    suspend fun drawBuses(url: String): ArrayList<Marker> {
         val busArray = ArrayList<Bus>()
         var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
@@ -282,6 +282,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         markerArray.get(i).tag = current.id;
                     }
                 }
+                drawbusdebug=drawbusdebug+1
+                val id = drawbusdebug
+                println("Thread is running. Thread id: "+id)
             }
         })
         thread.start()
@@ -295,7 +298,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL(url)
-                println("updateBuses Called")
                 val jsonString = url.readText()
                 var jsonArray = JSONArray(jsonString)
                 for (i in 0 until jsonArray.length()) {
@@ -490,13 +492,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
             if(internet_connection()) {
-                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+               // busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             }
             //println("Updated bus locations.")
         }
-
-
-
 
 
 
@@ -508,9 +508,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 drawStops(res.getString(R.string.stops_url))
                 drawRoutes(res.getString(R.string.routes_url))
-                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
-                finish();
-                startActivity(intent)//Copium code
+                //busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                busMarkerArray = drawBuses(res.getString(R.string.buses_url))
 
             }else{
                 AlertDialog.Builder(this).setTitle("No Internet Connection")
@@ -520,7 +519,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
