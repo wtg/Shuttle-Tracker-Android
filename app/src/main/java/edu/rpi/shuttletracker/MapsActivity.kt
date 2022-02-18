@@ -1,65 +1,44 @@
 package edu.rpi.shuttletracker
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.annotation.SuppressLint
+import android.animation.Animator
+import android.app.Application
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.Color
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.view.animation.AnimationUtils
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Transformations.map
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.snackbar.Snackbar.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.coroutines.Runnable
 import org.json.JSONArray
 import java.net.URL
-import java.security.AccessController.getContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.jar.Manifest
-import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
-import android.content.Intent
-import android.net.Uri
-import android.system.Os.accept
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
-import kotlinx.android.synthetic.main.activity_maps.fab
-import kotlinx.android.synthetic.main.activity_maps.fabLayout1
-import kotlinx.android.synthetic.main.activity_maps.fabLayout2
-import kotlinx.android.synthetic.main.activity_maps.fabLayout3
-import kotlinx.android.synthetic.main.activity_maps.fabLayout4
-import android.animation.Animator
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
-import android.content.res.Resources
-import android.graphics.Color
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.Button
-import android.widget.LinearLayout
-import androidx.core.graphics.rotationMatrix
-import kotlinx.coroutines.*
-import kotlin.system.*
-import kotlin.coroutines.*
-import android.view.animation.AnimationUtils
-import android.widget.Toast
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallback {
 
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
 
@@ -264,13 +243,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             busIcon = getString(R.string.crowdsourced_bus)
                         }
                     }
-
-                    val busObject = Bus(latitude, longitude, id, busIcon)
                     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                     val busDate: LocalDateTime = LocalDateTime.parse(
                         date,
                         format//DateTimeFormatter.ISO_LOCAL_DATE_TIME
                     )
+                    val busObject = Bus(latitude, longitude, id, busIcon, busDate.toString())
+                    val tmp = busDate.toString()
                     val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
 //                    println(busDate)
 //                    println(currentDate)
@@ -284,6 +263,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 for (i in 0 until busArray.size) {
                     val current = busArray.get(i)
                     val stopPos = LatLng(current.latitude, current.longitude)
+
                     runOnUiThread {
                         markerArray.add(
                             mMap.addMarker(
@@ -291,7 +271,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     "Bus " + current.id
                                 ).icon(
                                     BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                ).zIndex(1F)
+                                ).zIndex(1F).snippet(current.busDate)
                             )
                         )
                         markerArray.get(i).tag = current.id;
@@ -332,10 +312,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             busIcon = getString(R.string.crowdsourced_bus)
                         }
                     }
-                    val busObject = Bus(latitude, longitude, id, busIcon)
-                    var found = false
                     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                     val busDate = LocalDateTime.parse(date, format)
+                    val busObject = Bus(latitude, longitude, id, busIcon, busDate.toString())
+                    var found = false
                     for (i in 0 until markerArray.size) {
                         runOnUiThread {
                             if (markerArray.get(i).tag == id) {
@@ -365,7 +345,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         "Bus " + current.id
                                     ).icon(
                                         BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                    ).zIndex(1F)
+                                    ).zIndex(1F).snippet(current.busDate)
                                 )
                             )
                             markerArray.get(i).tag = current.id;
@@ -467,6 +447,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 //        if(APIMatch)
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+            mMap.setOnMarkerClickListener(this)
+
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
@@ -480,6 +462,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             //if(APIMatch)
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             //println("Updated bus locations.")
+
+
         }
 
         var btn_refresh = findViewById(R.id.fab4) as FloatingActionButton
@@ -492,6 +476,40 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
         }
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        /*
+            Save the date to each marker as a tag in the draw/update buses methods.
+            Parse this date in this function, compare it to the current date, and
+            display how long it was ago as this text. We can achieve this similarly to
+            how date comparison to ensure the bus data is less than 5 mins old in the
+            draw/update buses methods.
+         */
+        val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+        val len = marker.snippet.length
+        if (marker.snippet.substring(len-3, len) == "ago") {
+            return false
+        }
+        val busDate = LocalDateTime.parse(marker.snippet)
+        val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
+        val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+        val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+        val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+        if (days == 0.toLong() && hours == 0.toLong() && minutes == 0.toLong() ) {
+            marker.snippet = "$seconds seconds ago"
+        } else if (days == 0.toLong() && hours == 0.toLong()){
+            if (minutes == 1.toLong()) {
+                marker.snippet = "$minutes minute ago"
+            } else {
+                marker.snippet = "$minutes minutes ago"
+            }
+        }
+
+        // Return false to indicate that we have not consumed the event and that we wish
+        // for the default behavior to occur (which is for the camera to move such that the
+        // marker is centered and for the marker's info window to open, if it has one).
+        return false
     }
 
 
