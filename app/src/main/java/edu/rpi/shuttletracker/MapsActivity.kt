@@ -28,7 +28,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.delay
 import org.json.JSONArray
 import java.net.URL
 import java.time.LocalDateTime
@@ -38,7 +37,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.scheduleAtFixedRate
 
-var drawbusdebug=0
+
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -220,7 +219,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     //@RequiresApi(Build.VERSION_CODES.O)
-    suspend fun drawBuses(url: String): ArrayList<Marker> {
+    fun drawBuses(url: String): ArrayList<Marker> {
         val busArray = ArrayList<Bus>()
         var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
@@ -282,9 +281,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         markerArray.get(i).tag = current.id;
                     }
                 }
-                drawbusdebug=drawbusdebug+1
-                val id = drawbusdebug
-                println("Thread is running. Thread id: "+id)
             }
         })
         thread.start()
@@ -505,10 +501,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_refresh = findViewById(R.id.fabLayout4) as LinearLayout
         btn_refresh.setOnClickListener {
             if(internet_connection()) {
-
                 drawStops(res.getString(R.string.stops_url))
                 drawRoutes(res.getString(R.string.routes_url))
-                //busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
                 busMarkerArray = drawBuses(res.getString(R.string.buses_url))
 
             }else{
