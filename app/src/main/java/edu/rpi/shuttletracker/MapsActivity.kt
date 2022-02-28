@@ -36,10 +36,10 @@ import android.system.Os.accept
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
 import kotlinx.android.synthetic.main.activity_maps.fab
-import kotlinx.android.synthetic.main.activity_maps.fabLayout1
-import kotlinx.android.synthetic.main.activity_maps.fabLayout2
-import kotlinx.android.synthetic.main.activity_maps.fabLayout3
-import kotlinx.android.synthetic.main.activity_maps.fabLayout4
+import kotlinx.android.synthetic.main.activity_maps.fab1
+import kotlinx.android.synthetic.main.activity_maps.fab2
+import kotlinx.android.synthetic.main.activity_maps.fab3
+import kotlinx.android.synthetic.main.activity_maps.fab4
 import android.animation.Animator
 import android.app.Application
 import android.content.Context
@@ -109,16 +109,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun showFABMenu() {
-        fabLayout1.visibility = View.VISIBLE
-        fabLayout2.visibility = View.VISIBLE
-        fabLayout3.visibility = View.VISIBLE
+        fab1.visibility = View.VISIBLE
+        fab2.visibility = View.VISIBLE
+        fab3.visibility = View.VISIBLE
         //fablayout4 (the refresh button) is already visible at the start
         fabBGLayout.visibility = View.VISIBLE
         fab.animate().rotationBy(180F)
-        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
-        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
-        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
-        fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
+        fab1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
+        fab2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
+        fab3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
+        fab4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
         var btn_info = findViewById(R.id.fab3) as FloatingActionButton
         btn_info.bringToFront()
     }
@@ -127,17 +127,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabBGLayout.visibility = View.GONE
         fab.bringToFront()
         fab.animate().rotation(0F)
-        fabLayout1.animate().translationY(0f)
-        fabLayout2.animate().translationY(0f)
-        fabLayout3.animate().translationY(0f)
-        fabLayout4.animate().translationY(0f)
+        fab1.animate().translationY(0f)
+        fab2.animate().translationY(0f)
+        fab3.animate().translationY(0f)
+        fab4.animate().translationY(0f)
             .setListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animator: Animator) {}
                 override fun onAnimationEnd(animator: Animator) {
                     if (View.GONE == fabBGLayout.visibility) {
-                        fabLayout1.visibility = View.GONE
-                        fabLayout2.visibility = View.GONE
-                        fabLayout3.visibility = View.GONE
+                        fab1.visibility = View.GONE
+                        fab2.visibility = View.GONE
+                        fab3.visibility = View.GONE
                     }
                 }
 
