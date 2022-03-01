@@ -429,10 +429,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onResume() {
         super.onResume()
         val res : Resources = getResources()
-        if(!busesDrawn&&internet_connection()) {//TODO:another bandage
-            busMarkerArray = drawBuses(res.getString(R.string.buses_url))
-        } else if(internet_connection()){
-            busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+        if(internet_connection())
+        {
+            busMarkerArray = if(!busesDrawn) { //TODO:another bandage
+                drawBuses(res.getString(R.string.buses_url))
+            } else{
+                updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            }
         }
     }
 
@@ -668,13 +671,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //        return data.value == currentAPI
 //    }
 
-fun internet_connection(): Boolean {
-    //Check if connected to internet, output accordingly
-    val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val activeNetwork = cm.activeNetwork
-    val networkCapabilities = cm.getNetworkCapabilities(activeNetwork)
-    return networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-}
+    fun internet_connection(): Boolean {
+        //Check if connected to internet, output accordingly
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = cm.activeNetwork
+        val networkCapabilities = cm.getNetworkCapabilities(activeNetwork)
+        return networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
 
     /**
      * Manipulates the map once available.
@@ -741,7 +744,10 @@ fun internet_connection(): Boolean {
         if (!internet_connection()) {//TODO: finish opening screen's no internet logic
             AlertDialog.Builder(this).setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again")
-                .setPositiveButton(android.R.string.ok) { _, _ -> }
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    finish()
+                    startActivity(intent)
+                }
                 .setIcon(android.R.drawable.ic_dialog_alert).show()
         }
         val sharedPreferences: SharedPreferences =
