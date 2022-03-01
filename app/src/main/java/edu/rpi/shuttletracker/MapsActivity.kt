@@ -16,6 +16,7 @@ import android.animation.Animator
 import android.app.AlertDialog
 import android.app.Application
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -741,14 +742,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 //        actionBar?.hide()
 
+
         if (!internet_connection()) {//TODO: finish opening screen's no internet logic
-            AlertDialog.Builder(this).setTitle("No Internet Connection")
+            val alertDialogBuilder = AlertDialog.Builder(this)
+            alertDialogBuilder.setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again")
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    finish()
+                .setPositiveButton("Restart") { _, _ ->
+                    finish()//TODO:change restart to retry
                     startActivity(intent)
+                    
                 }
-                .setIcon(android.R.drawable.ic_dialog_alert).show()
+                .setNeutralButton("Close") { _, _ ->
+                    finish()
+                }
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setOnCancelListener(DialogInterface.OnCancelListener(){finish()})
+
+            val alertDialog = alertDialogBuilder.create()
+            alertDialog.show()
+
+
         }
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
@@ -774,11 +787,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
-        busTimer.scheduleAtFixedRate(0, 5000) {
+        busTimer.scheduleAtFixedRate(0, 1000) {
             //if(APIMatch)
             if(internet_connection()) {
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
-            }//TODO:FINISH LOGIC OF NO NET AAAAAAAAA
+            }//TODO: Add no internet indication
             //println("Updated bus locations.")
         }
 
@@ -842,4 +855,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 }
+
+
 
