@@ -17,6 +17,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
+import android.preference.PreferenceManager.getDefaultSharedPreferences
 import android.provider.Settings.Global.getString
 import android.provider.Settings.System.getString
 import android.system.Os.accept
@@ -234,6 +235,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             leaveBusButton.visibility = View.GONE
         };
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val sharedPreferences = getDefaultSharedPreferences(
+            applicationContext
+        )
+        val editor = sharedPreferences.edit()
+
+        // Update
+        editor.putBoolean("IS_FIRST_RUN", true)
+        editor.commit()
     }
 
     /**
@@ -763,6 +776,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
+
+        val editor = sharedPreferences.edit()
+        val isFirstRun = sharedPreferences.getBoolean("IS_FIRST_RUN", true)
+
+        if(isFirstRun) {
+            AlertDialog.Builder(this).setTitle("Privacy Policy")
+                .setMessage("Shuttle Tracker sends your location data to our server only when you tap “Board Bus” and stops sending these data when you tap “Leave Bus”. Your location data are associated with an anonymous, random identifier that rotates every time you start a new shuttle trip. These data aren’t associated with your name, RCS ID, or any other identifying information. We continuously purge location data that are more than 30 seconds old from our server. We may retain resolved location data that are calculated using a combination of system- and user-reported data indefinitely, but these resolved data don’t correspond with any specific user-reported coordinates.")
+                .setPositiveButton(android.R.string.ok) { _, _ -> }
+                .setIcon(R.drawable.ic_baseline_info_24).show()
+
+            editor.putBoolean("IS_FIRST_RUN", false);
+            editor.apply();
+        }
+
+
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
