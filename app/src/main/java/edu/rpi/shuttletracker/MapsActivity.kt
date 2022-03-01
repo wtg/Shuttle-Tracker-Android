@@ -68,6 +68,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
     private var busesDrawn : Boolean = false
+    private var routeDrawn : Boolean = false
 
     private lateinit var mMap: GoogleMap
 
@@ -93,6 +94,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //private var longitude: Float? = null
     private var type = "user"
     private lateinit var date: String
+
 
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -493,6 +495,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
         thread2.start()
+        routeDrawn = true
     }
 
     //@RequiresApi(Build.VERSION_CODES.O)
@@ -646,6 +649,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         thread.start()
         return markerArray
     }
+
 //    fun APIPull(result: Data<Int>, website: String): Int {
 //        val thread = Thread(Runnable {
 //            kotlin.run {
@@ -745,7 +749,7 @@ fun internet_connection(): Boolean {
         if(sharedPreferences.contains("toggle_value")) {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
-        if(internet_connection()) {//TODO:make sure the stops and routes are only draw once
+        if(internet_connection() && !routeDrawn) {//TODO:make sure the stops and routes are only draw once
             drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
         }
@@ -776,14 +780,14 @@ fun internet_connection(): Boolean {
         val rotate = AnimationUtils.loadAnimation(this, R.anim.rotate_animation)
         btn_refresh.animation = rotate
         btn_refresh.setOnClickListener {
-
             if(internet_connection()) {
                 btn_refresh.startAnimation(rotate)
                 Toast.makeText(applicationContext, "Refreshed!", Toast.LENGTH_SHORT).show()
-                drawStops(res.getString(R.string.stops_url))//TODO:make sure the drawstop and route is not called when drawn
-                drawRoutes(res.getString(R.string.routes_url))
+                if(!routeDrawn) {
+                    drawStops(res.getString(R.string.stops_url))
+                    drawRoutes(res.getString(R.string.routes_url))
+                }
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
-
             }else {
                 AlertDialog.Builder(this).setTitle("No Internet Connection")
                     .setMessage("Please check your internet connection and try again")
