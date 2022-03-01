@@ -777,12 +777,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
 
+        //use shared preferences to check if this is the first time we are running the app
+        //if its the first time we run the app we will show a welcome alert-dialog with privacy policy information
         val editor = sharedPreferences.edit()
         val isFirstRun = sharedPreferences.getBoolean("IS_FIRST_RUN", true)
 
         if(isFirstRun) {
             AlertDialog.Builder(this).setTitle("Privacy Policy")
-                .setMessage("Shuttle Tracker sends your location data to our server only when you tap “Board Bus” and stops sending these data when you tap “Leave Bus”. Your location data are associated with an anonymous, random identifier that rotates every time you start a new shuttle trip. These data aren’t associated with your name, RCS ID, or any other identifying information. We continuously purge location data that are more than 30 seconds old from our server. We may retain resolved location data that are calculated using a combination of system- and user-reported data indefinitely, but these resolved data don’t correspond with any specific user-reported coordinates.")
+                .setMessage("Shuttle Tracker sends your location data to our server only when you tap “Board Bus” and stops sending " +
+                        "these data when you tap “Leave Bus”. Your location data are associated with an anonymous, random identifier " +
+                        "that rotates every time you start a new shuttle trip. These data aren’t associated with your name, RCS ID, " +
+                        "or any other identifying information. We continuously purge location data that are more than 30 seconds old " +
+                        "from our server. We may retain resolved location data that are calculated using a combination of system- and " +
+                        "user-reported data indefinitely, but these resolved data don’t correspond with any specific user-reported coordinates.")
                 .setPositiveButton(android.R.string.ok) { _, _ -> }
                 .setIcon(R.drawable.ic_baseline_info_24).show()
 
