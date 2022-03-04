@@ -26,6 +26,7 @@ import android.graphics.Color
 import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
 import android.view.Menu
@@ -44,7 +45,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.Runnable
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -654,23 +657,49 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return markerArray
     }
 
-//    fun APIPull(result: Data<Int>, website: String): Int {
-//        val thread = Thread(Runnable {
-//            kotlin.run {
-//                val url = URL(website)
-//                val data = url.readText()
-//                result.value = data.toInt()
-//            }
-//        })
-//        thread.start()
-//        return result.value
-//    }
-//    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
-//        val data = Data<Int>(0)
-//        var number : Int
-//        number = async { APIPull(data, website) }
-//        return data.value == currentAPI
-//    }
+    fun updateApp(){
+        val browserIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
+        )
+        startActivity(browserIntent)
+    }
+
+    fun promptDownload(){
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Outdated App")
+            .setMessage("Your app is outdated and no longer works.")
+            .setPositiveButton("Update") { _, _ ->
+                updateApp()
+            }
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setOnCancelListener(DialogInterface.OnCancelListener(){finish()})
+
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    fun APIPull(result: Data<Int>, website: String, currentAPI: Int): Int {
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL(website)
+                val data = url.readText()
+                result.value = data.toInt()
+                if(data.toInt() != currentAPI)
+                {
+                    runOnUiThread{promptDownload()}
+                }
+            }
+        })
+        thread.start()
+        return result.value
+    }
+    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
+        val data = Data<Int>(0)
+        var number : Int
+        number = APIPull(data, website, currentAPI)
+        return data.value == currentAPI
+    }
 
     fun internet_connection(): Boolean {
         //Check if connected to internet, output accordingly
@@ -704,8 +733,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
         val res : Resources = getResources()
-        //val currentAPI = 1
-        //val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
+        val currentAPI = 0
+        val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
 //        if(APIMatch) {
 
 //        } else {
