@@ -45,9 +45,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.Runnable
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -75,6 +73,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var routeDrawn : Boolean = false
 
     private lateinit var mMap: GoogleMap
+    var APImatch : Boolean = false
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
@@ -580,7 +579,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if(markerArray.size == 0 && !busesDrawn) {
             return markerArray
         }
-        println("updateBuses() called")
         val busArray = ArrayList<Bus>()
         //var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
@@ -663,6 +661,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
         )
         startActivity(browserIntent)
+        finish()
     }
 
     fun promptDownload(){
@@ -679,26 +678,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         alertDialog.show()
     }
 
-    fun APIPull(result: Data<Int>, website: String, currentAPI: Int): Int {
+    fun APIPull(result: Data<Int>, website: String): Int {
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL(website)
                 val data = url.readText()
                 result.value = data.toInt()
-                if(data.toInt() != currentAPI)
-                {
-                    runOnUiThread{promptDownload()}
-                }
             }
         })
         thread.start()
         return result.value
     }
-    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
-        val data = Data<Int>(0)
-        var number : Int
-        number = APIPull(data, website, currentAPI)
-        return data.value == currentAPI
+    fun APIVersionMatch(website: String, apikey : Int): Boolean {
+        val data = Data<Int>(-1)
+        APIPull(data, website)
+        while(data.value==-1){}
+        println("AAPIVersionMatch called")
+        println((data.value.toString()))
+        println(apikey)
+        return data.value == apikey
+
     }
 
     fun internet_connection(): Boolean {
@@ -733,8 +732,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
         val res : Resources = getResources()
-        val currentAPI = 0
-        val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
+
 //        if(APIMatch) {
 
 //        } else {
@@ -771,8 +769,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 //        actionBar?.hide()
 
-
-        if (!internet_connection()) {//TODO: finish opening screen's no internet logic
+        println("Internet connection reached/n")
+        if (!internet_connection()) {
             val alertDialogBuilder = AlertDialog.Builder(this)
             alertDialogBuilder.setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again")
@@ -789,22 +787,30 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             val alertDialog = alertDialogBuilder.create()
             alertDialog.show()
-
-
+        }else{
+            //Internet connection confirmed, matching API
+                println("  Calling API version matchere")
+            APImatch = APIVersionMatch(res.getString(R.string.version_url),res.getInteger(R.integer.api_key))
+            print("  API matching finished")
+            if(!APImatch){
+                println("   API not the same")
+                println(APImatch)
+                promptDownload()
+                //runOnUiThread { promptDownload() }
+            }
         }
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         if(sharedPreferences.contains("toggle_value")) {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
-        if(internet_connection() && !routeDrawn) {//TODO:make sure the stops and routes are only draw once
+        if(internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
             drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
         }
         val busTimer = Timer("busTimer", true)
 
-//        if(APIMatch)
-        if(!busesDrawn&&internet_connection()) {//TODO: bandage for now
+        if(!busesDrawn&&APImatch) {//TODO: bandage for now
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
         }
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -818,8 +824,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         busTimer.scheduleAtFixedRate(0, 1000) {
             //if(APIMatch)
-            if(internet_connection()) {
+            if(internet_connection()&&APImatch) {//make sure it would run only when connected to internet and after api check
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                if(!routeDrawn){
+                    drawStops(res.getString(R.string.stops_url))
+                    drawRoutes(res.getString(R.string.routes_url))
+                }
             }//TODO: Add no internet indication
             //println("Updated bus locations.")
         }
@@ -829,12 +839,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         btn_refresh.animation = rotate
         btn_refresh.setOnClickListener {
             if(internet_connection()) {
-                btn_refresh.startAnimation(rotate)
-                Toast.makeText(applicationContext, "Refreshed!", Toast.LENGTH_SHORT).show()
-                if(!routeDrawn) {
+                //recheck apikey
+                    if (!APImatch){//safty check
+                        promptDownload()
+                    }
+                if(!routeDrawn){
                     drawStops(res.getString(R.string.stops_url))
                     drawRoutes(res.getString(R.string.routes_url))
                 }
+                btn_refresh.startAnimation(rotate)
+                Toast.makeText(applicationContext, "Refreshed!", Toast.LENGTH_SHORT).show()
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             }else {
                 AlertDialog.Builder(this).setTitle("No Internet Connection")
