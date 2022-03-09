@@ -481,6 +481,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         thread.start()
         return stopArray;
     }
+
+//    fun scheduleAPI(url: String) : ArrayList<Schedule>{
+//
+//    }
+
+
+
     fun drawRoutes(url: String) {
         val thread2 = Thread(Runnable {
             kotlin.run {
