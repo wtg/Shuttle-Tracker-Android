@@ -1,48 +1,5 @@
 package edu.rpi.shuttletracker
 
-import android.Manifest
-import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.animation.Animator
-import android.app.AlertDialog
-import android.app.Application
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.content.res.Configuration
-import android.content.res.Resources
-import android.graphics.Color
-import android.location.Location
-import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Looper
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
-import android.system.Os.accept
-import android.view.animation.AnimationUtils
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.rotationMatrix
-import com.google.android.gms.location.*
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.*
 /*
 import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
 import kotlinx.android.synthetic.main.activity_maps.fab
@@ -51,13 +8,52 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout2
 import kotlinx.android.synthetic.main.activity_maps.fabLayout3
 import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 */
+
+
+import android.Manifest
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.animation.Animator
+import android.app.AlertDialog
+import android.app.Application
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.Color
+import android.location.Location
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.Uri
+import android.os.Bundle
+import android.os.Looper
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.animation.AnimationUtils
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.coroutines.Runnable
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.net.URI.create
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -65,17 +61,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
-import kotlin.system.*
-import kotlin.coroutines.*
-
-
-import com.google.android.gms.maps.MapView
-
-import android.view.ViewGroup
-
-import android.view.LayoutInflater
 
 
 
@@ -84,8 +70,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
     private var busesDrawn : Boolean = false
+    private var routeDrawn : Boolean = false
 
     private lateinit var mMap: GoogleMap
+    var APImatch : Boolean = false
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
@@ -109,6 +97,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //private var longitude: Float? = null
     private var type = "user"
     private lateinit var date: String
+
 
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -143,6 +132,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         // Initialize location updates
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequest = LocationRequest.create()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -442,10 +432,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onResume() {
         super.onResume()
         val res : Resources = getResources()
-        if(!busesDrawn) {
-            busMarkerArray = drawBuses(res.getString(R.string.buses_url))
-        } else {
-            busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+        if(internet_connection())
+        {
+            busMarkerArray = if(!busesDrawn) { //TODO:another bandage
+                drawBuses(res.getString(R.string.buses_url))
+            } else{
+                updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            }
         }
     }
 
@@ -509,6 +502,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
         thread2.start()
+        routeDrawn = true
     }
 
     //@RequiresApi(Build.VERSION_CODES.O)
@@ -586,7 +580,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if(markerArray.size == 0 && !busesDrawn) {
             return markerArray
         }
-        println("updateBuses() called")
         val busArray = ArrayList<Bus>()
         //var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
@@ -662,23 +655,56 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         thread.start()
         return markerArray
     }
-//    fun APIPull(result: Data<Int>, website: String): Int {
-//        val thread = Thread(Runnable {
-//            kotlin.run {
-//                val url = URL(website)
-//                val data = url.readText()
-//                result.value = data.toInt()
-//            }
-//        })
-//        thread.start()
-//        return result.value
-//    }
-//    fun APIVersionMatch(currentAPI: Int, website: String): Boolean {
-//        val data = Data<Int>(0)
-//        var number : Int
-//        number = async { APIPull(data, website) }
-//        return data.value == currentAPI
-//    }
+
+    fun updateApp(){
+        val browserIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
+        )
+        startActivity(browserIntent)
+        finish()
+    }
+
+    fun promptDownload(){
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Outdated App")
+            .setMessage("Your app is outdated and no longer works.")
+            .setPositiveButton("Update") { _, _ ->
+                updateApp()
+            }
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setOnCancelListener(DialogInterface.OnCancelListener(){finish()})
+
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    fun APIPull(result: Data<Int>, website: String): Int {
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL(website)
+                val data = url.readText()
+                result.value = data.toInt()
+            }
+        })
+        thread.start()
+        return result.value
+    }
+    fun APIVersionMatch(website: String, apikey : Int): Boolean {
+        val data = Data<Int>(-1)
+        APIPull(data, website)
+        while(data.value==-1){}
+        return data.value == apikey
+
+    }
+
+    fun internet_connection(): Boolean {
+        //Check if connected to internet, output accordingly
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = cm.activeNetwork
+        val networkCapabilities = cm.getNetworkCapabilities(activeNetwork)
+        return networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
 
     /**
      * Manipulates the map once available.
@@ -704,8 +730,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
         val res : Resources = getResources()
-        //val currentAPI = 1
-        //val APIMatch = APIVersionMatch(currentAPI, res.getString(R.string.version_url))
+
 //        if(APIMatch) {
 
 //        } else {
@@ -741,17 +766,44 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Add a marker in Sydney and move the camera
 //        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 //        actionBar?.hide()
+
+        if (!internet_connection()) {
+            val alertDialogBuilder = AlertDialog.Builder(this)
+            alertDialogBuilder.setTitle("No Internet Connection")
+                .setMessage("Please check your internet connection and try again")
+                .setPositiveButton("Restart") { _, _ ->
+                    finish()//TODO:change restart to retry
+                    startActivity(intent)
+                    
+                }
+                .setNeutralButton("Close") { _, _ ->
+                    finish()
+                }
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setOnCancelListener(DialogInterface.OnCancelListener(){finish()})
+
+            val alertDialog = alertDialogBuilder.create()
+            alertDialog.show()
+        }else{
+            //Internet connection confirmed, matching API
+            APImatch = APIVersionMatch(res.getString(R.string.version_url),res.getInteger(R.integer.api_key))
+            if(!APImatch){
+                promptDownload()
+                //runOnUiThread { promptDownload() }
+            }
+        }
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         if(sharedPreferences.contains("toggle_value")) {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
-        stopArray = drawStops(res.getString(R.string.stops_url))
-        drawRoutes(res.getString(R.string.routes_url))
+        if(internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
+            drawStops(res.getString(R.string.stops_url))
+            drawRoutes(res.getString(R.string.routes_url))
+        }
         val busTimer = Timer("busTimer", true)
 
-//        if(APIMatch)
-        if(!busesDrawn) {
+        if(!busesDrawn&&APImatch) {//TODO: bandage for now
             busMarkerArray = drawBuses(res.getString(R.string.buses_url))
         }
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -763,9 +815,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
-        busTimer.scheduleAtFixedRate(0, 5000) {
+        busTimer.scheduleAtFixedRate(0, 1000) {
             //if(APIMatch)
+            if(internet_connection()&&APImatch) {//make sure it would run only when connected to internet and after api check
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                if(!routeDrawn){
+                    drawStops(res.getString(R.string.stops_url))
+                    drawRoutes(res.getString(R.string.routes_url))
+                }
+            }//TODO: Add no internet indication
             //println("Updated bus locations.")
         }
 
@@ -773,11 +831,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val rotate = AnimationUtils.loadAnimation(this, R.anim.rotate_animation)
         btn_refresh.animation = rotate
         btn_refresh.setOnClickListener {
-
-            btn_refresh.startAnimation(rotate)
-            Toast.makeText(applicationContext, "Refreshed!", Toast.LENGTH_SHORT).show()
-
-            busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            if(internet_connection()) {
+                //recheck apikey
+                    if (!APImatch){//safty check
+                        promptDownload()
+                    }
+                if(!routeDrawn){
+                    drawStops(res.getString(R.string.stops_url))
+                    drawRoutes(res.getString(R.string.routes_url))
+                }
+                btn_refresh.startAnimation(rotate)
+                Toast.makeText(applicationContext, "Refreshed!", Toast.LENGTH_SHORT).show()
+                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+            }else {
+                AlertDialog.Builder(this).setTitle("No Internet Connection")
+                    .setMessage("Please check your internet connection and try again")
+                    .setPositiveButton(android.R.string.ok) { _, _ -> }
+                    .setIcon(android.R.drawable.ic_dialog_alert).show()
+            }
         }
     }
 
@@ -820,4 +891,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 }
+
+
 
