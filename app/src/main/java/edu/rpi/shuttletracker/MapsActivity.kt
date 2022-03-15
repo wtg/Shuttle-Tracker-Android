@@ -42,6 +42,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
@@ -62,7 +63,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.scheduleAtFixedRate
-import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 
 
 
@@ -839,6 +839,7 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
                     drawRoutes(res.getString(R.string.routes_url))
                 }
             }//TODO: Add no internet indication
+
             //println("Updated bus locations.")
         }
 
@@ -876,7 +877,14 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
             draw/update buses methods.
          */
         val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
-        val len = marker.snippet.length
+        var len=0
+        //////////////////////////
+        try {//TODO: remove try catch bandage
+            len = marker.snippet.length
+        }catch(e:java.lang.NullPointerException){
+            return false
+        }
+        ///////////////////////////
         if (marker.snippet.substring(len-3, len) == "ago") {
             return false
         }
