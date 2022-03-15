@@ -84,7 +84,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         OkHttpClient.Builder().build()
     }
 
-    private val stopArray = ArrayList<Stop>()
+    private var stopArray = ArrayList<Stop>()
     private val busArray = ArrayList<Bus>()
 
 
@@ -255,7 +255,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         //updateCurrentLocation()
         for (stop in stopArray) {
             val stopLocation = Location("stop location")
-            stopLocation.altitude = stop.latitude
+            stopLocation.latitude = stop.latitude
             stopLocation.longitude = stop.longitude
             //println("current location: $currentLocation") // // TODO: remove/comment this testing clause
             //println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
@@ -442,8 +442,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    fun drawStops(url: String) {
-        //val stopArray = ArrayList<Stop>()
+    fun drawStops(url: String) : ArrayList<Stop> {
+        val stopArray = ArrayList<Stop>()
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL(url)
@@ -472,6 +472,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
         thread.start()
+        return stopArray;
     }
     fun drawRoutes(url: String) {
         val thread2 = Thread(Runnable {
@@ -805,7 +806,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
         if(internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
-            drawStops(res.getString(R.string.stops_url))
+            stopArray = drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
         }
         val busTimer = Timer("busTimer", true)
