@@ -721,17 +721,23 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.getUiSettings().setMapToolbarEnabled(false)
-        val currentNightMode =  resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         when (currentNightMode) {
             Configuration.UI_MODE_NIGHT_NO -> {} // Night mode is not active, we're using the light theme
-            Configuration.UI_MODE_NIGHT_YES -> {googleMap.setMapStyle(MapStyleOptions(getResources()
-                .getString(R.string.style_json)));} // Night mode is active, we're using dark theme
+            Configuration.UI_MODE_NIGHT_YES -> {
+                googleMap.setMapStyle(
+                    MapStyleOptions(
+                        getResources()
+                            .getString(R.string.style_json)
+                    )
+                );
+            } // Night mode is active, we're using dark theme
         }
         val Union = LatLng(42.730426, -73.676573)
         mMap.setMinZoomPreference(13.5f)
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
-        val res : Resources = getResources()
+        val res: Resources = getResources()
 
 //        if(APIMatch) {
 
@@ -776,39 +782,45 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
                 .setPositiveButton("Restart") { _, _ ->
                     finish()//TODO:change restart to retry
                     startActivity(intent)
-                    
+
                 }
                 .setNeutralButton("Close") { _, _ ->
                     finish()
                 }
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setOnCancelListener(DialogInterface.OnCancelListener(){finish()})
+                .setOnCancelListener(DialogInterface.OnCancelListener() { finish() })
 
             val alertDialog = alertDialogBuilder.create()
             alertDialog.show()
-        }else{
+        } else {
             //Internet connection confirmed, matching API
-            APImatch = APIVersionMatch(res.getString(R.string.version_url),res.getInteger(R.integer.api_key))
-            if(!APImatch){
+            APImatch = APIVersionMatch(
+                res.getString(R.string.version_url),
+                res.getInteger(R.integer.api_key)
+            )
+            if (!APImatch) {
                 promptDownload()
                 //runOnUiThread { promptDownload() }
             }
         }
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        if(sharedPreferences.contains("toggle_value")) {
+        if (sharedPreferences.contains("toggle_value")) {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
-        if(internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
+        if (internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
             drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
         }
         val busTimer = Timer("busTimer", true)
 
-        if(!busesDrawn&&APImatch) {//TODO: bandage for now
-            busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        if (APImatch){
+            if (!busesDrawn) {//TODO: bandage for now
+                busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+            }
             mMap.setOnMarkerClickListener(this)
         }
+
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
