@@ -694,9 +694,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val data = Data<Int>(-1)
         APIPull(data, website)
         while(data.value==-1){}
-        println("AAPIVersionMatch called")
-        println((data.value.toString()))
-        println(apikey)
         return data.value == apikey
 
     }
@@ -770,7 +767,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 //        actionBar?.hide()
 
-        println("Internet connection reached/n")
         if (!internet_connection()) {
             val alertDialogBuilder = AlertDialog.Builder(this)
             alertDialogBuilder.setTitle("No Internet Connection")
@@ -790,12 +786,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             alertDialog.show()
         }else{
             //Internet connection confirmed, matching API
-                println("  Calling API version matchere")
             APImatch = APIVersionMatch(res.getString(R.string.version_url),res.getInteger(R.integer.api_key))
-            print("  API matching finished")
             if(!APImatch){
-                println("   API not the same")
-                println(APImatch)
                 promptDownload()
                 //runOnUiThread { promptDownload() }
             }
