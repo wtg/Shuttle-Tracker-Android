@@ -868,6 +868,10 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
         }
     }
 
+    // Store bus date in marker
+    // Store bus date in separate bus object maintained in separate bus object array alongside marker array
+    // Change to list of pairs between markers and strings
+
     override fun onMarkerClick(marker: Marker): Boolean {
         /*
             Save the date to each marker as a tag in the draw/update buses methods.
@@ -877,6 +881,7 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
             draw/update buses methods.
          */
         val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+        println("Current Time $currentDate")
         var len=0
         //////////////////////////
         try {//TODO: remove try catch bandage
