@@ -394,7 +394,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fab2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
         fab3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
         fab4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
-        var btn_info = findViewById(R.id.fab3) as LinearLayout
+        var btn_info = findViewById(R.id.fab3) as FloatingActionButton
         btn_info.bringToFront()
     }
 
