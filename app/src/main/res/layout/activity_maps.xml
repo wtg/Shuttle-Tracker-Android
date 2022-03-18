@@ -59,6 +59,7 @@
                 android:src="@drawable/ic_settings" />
         </LinearLayout>
 
+
         <LinearLayout
             android:id="@+id/fabLayout2"
             android:layout_width="wrap_content"
@@ -113,6 +114,8 @@
                 android:gravity="center_vertical"
                 android:src="@drawable/ic_baseline_info_24" />
         </LinearLayout>
+
+
         <LinearLayout
             android:id="@+id/fabLayout4"
             android:layout_width="wrap_content"
@@ -139,6 +142,7 @@
                 android:src="@drawable/ic_baseline_refresh_24" />
         </LinearLayout>
 
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -159,6 +163,88 @@
         </LinearLayout>
 
 
+        <LinearLayout
+            android:id="@+id/fabLayout1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="23dp"
+                android:layout_marginBottom="28dp"
+                map:fabSize="mini"
+                android:layout_gravity="bottom|end"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_settings" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/fabLayout1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="23dp"
+                android:layout_marginBottom="28dp"
+                map:fabSize="mini"
+                android:layout_gravity="bottom|end"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_settings" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/fabLayout5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_margin="16dp"
+            android:clipToPadding="false"
+            android:gravity="center_vertical"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="23dp"
+                android:layout_marginBottom="28dp"
+                map:fabSize="mini"
+                android:layout_gravity="bottom|end"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_action_name" />
+        </LinearLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </fragment>
 
