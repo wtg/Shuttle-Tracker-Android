@@ -566,9 +566,10 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
                                 ).icon(
                                     BitmapDescriptorFactory.fromAsset(current.busIcon)
                                 ).zIndex(1F).snippet(current.busDate)
+
                             )
                         )
-                        markerArray.get(i).tag = current.id;
+                        markerArray.get(i).tag = current.busDate;
                     }
                 }
             }
@@ -616,11 +617,14 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
                     var found = false
                     for (i in 0 until markerArray.size) {
                         runOnUiThread {
-                            if (markerArray.get(i).tag!!.equals(id)) {
+                            var len=markerArray.get(i).title.length
+                            var busID=markerArray.get(i).title.substring(4,len).toInt()
+                            if (busID!!.equals(id)) {
                                 found = true
                                 markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                 markerArray.get(i).setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                 println("Bus " + id + " updated.")
+                                markerArray.get(i).tag =busDate
                             }
                         }
                     }
@@ -648,7 +652,8 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
                                     ).zIndex(1F).snippet(current.busDate)
                                 )
                             )
-                            markerArray.get(i).tag = current.id;
+                            markerArray.get(i).tag =(current.busDate)
+                            println(current.busDate)
                         }
                     }
                 }
@@ -882,18 +887,18 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
          */
         val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
         println("Current Time $currentDate")
-        var len=0
-        //////////////////////////
-        try {//TODO: remove try catch bandage
-            len = marker.snippet.length
-        }catch(e:java.lang.NullPointerException){
+        //Get the ID from marker
+
+        /*
+        var len=marker.snippet.length
+        if (len>0 && marker.snippet.substring(len-3, len) == "ago") {
             return false
         }
-        ///////////////////////////
-        if (marker.snippet.substring(len-3, len) == "ago") {
-            return false
-        }
-        val busDate = LocalDateTime.parse(marker.snippet)
+         */
+
+        //search time in busarray until id matches.
+        var dateTag=marker.tag.toString()
+        val busDate = LocalDateTime.parse(dateTag)
         val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
         val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
         val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
