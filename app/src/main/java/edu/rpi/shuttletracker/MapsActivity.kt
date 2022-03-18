@@ -46,10 +46,10 @@ import kotlinx.coroutines.*
 /*
 import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
 import kotlinx.android.synthetic.main.activity_maps.fab
-import kotlinx.android.synthetic.main.activity_maps.fabLayout1
-import kotlinx.android.synthetic.main.activity_maps.fabLayout2
-import kotlinx.android.synthetic.main.activity_maps.fabLayout3
-import kotlinx.android.synthetic.main.activity_maps.fabLayout4
+import kotlinx.android.synthetic.main.activity_maps.fab1
+import kotlinx.android.synthetic.main.activity_maps.fab2
+import kotlinx.android.synthetic.main.activity_maps.fab3
+import kotlinx.android.synthetic.main.activity_maps.fab4
 */
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -132,9 +132,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         fabBGLayout.setOnClickListener { closeFABMenu() }
-        var btn_settings = findViewById<LinearLayout>(R.id.fabLayout1)
-        var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
-        var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
+        var btn_settings = findViewById<FloatingActionButton>(R.id.fab1)
+        var btn_about = findViewById<FloatingActionButton>(R.id.fab2)
+        var btn_info = findViewById<FloatingActionButton>(R.id.fab3)
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
         val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
 
@@ -384,17 +384,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun showFABMenu() {
-        fabLayout1.visibility = View.VISIBLE
-        fabLayout2.visibility = View.VISIBLE
-        fabLayout3.visibility = View.VISIBLE
-        //fablayout4 (the refresh button) is already visible at the start
+        fab1.visibility = View.VISIBLE
+        fab2.visibility = View.VISIBLE
+        fab3.visibility = View.VISIBLE
+        //fab4 (the refresh button) is already visible at the start
         fabBGLayout.visibility = View.VISIBLE
         fab.animate().rotationBy(180F)
-        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
-        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
-        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
-        fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
-        var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
+        fab1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
+        fab2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
+        fab3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
+        fab4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
+        var btn_info = findViewById(R.id.fab3) as LinearLayout
         btn_info.bringToFront()
     }
 
@@ -402,17 +402,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabBGLayout.visibility = View.GONE
         fab.bringToFront()
         fab.animate().rotation(0F)
-        fabLayout1.animate().translationY(0f)
-        fabLayout2.animate().translationY(0f)
-        fabLayout3.animate().translationY(0f)
-        fabLayout4.animate().translationY(0f)
+        fab1.animate().translationY(0f)
+        fab2.animate().translationY(0f)
+        fab3.animate().translationY(0f)
+        fab4.animate().translationY(0f)
             .setListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animator: Animator) {}
                 override fun onAnimationEnd(animator: Animator) {
                     if (View.GONE == fabBGLayout.visibility) {
-                        fabLayout1.visibility = View.GONE
-                        fabLayout2.visibility = View.GONE
-                        fabLayout3.visibility = View.GONE
+                        fab1.visibility = View.GONE
+                        fab2.visibility = View.GONE
+                        fab3.visibility = View.GONE
                     }
                 }
 
