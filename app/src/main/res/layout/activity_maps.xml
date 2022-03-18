@@ -4,11 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/map"
     android:name="com.google.android.gms.maps.SupportMapFragment"
-    android:configChanges="uiMode"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivity"
-    >
+    android:configChanges="uiMode"
+    tools:context=".MapsActivity">
 
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -20,8 +19,7 @@
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
 
 
         </com.google.android.material.appbar.AppBarLayout>
@@ -34,106 +32,116 @@
             android:layout_height="match_parent"
             android:visibility="gone" />
 
-        <RelativeLayout
+<!--        https://youtu.be/umCX1-Tq25k-->
+<!--        https://developer.android.com/guide/topics/ui/layout/relative-->
+<!--        https://www.tutorialride.com/android/android-gravity.htm-->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginRight="39dp"
-                android:layout_marginBottom="44dp"
-                android:clipToPadding="false"
-                android:gravity="center_vertical"
-                android:src="@drawable/ic_settings"
-                app:fabSize="mini" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:gravity="bottom|right">
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginRight="39dp"
-                android:layout_marginBottom="48dp"
-                android:clipToPadding="false"
-                android:gravity="center_vertical"
-                android:src="@drawable/ic_baseline_more_24"
-                android:visibility="gone"
-                app:fabSize="mini" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginRight="39dp"
+                    android:layout_marginBottom="44dp"
+                    android:clipToPadding="false"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/ic_settings"
+                    app:fabSize="mini" />
 
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginRight="39dp"
-                android:layout_marginBottom="28dp"
-                android:clipToPadding="false"
-                android:gravity="center_vertical"
-                android:src="@drawable/ic_baseline_info_24"
-                android:visibility="gone"
-                app:fabSize="mini" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginRight="39dp"
-                android:layout_marginBottom="100dp"
-                android:clipToPadding="false"
-                android:gravity="center_vertical"
-                android:src="@drawable/ic_baseline_refresh_24"
-                app:fabSize="mini" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginRight="39dp"
+                    android:layout_marginBottom="48dp"
+                    android:clipToPadding="false"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/ic_baseline_more_24"
+                    android:visibility="gone"
+                    app:fabSize="mini" />
 
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="32dp"
-                android:gravity="center_vertical"
-                android:src="@drawable/ic_menu_hamburger" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginRight="39dp"
+                    android:layout_marginBottom="28dp"
+                    android:clipToPadding="false"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/ic_baseline_info_24"
+                    android:visibility="gone"
+                    app:fabSize="mini" />
 
-        </RelativeLayout>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginRight="39dp"
+                    android:layout_marginBottom="100dp"
+                    android:clipToPadding="false"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/ic_baseline_refresh_24"
+                    app:fabSize="mini" />
+
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="32dp"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/ic_menu_hamburger" />
+
+            </RelativeLayout>
+        </LinearLayout>
 
         <Button
             android:id="@+id/board_bus_button"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="@string/board_bus_button_text"
-            android:textAllCaps="false"
-            android:textAlignment="center"
             android:layout_gravity="bottom|center_horizontal"
-            android:gravity="center_vertical"
             android:layout_marginBottom="33dp"
             android:background="@drawable/roundedbutton"
-        />
+            android:gravity="center_vertical"
+            android:text="@string/board_bus_button_text"
+            android:textAlignment="center"
+            android:textAllCaps="false" />
+
         <Button
             android:id="@+id/leave_bus_button"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="@string/leave_bus_button_text"
-            android:textAllCaps="false"
-            android:textAlignment="center"
             android:layout_gravity="bottom|center_horizontal"
-            android:gravity="center_vertical"
             android:layout_marginBottom="33dp"
             android:background="@drawable/leavebus"
-            android:visibility="gone"
-            />
+            android:gravity="center_vertical"
+            android:text="@string/leave_bus_button_text"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:visibility="gone" />
 
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
