@@ -42,7 +42,6 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
@@ -67,7 +66,7 @@ import kotlin.concurrent.scheduleAtFixedRate
 
 
 
-class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallback {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
     private var busesDrawn : Boolean = false
@@ -435,10 +434,10 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
         val res : Resources = getResources()
         if(internet_connection())
         {
-            busMarkerArray = if(!busesDrawn) { //TODO:another bandage
-                drawBuses(res.getString(R.string.buses_url))
+            busMarkerArray = if(!busesDrawn) {
+                 drawBuses(res.getString(R.string.buses_url))
             } else{
-                updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                 updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             }
         }
     }
@@ -565,7 +564,7 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
                                     "Bus " + current.id
                                 ).icon(
                                     BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                ).zIndex(1F).snippet(current.busDate)
+                                ).zIndex(1F).snippet("0 seconds ago")
 
                             )
                         )
@@ -649,7 +648,7 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
                                         "Bus " + current.id
                                     ).icon(
                                         BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                    ).zIndex(1F).snippet(current.busDate)
+                                    ).zIndex(1F).snippet("0 seconds ago")
                                 )
                             )
                             markerArray.get(i).tag =(current.busDate)
@@ -744,6 +743,33 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
         val res: Resources = getResources()
 
+
+        fun markerupdate(busMarkerArrayArgument: ArrayList<Marker>){
+            for (markeri in busMarkerArrayArgument){
+                val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+                //search time in busarray until id matches.
+                if(markeri.tag==null){
+                    continue
+                }
+                var dateTag=markeri.tag.toString()//TODO: Try catch, parisng null marker
+                println(dateTag)
+                val busDate = LocalDateTime.parse(dateTag)
+                val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
+                val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+                val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+                val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+                if (days == 0.toLong() && hours == 0.toLong() && minutes == 0.toLong() ) {
+                    markeri.snippet = "$seconds seconds ago"
+                } else if (days == 0.toLong() && hours == 0.toLong()){
+                    if (minutes == 1.toLong()) {
+                        markeri.snippet = "$minutes minute ago"
+                    } else {
+                        markeri.snippet = "$minutes minutes ago"
+                    }
+                }
+            }
+
+        }
 //        if(APIMatch) {
 
 //        } else {
@@ -823,7 +849,6 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
             if (!busesDrawn) {//TODO: bandage for now
                 busMarkerArray = drawBuses(res.getString(R.string.buses_url))
             }
-            mMap.setOnMarkerClickListener(this)
         }
 
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -843,7 +868,11 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
                     drawStops(res.getString(R.string.stops_url))
                     drawRoutes(res.getString(R.string.routes_url))
                 }
+                if(busesDrawn){
+                    markerupdate(busMarkerArray)
+                }
             }//TODO: Add no internet indication
+            //TODO: AUTO update the marker snippet
 
             //println("Updated bus locations.")
         }
@@ -877,6 +906,7 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
     // Store bus date in separate bus object maintained in separate bus object array alongside marker array
     // Change to list of pairs between markers and strings
 
+/*
     override fun onMarkerClick(marker: Marker): Boolean {
         /*
             Save the date to each marker as a tag in the draw/update buses methods.
@@ -897,7 +927,8 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
          */
 
         //search time in busarray until id matches.
-        var dateTag=marker.tag.toString()
+        var dateTag=marker.tag.toString()//TODO: Try catch, parisng null marker DateTimeParseException
+        println(dateTag)
         val busDate = LocalDateTime.parse(dateTag)
         val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
         val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
@@ -918,7 +949,7 @@ class MapsActivity : AppCompatActivity(), OnMarkerClickListener, OnMapReadyCallb
         // marker is centered and for the marker's info window to open, if it has one).
         return false
     }
-
+*/
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
