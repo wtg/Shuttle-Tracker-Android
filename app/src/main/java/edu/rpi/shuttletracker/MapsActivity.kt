@@ -509,7 +509,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     fun drawBuses(url: String): ArrayList<Marker> {
         //val busArray = ArrayList<Bus>()
         var markerArray = ArrayList<Marker>()
-
         val thread = Thread(Runnable {
             kotlin.run {
                 val url = URL(url)
@@ -711,6 +710,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val networkCapabilities = cm.getNetworkCapabilities(activeNetwork)
         return networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
+    fun updateMarker(busMarkerArrayArgument: ArrayList<Marker>){
+                for (markeri in busMarkerArrayArgument) {
+                    val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+                    //search time in busarray until id matches.
+                    if (markeri.tag == null) {
+                        continue
+                    }
+                    var dateTag = markeri.tag.toString()//TODO: Try catch, parisng null marker
+                    println(dateTag)
+                    val busDate = LocalDateTime.parse(dateTag)
+                    val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
+                    val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+                    val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+                    val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+                    if (days == 0.toLong() && hours == 0.toLong() && minutes == 0.toLong()) {
+                        markeri.snippet = "$seconds seconds ago"
+                    } else if (days == 0.toLong() && hours == 0.toLong()) {
+                        if (minutes == 1.toLong()) {
+                            markeri.snippet = "$minutes minute ago"
+                        } else {
+                            markeri.snippet = "$minutes minutes ago"
+                        }
+                    }
+                    if(markeri.isInfoWindowShown) {
+                        markeri.showInfoWindow()
+                    }
+                }
+
+    }
 
     /**
      * Manipulates the map once available.
@@ -744,32 +772,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val res: Resources = getResources()
 
 
-        fun markerupdate(busMarkerArrayArgument: ArrayList<Marker>){
-            for (markeri in busMarkerArrayArgument){
-                val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
-                //search time in busarray until id matches.
-                if(markeri.tag==null){
-                    continue
-                }
-                var dateTag=markeri.tag.toString()//TODO: Try catch, parisng null marker
-                println(dateTag)
-                val busDate = LocalDateTime.parse(dateTag)
-                val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
-                val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
-                val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
-                val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
-                if (days == 0.toLong() && hours == 0.toLong() && minutes == 0.toLong() ) {
-                    markeri.snippet = "$seconds seconds ago"
-                } else if (days == 0.toLong() && hours == 0.toLong()){
-                    if (minutes == 1.toLong()) {
-                        markeri.snippet = "$minutes minute ago"
-                    } else {
-                        markeri.snippet = "$minutes minutes ago"
-                    }
-                }
-            }
-
-        }
 //        if(APIMatch) {
 
 //        } else {
@@ -837,7 +839,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         if (sharedPreferences.contains("toggle_value")) {
-            colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
+            MapsActivity.colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
         if (internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
             drawStops(res.getString(R.string.stops_url))
@@ -868,8 +870,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     drawStops(res.getString(R.string.stops_url))
                     drawRoutes(res.getString(R.string.routes_url))
                 }
-                if(busesDrawn){
-                    markerupdate(busMarkerArray)
+                if(busesDrawn) {
+                    runOnUiThread { updateMarker(busMarkerArray) }
                 }
             }//TODO: Add no internet indication
             //TODO: AUTO update the marker snippet
