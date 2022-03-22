@@ -895,7 +895,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             MapsActivity.colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
         if (internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
-            stopArray = drawStops(res.getString(R.string.stops_url))
+            drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
         }
         val busTimer = Timer("busTimer", true)
@@ -921,7 +921,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if(internet_connection()&&APImatch) {//make sure it would run only when connected to internet and after api check
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
                 if(!routeDrawn){
-                    stopArray = drawStops(res.getString(R.string.stops_url))
+                    drawStops(res.getString(R.string.stops_url))
                     drawRoutes(res.getString(R.string.routes_url))
                 }
             }
@@ -943,7 +943,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         promptDownload()
                     }
                 if(!routeDrawn){
-                    stopArray = drawStops(res.getString(R.string.stops_url))
+                    drawStops(res.getString(R.string.stops_url))
                     drawRoutes(res.getString(R.string.routes_url))
                 }
                 btn_refresh.startAnimation(rotate)
