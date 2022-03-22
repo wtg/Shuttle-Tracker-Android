@@ -916,11 +916,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     drawStops(res.getString(R.string.stops_url))
                     drawRoutes(res.getString(R.string.routes_url))
                 }
-                if(busesDrawn) {
-                    runOnUiThread { updateMarker(busMarkerArray) }
-                }
-            }//TODO: Add no internet indication
-            //TODO: AUTO update the marker snippet
+            }
+            if(busesDrawn) {
+                runOnUiThread { updateMarker(busMarkerArray) }
+            }
 
             //println("Updated bus locations.")
         }
