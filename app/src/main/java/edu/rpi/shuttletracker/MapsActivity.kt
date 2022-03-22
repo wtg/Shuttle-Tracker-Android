@@ -233,7 +233,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun checkNearbyStop(): Boolean {
         return if (!isNearStop()) {
             val noNearbyStopDialogBuilder = AlertDialog.Builder(this)
-            val noNearbyStopMessage = "You can't board a bus if you're not within 20 meters of a stop."
+            val noNearbyStopMessage = "You can't board a bus if you're not within 50 meters of a stop."
             noNearbyStopDialogBuilder.setTitle("No Nearby Stop")
                 .setMessage(noNearbyStopMessage)
                 .setNegativeButton("Continue") { dialog, _ ->
@@ -249,7 +249,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     /**
-     *  Checks if this user is within 20 meters of any bus stop.
+     *  Checks if this user is within 50 meters of any bus stop.
      */
     private fun isNearStop(): Boolean {
         //updateCurrentLocation()
@@ -257,9 +257,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val stopLocation = Location("stop location")
             stopLocation.latitude = stop.latitude
             stopLocation.longitude = stop.longitude
-            //println("current location: $currentLocation") // // TODO: remove/comment this testing clause
-            //println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
-            if (currentLocation?.distanceTo(stopLocation)!! <= 20) {
+            println("current location: $currentLocation") // // TODO: remove/comment this testing clause
+            println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
+            if (currentLocation?.distanceTo(stopLocation)!! <= 50) {
                 return true
             }
         }
@@ -614,7 +614,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val busDate = LocalDateTime.parse(date, format)
                     for (i in 0 until markerArray.size) {
                         runOnUiThread {
-                            if (markerArray.get(i).tag!!.equals(id)) {
+                            if (markerArray.get(i).tag != null && markerArray.get(i).tag!!.equals(id)) {
                                 found = true
                                 markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                 markerArray.get(i).setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
@@ -798,7 +798,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
         if(internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
-            drawStops(res.getString(R.string.stops_url))
+            stopArray = drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
         }
         val busTimer = Timer("busTimer", true)
@@ -817,10 +817,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         busTimer.scheduleAtFixedRate(0, 1000) {
             //if(APIMatch)
-            if(internet_connection()&&APImatch) {//make sure it would run only when connected to internet and after api check
+            if(internet_connection() && APImatch) {//make sure it would run only when connected to internet and after api check
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
                 if(!routeDrawn){
-                    drawStops(res.getString(R.string.stops_url))
+                    stopArray = drawStops(res.getString(R.string.stops_url))
                     drawRoutes(res.getString(R.string.routes_url))
                 }
             }//TODO: Add no internet indication
@@ -837,7 +837,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         promptDownload()
                     }
                 if(!routeDrawn){
-                    drawStops(res.getString(R.string.stops_url))
+                    stopArray = drawStops(res.getString(R.string.stops_url))
                     drawRoutes(res.getString(R.string.routes_url))
                 }
                 btn_refresh.startAnimation(rotate)
