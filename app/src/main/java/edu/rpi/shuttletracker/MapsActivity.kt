@@ -71,6 +71,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
     private var busesDrawn : Boolean = false
     private var routeDrawn : Boolean = false
+    private var alertPrompted : Boolean = false
 
     private lateinit var mMap: GoogleMap
     var APImatch : Boolean = false
@@ -780,10 +781,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun offline_check(){
-        AlertDialog.Builder(this).setTitle("No Internet Connection")
-            .setMessage("Please check your internet connection and try again")
-            .setPositiveButton(android.R.string.ok) { _, _ -> }
-            .setIcon(android.R.drawable.ic_dialog_alert).show()
+        if(!alertPrompted) {
+            alertPrompted=true
+            AlertDialog.Builder(this).setTitle("No Internet Connection")
+                .setMessage("Please check your internet connection and try again")
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    alertPrompted=false
+                }
+                .setIcon(android.R.drawable.ic_dialog_alert).show()
+                .setOnCancelListener(DialogInterface.OnCancelListener() { alertPrompted=false })
+        }
     }
 
     /**
@@ -892,6 +899,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             drawRoutes(res.getString(R.string.routes_url))
         }
         val busTimer = Timer("busTimer", true)
+        val markerTimer = Timer("markerTimer",true)
 
         if (APImatch){
             if (!busesDrawn) {//TODO: bandage for now
@@ -908,7 +916,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
-        busTimer.scheduleAtFixedRate(0, 1000) {
+        busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
             if(internet_connection()&&APImatch) {//make sure it would run only when connected to internet and after api check
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
@@ -917,11 +925,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     drawRoutes(res.getString(R.string.routes_url))
                 }
             }
+            //println("Updated bus locations.")
+        }
+        markerTimer.scheduleAtFixedRate(0,1000){
             if(busesDrawn) {
                 runOnUiThread { updateMarker(busMarkerArray) }
             }
-
-            //println("Updated bus locations.")
         }
 
         var btn_refresh = findViewById(R.id.fab4) as FloatingActionButton
