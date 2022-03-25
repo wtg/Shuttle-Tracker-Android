@@ -610,15 +610,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     //@RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
-        if(markerArray.size == 0 && !busesDrawn) {
+        if (markerArray.size == 0 && !busesDrawn) {
             return markerArray
         }
         val busArray = ArrayList<Bus>()
         //var markerArray = ArrayList<Marker>()
         val thread = Thread(Runnable {
             kotlin.run {
-                try
-                {
+                try {
                     val url = URL(url)
                     val jsonString = url.readText()
                     var jsonArray = JSONArray(jsonString)
@@ -639,42 +638,45 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 busIcon = getString(R.string.colorblind_GPS_bus)
                             }
                         } else {
-
-                            busIcon = getString(R.string.colorblind_GPS_bus)
-                        }
-                    } else {
-                        if(busType == "user") {
-                            busIcon = getString(R.string.crowdsourced_bus)
-                        }
-                    }
-                    val busObject = Bus(latitude, longitude, id, busIcon)
-                    var found = false
-                    val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-                    val busDate = LocalDateTime.parse(date, format)
-                    for (i in 0 until markerArray.size) {
-                        runOnUiThread {
-                            if (markerArray.get(i).tag != null && markerArray.get(i).tag!!.equals(id)) {
-                                found = true
-                                markerArray.get(i).setPosition(LatLng(latitude, longitude))
-                                markerArray.get(i).setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
-                                println("Bus " + id + " updated.")
+                            if (busType == "user") {
+                                busIcon = getString(R.string.crowdsourced_bus)
                             }
                         }
+
                         val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                         val busDate = LocalDateTime.parse(date, format)
                         val busObject = Bus(latitude, longitude, id, busIcon, busDate.toString())
                         var found = false
                         for (i in 0 until markerArray.size) {
                             runOnUiThread {
-                                var len = markerArray.get(i).title.length
-                                var busID = markerArray.get(i).title.substring(4, len).toInt()
-                                if (busID!!.equals(id)) {
+                                if (markerArray.get(i).tag != null && markerArray.get(i).tag!!.equals(
+                                        id
+                                    )
+                                ) {
                                     found = true
                                     markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                     markerArray.get(i)
                                         .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                     println("Bus " + id + " updated.")
-                                    markerArray.get(i).tag = busDate
+                                }
+                            }
+                            val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                            val busDate = LocalDateTime.parse(date, format)
+                            val busObject =
+                                Bus(latitude, longitude, id, busIcon, busDate.toString())
+                            var found = false
+                            for (i in 0 until markerArray.size) {
+                                runOnUiThread {
+                                    var len = markerArray.get(i).title.length
+                                    var busID = markerArray.get(i).title.substring(4, len).toInt()
+                                    if (busID!!.equals(id)) {
+                                        found = true
+                                        markerArray.get(i).setPosition(LatLng(latitude, longitude))
+                                        markerArray.get(i)
+                                            .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
+                                        println("Bus " + id + " updated.")
+                                        markerArray.get(i).tag = busDate
+                                    }
                                 }
                             }
                         }
@@ -707,10 +709,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             }
                         }
                     }
-                }
-                catch(ex: Exception)
-                {
-                    runOnUiThread{offline_check()}
+                } catch (ex: Exception) {
+                    runOnUiThread { offline_check() }
                 }
             }
         })
