@@ -449,6 +449,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+
     fun drawStops(url: String) : ArrayList<Stop> {
         val stopArray = ArrayList<Stop>()
         val thread = Thread(Runnable {
@@ -482,9 +483,34 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return stopArray;
     }
 
-//    fun scheduleAPI(url: String) : ArrayList<Schedule>{
-//
-//    }
+    fun scheduleAPI(url: String) : ArrayList<Schedule>{
+        val semesterArray = ArrayList<Schedule>()
+        val thread = Thread(Runnable {
+            kotlin.run {
+                val url = URL(url)
+                val jsonString = url.readText()
+                var jsonArray = JSONArray(jsonString)
+                for (i in 0 until jsonArray.length()) {
+                    val semSchedule = jsonArray.getJSONObject(i)
+                    val name = semSchedule.getString("name")
+                    val start = semSchedule.getString("start")
+                    val end = semSchedule.getString("end")
+                    val content = semSchedule.getJSONArray("content")
+                    val dayArray =  ArrayList<Day>()
+
+                    for(j in 0 until content.length()){
+                        val dayName = content.getJSONObject(j)
+                        val dayStart = dayName.getString("start")
+                        val dayEnd = dayName.getString("end")
+                    }
+                    //val stopObject = Stop(latitude, longitude, name)
+                    //stopArray.add(stopObject)
+                }
+            }
+        }
+    }
+
+
 
 
 
