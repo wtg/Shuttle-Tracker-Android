@@ -137,7 +137,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequest = LocationRequest.create()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        locationRequest.interval = 5*1000 // refreshes every 5 seconds
+        locationRequest.interval = 5 * 1000 // refreshes every 5 seconds
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
@@ -154,7 +154,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ) {
             return
         }
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
 
 
 
@@ -182,49 +186,52 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  4. update this client's state and change the button to "leave bus"
              */
             println("location: $currentLocation") // TODO: remove/comment this testing clause
-
             // Check if the user is near a bus stop. If not, pop up an alert dialog and stop this button's onclick listener.
             if (!checkNearbyStop()) {
                 return@setOnClickListener
             }
-
             val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
                 .toTypedArray() // convert Array<Int> to Array<String>
+            if (internet_connection()) {
+                // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
+                val chooseBusDialogBuilder = AlertDialog.Builder(this)
+                chooseBusDialogBuilder.setTitle("Bus Selection")
 
-            // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
-            val chooseBusDialogBuilder = AlertDialog.Builder(this)
-            chooseBusDialogBuilder.setTitle("Bus Selection")
+                    // TODO: Find closest bus and recommend this bus to the user.
 
-                // TODO: Find closest bus and recommend this bus to the user.
-                
-                .setSingleChoiceItems(busNumberArray, -1) { _, which ->
-                    selectedBusNumber = busNumberArray[which]
-                }
-                .setPositiveButton("Continue") { dialog, _ ->
-                    if (selectedBusNumber != null) {
-                        val sendDataThread = sendOnBusData()
-                        sendDataThread.start()
-
-                        // hide the dialog
-                        dialog.cancel()
-
-                        // switch buttons by changing their visibility
-                        boardBusButton.visibility = View.GONE
-                        leaveBusButton.visibility = View.VISIBLE
+                    .setSingleChoiceItems(busNumberArray, -1) { _, which ->
+                        selectedBusNumber = busNumberArray[which]
                     }
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.cancel()
-                }
-            chooseBusDialogBuilder.create()
-            chooseBusDialogBuilder.show()
-        };
-        leaveBusButton.setOnClickListener {
-            onBus = false // this variable controls when the data-transmitting thread ends
-            boardBusButton.visibility = View.VISIBLE
-            leaveBusButton.visibility = View.GONE
-        };
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+                    .setPositiveButton("Continue") { dialog, _ ->
+                        if (selectedBusNumber != null) {
+                            val sendDataThread = sendOnBusData()
+                            sendDataThread.start()
+
+                            // hide the dialog
+                            dialog.cancel()
+
+                            // switch buttons by changing their visibility
+                            boardBusButton.visibility = View.GONE
+                            leaveBusButton.visibility = View.VISIBLE
+                        }
+                    }
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.cancel()
+                    }
+                chooseBusDialogBuilder.create()
+                chooseBusDialogBuilder.show()
+
+            ;
+            leaveBusButton.setOnClickListener {
+                onBus = false // this variable controls when the data-transmitting thread ends
+                boardBusButton.visibility = View.VISIBLE
+                leaveBusButton.visibility = View.GONE
+            };
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        }else{
+                offline_check()
+            }
+        }
     }
 
     /**
@@ -821,6 +828,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     //@RequiresApi(Build.VERSION_CODES.O)
     override fun onMapReady(googleMap: GoogleMap) {
+        val boardBusButton = findViewById<Button>(R.id.board_bus_button)
+        val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
+
         mMap = googleMap
         mMap.getUiSettings().setMapToolbarEnabled(false)
         val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
@@ -948,6 +958,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         markerTimer.scheduleAtFixedRate(0,1000){
             if(busesDrawn) {
                 runOnUiThread { updateMarker(busMarkerArray) }
+            }
+            if(!internet_connection()&&onBus){
+                onBus = false // this variable controls when the data-transmitting thread ends
+                runOnUiThread() {
+                    boardBusButton.visibility = View.VISIBLE
+                    leaveBusButton.visibility = View.GONE
+                }
             }
         }
 
