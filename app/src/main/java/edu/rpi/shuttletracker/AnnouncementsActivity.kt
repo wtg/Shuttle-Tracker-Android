@@ -11,8 +11,8 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 class AnnouncementsActivity : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_info)
-        val toolbar: Toolbar = findViewById(R.id.infoToolbar)
+        setContentView(R.layout.activity_announcements)
+        val toolbar: Toolbar = findViewById(R.id.announcementsToolbar)
         setSupportActionBar(toolbar)
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
         getSupportActionBar()?.setDisplayShowHomeEnabled(true)

@@ -7,7 +7,7 @@
     tools:context=".AnnouncementsActivity">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/aboutToolbar"
+        android:id="@+id/announcementsToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorAccent"
