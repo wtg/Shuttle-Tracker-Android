@@ -71,6 +71,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
     private var busesDrawn : Boolean = false
     private var routeDrawn : Boolean = false
+    private var alertPrompted : Boolean = false
 
     private lateinit var mMap: GoogleMap
     var APImatch : Boolean = false
@@ -136,7 +137,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequest = LocationRequest.create()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        locationRequest.interval = 5*1000 // refreshes every 5 seconds
+        locationRequest.interval = 5 * 1000 // refreshes every 5 seconds
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
@@ -153,7 +154,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ) {
             return
         }
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
 
 
 
@@ -181,49 +186,52 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  4. update this client's state and change the button to "leave bus"
              */
             println("location: $currentLocation") // TODO: remove/comment this testing clause
-
             // Check if the user is near a bus stop. If not, pop up an alert dialog and stop this button's onclick listener.
             if (!checkNearbyStop()) {
                 return@setOnClickListener
             }
-
             val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
                 .toTypedArray() // convert Array<Int> to Array<String>
+            if (internet_connection()) {
+                // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
+                val chooseBusDialogBuilder = AlertDialog.Builder(this)
+                chooseBusDialogBuilder.setTitle("Bus Selection")
 
-            // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
-            val chooseBusDialogBuilder = AlertDialog.Builder(this)
-            chooseBusDialogBuilder.setTitle("Bus Selection")
+                    // TODO: Find closest bus and recommend this bus to the user.
 
-                // TODO: Find closest bus and recommend this bus to the user.
-                
-                .setSingleChoiceItems(busNumberArray, -1) { _, which ->
-                    selectedBusNumber = busNumberArray[which]
-                }
-                .setPositiveButton("Continue") { dialog, _ ->
-                    if (selectedBusNumber != null) {
-                        val sendDataThread = sendOnBusData()
-                        sendDataThread.start()
-
-                        // hide the dialog
-                        dialog.cancel()
-
-                        // switch buttons by changing their visibility
-                        boardBusButton.visibility = View.GONE
-                        leaveBusButton.visibility = View.VISIBLE
+                    .setSingleChoiceItems(busNumberArray, -1) { _, which ->
+                        selectedBusNumber = busNumberArray[which]
                     }
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.cancel()
-                }
-            chooseBusDialogBuilder.create()
-            chooseBusDialogBuilder.show()
-        };
-        leaveBusButton.setOnClickListener {
-            onBus = false // this variable controls when the data-transmitting thread ends
-            boardBusButton.visibility = View.VISIBLE
-            leaveBusButton.visibility = View.GONE
-        };
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+                    .setPositiveButton("Continue") { dialog, _ ->
+                        if (selectedBusNumber != null) {
+                            val sendDataThread = sendOnBusData()
+                            sendDataThread.start()
+
+                            // hide the dialog
+                            dialog.cancel()
+
+                            // switch buttons by changing their visibility
+                            boardBusButton.visibility = View.GONE
+                            leaveBusButton.visibility = View.VISIBLE
+                        }
+                    }
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.cancel()
+                    }
+                chooseBusDialogBuilder.create()
+                chooseBusDialogBuilder.show()
+
+            ;
+            leaveBusButton.setOnClickListener {
+                onBus = false // this variable controls when the data-transmitting thread ends
+                boardBusButton.visibility = View.VISIBLE
+                leaveBusButton.visibility = View.GONE
+            };
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        }else{
+                offline_check()
+            }
+        }
     }
 
     /**
@@ -276,42 +284,49 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val thread = Thread {
             kotlin.run {
-                onBus = true
-                while (onBus) {
-                    date = getCurrentFormattedDate()
-                    println("parsed date: $date") // TODO: remove/comment this testing clause
-                    //updateCurrentLocation()
+                try
+                {
+                    onBus = true
+                    while (onBus) {
+                        date = getCurrentFormattedDate()
+                        println("parsed date: $date") // TODO: remove/comment this testing clause
+                        //updateCurrentLocation()
 
-                    // TODO: remove this testing location when committing
-                    //latitude = (42.722886).toFloat()
-                    //longitude = (-73.679665).toFloat()
+                        // TODO: remove this testing location when committing
+                        //latitude = (42.722886).toFloat()
+                        //longitude = (-73.679665).toFloat()
 
-                    val boardBusJSONObject = parseDataToJSONObject(
-                        session_uuid,
-                        currentLocation?.latitude?.toFloat(),
-                        currentLocation?.longitude?.toFloat(),
-                        type,
-                        getCurrentFormattedDate()
-                    )
-                    println("parsed JSONObject: $boardBusJSONObject") // TODO: remove/comment this testing clause
-                    val boardBusUrl =
-                        URL(resources.getString(R.string.buses_url) + "/$selectedBusNumber")
-                    println("Target URL: $boardBusUrl") // TODO: remove/comment this testing clause
-
-                    // send to server
-                    val request = Request.Builder()
-                        .url(boardBusUrl)
-                        .patch(
-                            boardBusJSONObject.toString().toRequestBody(mediaType)
+                        val boardBusJSONObject = parseDataToJSONObject(
+                            session_uuid,
+                            currentLocation?.latitude?.toFloat(),
+                            currentLocation?.longitude?.toFloat(),
+                            type,
+                            getCurrentFormattedDate()
                         )
-                        .build()
-                    println("Request: $request") // TODO: remove/comment this testing clause
+                        println("parsed JSONObject: $boardBusJSONObject") // TODO: remove/comment this testing clause
+                        val boardBusUrl =
+                            URL(resources.getString(R.string.buses_url) + "/$selectedBusNumber")
+                        println("Target URL: $boardBusUrl") // TODO: remove/comment this testing clause
 
-                    val response = httpClient.newCall(request).execute()
-                    println("response: $response") // TODO: remove/comment this testing clause
+                        // send to server
+                        val request = Request.Builder()
+                            .url(boardBusUrl)
+                            .patch(
+                                boardBusJSONObject.toString().toRequestBody(mediaType)
+                            )
+                            .build()
+                        println("Request: $request") // TODO: remove/comment this testing clause
 
-                    // wait for 5 seconds
-                    Thread.sleep(5000L)
+                        val response = httpClient.newCall(request).execute()
+                        println("response: $response") // TODO: remove/comment this testing clause
+
+                        // wait for 5 seconds
+                        Thread.sleep(5000L)
+                    }
+                }
+                catch(ex: Exception)
+                {
+                    runOnUiThread{offline_check()}
                 }
             }
         }
@@ -330,11 +345,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // start the thread and wait for it to finish
         val thread = Thread {
             kotlin.run {
-                val url = URL(resources.getString(R.string.bus_numbers_url))
-                val jsonString = url.readText()
-                val jsonArray = JSONArray(jsonString)
-                for (i in 0 until jsonArray.length()) {
-                    busNumberArray.add(jsonArray.getInt(i))
+                try {
+                    val url = URL(resources.getString(R.string.bus_numbers_url))
+                    val jsonString = url.readText()
+                    val jsonArray = JSONArray(jsonString)
+                    for (i in 0 until jsonArray.length()) {
+                        busNumberArray.add(jsonArray.getInt(i))
+                    }
+                }
+                catch (ex: Exception)
+                {
+                    runOnUiThread{offline_check()}
                 }
             }
         }
@@ -434,10 +455,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val res : Resources = getResources()
         if(internet_connection())
         {
-            busMarkerArray = if(!busesDrawn) { //TODO:another bandage
-                drawBuses(res.getString(R.string.buses_url))
+            busMarkerArray = if(!busesDrawn) {
+                 drawBuses(res.getString(R.string.buses_url))
             } else{
-                updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                 updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             }
         }
     }
@@ -446,28 +467,34 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val stopArray = ArrayList<Stop>()
         val thread = Thread(Runnable {
             kotlin.run {
-                val url = URL(url)
-                val jsonString = url.readText()
-                var jsonArray = JSONArray(jsonString)
-                for (i in 0 until jsonArray.length()) {
-                    val stop = jsonArray.getJSONObject(i)
-                    val coordinate = stop.getJSONObject("coordinate")
-                    val latitude = coordinate.getDouble("latitude")
-                    val longitude = coordinate.getDouble("longitude")
-                    val name = stop.getString("name")
-                    val stopObject = Stop(latitude, longitude, name)
-                    stopArray.add(stopObject)
-                }
-                for (i in 0 until stopArray.size) {
-                    val current = stopArray.get(i)
-                    val stopPos = LatLng(current.latitude, current.longitude)
-                    runOnUiThread {
-                        mMap.addMarker(
-                            MarkerOptions().position(stopPos).title(current.name).icon(
-                                BitmapDescriptorFactory.fromAsset("simplecircle.png")
-                            )
-                        )
+                try {
+                    val url = URL(url)
+                    val jsonString = url.readText()
+                    var jsonArray = JSONArray(jsonString)
+                    for (i in 0 until jsonArray.length()) {
+                        val stop = jsonArray.getJSONObject(i)
+                        val coordinate = stop.getJSONObject("coordinate")
+                        val latitude = coordinate.getDouble("latitude")
+                        val longitude = coordinate.getDouble("longitude")
+                        val name = stop.getString("name")
+                        val stopObject = Stop(latitude, longitude, name)
+                        stopArray.add(stopObject)
                     }
+                    for (i in 0 until stopArray.size) {
+                        val current = stopArray.get(i)
+                        val stopPos = LatLng(current.latitude, current.longitude)
+                        runOnUiThread {
+                            mMap.addMarker(
+                                MarkerOptions().position(stopPos).title(current.name).icon(
+                                    BitmapDescriptorFactory.fromAsset("simplecircle.png")
+                                )
+                            )
+                        }
+                    }
+                }
+                catch(ex: Exception)
+                {
+                    runOnUiThread{offline_check()}
                 }
             }
         })
@@ -477,27 +504,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     fun drawRoutes(url: String) {
         val thread2 = Thread(Runnable {
             kotlin.run {
-                val url = URL(url)
-                val jsonString = url.readText()
-                var jsonArray = JSONArray(jsonString)
-                var routeObject = jsonArray.getJSONObject(0)
-                var coordArray = routeObject.getJSONArray("coordinates")
-                var latlngarr = ArrayList<LatLng>()
-                for (i in 0 until coordArray.length()) {
-                    val waypoint = coordArray.getJSONObject(i)
-                    val latitude = waypoint.getDouble("latitude")
-                    val longitude = waypoint.getDouble("longitude")
-                    val latlng = LatLng(latitude, longitude)
-                    latlngarr.add(latlng)
+                try {
+                    val url = URL(url)
+                    val jsonString = url.readText()
+                    var jsonArray = JSONArray(jsonString)
+                    var routeObject = jsonArray.getJSONObject(0)
+                    var coordArray = routeObject.getJSONArray("coordinates")
+                    var latlngarr = ArrayList<LatLng>()
+                    for (i in 0 until coordArray.length()) {
+                        val waypoint = coordArray.getJSONObject(i)
+                        val latitude = waypoint.getDouble("latitude")
+                        val longitude = waypoint.getDouble("longitude")
+                        val latlng = LatLng(latitude, longitude)
+                        latlngarr.add(latlng)
+                    }
+                    runOnUiThread {
+                        val polyline1 = mMap.addPolyline(
+                            PolylineOptions()
+                                .clickable(true)
+                                .addAll(latlngarr)
+                                .color(Color.RED)
+                                .width(4F)
+                        )
+                    }
                 }
-                runOnUiThread {
-                    val polyline1 = mMap.addPolyline(
-                        PolylineOptions()
-                            .clickable(true)
-                            .addAll(latlngarr)
-                            .color(Color.RED)
-                            .width(4F)
-                    )
+                catch(ex: Exception)
+                {
+                    runOnUiThread{offline_check()}
                 }
             }
         })
@@ -509,128 +542,49 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     fun drawBuses(url: String): ArrayList<Marker> {
         //val busArray = ArrayList<Bus>()
         var markerArray = ArrayList<Marker>()
-
         val thread = Thread(Runnable {
             kotlin.run {
-                val url = URL(url)
-                val jsonString = url.readText()
-                var jsonArray = JSONArray(jsonString)
-                for (i in 0 until jsonArray.length()) {
-                    val bus = jsonArray.getJSONObject(i)
-                    val location = bus.getJSONObject("location")
-                    val date = location.getString("date")
-                    val coordinate = location.getJSONObject("coordinate")
-                    val latitude = coordinate.getDouble("latitude")
-                    val longitude = coordinate.getDouble("longitude")
-                    val id = bus.getInt("id")
-                    val busType = location.getString("type")
-                    var busIcon = getString(R.string.GPS_bus)
-                    if(colorblindMode.getMode()) {
-                        if(busType == "user") {
-                            busIcon = getString(R.string.colorblind_crowdsourced_bus)
+                try {
+                    val url = URL(url)
+                    val jsonString = url.readText()
+                    var jsonArray = JSONArray(jsonString)
+                    for (i in 0 until jsonArray.length()) {
+                        val bus = jsonArray.getJSONObject(i)
+                        val location = bus.getJSONObject("location")
+                        val date = location.getString("date")
+                        val coordinate = location.getJSONObject("coordinate")
+                        val latitude = coordinate.getDouble("latitude")
+                        val longitude = coordinate.getDouble("longitude")
+                        val id = bus.getInt("id")
+                        val busType = location.getString("type")
+                        var busIcon = getString(R.string.GPS_bus)
+                        if (colorblindMode.getMode()) {
+                            if (busType == "user") {
+                                busIcon = getString(R.string.colorblind_crowdsourced_bus)
+                            } else {
+                                busIcon = getString(R.string.colorblind_GPS_bus)
+                            }
                         } else {
-                            busIcon = getString(R.string.colorblind_GPS_bus)
+                            if (busType == "user") {
+                                busIcon = getString(R.string.crowdsourced_bus)
+                            }
                         }
-                    } else {
-                        if(busType == "user") {
-                            busIcon = getString(R.string.crowdsourced_bus)
-                        }
-                    }
 
-                    val busObject = Bus(latitude, longitude, id, busIcon)
-                    val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-                    val busDate: LocalDateTime = LocalDateTime.parse(
-                        date,
-                        format//DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                    )
-                    val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
-//                    println(busDate)
-//                    println(currentDate)
-                    val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
-                    val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
-                    val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
-                    if (days == 0.toLong() && hours == 0.toLong() && minutes < 5) {
-                        busArray.add(busObject)
-                    }
-                }
-                for (i in 0 until busArray.size) {
-                    val current = busArray.get(i)
-                    val stopPos = LatLng(current.latitude, current.longitude)
-                    runOnUiThread {
-                        markerArray.add(
-                            mMap.addMarker(
-                                MarkerOptions().position(stopPos).title(
-                                    "Bus " + current.id
-                                ).icon(
-                                    BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                ).zIndex(1F)
-                            )
+                        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                        val busDate: LocalDateTime = LocalDateTime.parse(
+                            date,
+                            format//DateTimeFormatter.ISO_LOCAL_DATE_TIME
                         )
-                        markerArray.get(i).tag = current.id;
-                    }
-                }
-            }
-        })
-        thread.start()
-        busesDrawn = true
-        return markerArray
-    }
-    //@RequiresApi(Build.VERSION_CODES.O)
-    fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
-        if(markerArray.size == 0 && !busesDrawn) {
-            return markerArray
-        }
-        val busArray = ArrayList<Bus>()
-        //var markerArray = ArrayList<Marker>()
-        val thread = Thread(Runnable {
-            kotlin.run {
-                val url = URL(url)
-                val jsonString = url.readText()
-                var jsonArray = JSONArray(jsonString)
-                for (i in 0 until jsonArray.length()) {
-                    val bus = jsonArray.getJSONObject(i)
-                    val id = bus.getInt("id")
-                    val location = bus.getJSONObject("location")
-                    val date = location.getString("date")
-                    val coordinate = location.getJSONObject("coordinate")
-                    val latitude = coordinate.getDouble("latitude")
-                    val longitude = coordinate.getDouble("longitude")
-                    val busType = location.getString("type")
-                    var busIcon = getString(R.string.GPS_bus)
-                    if(colorblindMode.getMode()) {
-                        if(busType == "user") {
-                            busIcon = getString(R.string.colorblind_crowdsourced_bus)
-                        } else {
-                            busIcon = getString(R.string.colorblind_GPS_bus)
-                        }
-                    } else {
-                        if(busType == "user") {
-                            busIcon = getString(R.string.crowdsourced_bus)
-                        }
-                    }
-                    val busObject = Bus(latitude, longitude, id, busIcon)
-                    var found = false
-                    val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-                    val busDate = LocalDateTime.parse(date, format)
-                    for (i in 0 until markerArray.size) {
-                        runOnUiThread {
-                            if (markerArray.get(i).tag != null && markerArray.get(i).tag!!.equals(id)) {
-                                found = true
-                                markerArray.get(i).setPosition(LatLng(latitude, longitude))
-                                markerArray.get(i).setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
-                                println("Bus " + id + " updated.")
-                            }
-                        }
-                    }
-                    runOnUiThread {
-                        if (!found) {
-                            val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC);
-                            val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
-                            val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
-                            val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
-                            if (days == 0.toLong() && hours == 0.toLong() && minutes < 5) {
-                                busArray.add(busObject)
-                            }
+                        val busObject = Bus(latitude, longitude, id, busIcon, busDate.toString())
+                        val tmp = busDate.toString()
+                        val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+                        //                    println(busDate)
+                        //                    println(currentDate)
+                        val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+                        val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+                        val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+                        if (days == 0.toLong() && hours == 0.toLong() && minutes < 5) {
+                            busArray.add(busObject)
                         }
                     }
                     for (i in 0 until busArray.size) {
@@ -643,12 +597,127 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         "Bus " + current.id
                                     ).icon(
                                         BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                    ).zIndex(1F)
+                                    ).zIndex(1F).snippet("0 seconds ago")
+
                                 )
                             )
-                            markerArray.get(i).tag = current.id;
+                            markerArray.get(i).tag = current.busDate;
                         }
                     }
+                }
+                catch(ex: Exception)
+                {
+                    runOnUiThread{offline_check()}
+                }
+            }
+        })
+        thread.start()
+        busesDrawn = true
+        return markerArray
+    }
+    //@RequiresApi(Build.VERSION_CODES.O)
+    fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
+        if (markerArray.size == 0 && !busesDrawn) {
+            return markerArray
+        }
+        val busArray = ArrayList<Bus>()
+        //var markerArray = ArrayList<Marker>()
+        val thread = Thread(Runnable {
+            kotlin.run {
+                try {
+                    val url = URL(url)
+                    val jsonString = url.readText()
+                    var jsonArray = JSONArray(jsonString)
+                    for (i in 0 until jsonArray.length()) {
+                        val bus = jsonArray.getJSONObject(i)
+                        val id = bus.getInt("id")
+                        val location = bus.getJSONObject("location")
+                        val date = location.getString("date")
+                        val coordinate = location.getJSONObject("coordinate")
+                        val latitude = coordinate.getDouble("latitude")
+                        val longitude = coordinate.getDouble("longitude")
+                        val busType = location.getString("type")
+                        var busIcon = getString(R.string.GPS_bus)
+                        if (colorblindMode.getMode()) {
+                            if (busType == "user") {
+                                busIcon = getString(R.string.colorblind_crowdsourced_bus)
+                            } else {
+                                busIcon = getString(R.string.colorblind_GPS_bus)
+                            }
+                        } else {
+                            if (busType == "user") {
+                                busIcon = getString(R.string.crowdsourced_bus)
+                            }
+                        }
+
+                        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                        val busDate = LocalDateTime.parse(date, format)
+                        val busObject = Bus(latitude, longitude, id, busIcon, busDate.toString())
+                        var found = false
+                        for (i in 0 until markerArray.size) {
+                            runOnUiThread {
+                                if (markerArray.get(i).tag != null && markerArray.get(i).tag!!.equals(
+                                        id
+                                    )
+                                ) {
+                                    found = true
+                                    markerArray.get(i).setPosition(LatLng(latitude, longitude))
+                                    markerArray.get(i)
+                                        .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
+                                    println("Bus " + id + " updated.")
+                                }
+                            }
+                            val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                            val busDate = LocalDateTime.parse(date, format)
+                            val busObject =
+                                Bus(latitude, longitude, id, busIcon, busDate.toString())
+                            var found = false
+                            for (i in 0 until markerArray.size) {
+                                runOnUiThread {
+                                    var len = markerArray.get(i).title.length
+                                    var busID = markerArray.get(i).title.substring(4, len).toInt()
+                                    if (busID!!.equals(id)) {
+                                        found = true
+                                        markerArray.get(i).setPosition(LatLng(latitude, longitude))
+                                        markerArray.get(i)
+                                            .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
+                                        println("Bus " + id + " updated.")
+                                        markerArray.get(i).tag = busDate
+                                    }
+                                }
+                            }
+                        }
+                        runOnUiThread {
+                            if (!found) {
+                                val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC);
+                                val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+                                val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+                                val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+                                if (days == 0.toLong() && hours == 0.toLong() && minutes < 5) {
+                                    busArray.add(busObject)
+                                }
+                            }
+                        }
+                        for (i in 0 until busArray.size) {
+                            val current = busArray.get(i)
+                            val stopPos = LatLng(current.latitude, current.longitude)
+                            runOnUiThread {
+                                markerArray.add(
+                                    mMap.addMarker(
+                                        MarkerOptions().position(stopPos).title(
+                                            "Bus " + current.id
+                                        ).icon(
+                                            BitmapDescriptorFactory.fromAsset(current.busIcon)
+                                        ).zIndex(1F).snippet("0 seconds ago")
+                                    )
+                                )
+                                markerArray.get(i).tag = (current.busDate)
+                                println(current.busDate)
+                            }
+                        }
+                    }
+                } catch (ex: Exception) {
+                    runOnUiThread { offline_check() }
                 }
             }
         })
@@ -705,6 +774,48 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val networkCapabilities = cm.getNetworkCapabilities(activeNetwork)
         return networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
+    fun updateMarker(busMarkerArrayArgument: ArrayList<Marker>){
+                for (markeri in busMarkerArrayArgument) {
+                    val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+                    //search time in busarray until id matches.
+                    if (markeri.tag == null) {
+                        continue
+                    }
+                    var dateTag = markeri.tag.toString()//TODO: Try catch, parisng null marker
+                    println(dateTag)
+                    val busDate = LocalDateTime.parse(dateTag)
+                    val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
+                    val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+                    val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+                    val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+                    if (days == 0.toLong() && hours == 0.toLong() && minutes == 0.toLong()) {
+                        markeri.snippet = "$seconds seconds ago"
+                    } else if (days == 0.toLong() && hours == 0.toLong()) {
+                        if (minutes == 1.toLong()) {
+                            markeri.snippet = "$minutes minute ago"
+                        } else {
+                            markeri.snippet = "$minutes minutes ago"
+                        }
+                    }
+                    if(markeri.isInfoWindowShown) {
+                        markeri.showInfoWindow()
+                    }
+                }
+
+    }
+
+    fun offline_check(){
+        if(!alertPrompted) {
+            alertPrompted=true
+            AlertDialog.Builder(this).setTitle("No Internet Connection")
+                .setMessage("Please check your internet connection and try again")
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    alertPrompted=false
+                }
+                .setIcon(android.R.drawable.ic_dialog_alert).show()
+                .setOnCancelListener(DialogInterface.OnCancelListener() { alertPrompted=false })
+        }
+    }
 
     /**
      * Manipulates the map once available.
@@ -717,19 +828,29 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     //@RequiresApi(Build.VERSION_CODES.O)
     override fun onMapReady(googleMap: GoogleMap) {
+        val boardBusButton = findViewById<Button>(R.id.board_bus_button)
+        val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
+
         mMap = googleMap
         mMap.getUiSettings().setMapToolbarEnabled(false)
-        val currentNightMode =  resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         when (currentNightMode) {
             Configuration.UI_MODE_NIGHT_NO -> {} // Night mode is not active, we're using the light theme
-            Configuration.UI_MODE_NIGHT_YES -> {googleMap.setMapStyle(MapStyleOptions(getResources()
-                .getString(R.string.style_json)));} // Night mode is active, we're using dark theme
+            Configuration.UI_MODE_NIGHT_YES -> {
+                googleMap.setMapStyle(
+                    MapStyleOptions(
+                        getResources()
+                            .getString(R.string.style_json)
+                    )
+                );
+            } // Night mode is active, we're using dark theme
         }
         val Union = LatLng(42.730426, -73.676573)
         mMap.setMinZoomPreference(13.5f)
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
-        val res : Resources = getResources()
+        val res: Resources = getResources()
+
 
 //        if(APIMatch) {
 
@@ -774,38 +895,46 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setPositiveButton("Restart") { _, _ ->
                     finish()//TODO:change restart to retry
                     startActivity(intent)
-                    
+
                 }
                 .setNeutralButton("Close") { _, _ ->
                     finish()
                 }
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setOnCancelListener(DialogInterface.OnCancelListener(){finish()})
+                .setOnCancelListener(DialogInterface.OnCancelListener() { finish() })
 
             val alertDialog = alertDialogBuilder.create()
             alertDialog.show()
-        }else{
+        } else {
             //Internet connection confirmed, matching API
-            APImatch = APIVersionMatch(res.getString(R.string.version_url),res.getInteger(R.integer.api_key))
-            if(!APImatch){
+            APImatch = APIVersionMatch(
+                res.getString(R.string.version_url),
+                res.getInteger(R.integer.api_key)
+            )
+            if (!APImatch) {
                 promptDownload()
                 //runOnUiThread { promptDownload() }
             }
         }
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        if(sharedPreferences.contains("toggle_value")) {
-            colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
+        if (sharedPreferences.contains("toggle_value")) {
+            MapsActivity.colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
-        if(internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
+        if (internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
+
             stopArray = drawStops(res.getString(R.string.stops_url))
             drawRoutes(res.getString(R.string.routes_url))
         }
         val busTimer = Timer("busTimer", true)
+        val markerTimer = Timer("markerTimer",true)
 
-        if(!busesDrawn&&APImatch) {//TODO: bandage for now
-            busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+        if (APImatch){
+            if (!busesDrawn) {//TODO: bandage for now
+                busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+            }
         }
+
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
@@ -815,7 +944,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 MY_PERMISSIONS_REQUEST_LOCATION
             )
         }
-        busTimer.scheduleAtFixedRate(0, 1000) {
+        busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
             if(internet_connection() && APImatch) {//make sure it would run only when connected to internet and after api check
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
@@ -823,8 +952,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     stopArray = drawStops(res.getString(R.string.stops_url))
                     drawRoutes(res.getString(R.string.routes_url))
                 }
-            }//TODO: Add no internet indication
+            }
             //println("Updated bus locations.")
+        }
+        markerTimer.scheduleAtFixedRate(0,1000){
+            if(busesDrawn) {
+                runOnUiThread { updateMarker(busMarkerArray) }
+            }
+            if(!internet_connection()&&onBus){
+                onBus = false // this variable controls when the data-transmitting thread ends
+                runOnUiThread() {
+                    boardBusButton.visibility = View.VISIBLE
+                    leaveBusButton.visibility = View.GONE
+                }
+            }
         }
 
         var btn_refresh = findViewById(R.id.fab4) as FloatingActionButton
@@ -844,14 +985,59 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.makeText(applicationContext, "Refreshed!", Toast.LENGTH_SHORT).show()
                 busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
             }else {
-                AlertDialog.Builder(this).setTitle("No Internet Connection")
-                    .setMessage("Please check your internet connection and try again")
-                    .setPositiveButton(android.R.string.ok) { _, _ -> }
-                    .setIcon(android.R.drawable.ic_dialog_alert).show()
+                offline_check()
             }
         }
     }
 
+    // Store bus date in marker
+    // Store bus date in separate bus object maintained in separate bus object array alongside marker array
+    // Change to list of pairs between markers and strings
+
+/*
+    override fun onMarkerClick(marker: Marker): Boolean {
+        /*
+            Save the date to each marker as a tag in the draw/update buses methods.
+            Parse this date in this function, compare it to the current date, and
+            display how long it was ago as this text. We can achieve this similarly to
+            how date comparison to ensure the bus data is less than 5 mins old in the
+            draw/update buses methods.
+         */
+        val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+        println("Current Time $currentDate")
+        //Get the ID from marker
+
+        /*
+        var len=marker.snippet.length
+        if (len>0 && marker.snippet.substring(len-3, len) == "ago") {
+            return false
+        }
+         */
+
+        //search time in busarray until id matches.
+        var dateTag=marker.tag.toString()//TODO: Try catch, parisng null marker DateTimeParseException
+        println(dateTag)
+        val busDate = LocalDateTime.parse(dateTag)
+        val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
+        val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
+        val hours: Long = ChronoUnit.HOURS.between(busDate, currentDate)
+        val days: Long = ChronoUnit.DAYS.between(busDate, currentDate)
+        if (days == 0.toLong() && hours == 0.toLong() && minutes == 0.toLong() ) {
+            marker.snippet = "$seconds seconds ago"
+        } else if (days == 0.toLong() && hours == 0.toLong()){
+            if (minutes == 1.toLong()) {
+                marker.snippet = "$minutes minute ago"
+            } else {
+                marker.snippet = "$minutes minutes ago"
+            }
+        }
+
+        // Return false to indicate that we have not consumed the event and that we wish
+        // for the default behavior to occur (which is for the camera to move such that the
+        // marker is centered and for the marker's info window to open, if it has one).
+        return false
+    }
+*/
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
