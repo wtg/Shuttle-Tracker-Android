@@ -15,6 +15,8 @@ import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.animation.Animator
 import android.app.AlertDialog
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -27,6 +29,7 @@ import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.view.Menu
@@ -38,6 +41,8 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -99,6 +104,37 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var type = "user"
     private lateinit var date: String
 
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val descriptionText = getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("9966", name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun notificationbanner(){
+        var builder = NotificationCompat.Builder(this, "9966")
+            .setSmallIcon(R.drawable.roundedbutton)
+            .setContentTitle("My notification")
+            .setContentText("Much longer text that cannot fit one line...")
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText("Much longer text that cannot fit one line..."))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        with(NotificationManagerCompat.from(this)) {
+            notificationManager.notify(notificationId, newMessageNotification)
+        }
+    }
+
 
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -111,6 +147,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        notificationbanner()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         fab.setOnClickListener {
@@ -121,6 +158,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        createNotificationChannel()
         fabBGLayout.setOnClickListener { closeFABMenu() }
         var btn_settings = findViewById<LinearLayout>(R.id.fabLayout1)
         var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
