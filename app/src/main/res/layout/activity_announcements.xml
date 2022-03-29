@@ -16,7 +16,8 @@
         app:title="Announcements"
         app:titleTextColor="#FFFFFF"
         tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp" />
+        tools:layout_editor_absoluteY="0dp"
+        tools:ignore="MissingConstraints" />
     <ScrollView
         android:id="@+id/SCROLLER_ID"
         android:layout_width="fill_parent"
@@ -34,7 +35,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:text="@string/announcements_url_parse"
+            android:text="@string/announcements_default_text"
             android:textDirection="ltr"
             android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"

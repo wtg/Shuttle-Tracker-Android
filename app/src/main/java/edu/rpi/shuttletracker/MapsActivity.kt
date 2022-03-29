@@ -46,6 +46,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.graphics.rotationMatrix
 import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.activity_maps.*

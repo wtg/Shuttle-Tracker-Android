@@ -40,7 +40,7 @@
         regardless of experience! Any contributions are welcome, as well as feedback for our current team.
         If you would like to view our source code, click the button below and open our GitHub page, and you can
         open an \"issue\" to leave feedback for us.</string>
-    <string name="announcements_url_parse">https://shuttletracker.app/announcements</string>
+    <string name="announcements_default_text">No current announcements.</string>
     <string name="github_button_text">Click to access our GitHub Repository!</string>
     <string name="repo_url">https://github.com/wtg/Shuttle-Tracker-Android</string>
     <string name="version_url">https://shuttletracker.app/version</string>
