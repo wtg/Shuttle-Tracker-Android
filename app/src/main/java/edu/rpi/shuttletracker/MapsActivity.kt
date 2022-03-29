@@ -129,7 +129,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun closeFABMenu() {
         fabBGLayout.visibility = View.GONE
-
         fab.bringToFront()
         fab.animate().rotation(0F)
         fabLayout1.animate().translationY(0f)
@@ -147,11 +146,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         //fabLayout5.visibility = View.GONE
                     }
                 }
-
                 override fun onAnimationCancel(animator: Animator) {}
                 override fun onAnimationRepeat(animator: Animator) {}
             })
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
