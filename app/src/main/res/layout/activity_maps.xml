@@ -156,7 +156,17 @@
                 android:layout_margin="16dp"
                 android:src="@drawable/ic_menu_hamburger" />
         </LinearLayout>
-
+        <Button
+            android:id="@+id/board_bus_button"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="@string/board_bus_button_text"
+            android:textAllCaps="false"
+            android:textAlignment="center"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="33dp"
+            android:background="@drawable/roundedbutton"
+            tools:ignore="RtlCompat" />
         <LinearLayout
             android:id="@+id/fabLayout5"
             android:layout_width="wrap_content"
@@ -166,18 +176,6 @@
             android:clipToPadding="false"
             android:gravity="center_vertical"
             >
-        <Button
-            android:id="@+id/board_bus_button"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:text="@string/board_bus_button_text"
-            android:textAllCaps="false"
-            android:textAlignment="center"
-            android:layout_gravity="bottom|center_horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="33dp"
-            android:background="@drawable/roundedbutton"
-        />
         <Button
             android:id="@+id/leave_bus_button"
             android:layout_width="150dp"
@@ -190,7 +188,7 @@
             android:layout_marginBottom="33dp"
             android:background="@drawable/leavebus"
             android:visibility="gone"
-            />
+            tools:ignore="RtlCompat" />
 
 
             <TextView
