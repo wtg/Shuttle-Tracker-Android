@@ -130,8 +130,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .bigText("Much longer text that cannot fit one line..."))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
+
         with(NotificationManagerCompat.from(this)) {
-            notificationManager.notify(notificationId, newMessageNotification)
+            // notificationId is a unique int for each notification that you must define
+            notify(0, builder.build())
         }
     }
 
