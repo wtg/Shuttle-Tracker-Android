@@ -12,29 +12,17 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.animation.Animator
 import android.app.AlertDialog
-import android.app.Application
-import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.content.res.Resources
-import android.graphics.Color
 import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
-import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -62,9 +50,29 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.scheduleAtFixedRate
-
-
-
+import android.content.Intent
+import android.net.Uri
+import android.system.Os.accept
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import android.animation.Animator
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import android.content.res.Resources
+import android.graphics.Color
+import android.provider.Settings.Global.getString
+import android.provider.Settings.System.getString
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.graphics.rotationMatrix
+import androidx.core.view.isVisible
+import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.coroutines.*
+import kotlin.system.*
+import kotlin.coroutines.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -122,6 +130,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         fabBGLayout.setOnClickListener { closeFABMenu() }
+        //button variable initiation
+        var btn_announcements = findViewById(R.id.fabLayout5) as LinearLayout
         var btn_settings = findViewById<LinearLayout>(R.id.fabLayout1)
         var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
         var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
@@ -164,6 +174,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
+        //btn_announcements.isVisible = true
 
         btn_settings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -176,6 +187,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         btn_about.setOnClickListener {
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
+        }
+        //button reference for announcements section
+        btn_announcements.setOnClickListener {
+            val intent = Intent(this, AnnouncementsActivity::class.java)
+            startActivity(intent);
         }
 
         boardBusButton.setOnClickListener {
@@ -393,18 +409,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var jsonMap = mapOf("id" to session_uuid, "coordinate" to coordinate, "type" to type, "date" to date)
         return JSONObject(jsonMap)
     }
-
     private fun showFABMenu() {
         fabLayout1.visibility = View.VISIBLE
         fabLayout2.visibility = View.VISIBLE
         fabLayout3.visibility = View.VISIBLE
         //fablayout4 (the refresh button) is already visible at the start
+        fabLayout5.visibility = View.VISIBLE
         fabBGLayout.visibility = View.VISIBLE
         fab.animate().rotationBy(180F)
         fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
         fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
         fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
         fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
+        //fabLayout5.animate().translationY(-resources.getDimension(R.dimen.standard_12))
         var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
         btn_info.bringToFront()
     }
@@ -417,6 +434,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabLayout2.animate().translationY(0f)
         fabLayout3.animate().translationY(0f)
         fabLayout4.animate().translationY(0f)
+        //fabLayout5.animate().translationY(0f)
             .setListener(object : Animator.AnimatorListener {
                 override fun onAnimationStart(animator: Animator) {}
                 override fun onAnimationEnd(animator: Animator) {
@@ -424,13 +442,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         fabLayout1.visibility = View.GONE
                         fabLayout2.visibility = View.GONE
                         fabLayout3.visibility = View.GONE
+                        //fabLayout5.visibility = View.GONE
                     }
                 }
-
                 override fun onAnimationCancel(animator: Animator) {}
                 override fun onAnimationRepeat(animator: Animator) {}
             })
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
