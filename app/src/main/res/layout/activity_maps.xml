@@ -10,9 +10,7 @@
     tools:context=".MapsActivity">
 
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".MainActivity">
@@ -26,97 +24,87 @@
 
         <include layout="@layout/content_main" />
 
-        <View
-            android:id="@+id/fabBGLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
+<!--        <View-->
+<!--            android:id="@+id/fabBGLayout"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:visibility="gone" />-->
 
 <!--        https://youtu.be/umCX1-Tq25k-->
 <!--        https://developer.android.com/guide/topics/ui/layout/relative-->
 <!--        https://www.tutorialride.com/android/android-gravity.htm-->
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentBottom="true"
-                android:gravity="bottom|right">
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:src="@drawable/ic_menu_hamburger"
+                map:fabSize="mini"
+                map:layout_constraintEnd_toStartOf="parent"
+                map:layout_constraintBottom_toBottomOf="parent"
+                 />
 
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fab1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginRight="39dp"
-                    android:layout_marginBottom="44dp"
-                    android:clipToPadding="false"
-                    android:gravity="center_vertical"
-                    android:src="@drawable/ic_settings"
-                    app:fabSize="mini" />
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="invisible"
+                android:src="@drawable/ic_settings"
+                map:fabSize="mini"
+                map:layout_constraintEnd_toStartOf="parent"
+                map:layout_constraintBottom_toBottomOf="parent"/>
 
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fab2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginRight="39dp"
-                    android:layout_marginBottom="48dp"
-                    android:clipToPadding="false"
-                    android:gravity="center_vertical"
-                    android:src="@drawable/ic_baseline_more_24"
-                    android:visibility="gone"
-                    app:fabSize="mini" />
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="invisible"
+                android:src="@drawable/ic_baseline_more_24"
+                map:fabSize="mini"
+                map:layout_constraintEnd_toStartOf="@+id/fab1"
+                map:layout_constraintBottom_toBottomOf="@+id/fab1"/>
 
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="invisible"
+                android:src="@drawable/ic_baseline_info_24"
+                map:fabSize="mini"
+                map:layout_constraintEnd_toStartOf="@+id/fab2"
+                map:layout_constraintBottom_toBottomOf="@+id/fab2" />
 
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fab3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginRight="39dp"
-                    android:layout_marginBottom="28dp"
-                    android:clipToPadding="false"
-                    android:gravity="center_vertical"
-                    android:src="@drawable/ic_baseline_info_24"
-                    android:visibility="gone"
-                    app:fabSize="mini" />
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fab4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginRight="39dp"
-                    android:layout_marginBottom="100dp"
-                    android:clipToPadding="false"
-                    android:gravity="center_vertical"
-                    android:src="@drawable/ic_baseline_refresh_24"
-                    app:fabSize="mini" />
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="invisible"
+                android:src="@drawable/ic_baseline_refresh_24"
+                map:fabSize="mini"
+                map:layout_constraintEnd_toStartOf="@+id/fab3"
+                map:layout_constraintBottom_toBottomOf="@+id/fab3" />
 
 
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fab"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_margin="32dp"
-                    android:gravity="center_vertical"
-                    android:src="@drawable/ic_menu_hamburger" />
-
-            </RelativeLayout>
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <Button
             android:id="@+id/board_bus_button"
