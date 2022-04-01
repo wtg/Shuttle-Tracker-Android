@@ -129,7 +129,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("Much longer text that cannot fit one line..."))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setOngoing(true)
+            //.setOngoing(true)
 
 
         with(NotificationManagerCompat.from(this)) {
