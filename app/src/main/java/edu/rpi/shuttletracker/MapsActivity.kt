@@ -110,6 +110,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var type = "user"
     private lateinit var date: String
 
+    private var clicked = false
+    private val rotateOpen = AnimationUtils.loadAnimation(this, R.anim.rotate_open_anim)
+    private val rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim)
+    private val fromBottom = AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim)
+    private val toBottom = AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim)
+
     object colorblindMode : Application() {
         var colorblind : Boolean = false
         fun getMode() : Boolean {
@@ -124,14 +130,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         fab.setOnClickListener {
-            if (View.GONE == fabBGLayout.visibility) {
-                showFABMenu()
-            } else {
-                closeFABMenu()
-            }
+            onHamburgerClick()
         }
 
-        fabBGLayout.setOnClickListener { closeFABMenu() }
+//        fabBGLayout.setOnClickListener { closeFABMenu() }
         var btn_settings = findViewById<FloatingActionButton>(R.id.fab1)
         var btn_about = findViewById<FloatingActionButton>(R.id.fab2)
         var btn_info = findViewById<FloatingActionButton>(R.id.fab3)
@@ -383,44 +385,80 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return JSONObject(jsonMap)
     }
 
-    private fun showFABMenu() {
-        fab1.visibility = View.VISIBLE
-        fab2.visibility = View.VISIBLE
-        fab3.visibility = View.VISIBLE
-        //fab4 (the refresh button) is already visible at the start
-        fabBGLayout.visibility = View.VISIBLE
-        fab.animate().rotationBy(180F)
-        fab1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
-        fab2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
-        fab3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
-        fab4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
-        var btn_info = findViewById(R.id.fab3) as FloatingActionButton
-        btn_info.bringToFront()
+    private fun onHamburgerClick(){
+        setVisibility(clicked)
+        setAnimation(clicked)
+        clicked = !clicked
     }
 
-    private fun closeFABMenu() {
-        fabBGLayout.visibility = View.GONE
-        fab.bringToFront()
-        fab.animate().rotation(0F)
-        fab1.animate().translationY(0f)
-        fab2.animate().translationY(0f)
-        fab3.animate().translationY(0f)
-        fab4.animate().translationY(0f)
-            .setListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animator: Animator) {}
-                override fun onAnimationEnd(animator: Animator) {
-                    if (View.GONE == fabBGLayout.visibility) {
-                        fab1.visibility = View.GONE
-                        fab2.visibility = View.GONE
-                        fab3.visibility = View.GONE
-                    }
-                }
-
-                override fun onAnimationCancel(animator: Animator) {}
-                override fun onAnimationRepeat(animator: Animator) {}
-            })
-
+    private fun setAnimation(clicked: Boolean) {
+        if(!clicked){
+            fab1.startAnimation(fromBottom)
+            fab2.startAnimation(fromBottom)
+            fab3.startAnimation(fromBottom)
+            fab4.startAnimation(fromBottom)
+            fab.startAnimation(rotateOpen)
+        } else {
+            fab1.startAnimation(toBottom)
+            fab2.startAnimation(toBottom)
+            fab3.startAnimation(toBottom)
+            fab4.startAnimation(toBottom)
+            fab.startAnimation(rotateClose)
+        }
     }
+
+    private fun setVisibility(clicked: Boolean) {
+        if(!clicked){
+            fab1.visibility = View.VISIBLE
+            fab2.visibility = View.VISIBLE
+            fab3.visibility = View.VISIBLE
+            fab4.visibility = View.VISIBLE
+        } else {
+            fab1.visibility = View.INVISIBLE
+            fab2.visibility = View.INVISIBLE
+            fab3.visibility = View.INVISIBLE
+            fab4.visibility = View.INVISIBLE
+        }
+    }
+
+//    private fun showFABMenu() {
+//        fab1.visibility = View.VISIBLE
+//        fab2.visibility = View.VISIBLE
+//        fab3.visibility = View.VISIBLE
+//        //fab4 (the refresh button) is already visible at the start
+//        fabBGLayout.visibility = View.VISIBLE
+//        fab.animate().rotationBy(180F)
+//        fab1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
+//        fab2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
+//        fab3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
+//        fab4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
+//        var btn_info = findViewById(R.id.fab3) as FloatingActionButton
+//        btn_info.bringToFront()
+//    }
+//
+//    private fun closeFABMenu() {
+//        fabBGLayout.visibility = View.GONE
+//        fab.bringToFront()
+//        fab.animate().rotation(0F)
+//        fab1.animate().translationY(0f)
+//        fab2.animate().translationY(0f)
+//        fab3.animate().translationY(0f)
+//        fab4.animate().translationY(0f)
+//            .setListener(object : Animator.AnimatorListener {
+//                override fun onAnimationStart(animator: Animator) {}
+//                override fun onAnimationEnd(animator: Animator) {
+//                    if (View.GONE == fabBGLayout.visibility) {
+//                        fab1.visibility = View.GONE
+//                        fab2.visibility = View.GONE
+//                        fab3.visibility = View.GONE
+//                    }
+//                }
+//
+//                override fun onAnimationCancel(animator: Animator) {}
+//                override fun onAnimationRepeat(animator: Animator) {}
+//            })
+
+//    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
