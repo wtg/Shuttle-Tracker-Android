@@ -76,8 +76,7 @@ import com.google.android.gms.maps.MapView
 import android.view.ViewGroup
 
 import android.view.LayoutInflater
-
-
+import android.view.animation.Animation
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -111,10 +110,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var date: String
 
     private var clicked = false
-    private val rotateOpen = AnimationUtils.loadAnimation(this, R.anim.rotate_open_anim)
-    private val rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim)
-    private val fromBottom = AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim)
-    private val toBottom = AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim)
+    private val rotateOpen: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.rotate_open_anim) }
+    private val rotateClose: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim) }
+    private val fromBottom: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim) }
+    private val toBottom: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim) }
 
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -388,6 +387,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun onHamburgerClick(){
         setVisibility(clicked)
         setAnimation(clicked)
+        setClickable(clicked)
         clicked = !clicked
     }
 
@@ -418,6 +418,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             fab2.visibility = View.INVISIBLE
             fab3.visibility = View.INVISIBLE
             fab4.visibility = View.INVISIBLE
+        }
+    }
+
+    private fun setClickable(clicked: Boolean){
+        if(!clicked){
+            fab1.isClickable = false
+            fab2.isClickable = false
+            fab3.isClickable = false
+            fab4.isClickable = false
+        } else {
+            fab1.isClickable = true
+            fab2.isClickable = true
+            fab3.isClickable = true
+            fab4.isClickable = true
         }
     }
 

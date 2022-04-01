@@ -33,7 +33,9 @@
 <!--        https://youtu.be/umCX1-Tq25k-->
 <!--        https://developer.android.com/guide/topics/ui/layout/relative-->
 <!--        https://www.tutorialride.com/android/android-gravity.htm-->
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -48,8 +50,7 @@
                 android:src="@drawable/ic_menu_hamburger"
                 map:fabSize="mini"
                 map:layout_constraintEnd_toStartOf="parent"
-                map:layout_constraintBottom_toBottomOf="parent"
-                 />
+                map:layout_constraintBottom_toBottomOf="parent" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab1"
@@ -75,7 +76,7 @@
                 android:src="@drawable/ic_baseline_more_24"
                 map:fabSize="mini"
                 map:layout_constraintEnd_toStartOf="@+id/fab1"
-                map:layout_constraintBottom_toBottomOf="@+id/fab1"/>
+                map:layout_constraintBottom_toBottomOf="@+id/fab1" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab3"
