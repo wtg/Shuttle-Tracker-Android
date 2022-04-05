@@ -150,6 +150,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val serviceIntent = Intent(this, BackgroundLocationTracking::class.java)
+        startService(serviceIntent)
+
         notificationbanner()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
