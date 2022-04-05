@@ -1120,9 +1120,4 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 99
     }
-
-
 }
-
-
-
