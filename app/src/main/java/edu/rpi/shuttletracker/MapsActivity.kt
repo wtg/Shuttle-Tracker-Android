@@ -111,7 +111,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val name = getString(R.string.channel_name)
             val descriptionText = getString(R.string.channel_description)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("9966", name, importance).apply {
+            val channel = NotificationChannel("1", name, importance).apply {
                 description = descriptionText
             }
             // Register the channel with the system
@@ -122,14 +122,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun notificationbanner(){
-        var builder = NotificationCompat.Builder(this, "9966")
+        var builder = NotificationCompat.Builder(this, "1")
             .setSmallIcon(R.drawable.roundedbutton)
             .setContentTitle("My notification")
             .setContentText("Much longer text that cannot fit one line...")
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("Much longer text that cannot fit one line..."))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            //.setOngoing(true)
+            .setOngoing(true)
 
 
         with(NotificationManagerCompat.from(this)) {
@@ -175,7 +175,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
         // Initialize location updates
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)//This "this" means the location is only being updated when MapActivity is active
         locationRequest = LocationRequest.create()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         locationRequest.interval = 5 * 1000 // refreshes every 5 seconds
@@ -185,6 +185,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 currentLocation = locationResult.lastLocation
             }
         }
+
+
         if (ActivityCompat.checkSelfPermission(
                 this,
                 ACCESS_FINE_LOCATION
@@ -997,6 +999,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             //println("Updated bus locations.")
         }
         markerTimer.scheduleAtFixedRate(0,1000){
+
+            println("Current location is ")
+            println(currentLocation)
             if(busesDrawn) {
                 runOnUiThread { updateMarker(busMarkerArray) }
             }
