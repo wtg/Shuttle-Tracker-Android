@@ -104,6 +104,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var type = "user"
     private lateinit var date: String
 
+    val wakelockIntent = Intent(this, Wakelock::class.java)
+
+
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
@@ -150,8 +153,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val serviceIntent = Intent(this, BackgroundLocationTracking::class.java)
-        startService(serviceIntent)
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -185,6 +186,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
                 currentLocation = locationResult.lastLocation
+
             }
         }
 
@@ -230,11 +232,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  3. send data to server
              *  4. update this client's state and change the button to "leave bus"
              */
-            println("location: $currentLocation") // TODO: remove/comment this testing clause
             // Check if the user is near a bus stop. If not, pop up an alert dialog and stop this button's onclick listener.
             if (!checkNearbyStop()) {
                 return@setOnClickListener
             }
+            startForegroundService(wakelockIntent)
             val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
                 .toTypedArray() // convert Array<Int> to Array<String>
             if (internet_connection()) {
@@ -268,6 +270,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             ;
             leaveBusButton.setOnClickListener {
+                stopService(wakelockIntent)
                 onBus = false // this variable controls when the data-transmitting thread ends
                 boardBusButton.visibility = View.VISIBLE
                 leaveBusButton.visibility = View.GONE
@@ -709,7 +712,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                     markerArray.get(i)
                                         .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
-                                    println("Bus " + id + " updated.")
+                                    //println("Bus " + id + " updated.")
                                 }
                             }
                             val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -726,7 +729,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                         markerArray.get(i)
                                             .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
-                                        println("Bus " + id + " updated.")
+                                        //println("Bus " + id + " updated.")
                                         markerArray.get(i).tag = busDate
                                     }
                                 }
@@ -757,7 +760,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     )
                                 )
                                 markerArray.get(i).tag = (current.busDate)
-                                println(current.busDate)
+                                //println(current.busDate)
                             }
                         }
                     }
@@ -827,7 +830,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         continue
                     }
                     var dateTag = markeri.tag.toString()//TODO: Try catch, parisng null marker
-                    println(dateTag)
+                    //println(dateTag)
                     val busDate = LocalDateTime.parse(dateTag)
                     val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
                     val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
@@ -1008,6 +1011,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 runOnUiThread { updateMarker(busMarkerArray) }
             }
             if(!internet_connection()&&onBus){
+                stopService(wakelockIntent)
                 onBus = false // this variable controls when the data-transmitting thread ends
                 runOnUiThread() {
                     boardBusButton.visibility = View.VISIBLE
@@ -1101,7 +1105,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     // location-related task you need to do.
                     fusedLocationClient.lastLocation.addOnSuccessListener { location:Location ->
                         currentLocation = location // update current location
-                        println("current location updated") // TODO: remove/comment this testing clause
+                        //println("current location updated") // TODO: remove/comment this testing clause
                     }
 
                     if (ActivityCompat.checkSelfPermission(
