@@ -104,8 +104,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var type = "user"
     private lateinit var date: String
 
-    val wakelockIntent = Intent(this, Wakelock::class.java)
-
+    var wakelockIntent = Intent(this, Wakelock::class.java)
 
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -124,7 +123,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun notificationbanner(){
+    private fun notificationbanner(){//Sample Notification that's not being used
         var builder = NotificationCompat.Builder(this, "1")
             .setSmallIcon(R.drawable.roundedbutton)
             .setContentTitle("My notification")
@@ -154,6 +153,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         fab.setOnClickListener {
@@ -177,6 +177,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         // Initialize location updates
+
+        wakelockIntent = Intent(this, Wakelock::class.java)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)//This "this" means the location is only being updated when MapActivity is active
         locationRequest = LocationRequest.create()
@@ -236,7 +238,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if (!checkNearbyStop()) {
                 return@setOnClickListener
             }
-            startForegroundService(wakelockIntent)
             val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
                 .toTypedArray() // convert Array<Int> to Array<String>
             if (internet_connection()) {
@@ -251,6 +252,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                     .setPositiveButton("Continue") { dialog, _ ->
                         if (selectedBusNumber != null) {
+                            startForegroundService(wakelockIntent)
                             val sendDataThread = sendOnBusData()
                             sendDataThread.start()
 
@@ -1011,7 +1013,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 runOnUiThread { updateMarker(busMarkerArray) }
             }
             if(!internet_connection()&&onBus){
-                stopService(wakelockIntent)
+
+
                 onBus = false // this variable controls when the data-transmitting thread ends
                 runOnUiThread() {
                     boardBusButton.visibility = View.VISIBLE
