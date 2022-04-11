@@ -33,9 +33,7 @@
 <!--        https://youtu.be/umCX1-Tq25k-->
 <!--        https://developer.android.com/guide/topics/ui/layout/relative-->
 <!--        https://www.tutorialride.com/android/android-gravity.htm-->
-        <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:map="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -62,8 +60,8 @@
                 android:visibility="invisible"
                 android:src="@drawable/ic_settings"
                 map:fabSize="mini"
-                map:layout_constraintEnd_toStartOf="parent"
-                map:layout_constraintBottom_toBottomOf="parent"/>
+                map:layout_constraintEnd_toStartOf="@+id/fab"
+                map:layout_constraintBottom_toTopOf="@+id/fab"/>
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab2"
@@ -76,7 +74,7 @@
                 android:src="@drawable/ic_baseline_more_24"
                 map:fabSize="mini"
                 map:layout_constraintEnd_toStartOf="@+id/fab1"
-                map:layout_constraintBottom_toBottomOf="@+id/fab1" />
+                map:layout_constraintBottom_toTopOf="@+id/fab1" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab3"
@@ -89,7 +87,7 @@
                 android:src="@drawable/ic_baseline_info_24"
                 map:fabSize="mini"
                 map:layout_constraintEnd_toStartOf="@+id/fab2"
-                map:layout_constraintBottom_toBottomOf="@+id/fab2" />
+                map:layout_constraintBottom_toTopOf="@+id/fab2" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab4"
@@ -102,7 +100,7 @@
                 android:src="@drawable/ic_baseline_refresh_24"
                 map:fabSize="mini"
                 map:layout_constraintEnd_toStartOf="@+id/fab3"
-                map:layout_constraintBottom_toBottomOf="@+id/fab3" />
+                map:layout_constraintBottom_toTopOf="@+id/fab3" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
