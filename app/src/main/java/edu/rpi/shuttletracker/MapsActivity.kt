@@ -13,10 +13,8 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.AlertDialog
-import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Context
 
 import android.content.DialogInterface
 import android.content.pm.PackageManager
@@ -24,7 +22,6 @@ import android.content.res.Configuration
 import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.Uri
 import android.os.Build
 
 import android.os.Bundle
