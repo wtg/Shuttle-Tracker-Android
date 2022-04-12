@@ -113,7 +113,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val rotateOpen: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.rotate_open_anim) }
     private val rotateClose: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.rotate_close_anim) }
     private val fromBottom: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.from_bottom_anim) }
+    private val fromBottomNoAlpha: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.from_bottom__no_alpha_anim) }
     private val toBottom: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.to_bottom_anim) }
+    private val toBottomNoAlpha: Animation by lazy { AnimationUtils.loadAnimation(this, R.anim.to_bottom_no_alpha_anim) }
 
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -396,13 +398,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             fab1.startAnimation(fromBottom)
             fab2.startAnimation(fromBottom)
             fab3.startAnimation(fromBottom)
-            fab4.startAnimation(fromBottom)
+            fab4.startAnimation(fromBottomNoAlpha)
             fab.startAnimation(rotateOpen)
         } else {
             fab1.startAnimation(toBottom)
             fab2.startAnimation(toBottom)
             fab3.startAnimation(toBottom)
-            fab4.startAnimation(toBottom)
+            fab4.startAnimation(toBottomNoAlpha)
             fab.startAnimation(rotateClose)
         }
     }
@@ -417,7 +419,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             fab1.visibility = View.INVISIBLE
             fab2.visibility = View.INVISIBLE
             fab3.visibility = View.INVISIBLE
-            fab4.visibility = View.INVISIBLE
+            fab4.visibility = View.VISIBLE
         }
     }
 
@@ -426,7 +428,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             fab1.isClickable = false
             fab2.isClickable = false
             fab3.isClickable = false
-            fab4.isClickable = false
+            fab4.isClickable = true
         } else {
             fab1.isClickable = true
             fab2.isClickable = true
