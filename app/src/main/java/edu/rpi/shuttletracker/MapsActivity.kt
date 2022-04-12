@@ -260,7 +260,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             // 18 minutes after they board we check if they are still on the bus
             notificationTimer.schedule(1080000){
                 if(boardBusButton.visibility == View.GONE) {
-                    notificationbanner()
+                    leaveNotification()
                 }
             }
 
