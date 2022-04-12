@@ -3,5 +3,6 @@
     <color name="colorPrimary">#616161</color>
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#B40000</color>
+    <color name="backgroundButton">#80B3B3B3</color>
     <color name="boardBus">#007B7B</color>
 </resources>
