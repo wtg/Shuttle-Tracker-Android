@@ -66,6 +66,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 
 
@@ -138,6 +139,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             // notificationId is a unique int for each notification that you must define
             notify(0, builder.build())
         }
+    }
+
+
+    private fun leaveNotification(){//Notification that will be shown when people have been on bus for a long time
+        var builder = NotificationCompat.Builder(this, "1")
+            .setSmallIcon(R.drawable.roundedbutton)
+            .setContentTitle("Leave Shuttle?")
+            .setContentText("Hey, we noticed that you've been contributing for a while now." +
+                    " Have you left the bus yet?")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOngoing(true)
+
+
+        with(NotificationManagerCompat.from(this)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(0, builder.build())
+        }
+
+        // Still need to add action button to actually leave the bus
     }
 
 
@@ -234,6 +254,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  3. send data to server
              *  4. update this client's state and change the button to "leave bus"
              */
+
+            val notificationTimer = Timer("notificationTimer", true)
+
+            // 18 minutes after they board we check if they are still on the bus
+            notificationTimer.schedule(1080000){
+                if(boardBusButton.visibility == View.GONE) {
+                    notificationbanner()
+                }
+            }
+
             // Check if the user is near a bus stop. If not, pop up an alert dialog and stop this button's onclick listener.
             if (!checkNearbyStop()) {
                 return@setOnClickListener
