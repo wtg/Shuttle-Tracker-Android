@@ -49,7 +49,6 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:src="@drawable/ic_menu_hamburger"
-                map:fabSize="mini"
                 map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toBottomOf="parent" />
 
@@ -64,7 +63,6 @@
                 android:focusable="true"
                 android:visibility="invisible"
                 android:src="@drawable/ic_settings"
-                map:fabSize="mini"
                 map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toTopOf="@+id/fab"/>
 
@@ -79,7 +77,6 @@
                 android:focusable="true"
                 android:visibility="invisible"
                 android:src="@drawable/ic_baseline_more_24"
-                map:fabSize="mini"
                 map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toTopOf="@+id/fab1" />
 
@@ -94,7 +91,6 @@
                 android:focusable="true"
                 android:visibility="invisible"
                 android:src="@drawable/ic_baseline_info_24"
-                map:fabSize="mini"
                 map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toTopOf="@+id/fab2" />
 
@@ -107,9 +103,8 @@
                 android:layout_marginBottom="16dp"
                 android:clickable="true"
                 android:focusable="true"
-                android:visibility="invisible"
+                android:visibility="visible"
                 android:src="@drawable/ic_baseline_refresh_24"
-                map:fabSize="mini"
                 map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toTopOf="@+id/fab3" />
 
