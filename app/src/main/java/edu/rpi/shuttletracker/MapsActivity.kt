@@ -149,7 +149,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .setContentText("Hey, we noticed that you've been contributing for a while now." +
                     " Have you left the bus yet?")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setOngoing(true)
 
 
         with(NotificationManagerCompat.from(this)) {
