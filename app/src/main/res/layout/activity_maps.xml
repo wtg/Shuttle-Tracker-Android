@@ -34,72 +34,83 @@
 <!--        https://developer.android.com/guide/topics/ui/layout/relative-->
 <!--        https://www.tutorialride.com/android/android-gravity.htm-->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_gravity="bottom|end">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="24dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:src="@drawable/ic_menu_hamburger"
                 map:fabSize="mini"
-                map:layout_constraintEnd_toStartOf="parent"
+                map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toBottomOf="parent" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:visibility="invisible"
                 android:src="@drawable/ic_settings"
                 map:fabSize="mini"
-                map:layout_constraintEnd_toStartOf="@+id/fab"
+                map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toTopOf="@+id/fab"/>
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:visibility="invisible"
                 android:src="@drawable/ic_baseline_more_24"
                 map:fabSize="mini"
-                map:layout_constraintEnd_toStartOf="@+id/fab1"
+                map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toTopOf="@+id/fab1" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:visibility="invisible"
                 android:src="@drawable/ic_baseline_info_24"
                 map:fabSize="mini"
-                map:layout_constraintEnd_toStartOf="@+id/fab2"
+                map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toTopOf="@+id/fab2" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:visibility="invisible"
                 android:src="@drawable/ic_baseline_refresh_24"
                 map:fabSize="mini"
-                map:layout_constraintEnd_toStartOf="@+id/fab3"
+                map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintBottom_toTopOf="@+id/fab3" />
 
 
