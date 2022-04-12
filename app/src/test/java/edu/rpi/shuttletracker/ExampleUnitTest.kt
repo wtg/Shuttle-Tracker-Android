@@ -3,7 +3,7 @@ package edu.rpi.shuttletracker
 import org.junit.Test
 
 import org.junit.Assert.*
-import org.junit.jupiter.api.Test
+
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -17,12 +17,12 @@ import org.junit.jupiter.api.Test
 //    }
 //}
 class ScheduleAPITest {
-    @Test
-    fun scheduleAPI_IsCorrect() {
-
-        val testsched = scheduleAPI("https://shuttletracker.app/schedule.json")[0]
-
-    }
+//    @Test
+//    fun scheduleAPI_IsCorrect() {
+//
+//        val testsched = scheduleAPI("https://shuttletracker.app/schedule.json")[0]
+//
+//    }
 
 
 }

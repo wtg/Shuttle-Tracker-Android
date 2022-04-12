@@ -4,6 +4,12 @@ class Schedule (
     val name: String,
     val start: String,
     val end: String,
-    val content: ArrayList<Day>
+    val content: ArrayList<Day>,
 
+
+
+
+
+
+//scheduleAPI(url: String) : ArrayList<Schedule>
 )
