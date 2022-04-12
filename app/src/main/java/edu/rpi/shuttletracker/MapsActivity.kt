@@ -13,12 +13,20 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.AlertDialog
+import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+
 import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
+import android.os.Build
+
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
@@ -26,6 +34,8 @@ import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -49,6 +59,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 import android.content.Intent
 import android.net.Uri
@@ -107,6 +118,59 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var type = "user"
     private lateinit var date: String
 
+    var wakelockIntent = Intent(this, Wakelock::class.java)
+
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val descriptionText = getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("1", name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun notificationbanner(){//Sample Notification that's not being used
+        var builder = NotificationCompat.Builder(this, "1")
+            .setSmallIcon(R.drawable.roundedbutton)
+            .setContentTitle("My notification")
+            .setContentText("Much longer text that cannot fit one line...")
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText("Much longer text that cannot fit one line..."))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+
+        with(NotificationManagerCompat.from(this)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(0, builder.build())
+        }
+    }
+
+
+    private fun leaveNotification(){//Notification that will be shown when people have been on bus for a long time
+        var builder = NotificationCompat.Builder(this, "1")
+            .setSmallIcon(R.drawable.roundedbutton)
+            .setContentTitle("Leave Shuttle?")
+            .setContentText("Hey, we noticed that you've been contributing for a while now." +
+                    " Have you left the bus yet?")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+
+        with(NotificationManagerCompat.from(this)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(0, builder.build())
+        }
+
+        // Still need to add action button to actually leave the bus
+    }
+
 
     object colorblindMode : Application() {
         var colorblind : Boolean = false
@@ -119,6 +183,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         fab.setOnClickListener {
@@ -129,6 +195,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        createNotificationChannel()
         fabBGLayout.setOnClickListener { closeFABMenu() }
         //button variable initiation
         var btn_announcements = findViewById(R.id.fabLayout5) as LinearLayout
@@ -144,7 +211,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
         // Initialize location updates
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        wakelockIntent = Intent(this, Wakelock::class.java)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)//This "this" means the location is only being updated when MapActivity is active
         locationRequest = LocationRequest.create()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         locationRequest.interval = 5 * 1000 // refreshes every 5 seconds
@@ -152,8 +221,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
                 currentLocation = locationResult.lastLocation
+
             }
         }
+
+
         if (ActivityCompat.checkSelfPermission(
                 this,
                 ACCESS_FINE_LOCATION
@@ -201,7 +273,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  3. send data to server
              *  4. update this client's state and change the button to "leave bus"
              */
-            println("location: $currentLocation") // TODO: remove/comment this testing clause
+
+            val notificationTimer = Timer("notificationTimer", true)
+
+            // 18 minutes after they board we check if they are still on the bus
+            notificationTimer.schedule(1080000){
+                if(boardBusButton.visibility == View.GONE) {
+                    leaveNotification()
+                }
+            }
+
             // Check if the user is near a bus stop. If not, pop up an alert dialog and stop this button's onclick listener.
             if (!checkNearbyStop()) {
                 return@setOnClickListener
@@ -220,6 +301,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                     .setPositiveButton("Continue") { dialog, _ ->
                         if (selectedBusNumber != null) {
+                            startForegroundService(wakelockIntent)
                             val sendDataThread = sendOnBusData()
                             sendDataThread.start()
 
@@ -239,6 +321,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             ;
             leaveBusButton.setOnClickListener {
+                stopService(wakelockIntent)
                 onBus = false // this variable controls when the data-transmitting thread ends
                 boardBusButton.visibility = View.VISIBLE
                 leaveBusButton.visibility = View.GONE
@@ -681,7 +764,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                     markerArray.get(i)
                                         .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
-                                    println("Bus " + id + " updated.")
+                                    //println("Bus " + id + " updated.")
                                 }
                             }
                             val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -698,7 +781,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         markerArray.get(i).setPosition(LatLng(latitude, longitude))
                                         markerArray.get(i)
                                             .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
-                                        println("Bus " + id + " updated.")
+                                        //println("Bus " + id + " updated.")
                                         markerArray.get(i).tag = busDate
                                     }
                                 }
@@ -729,7 +812,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     )
                                 )
                                 markerArray.get(i).tag = (current.busDate)
-                                println(current.busDate)
+                                //println(current.busDate)
                             }
                         }
                     }
@@ -799,7 +882,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         continue
                     }
                     var dateTag = markeri.tag.toString()//TODO: Try catch, parisng null marker
-                    println(dateTag)
+                    //println(dateTag)
                     val busDate = LocalDateTime.parse(dateTag)
                     val seconds: Long = ChronoUnit.SECONDS.between(busDate, currentDate)
                     val minutes: Long = ChronoUnit.MINUTES.between(busDate, currentDate)
@@ -973,10 +1056,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             //println("Updated bus locations.")
         }
         markerTimer.scheduleAtFixedRate(0,1000){
+
+            println("Current location is ")
+            println(currentLocation)
             if(busesDrawn) {
                 runOnUiThread { updateMarker(busMarkerArray) }
             }
             if(!internet_connection()&&onBus){
+
+
                 onBus = false // this variable controls when the data-transmitting thread ends
                 runOnUiThread() {
                     boardBusButton.visibility = View.VISIBLE
@@ -1070,7 +1158,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     // location-related task you need to do.
                     fusedLocationClient.lastLocation.addOnSuccessListener { location:Location ->
                         currentLocation = location // update current location
-                        println("current location updated") // TODO: remove/comment this testing clause
+                        //println("current location updated") // TODO: remove/comment this testing clause
                     }
 
                     if (ActivityCompat.checkSelfPermission(
@@ -1091,9 +1179,4 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 99
     }
-
-
 }
-
-
-
