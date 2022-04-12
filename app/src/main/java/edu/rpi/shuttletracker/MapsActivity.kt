@@ -483,26 +483,28 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun scheduleAPI(url: String) /*: ArrayList<Schedule>*/{
 
         val semesterArray = ArrayList<Schedule>()
+
         val thread = Thread(kotlinx.coroutines.Runnable {
             kotlin.run {
                 val url = URL(url)
                 val jsonString = url.readText()
                 var jsonArray = JSONArray(jsonString)
                 for (i in 0 until jsonArray.length()) {
-                    println("hello")
+
                     val semSchedule = jsonArray.getJSONObject(i)
                     val name = semSchedule.getString("name")
                     val start = semSchedule.getString("start")
                     val end = semSchedule.getString("end")
                     val content = semSchedule.getJSONObject("content")
-//                    val dayArray = ArrayList<Day>()
-//
-//                    //monday
-//                    val monday = content.getJSONObject(0)
-//                    val dayStart = monday.getString("start")
-//                    val dayEnd = monday.getString("end")
-//                    val dayObject = Day("Monday", dayStart, dayEnd)
-//                    dayArray.add(dayObject)
+                    val dayArray = ArrayList<Day>()
+
+                    //monday
+                    val monday = content.getJSONObject("monday")
+                    val dayStart = monday.getString("start")
+                    val dayEnd = monday.getString("end")
+                    val dayObject = Day("Monday", dayStart, dayEnd)
+                    dayArray.add(dayObject)
+                    println(dayEnd)
 //                    //tuesday
 //                    val tuesday = content.getJSONObject(1)
 //                    val tuesdayStart = tuesday.getString("start")
