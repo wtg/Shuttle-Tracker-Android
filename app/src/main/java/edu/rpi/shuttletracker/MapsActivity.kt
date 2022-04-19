@@ -21,6 +21,8 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.app.*
+import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -68,8 +70,6 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-
-
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -142,6 +142,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private fun leaveNotification(){//Notification that will be shown when people have been on bus for a long time
+
+        //Attempting to add action button to the notification
+
+        /*val leaveActionIntent = Intent(leaveActionReceiver::class.java)
+
+        val leaveActionPendingIntent: PendingIntent =
+            PendingIntent.getActivity(application, 0, leaveActionIntent, 0)*/
+
+
         var builder = NotificationCompat.Builder(this, "1")
             .setSmallIcon(R.drawable.roundedbutton)
             .setContentTitle("Leave Shuttle?")
@@ -149,15 +158,38 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     " Have you left the bus yet?")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
+        // This calls the action but not sure exactly how to do it
+            // .addAction(R.drawable.google_plus_icon, "Activity Action", leaveActionPendingIntent)
+
 
         with(NotificationManagerCompat.from(this)) {
             // notificationId is a unique int for each notification that you must define
-            notify(0, builder.build())
+            notify(1, builder.build())
         }
 
-        // Still need to add action button to actually leave the bus
+
     }
 
+    //Code for the action button, it will change the button back from leave bus to board bus
+    //as well as stopping the user from crowdsourcing
+    class leaveActionReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            performAction()
+            //This is used to close the notification tray
+            val it = Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
+            context.sendBroadcast(it)
+        }
+
+        //Code to perform action, this code is the same code as when the leave bus button is clicked
+        fun performAction() {
+            /*
+            stopService(wakelockIntent)
+            onBus = false // this variable controls when the data-transmitting thread ends
+            boardBusButton.visibility = View.VISIBLE
+            leaveBusButton.visibility = View.GONE
+            */
+        }
+    }
 
     object colorblindMode : Application() {
         var colorblind : Boolean = false
