@@ -1,8 +1,10 @@
 package edu.rpi.shuttletracker
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
+import android.content.Intent
 import android.widget.RemoteViews
 
 /**
@@ -20,13 +22,13 @@ class BusLocationWidget : AppWidgetProvider() {
         }
     }
 
-    override fun onEnabled(context: Context) {
-        // Enter relevant functionality for when the first widget is created
-    }
-
-    override fun onDisabled(context: Context) {
-        // Enter relevant functionality for when the last widget is disabled
-    }
+//    override fun onEnabled(context: Context) {
+//        // Enter relevant functionality for when the first widget is created
+//    }
+//
+//    override fun onDisabled(context: Context) {
+//        // Enter relevant functionality for when the last widget is disabled
+//    }
 }
 
 internal fun updateAppWidget(
@@ -37,7 +39,14 @@ internal fun updateAppWidget(
     val widgetText = context.getString(R.string.appwidget_text)
     // Construct the RemoteViews object
     val views = RemoteViews(context.packageName, R.layout.bus_location_widget)
-    views.setTextViewText(R.id.appwidget_text, widgetText)
+//    views.setTextViewText(R.id.appwidget_text, widgetText)
+    val intent = Intent(Intent.ACTION_VIEW)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    val pending_intent = PendingIntent.getActivity(context, 0, intent, 0)
+    views.setOnClickPendingIntent(R.id.board_bus_widget_button, pending_intent)
+
+
 
     // Instruct the widget manager to update the widget
     appWidgetManager.updateAppWidget(appWidgetId, views)

@@ -4,16 +4,11 @@
     android:layout_height="match_parent"
     android:theme="@style/AppTheme.AppWidgetContainer">
 
-    <TextView
-        android:id="@+id/appwidget_text"
-        style="@style/Widget.RPIShuttleTracker.AppWidget.InnerView"
+    <Button
+        android:id="@+id/board_bus_widget_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_margin="8dp"
-        android:contentDescription="@string/appwidget_text"
-        android:text="@string/appwidget_text"
-        android:textSize="24sp"
-        android:textStyle="bold|italic" />
+        android:text="Board Bus"
+        android:textColor="@color/colorPrimary"
+        />
 </RelativeLayout>
