@@ -34,9 +34,8 @@ class AnnouncementsActivity : AppCompatActivity(){
                         (sched_type =="startOnly" && currentDate>=startDate) ||
                         (sched_type =="endOnly" && currentDate<=endDate))
                         announString += startDate.toString().substringBefore('T') + ":\n" +
-                                "______________________________________________"+ "\n" +
-                                announArray.getJSONObject(i).getString("body") + "\n" +
-                                "______________________________________________"+ "\n\n\n"
+                                "____________"+ "\n" +
+                                announArray.getJSONObject(i).getString("body") + "\n" + "\n\n\n"
                 }
                 if(announString.length>0)
                     announcementsTextView.text = announString
