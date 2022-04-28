@@ -69,7 +69,7 @@ import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.system.*
 import kotlin.coroutines.*
-
+import android.widget.TextView
 
 import com.google.android.gms.maps.MapView
 
@@ -138,8 +138,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
         val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
-        //parse schedule data and get it ready for settingsactivity
-        scheduleAPI("https://shuttletracker.app/schedule")
+
         //placement
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -480,84 +479,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return stopArray;
     }
 
-    private fun scheduleAPI(url: String) /*: ArrayList<Schedule>*/{
-
-        val semesterArray = ArrayList<Schedule>()
-
-        val thread = Thread(kotlinx.coroutines.Runnable {
-            kotlin.run {
-                val url = URL(url)
-                val jsonString = url.readText()
-                var jsonArray = JSONArray(jsonString)
-                for (i in 0 until jsonArray.length()) {
-
-                    val semSchedule = jsonArray.getJSONObject(i)
-                    val name = semSchedule.getString("name")
-                    val start = semSchedule.getString("start")
-                    val end = semSchedule.getString("end")
-                    val content = semSchedule.getJSONObject("content")
-                    val dayArray = ArrayList<Day>()
-
-                    //monday
-                    val monday = content.getJSONObject("monday")
-                    val dayStart = monday.getString("start")
-                    val dayEnd = monday.getString("end")
-                    val dayObject = Day("Monday", dayStart, dayEnd)
-                    dayArray.add(dayObject)
-
-                    //tuesday
-                    val tuesday = content.getJSONObject("tuesday")
-                    val tuesdayStart = tuesday.getString("start")
-                    val tuesdayEnd = tuesday.getString("end")
-                    val tuesdayObject = Day("Tuesday", tuesdayStart, tuesdayEnd)
-                    dayArray.add(tuesdayObject)
-                    //wednesday
-                    val wednesday = content.getJSONObject("wednesday")
-                    val wednesdayStart = wednesday.getString("start")
-                    val wednesdayEnd = wednesday.getString("end")
-                    val wednesdayObject = Day("Wednesday", wednesdayStart, wednesdayEnd)
-                    dayArray.add(wednesdayObject)
-                    //thursday
-                    val thursday = content.getJSONObject("thursday")
-                    val thursdayStart = thursday.getString("start")
-                    val thursdayEnd = thursday.getString("end")
-                    val thursdayObject = Day("Thursday", thursdayStart, thursdayEnd)
-                    dayArray.add(thursdayObject)
-                    //friday
-                    val friday = content.getJSONObject("friday")
-                    val fridayStart = friday.getString("start")
-                    val fridayEnd = friday.getString("end")
-                    val fridayObject = Day("Friday", fridayStart, fridayEnd)
-                    dayArray.add(fridayObject)
-                    //saturday
-                    val saturday = content.getJSONObject("saturday")
-                    val saturdayStart = saturday.getString("start")
-                    val saturdayEnd = saturday.getString("end")
-                    val saturdayObject = Day("Saturday", saturdayStart, saturdayEnd)
-                    dayArray.add(saturdayObject)
-                    //sunday
-                    val sunday = content.getJSONObject("sunday")
-                    val sundayStart = sunday.getString("start")
-                    val sundayEnd = sunday.getString("end")
-                    val sundayObject = Day("Sunday", sundayStart, sundayEnd)
-                    dayArray.add(sundayObject)
-                    //make schedule object for the day
-                    val scheduleObject = Schedule(name, start, end, dayArray)
-                    semesterArray.add(scheduleObject)
-                }
-                val currentsched = semesterArray.last()
-                println("${currentsched.name}")
-                for(i in 0 until currentsched.content.size){
-                    
-                    println(currentsched.content[i].name)
-                    println(currentsched.content[i].start)
-                    println(currentsched.content[i].end)
-                }
-            }
-        })
-        thread.start()
-        //return semesterArray
-    }
 
 
 

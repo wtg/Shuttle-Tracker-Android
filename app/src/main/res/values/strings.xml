@@ -49,4 +49,6 @@
     <string name="routes_url">https://shuttletracker.app/routes</string>
     <string name="board_bus_button_text">Board Bus</string>
     <string name="leave_bus_button_text">Leave Bus</string>
+
+
 </resources>
