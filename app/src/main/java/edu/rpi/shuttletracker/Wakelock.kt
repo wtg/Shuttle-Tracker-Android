@@ -5,7 +5,9 @@ import android.app.Notification
 import android.app.Service
 import android.content.Intent
 import android.content.res.Resources
+import android.os.Build
 import android.os.IBinder
+import androidx.annotation.RequiresApi
 import java.util.*
 import kotlin.concurrent.scheduleAtFixedRate
 
@@ -18,6 +20,7 @@ class Wakelock : Service(){
         return null
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val res : Resources = getResources()
 
@@ -26,7 +29,7 @@ class Wakelock : Service(){
             .setContentTitle("Shuttle Tracker")//TODO get the string from xml file instead
             .setContentText("Who's the shuttle tracker now 🤔")
             .setOngoing(true)
-            .setPriority(Notification.PRIORITY_MAX)
+            .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
 
 
