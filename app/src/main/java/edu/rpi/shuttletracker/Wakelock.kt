@@ -8,7 +8,6 @@ import android.content.res.Resources
 import android.os.Build
 import android.os.IBinder
 import java.util.*
-import kotlin.concurrent.scheduleAtFixedRate
 
 
 
@@ -33,14 +32,7 @@ class Wakelock : Service(){
             notificationbuilder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
         }
         var notification:Notification = notificationbuilder.build()
-
-
         println("Service Started")
-
-
-        markerTimer.scheduleAtFixedRate(0,1000){
-        }
-
         startForeground(1,notification)
         return super.onStartCommand(intent, flags, startId)
 

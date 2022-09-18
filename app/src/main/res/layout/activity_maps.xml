@@ -183,25 +183,14 @@
                 android:gravity="center_vertical"
                 android:src="@drawable/ic_action_name" />
         </LinearLayout>
-        <?Button
-            android:id="@+id/old_board_bus_button"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:text="@string/board_bus_button_text"
-            android:textAllCaps="false"
-            android:textAlignment="center"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="33dp"
-            android:background="@drawable/roundedbutton"
-            tools:ignore="RtlCompat" /?>
         <Button
             android:id="@+id/board_bus_button"
-            android:text="Board Bus"
+            android:text="BOARD BUS"
             android:textColor="#FFFFFF"
-            android:textSize="15sp"
+            android:textSize="18sp"
             android:layout_width="150dp"
             android:layout_height="50dp"
-            android:background="@drawable/roundedbutton2"
+            android:background="@drawable/roundedbutton"
             android:shadowColor="#A8A8A8"
             android:shadowDx="0"
             android:shadowDy="0"
@@ -210,17 +199,22 @@
             android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="33dp"
             tools:ignore="RtlCompat"             />
+
         <Button
             android:id="@+id/leave_bus_button"
+            android:textColor="#FFFFFF"
+            android:text="LEAVE BUS"
+            android:textSize="18sp"
             android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:text="@string/leave_bus_button_text"
-            android:textAllCaps="false"
+            android:layout_height="50dp"
+            android:background="@drawable/leavebus"
+            android:shadowColor="#A8A8A8"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="5"
             android:textAlignment="center"
             android:layout_gravity="bottom|center_horizontal"
-            android:gravity="center_vertical"
             android:layout_marginBottom="33dp"
-            android:background="@drawable/leavebus"
             android:visibility="gone"
             tools:ignore="RtlCompat" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

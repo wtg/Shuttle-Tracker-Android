@@ -1014,6 +1014,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         val busTimer = Timer("busTimer", true)
         val markerTimer = Timer("markerTimer",true)
+        val Visual = Timer("Visual",true)
+
 
         if (APImatch){
             if (!busesDrawn) {//TODO: bandage for now
@@ -1049,13 +1051,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 runOnUiThread { updateMarker(busMarkerArray) }
             }
             if(!internet_connection()&&onBus){
-
-
                 onBus = false // this variable controls when the data-transmitting thread ends
                 runOnUiThread() {
                     boardBusButton.visibility = View.VISIBLE
                     leaveBusButton.visibility = View.GONE
                 }
+            }
+        }
+
+        Visual.scheduleAtFixedRate(0,1000){
+            if(boardBusButton.visibility==1){
+                val rnd = Random()
+                val color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
+                boardBusButton.setTextColor(color);
+            }else{//boarded bus
+
             }
         }
 
