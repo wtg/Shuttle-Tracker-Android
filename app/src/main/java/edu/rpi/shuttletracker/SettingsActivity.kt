@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -41,9 +43,10 @@ public class SettingsActivity: AppCompatActivity() {
 
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
 
-        var serverURLText = findViewById<EditText>(R.id.editServerURL)
-        val message = serverURLText.text.toString()
-        serverURLText.setOnClickListener {
+        val serverURLText = findViewById<EditText>(R.id.editServerURL)
+        val saveServerURLButton = findViewById<Button>(R.id.saveURLButton)
+
+        saveServerURLButton.setOnClickListener {
             saveServerURL(this)
         }
 
@@ -108,8 +111,15 @@ public class SettingsActivity: AppCompatActivity() {
     }
 
     private fun saveServerURL(context: Context) {
+        Log.d("server_save_button", "saveServerURL called")
+
+        val serverURLText = findViewById<EditText>(R.id.editServerURL)
+        val serverURL = serverURLText.text.toString()
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("server_base_url", serverURL).apply()
 
     }
-
 
 }
