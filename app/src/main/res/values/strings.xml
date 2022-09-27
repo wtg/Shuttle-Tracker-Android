@@ -53,5 +53,5 @@
     <string name="channel_name">ShuttleTrackerRPI</string>
     <string name="channel_description">ShuttleTrackerRPI</string>
 
-    <integer name="api_key">1</integer> <!--APIVersion-->
+    <integer name="api_key">3</integer> <!--APIVersion-->
 </resources>

@@ -632,10 +632,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         for(i in 0 until latlngmultiroutes.size) {
                             var color : Int = 0
                             var flag = false
-                            for(j in 0 until routeColorArr.size) {
+                            for(j in 0 until colorArr.size) {
                                 if(colorArr[j].first.equals(routeColorArr[i])) {
                                     color = colorArr[j].second
                                     flag = true
+                                    break
                                 }
                             }
                             if(!flag) {
