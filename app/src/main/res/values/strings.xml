@@ -43,15 +43,15 @@
     <string name="announcements_default_text">No current announcements.</string>
     <string name="github_button_text">Click to access our GitHub Repository!</string>
     <string name="repo_url">https://github.com/wtg/Shuttle-Tracker-Android</string>
-    <string name="version_url">https://staging.shuttletracker.app/version</string>
-    <string name="buses_url">https://staging.shuttletracker.app/buses</string>
-    <string name="bus_numbers_url">https://staging.shuttletracker.app/buses/all</string>
-    <string name="stops_url">https://staging.shuttletracker.app/stops</string>
-    <string name="routes_url">https://staging.shuttletracker.app/routes</string>
+    <string name="version_url">https://shuttletracker.app/version</string>
+    <string name="buses_url">https://shuttletracker.app/buses</string>
+    <string name="bus_numbers_url">https://shuttletracker.app/buses/all</string>
+    <string name="stops_url">https://shuttletracker.app/stops</string>
+    <string name="routes_url">https://shuttletracker.app/routes</string>
     <string name="board_bus_button_text">Board Bus</string>
     <string name="leave_bus_button_text">Leave Bus</string>
     <string name="channel_name">ShuttleTrackerRPI</string>
     <string name="channel_description">ShuttleTrackerRPI</string>
 
-    <integer name="api_key">1</integer> <!--APIVersion-->
+    <integer name="api_key">3</integer> <!--APIVersion-->
 </resources>

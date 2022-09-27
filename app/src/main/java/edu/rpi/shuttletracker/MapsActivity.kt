@@ -594,24 +594,51 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val url = URL(url)
                     val jsonString = url.readText()
                     var jsonArray = JSONArray(jsonString)
-                    var routeObject = jsonArray.getJSONObject(0)
-                    var coordArray = routeObject.getJSONArray("coordinates")
-                    var latlngarr = ArrayList<LatLng>()
-                    for (i in 0 until coordArray.length()) {
-                        val waypoint = coordArray.getJSONObject(i)
-                        val latitude = waypoint.getDouble("latitude")
-                        val longitude = waypoint.getDouble("longitude")
-                        val latlng = LatLng(latitude, longitude)
-                        latlngarr.add(latlng)
+                    var latlngmultiroutes = ArrayList<ArrayList<LatLng>>()
+                    var routeColorArr = ArrayList<String>()
+                    for (i in 0 until jsonArray.length()) {
+                        var routeObject = jsonArray.getJSONObject(i)
+                        var coordArray = routeObject.getJSONArray("coordinates")
+                        var latlngarr = ArrayList<LatLng>()
+                        routeColorArr.add(routeObject.getString("colorName"))
+                        for (i in 0 until coordArray.length()) {
+                            val waypoint = coordArray.getJSONObject(i)
+                            val latitude = waypoint.getDouble("latitude")
+                            val longitude = waypoint.getDouble("longitude")
+                            val latlng = LatLng(latitude, longitude)
+                            latlngarr.add(latlng)
+                        }
+                        latlngmultiroutes.add(latlngarr)
                     }
                     runOnUiThread {
-                        val polyline1 = mMap.addPolyline(
-                            PolylineOptions()
-                                .clickable(true)
-                                .addAll(latlngarr)
-                                .color(Color.RED)
-                                .width(4F)
-                        )
+                        val colorArr = arrayListOf<Pair<String, Int>>(Pair("red", Color.RED),
+                            Pair("orange", Color.parseColor("#ee6002")), Pair("yellow", Color.YELLOW),
+                            Pair("green", Color.GREEN), Pair("blue", Color.BLUE),
+                            Pair("purple", Color.parseColor("#a200e0")),
+                            Pair("pink", Color.parseColor("#ef4fa6")),
+                            Pair("gray", Color.GRAY),)
+                        var polylineArr = ArrayList<Polyline>()
+                        for(i in 0 until latlngmultiroutes.size) {
+                            var color : Int = 0
+                            var flag = false
+                            for(j in 0 until colorArr.size) {
+                                if(colorArr[j].first.equals(routeColorArr[i])) {
+                                    color = colorArr[j].second
+                                    flag = true
+                                    break
+                                }
+                            }
+                            if(!flag) {
+                                color = Color.BLACK
+                            }
+                            polylineArr.add(mMap.addPolyline(
+                                PolylineOptions()
+                                    .clickable(true)
+                                    .addAll(latlngmultiroutes[i])
+                                    .color(color)
+                                    .width(4F)
+                            ))
+                        }
                     }
                 }
                 catch(ex: Exception)
