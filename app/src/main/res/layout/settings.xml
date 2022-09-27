@@ -27,4 +27,15 @@
         app:titleTextColor="#FFFFFF"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp" />
+
+    <EditText
+        android:id="@+id/editServerURL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="text"
+        android:text="Server URL"
+        app:layout_constraintStart_toStartOf="@id/colorblindSwitch"
+        app:layout_constraintTop_toBottomOf="@id/colorblindSwitch" />
 </androidx.constraintlayout.widget.ConstraintLayout>
