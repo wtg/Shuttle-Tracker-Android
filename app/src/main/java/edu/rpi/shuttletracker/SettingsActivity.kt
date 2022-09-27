@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -34,9 +35,18 @@ public class SettingsActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings)
 //        drawBusIcons()
-        val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+
+        val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+
+        var serverURLText = findViewById<EditText>(R.id.editServerURL)
+        val message = serverURLText.text.toString()
+        serverURLText.setOnClickListener {
+            saveServerURL(this)
+        }
+
         if(sharedPreferences.contains("toggle_value")) {
             toggle.setChecked(loadToggle(this))
         }
@@ -96,5 +106,10 @@ public class SettingsActivity: AppCompatActivity() {
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean("toggle_value", true)
     }
+
+    private fun saveServerURL(context: Context) {
+
+    }
+
 
 }
