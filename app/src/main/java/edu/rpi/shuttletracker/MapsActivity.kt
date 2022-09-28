@@ -32,6 +32,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -68,6 +70,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -196,6 +199,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         // Initialize location updates
+        //check for battery usage permission
 
         wakelockIntent = Intent(this, Wakelock::class.java)
 
@@ -287,6 +291,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                     .setPositiveButton("Continue") { dialog, _ ->
                         if (selectedBusNumber != null) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                val intent = Intent()
+                                val packageName = packageName
+                                val pm = getSystemService(POWER_SERVICE) as PowerManager
+                                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                                    intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                                    intent.data = Uri.parse("package:$packageName")
+                                    startActivity(intent)
+                                }
+                            }
                             startForegroundService(wakelockIntent)
                             val sendDataThread = sendOnBusData()
                             sendDataThread.start()
@@ -611,12 +625,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         latlngmultiroutes.add(latlngarr)
                     }
                     runOnUiThread {
-                        val colorArr = arrayListOf<Pair<String, Int>>(Pair("red", Color.RED),
-                            Pair("orange", Color.parseColor("#ee6002")), Pair("yellow", Color.YELLOW),
-                            Pair("green", Color.GREEN), Pair("blue", Color.BLUE),
+                        val colorArr = arrayListOf<Pair<String, Int>>(
+                            Pair("red", Color.RED),
+                            Pair("orange", Color.parseColor("#ee6002")),
+                            Pair("yellow", Color.YELLOW),
+                            Pair("green", Color.GREEN),
+                            Pair("blue", Color.BLUE),
                             Pair("purple", Color.parseColor("#a200e0")),
                             Pair("pink", Color.parseColor("#ef4fa6")),
-                            Pair("gray", Color.GRAY),)
+                            Pair("gray", Color.GRAY),
+                        )
                         var polylineArr = ArrayList<Polyline>()
                         for(i in 0 until latlngmultiroutes.size) {
                             var color : Int = 0

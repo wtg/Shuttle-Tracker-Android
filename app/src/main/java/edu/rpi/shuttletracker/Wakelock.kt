@@ -34,6 +34,7 @@ class Wakelock : Service(){
         var notification:Notification = notificationbuilder.build()
         println("Service Started")
         startForeground(1,notification)
+
         return super.onStartCommand(intent, flags, startId)
 
     }
