@@ -52,6 +52,10 @@
     <string name="leave_bus_button_text">Leave Bus</string>
     <string name="channel_name">ShuttleTrackerRPI</string>
     <string name="channel_description">ShuttleTrackerRPI</string>
+    <string name="alertTitle">Location Permissions</string>
+    <string name="supporting_text"><![CDATA[Shuttle Tracker collects location data to enable crowdsourcing shuttle locations, showing the user\'s location on the map, & tracking shuttles through board bus in the background, even when the app is closed or not in use. This feature is required to crowdsource bus locations, please select \"While using the app\" in the following prompt.]]></string>
+    <string name="cancel">Cancel</string>
+    <string name="accept">OK</string>
 
     <integer name="api_key">3</integer> <!--APIVersion-->
 </resources>
