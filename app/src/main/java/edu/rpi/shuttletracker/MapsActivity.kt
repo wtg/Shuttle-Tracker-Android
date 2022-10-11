@@ -114,6 +114,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //private var longitude: Float? = null
     private var type = "user"
     private lateinit var date: String
+//
+//    private val sharedPreferences: SharedPreferences =
+//        getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
     var wakelockIntent = Intent(this, Wakelock::class.java)
 
@@ -550,12 +553,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onResume() {
         super.onResume()
         val res : Resources = getResources()
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
         if(internet_connection())
         {
             busMarkerArray = if(!busesDrawn) {
-                 drawBuses(res.getString(R.string.buses_url))
+                 drawBuses(server_url + res.getString(R.string.buses_url))
             } else{
-                 updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                 updateBuses(server_url + res.getString(R.string.buses_url), busMarkerArray)
             }
         }
     }
@@ -938,6 +944,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
         val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
 
+        val res: Resources = getResources()
+
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
+
         mMap = googleMap
         mMap.getUiSettings().setMapToolbarEnabled(false)
         val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
@@ -956,8 +968,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setMinZoomPreference(13.5f)
         mMap.setMaxZoomPreference(20.0f)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Union))
-        val res: Resources = getResources()
-
 
 //        if(APIMatch) {
 
@@ -1015,7 +1025,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         } else {
             //Internet connection confirmed, matching API
             APImatch = APIVersionMatch(
-                res.getString(R.string.version_url),
+                server_url + res.getString(R.string.version_url),
                 res.getInteger(R.integer.api_key)
             )
             if (!APImatch) {
@@ -1023,22 +1033,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 //runOnUiThread { promptDownload() }
             }
         }
-        val sharedPreferences: SharedPreferences =
-            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+//        val sharedPreferences: SharedPreferences =
+//            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         if (sharedPreferences.contains("toggle_value")) {
             MapsActivity.colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
         }
         if (internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
 
-            stopArray = drawStops(res.getString(R.string.stops_url))
-            drawRoutes(res.getString(R.string.routes_url))
+            stopArray = drawStops(server_url + res.getString(R.string.stops_url))
+            drawRoutes(server_url + res.getString(R.string.routes_url))
         }
         val busTimer = Timer("busTimer", true)
         val markerTimer = Timer("markerTimer",true)
 
         if (APImatch){
             if (!busesDrawn) {//TODO: bandage for now
-                busMarkerArray = drawBuses(res.getString(R.string.buses_url))
+                busMarkerArray = drawBuses(server_url + res.getString(R.string.buses_url))
             }
         }
 
@@ -1054,10 +1064,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
             if(internet_connection() && APImatch) {//make sure it would run only when connected to internet and after api check
-                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                busMarkerArray = updateBuses(server_url + res.getString(R.string.buses_url), busMarkerArray)
                 if(!routeDrawn){
-                    stopArray = drawStops(res.getString(R.string.stops_url))
-                    drawRoutes(res.getString(R.string.routes_url))
+                    stopArray = drawStops(server_url + res.getString(R.string.stops_url))
+                    drawRoutes(server_url + res.getString(R.string.routes_url))
                 }
             }
             //println("Updated bus locations.")
@@ -1090,12 +1100,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         promptDownload()
                     }
                 if(!routeDrawn){
-                    stopArray = drawStops(res.getString(R.string.stops_url))
-                    drawRoutes(res.getString(R.string.routes_url))
+                    stopArray = drawStops(server_url + res.getString(R.string.stops_url))
+                    drawRoutes(server_url + res.getString(R.string.routes_url))
                 }
                 btn_refresh.startAnimation(rotate)
                 Toast.makeText(applicationContext, "Refreshed!", Toast.LENGTH_SHORT).show()
-                busMarkerArray = updateBuses(res.getString(R.string.buses_url), busMarkerArray)
+                busMarkerArray = updateBuses(server_url + res.getString(R.string.buses_url), busMarkerArray)
             }else {
                 offline_check()
             }

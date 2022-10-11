@@ -112,13 +112,19 @@ public class SettingsActivity: AppCompatActivity() {
 
     private fun saveServerURL(context: Context) {
         Log.d("server_save_button", "saveServerURL called")
-
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         val serverURL = serverURLText.text.toString()
+
+//        Log.d("server_save_button", "msg 1 " + serverURL)
+
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("server_base_url", serverURL).apply()
+//        val string1 = sharedPreferences.getString("server_base_url", "NOT SPECIFIED")
+//        if (string1 != null) {
+//            Log.d("server_save_button", string1)
+//        }
 
     }
 
