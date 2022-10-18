@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -121,6 +122,10 @@ public class SettingsActivity: AppCompatActivity() {
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("server_base_url", serverURL).apply()
+        val text = "Saved URL"
+        val duration = Toast.LENGTH_SHORT
+        val toast = Toast.makeText(applicationContext, text, duration)
+        toast.show()
 //        val string1 = sharedPreferences.getString("server_base_url", "NOT SPECIFIED")
 //        if (string1 != null) {
 //            Log.d("server_save_button", string1)

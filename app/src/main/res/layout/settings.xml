@@ -33,9 +33,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:ems="10"
+        android:ems="12"
         android:inputType="text"
-        android:text="Server Base URL"
+        android:text="https://shuttletracker.app"
         app:layout_constraintStart_toStartOf="@id/colorblindSwitch"
         app:layout_constraintTop_toBottomOf="@id/colorblindSwitch" />
 
@@ -48,4 +48,5 @@
         app:layout_constraintLeft_toRightOf="@id/editServerURL"
         app:layout_constraintStart_toEndOf="@id/editServerURL"
         app:layout_constraintTop_toTopOf="@id/editServerURL" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
