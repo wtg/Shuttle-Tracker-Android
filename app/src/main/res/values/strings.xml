@@ -57,5 +57,5 @@
     <string name="cancel">Cancel</string>
     <string name="accept">OK</string>
 
-    <integer name="api_key">3</integer> <!--APIVersion-->
+    <integer name="api_key">1</integer> <!--APIVersion-->
 </resources>

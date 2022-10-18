@@ -12,9 +12,6 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.app.AlertDialog
-import android.app.NotificationChannel
-import android.app.NotificationManager
 
 import android.content.DialogInterface
 import android.content.pm.PackageManager
@@ -63,7 +60,7 @@ import android.net.Uri
 import android.system.Os.accept
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.animation.Animator
-import android.app.Application
+import android.app.*
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
@@ -152,20 +149,28 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private fun leaveNotification(){//Notification that will be shown when people have been on bus for a long time
+        val leaveIntent = Intent(this, MapsActivity::class.java).apply {
+            stopService(wakelockIntent)
+            onBus = false // this variable controls when the data-transmitting thread ends
+            val boardBusButton = findViewById<Button>(R.id.board_bus_button)
+            val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
+            boardBusButton.visibility = View.VISIBLE
+            leaveBusButton.visibility = View.GONE
+        }
+        val leavePendingIntent: PendingIntent = PendingIntent.getBroadcast(this, 0, leaveIntent, 0)
         var builder = NotificationCompat.Builder(this, "1")
             .setSmallIcon(R.drawable.roundedbutton)
             .setContentTitle("Leave Shuttle?")
             .setContentText("Hey, we noticed that you've been contributing for a while now." +
                     " Have you left the bus yet?")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(leavePendingIntent)
 
 
         with(NotificationManagerCompat.from(this)) {
             // notificationId is a unique int for each notification that you must define
             notify(0, builder.build())
         }
-
-        // Still need to add action button to actually leave the bus
     }
 
 
