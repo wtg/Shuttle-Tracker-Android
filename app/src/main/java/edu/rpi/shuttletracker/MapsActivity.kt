@@ -118,7 +118,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //    private val sharedPreferences: SharedPreferences =
 //        getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
-    var wakelockIntent = Intent(this, Wakelock::class.java)
+    private lateinit var wakelockIntent: Intent
 
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -612,10 +612,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val jsonString = url.readText()
                     var jsonArray = JSONArray(jsonString)
                     var latlngmultiroutes = ArrayList<ArrayList<LatLng>>()
+                    var routeColorArr = ArrayList<String>()
                     for (i in 0 until jsonArray.length()) {
                         var routeObject = jsonArray.getJSONObject(i)
                         var coordArray = routeObject.getJSONArray("coordinates")
                         var latlngarr = ArrayList<LatLng>()
+                        routeColorArr.add(routeObject.getString("colorName"))
                         for (i in 0 until coordArray.length()) {
                             val waypoint = coordArray.getJSONObject(i)
                             val latitude = waypoint.getDouble("latitude")
@@ -626,16 +628,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         latlngmultiroutes.add(latlngarr)
                     }
                     runOnUiThread {
-                        val colorArr = arrayListOf<Int>(Color.CYAN, Color.BLUE, Color.GREEN, Color.MAGENTA,
-                            Color.YELLOW, Color.GRAY, Color.BLACK)
+                        val colorArr = arrayListOf<Pair<String, Int>>(Pair("red", Color.RED),
+                            Pair("orange", Color.parseColor("#ee6002")), Pair("yellow", Color.YELLOW),
+                            Pair("green", Color.GREEN), Pair("blue", Color.BLUE),
+                            Pair("purple", Color.parseColor("#a200e0")),
+                            Pair("pink", Color.parseColor("#ef4fa6")),
+                            Pair("gray", Color.GRAY),)
                         var polylineArr = ArrayList<Polyline>()
-                        for(i in 0 until (if (latlngmultiroutes.size <= colorArr.size)
-                            latlngmultiroutes.size else colorArr.size)) {
+                        for(i in 0 until latlngmultiroutes.size) {
+                            var color : Int = 0
+                            var flag = false
+                            for(j in 0 until colorArr.size) {
+                                if(colorArr[j].first.equals(routeColorArr[i])) {
+                                    color = colorArr[j].second
+                                    flag = true
+                                    break
+                                }
+                            }
+                            if(!flag) {
+                                color = Color.BLACK
+                            }
                             polylineArr.add(mMap.addPolyline(
                                 PolylineOptions()
                                     .clickable(true)
                                     .addAll(latlngmultiroutes[i])
-                                    .color(colorArr[i])
+                                    .color(color)
                                     .width(4F)
                             ))
                         }
@@ -1055,11 +1072,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(ACCESS_FINE_LOCATION),
-                MY_PERMISSIONS_REQUEST_LOCATION
-            )
+            MaterialAlertDialogBuilder(this)
+                .setTitle(resources.getString(R.string.alertTitle))
+                .setMessage(resources.getString(R.string.supporting_text))
+                .setNegativeButton(resources.getString(R.string.cancel)) { dialog, which ->
+                    // Respond to negative button press
+                    mMap.setMyLocationEnabled(false)
+                }
+                .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(ACCESS_FINE_LOCATION),
+                        MY_PERMISSIONS_REQUEST_LOCATION
+                    )
+                }
+                .show()
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
