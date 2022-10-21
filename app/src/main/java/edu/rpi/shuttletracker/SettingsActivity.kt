@@ -2,6 +2,7 @@ package edu.rpi.shuttletracker;
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.activity_maps.*
+
 
 
 public class SettingsActivity: AppCompatActivity() {
@@ -34,6 +36,11 @@ public class SettingsActivity: AppCompatActivity() {
 //        bMap = BitmapFactory.decodeFile(getString(R.string.colorblind_crowdsourced_bus))
 //        cbcrowdbus.setImageBitmap(bMap)
 //    }
+
+//    private var EditText url_settings_view = (EditText) findViewById(r.id.editServerURL);
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings)
@@ -43,8 +50,10 @@ public class SettingsActivity: AppCompatActivity() {
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        val res: Resources = getResources()
 
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
+        serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
         val saveServerURLButton = findViewById<Button>(R.id.saveURLButton)
 
         saveServerURLButton.setOnClickListener {
@@ -122,6 +131,14 @@ public class SettingsActivity: AppCompatActivity() {
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("server_base_url", serverURL).apply()
+
+        val res: Resources = getResources()
+        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
+        if (server_url != null) {
+            Log.d("server_save_button", server_url)
+        }
+
+
         val text = "Saved URL"
         val duration = Toast.LENGTH_SHORT
         val toast = Toast.makeText(applicationContext, text, duration)
