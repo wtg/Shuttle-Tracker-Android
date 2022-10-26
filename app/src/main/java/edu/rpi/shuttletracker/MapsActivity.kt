@@ -105,7 +105,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var type = "user"
     private lateinit var date: String
 
-    var wakelockIntent = Intent(this, Wakelock::class.java)
+    private lateinit var wakelockIntent: Intent
 
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -1071,11 +1071,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(ACCESS_FINE_LOCATION),
-                MY_PERMISSIONS_REQUEST_LOCATION
-            )
+            MaterialAlertDialogBuilder(this)
+                .setTitle(resources.getString(R.string.alertTitle))
+                .setMessage(resources.getString(R.string.supporting_text))
+                .setNegativeButton(resources.getString(R.string.cancel)) { dialog, which ->
+                    // Respond to negative button press
+                    mMap.setMyLocationEnabled(false)
+                }
+                .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(ACCESS_FINE_LOCATION),
+                        MY_PERMISSIONS_REQUEST_LOCATION
+                    )
+                }
+                .show()
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
