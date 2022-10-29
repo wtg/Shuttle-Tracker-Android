@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.rpi.shuttletracker">
+
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -9,9 +10,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -19,6 +19,18 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <receiver
+            android:name=".BoardBus"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/board_bus_info" />
+        </receiver>
+
         <activity
             android:name=".AboutActivity"
             android:exported="false" />
@@ -36,26 +48,29 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
-        <service android:name="Wakelock"
-            android:foregroundServiceType="location"/>
+
+        <service
+            android:name=".Wakelock"
+            android:foregroundServiceType="location" />
+
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
-            android:label="@string/title_activity_maps">
-        </activity>
+            android:label="@string/title_activity_maps"></activity>
         <activity
             android:name=".AnnouncementsActivity"
             android:exported="false"
-            android:label="@string/title_activity_maps">
-        </activity>
+            android:label="@string/title_activity_maps"></activity>
     </application>
+
 </manifest>

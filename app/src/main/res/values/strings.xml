@@ -59,5 +59,9 @@
     <string name="accept">OK</string>
     <string name="privacy_button_text">Link to Privacy Policy</string>
 
-    <integer name="api_key">3</integer> <!--APIVersion-->
+    <integer name="api_key">3</integer>
+    <item name="appwidget_text" type="id"></item>
+    <string name="add_widget">Add widget</string>
+    <string name="app_widget_description">Press the board bus button to board the bus</string>
+    <string name="appwidget_text">test</string>
 </resources>
