@@ -56,8 +56,14 @@ public class SettingsActivity: AppCompatActivity() {
         serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
         val saveServerURLButton = findViewById<Button>(R.id.saveURLButton)
 
+        val resetURLButton = findViewById<Button>(R.id.resetURLButton)
+
         saveServerURLButton.setOnClickListener {
             saveServerURL(this)
+        }
+
+        resetURLButton.setOnClickListener{
+            resetServerURL(this)
         }
 
         if(sharedPreferences.contains("toggle_value")) {
@@ -125,29 +131,25 @@ public class SettingsActivity: AppCompatActivity() {
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         val serverURL = serverURLText.text.toString()
 
-//        Log.d("server_save_button", "msg 1 " + serverURL)
-
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("server_base_url", serverURL).apply()
 
-        val res: Resources = getResources()
-        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
-        if (server_url != null) {
-            Log.d("server_save_button", server_url)
-        }
-
-
         val text = "Saved URL"
         val duration = Toast.LENGTH_SHORT
         val toast = Toast.makeText(applicationContext, text, duration)
         toast.show()
-//        val string1 = sharedPreferences.getString("server_base_url", "NOT SPECIFIED")
-//        if (string1 != null) {
-//            Log.d("server_save_button", string1)
-//        }
-
     }
 
+    private fun resetServerURL(context: Context){
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val res: Resources = getResources()
+        val editor = sharedPreferences.edit()
+        editor.putString("server_base_url", res.getString(R.string.default_server_url)).apply()
+        val serverURLText = findViewById<EditText>(R.id.editServerURL)
+        serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
+    }
+    
 }
