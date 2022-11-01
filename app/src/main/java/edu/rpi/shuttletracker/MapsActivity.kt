@@ -9,6 +9,8 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout3
 import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 */
 
+//Hello
+
 
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
