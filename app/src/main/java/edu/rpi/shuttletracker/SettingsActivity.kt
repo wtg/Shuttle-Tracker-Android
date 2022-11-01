@@ -127,7 +127,6 @@ public class SettingsActivity: AppCompatActivity() {
     }
 
     private fun saveServerURL(context: Context) {
-        Log.d("server_save_button", "saveServerURL called")
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         val serverURL = serverURLText.text.toString()
 
@@ -150,6 +149,11 @@ public class SettingsActivity: AppCompatActivity() {
         editor.putString("server_base_url", res.getString(R.string.default_server_url)).apply()
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
+
+        val text = "Reset URL"
+        val duration = Toast.LENGTH_SHORT
+        val toast = Toast.makeText(applicationContext, text, duration)
+        toast.show()
     }
-    
+
 }
