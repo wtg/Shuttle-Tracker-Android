@@ -97,6 +97,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
+    private  lateinit var  location: Location
+
 
     private val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
     private val httpClient by lazy {
@@ -105,6 +107,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var stopArray = ArrayList<Stop>()
     private val busArray = ArrayList<Bus>()
+    private val goActivity = ArrayList<GoogleMap>()
 
 
     // All data used in a data package which will be sent to server
