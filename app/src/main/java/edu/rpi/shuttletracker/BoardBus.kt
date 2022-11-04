@@ -1,8 +1,10 @@
 package edu.rpi.shuttletracker
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
+import android.content.Intent
 import android.widget.RemoteViews
 
 // Intended functionality: A button that allows the user to board the bus. When the user clicks
@@ -29,10 +31,13 @@ class BoardBus : AppWidgetProvider() {
 }
 
 internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-    val widgetText = context.getString(R.string.appwidget_text)
     // Construct the RemoteViews object
     val views = RemoteViews(context.packageName, R.layout.board_bus)
-    views.setTextViewText(R.id.appwidget_text, widgetText)
+
+    val intent = Intent(context, MapsActivity::class.java)
+    val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+
+    views.setOnClickPendingIntent(R.id.board_bus_widget_button, pendingIntent)
 
     // Instruct the widget manager to update the widget
     appWidgetManager.updateAppWidget(appWidgetId, views)
