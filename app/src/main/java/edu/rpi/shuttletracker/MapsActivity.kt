@@ -114,9 +114,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //private var longitude: Float? = null
     private var type = "user"
     private lateinit var date: String
-//
-//    private val sharedPreferences: SharedPreferences =
-//        getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
     private lateinit var wakelockIntent: Intent
 
@@ -403,8 +400,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             getCurrentFormattedDate()
                         )
                         println("parsed JSONObject: $boardBusJSONObject") // TODO: remove/comment this testing clause
+                        val sharedPreferences: SharedPreferences =
+                            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+                        val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
                         val boardBusUrl =
-                            URL(resources.getString(R.string.buses_url) + "/$selectedBusNumber")
+                            URL(server_url + resources.getString(R.string.buses_url) + "/$selectedBusNumber")
                         println("Target URL: $boardBusUrl") // TODO: remove/comment this testing clause
 
                         // send to server
@@ -445,7 +445,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val thread = Thread {
             kotlin.run {
                 try {
-                    val url = URL(resources.getString(R.string.bus_numbers_url))
+                    val sharedPreferences: SharedPreferences =
+                        getSharedPreferences("preferences", Context.MODE_PRIVATE)
+                    val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
+                    val url = URL(server_url + resources.getString(R.string.bus_numbers_url))
                     val jsonString = url.readText()
                     val jsonArray = JSONArray(jsonString)
                     for (i in 0 until jsonArray.length()) {
