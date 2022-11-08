@@ -27,6 +27,14 @@ class AboutActivity : AppCompatActivity() {
             startActivity(browserIntent)
         }
 
+        val privacybutton: Button = findViewById(R.id.privacyButton)
+        privacybutton.setOnClickListener {
+            val browserIntent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse(res.getString(R.string.privacy_url))
+            )
+            startActivity(browserIntent)
+        }
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // handle arrow click here

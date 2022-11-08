@@ -39,7 +39,7 @@
         by your fellow RPI students. As an open source application, anyone can help develop the RPI Shuttle Tracker
         regardless of experience! Any contributions are welcome, as well as feedback for our current team.
         If you would like to view our source code, click the button below and open our GitHub page, and you can
-        open an \"issue\" to leave feedback for us.</string>
+        open an \"issue\" to leave feedback for us. View our privacy policy with the button below.</string>
     <string name="announcements_default_text">No current announcements.</string>
     <string name="github_button_text">Click to access our GitHub Repository!</string>
     <string name="repo_url">https://github.com/wtg/Shuttle-Tracker-Android</string>
@@ -49,6 +49,7 @@
     <string name="bus_numbers_url">/buses/all</string>
     <string name="stops_url">/stops</string>
     <string name="routes_url">/routes</string>
+    <string name="privacy_url">https://web.shuttletracker.app/privacy-policy</string>
     <string name="board_bus_button_text">Board Bus</string>
     <string name="leave_bus_button_text">Leave Bus</string>
     <string name="channel_name">ShuttleTrackerRPI</string>
@@ -57,6 +58,7 @@
     <string name="supporting_text"><![CDATA[Shuttle Tracker collects location data to enable crowdsourcing shuttle locations, showing the user\'s location on the map, & tracking shuttles through board bus in the background, even when the app is closed or not in use. This feature is required to crowdsource bus locations, please select \"While using the app\" in the following prompt.]]></string>
     <string name="cancel">Cancel</string>
     <string name="accept">OK</string>
+    <string name="privacy_button_text">Link to Privacy Policy</string>
 
     <integer name="api_key">3</integer> <!--APIVersion-->
 </resources>
