@@ -9,7 +9,6 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout3
 import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 */
 
-//Hello
 
 
 import android.Manifest
@@ -81,6 +80,7 @@ import androidx.core.graphics.rotationMatrix
 import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.*
+import kotlin.collections.ArrayList
 import kotlin.system.*
 import kotlin.coroutines.*
 
@@ -108,6 +108,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var stopArray = ArrayList<Stop>()
     private val busArray = ArrayList<Bus>()
     private val goActivity = ArrayList<GoogleMap>()
+
+    private val savedInstanceState = ArrayList<GoogleMap()
 
 
     // All data used in a data package which will be sent to server
