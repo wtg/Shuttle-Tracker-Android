@@ -60,8 +60,17 @@
     <string name="privacy_button_text">Link to Privacy Policy</string>
 
     <integer name="api_key">3</integer>
-    <item name="appwidget_text" type="id"></item>
+    <item name="appwidget_text" type="id" />
     <string name="add_widget">Add widget</string>
     <string name="app_widget_description">Press the board bus button to board the bus</string>
-    <string name="appwidget_text">test</string>
+    <string name="board_bus">Board Bus</string>
+    <string name="title_activity_board_bus_button">BoardBusButton</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 </resources>

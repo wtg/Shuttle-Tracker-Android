@@ -31,12 +31,11 @@ class BoardBus : AppWidgetProvider() {
 }
 
 internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-    // Construct the RemoteViews object
-    val views = RemoteViews(context.packageName, R.layout.board_bus)
-
     val intent = Intent(context, MapsActivity::class.java)
     val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
 
+    // Construct the RemoteViews object
+    val views = RemoteViews(context.packageName, R.layout.board_bus)
     views.setOnClickPendingIntent(R.id.board_bus_widget_button, pendingIntent)
 
     // Instruct the widget manager to update the widget

@@ -74,10 +74,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.graphics.rotationMatrix
 import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.android.synthetic.main.board_bus.*
 import kotlinx.coroutines.*
 import kotlin.system.*
 import kotlin.coroutines.*
@@ -200,7 +202,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
         var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
-        val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
+        var board_bus_widget_button = findViewById<Button>(R.id.board_bus_widget_button)
 
         //placement
         val mapFragment = supportFragmentManager
@@ -241,9 +243,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
-
-
         //btn_announcements.isVisible = true
+
+        boardBusButton.setOnClickListener {
+            boardBus(boardBusButton)
+        }
+
+        board_bus_widget_button.setOnClickListener {
+            boardBus(board_bus_widget_button)
+        }
 
         btn_settings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -261,72 +269,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         btn_announcements.setOnClickListener {
             val intent = Intent(this, AnnouncementsActivity::class.java)
             startActivity(intent);
-        }
-
-        boardBusButton.setOnClickListener {
-            /**
-             *  1. get available bus numbers from server
-             *  2. start a alert dialog to let user choose which bus to board
-             *  3. send data to server
-             *  4. update this client's state and change the button to "leave bus"
-             */
-
-            val notificationTimer = Timer("notificationTimer", true)
-
-            // 18 minutes after they board we check if they are still on the bus
-            notificationTimer.schedule(1080000){
-                if(boardBusButton.visibility == View.GONE) {
-                    leaveNotification()
-                }
-            }
-
-            // Check if the user is near a bus stop. If not, pop up an alert dialog and stop this button's onclick listener.
-            if (!checkNearbyStop()) {
-                return@setOnClickListener
-            }
-            val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
-                .toTypedArray() // convert Array<Int> to Array<String>
-            if (internet_connection()) {
-                // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
-                val chooseBusDialogBuilder = AlertDialog.Builder(this)
-                chooseBusDialogBuilder.setTitle("Bus Selection")
-
-                    // TODO: Find closest bus and recommend this bus to the user.
-
-                    .setSingleChoiceItems(busNumberArray, -1) { _, which ->
-                        selectedBusNumber = busNumberArray[which]
-                    }
-                    .setPositiveButton("Continue") { dialog, _ ->
-                        if (selectedBusNumber != null) {
-                            startForegroundService(wakelockIntent)
-                            val sendDataThread = sendOnBusData()
-                            sendDataThread.start()
-
-                            // hide the dialog
-                            dialog.cancel()
-
-                            // switch buttons by changing their visibility
-                            boardBusButton.visibility = View.GONE
-                            leaveBusButton.visibility = View.VISIBLE
-                        }
-                    }
-                    .setNegativeButton("Cancel") { dialog, _ ->
-                        dialog.cancel()
-                    }
-                chooseBusDialogBuilder.create()
-                chooseBusDialogBuilder.show()
-
-            ;
-            leaveBusButton.setOnClickListener {
-                stopService(wakelockIntent)
-                onBus = false // this variable controls when the data-transmitting thread ends
-                boardBusButton.visibility = View.VISIBLE
-                leaveBusButton.visibility = View.GONE
-            };
-            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        }else{
-                offline_check()
-            }
         }
     }
 
@@ -1210,6 +1152,78 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+
+    private fun boardBus(boardBusButton: Button) {
+
+        val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
+
+        boardBusButton.setOnClickListener {
+            /**
+             *  1. get available bus numbers from server
+             *  2. start a alert dialog to let user choose which bus to board
+             *  3. send data to server
+             *  4. update this client's state and change the button to "leave bus"
+             */
+
+            val notificationTimer = Timer("notificationTimer", true)
+
+            // 18 minutes after they board we check if they are still on the bus
+            notificationTimer.schedule(1080000){
+                if(boardBusButton.visibility == View.GONE) {
+                    leaveNotification()
+                }
+            }
+
+            // Check if the user is near a bus stop. If not, pop up an alert dialog and stop this button's onclick listener.
+            if (!checkNearbyStop()) {
+                return@setOnClickListener
+            }
+            val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
+                .toTypedArray() // convert Array<Int> to Array<String>
+            if (internet_connection()) {
+                // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
+                val chooseBusDialogBuilder = AlertDialog.Builder(this)
+                chooseBusDialogBuilder.setTitle("Bus Selection")
+
+                    // TODO: Find closest bus and recommend this bus to the user.
+
+                    .setSingleChoiceItems(busNumberArray, -1) { _, which ->
+                        selectedBusNumber = busNumberArray[which]
+                    }
+                    .setPositiveButton("Continue") { dialog, _ ->
+                        if (selectedBusNumber != null) {
+                            startForegroundService(wakelockIntent)
+                            val sendDataThread = sendOnBusData()
+                            sendDataThread.start()
+
+                            // hide the dialog
+                            dialog.cancel()
+
+                            // switch buttons by changing their visibility
+                            boardBusButton.visibility = View.GONE
+                            leaveBusButton.visibility = View.VISIBLE
+                        }
+                    }
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.cancel()
+                    }
+                chooseBusDialogBuilder.create()
+                chooseBusDialogBuilder.show()
+
+                ;
+                leaveBusButton.setOnClickListener {
+                    stopService(wakelockIntent)
+                    onBus = false // this variable controls when the data-transmitting thread ends
+                    boardBusButton.visibility = View.VISIBLE
+                    leaveBusButton.visibility = View.GONE
+                };
+                // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            }else{
+                offline_check()
+            }
+        }
+    }
+
     companion object {
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 99
     }
