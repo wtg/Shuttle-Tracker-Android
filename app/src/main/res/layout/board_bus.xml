@@ -16,4 +16,14 @@
         android:layout_centerInParent="true"
         android:text="@string/board_bus" />
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:autoSizeTextType="uniform"
+        android:layout_above="@+id/board_bus_widget_button"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="Remember to use the \n Shuttle Tracker App :)" />
+
 </RelativeLayout>
