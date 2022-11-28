@@ -11,18 +11,20 @@
     tools:context=".MapsActivity">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/widget_text_view"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="0dp"
         android:layout_gravity="center"
         android:autoSizeTextType="uniform"
         android:gravity="center"
         android:layout_weight="1"
+        android:visibility="gone"
+        tools:visibility="visible"
         android:text="@string/Widget_text" />
 
     <Button
         android:id="@+id/board_bus_widget_button"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="@string/board_bus" />

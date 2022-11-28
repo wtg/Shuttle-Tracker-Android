@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.RemoteViews
 
 // Intended functionality: A button that allows the user to board the bus. When the user clicks
@@ -31,13 +32,21 @@ class BoardBus : AppWidgetProvider() {
     }
 
     override fun onAppWidgetOptionsChanged(
-        context: Context?,
-        appWidgetManager: AppWidgetManager?,
+        context: Context,
+        appWidgetManager: AppWidgetManager,
         appWidgetId: Int,
-        newOptions: Bundle?
+        newOptions: Bundle
     ) {
-        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
+        val views = RemoteViews(context.packageName, R.layout.board_bus)
+        val maxHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
 
+        if (maxHeight > 50) {
+            views.setViewVisibility(R.id.widget_text_view, View.VISIBLE)
+        } else {
+            views.setViewVisibility(R.id.widget_text_view, View.GONE)
+        }
+
+        appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 }
 
