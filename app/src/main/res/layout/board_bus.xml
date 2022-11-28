@@ -1,29 +1,30 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Widget.RPIShuttleTracker.AppWidget.Container"
-    android:theme="@style/AppTheme.AppWidgetContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:targetCellWidth="2"
     android:targetCellHeight="1"
+    android:theme="@style/AppTheme.AppWidgetContainer"
     tools:context=".MapsActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:autoSizeTextType="uniform"
+        android:gravity="center"
+        android:layout_weight="1"
+        android:text="@string/Widget_text" />
 
     <Button
         android:id="@+id/board_bus_widget_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_gravity="center"
         android:text="@string/board_bus" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/board_bus_widget_button"
-        android:layout_centerInParent="true"
-        android:autoSizeTextType="uniform"
-        android:gravity="center"
-        android:text="Remember to use the \n Shuttle Tracker App :)" />
-
-</RelativeLayout>
+</LinearLayout>
