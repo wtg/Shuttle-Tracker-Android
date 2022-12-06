@@ -136,6 +136,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_settings = findViewById<LinearLayout>(R.id.fabLayout1)
         var btn_about = findViewById<LinearLayout>(R.id.fabLayout2)
         var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
+        var btn_schedule = findViewById<LinearLayout>(R.id.fabLayoutTest)
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
         val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
 
