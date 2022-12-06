@@ -86,7 +86,6 @@ class InfoActivity : AppCompatActivity() {
                     scheduleString+= currentsched.content[i].name + "\nHours: "+currentsched.content[i].start + " to "+currentsched.content[i].end +"\n\n"
 
                 }
-                infoTextView.text=scheduleString
             }
         })
 

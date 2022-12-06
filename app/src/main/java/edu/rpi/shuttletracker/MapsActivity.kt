@@ -180,6 +180,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivity(intent)
         }
 
+        btn_schedule.setOnClickListener {
+            val intent = Intent(this, ScheduleActivity::class.java)
+            startActivity(intent)
+        }
+
         boardBusButton.setOnClickListener {
             /**
              *  1. get available bus numbers from server
