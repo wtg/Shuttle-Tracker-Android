@@ -8,7 +8,7 @@
 
     <!--TextView to display the name-->
     <TextView
-        android:id="@+id/name"
+        android:id="@+id/day"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="17dp"
@@ -16,21 +16,21 @@
 
     <!--TextView to display the designation-->
     <TextView
-        android:id="@+id/designation"
+        android:id="@+id/start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/name"
+        android:layout_below="@id/day"
         android:layout_marginTop="7dp"
         android:textColor="#343434"
         android:textSize="14dp" />
 
     <!--TextView to display the location-->
     <TextView
-        android:id="@+id/location"
+        android:id="@+id/end"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/designation"
-        android:layout_alignBottom="@+id/designation"
+        android:layout_alignBaseline="@+id/start"
+        android:layout_alignBottom="@+id/start"
         android:layout_alignParentRight="true"
         android:textColor="#343434"
         android:textSize="14dp" />
