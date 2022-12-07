@@ -179,7 +179,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
         }
-
         btn_schedule.setOnClickListener {
             val intent = Intent(this, ScheduleActivity::class.java)
             startActivity(intent)
