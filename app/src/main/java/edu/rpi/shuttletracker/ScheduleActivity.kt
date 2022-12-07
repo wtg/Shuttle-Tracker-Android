@@ -51,8 +51,14 @@ class ScheduleActivity: AppCompatActivity() {
     }
 
     private val listData: String
-        get() = ("{ \"users\" :[" +
-                "{\"name\":\"Ace\",\"designation\":\"Engineer\",\"location\":\"New York\"}" +
-                ",{\"name\":\"Tom\",\"designation\":\"Director\",\"location\":\"Chicago\"}" +
-                ",{\"name\":\"Tim\",\"designation\":\"Charted Accountant\",\"location\":\"Sunnyvale\"}] }")
-    }
+
+        get() = ("{ \"schedules\" :[" +
+                "{\"name\": \"Spring 2022\", \"start\": \"2022-01-23T07:00:00.000Z\", \"end\": \"2022-05-6T23:45:00.000Z\", \"content\": {" +
+                    "{ \"day\": \"Monday\": \"start\": \"7:00\", \"end\": \"23:45\"}" +
+                    "{ \"day\": \"Tuesday\": \"start\": \"07:00\", \"end\": \"23:45\"}" +
+                    "{ \"day\": \"Wednesday\": \"start\": \"07:00\", \"end\": \"23:45\"}" +
+                    "{ \"day\": \"Thursday\": \"start\": \"07:00\", \"end\": \"23:45\"}" +
+                    "{ \"day\": \"Friday\": \"start\": \"07:00\", \"end\": \"23:45\"}" +
+                    "{ \"day\": \"Saturday\": \"start\": \"09:00\", \"end\": \"23:45\"}" +
+                    "{ \"day\": \"Sunday\": \"start\": \"09:00\", \"end\": \"8:00\"}}} ]}")
+}
