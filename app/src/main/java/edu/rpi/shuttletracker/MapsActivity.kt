@@ -181,18 +181,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-    object colorblindMode : Application() {
-        var colorblind : Boolean = false
-        fun getMode() : Boolean {
-            return colorblind
-        }
-        fun setMode(mode : Boolean) {
-            colorblind = mode
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
+        object colorblindMode : Application() {
+            var colorblind : Boolean = false
+            fun getMode() : Boolean {
+                return colorblind
+            }
+            fun setMode(mode : Boolean) {
+                colorblind = mode
+            }
+        }
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -214,6 +213,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
         val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
 
+
         //placement
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -229,6 +229,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
+                super.onLocationResult()
                 currentLocation = locationResult.lastLocation
 
             }
