@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.MenuItem
+import android.webkit.WebView.FindListener
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -51,9 +52,11 @@ public class SettingsActivity: AppCompatActivity() {
             }
         }
         val toolbar: Toolbar = findViewById(R.id.settingsToolbar)
+        val tool: Toolbar = findViewById(R.id.settingsToolbar)
         setSupportActionBar(toolbar)
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
         getSupportActionBar()?.setDisplayShowHomeEnabled(true)
+        getsupportActionBar()?.setDisplayMenuItem(true)
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // handle arrow click here
