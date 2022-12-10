@@ -86,11 +86,13 @@ public class SettingsActivity: AppCompatActivity() {
     override fun onStart() {
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         super.onStart()
+        toggle.settingsToolbar(this)
         toggle.setChecked(loadToggle(this))
         MapsActivity.colorblindMode.setMode(toggle.isChecked)
     }
     override fun onStop() {
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        toggle.settingsToolbar(isChecked)
         super.onStop()
         saveToggle(this, toggle.isChecked)
     }
