@@ -63,6 +63,9 @@ public class SettingsActivity: AppCompatActivity() {
         if (item.getItemId() == android.R.id.home) {
             finish() // close this activity and return to preview activity (if there is any)
         }
+        if (item.actionView() == android.R.id.home){
+            finish()
+        }
         return super.onOptionsItemSelected(item)
     }
     override fun onResume() {
