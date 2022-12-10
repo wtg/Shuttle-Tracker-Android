@@ -100,6 +100,7 @@ public class SettingsActivity: AppCompatActivity() {
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
+            context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         editor.putBoolean("toggle_value", isToggled).apply()
     }
 
