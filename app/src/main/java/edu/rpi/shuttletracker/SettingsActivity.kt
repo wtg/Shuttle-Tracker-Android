@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.android.synthetic.main.settings.view.*
 
 
 public class SettingsActivity: AppCompatActivity() {
@@ -71,12 +72,15 @@ public class SettingsActivity: AppCompatActivity() {
     override fun onResume() {
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         super.onResume()
+        toggle.settingsToolbar(loadToggle(this))
         toggle.setChecked(loadToggle(this))
         MapsActivity.colorblindMode.setMode(toggle.isChecked)
+
     }
     override fun onPause() {
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         super.onPause()
+        super.getDrawerToggleDelegate()
         saveToggle(this, toggle.isChecked)
     }
     override fun onStart() {
