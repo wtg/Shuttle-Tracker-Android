@@ -80,8 +80,10 @@ public class SettingsActivity: AppCompatActivity() {
     override fun onPause() {
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         super.onPause()
+        super.finish()
         super.getDrawerToggleDelegate()
         saveToggle(this, toggle.isChecked)
+        toggle(title(this))
     }
     override fun onStart() {
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
@@ -102,6 +104,7 @@ public class SettingsActivity: AppCompatActivity() {
         val editor = sharedPreferences.edit()
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         editor.putBoolean("toggle_value", isToggled).apply()
+        editor.putBoolean(("toggle_value"))
     }
 
     private fun loadToggle(context: Context): Boolean {
