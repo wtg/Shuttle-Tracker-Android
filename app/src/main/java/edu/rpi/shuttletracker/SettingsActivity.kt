@@ -37,6 +37,8 @@ public class SettingsActivity: AppCompatActivity() {
         setContentView(R.layout.settings)
 //        drawBusIcons()
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        val sharedMemory: SharedPreferences =
+            this.getSharedPreferences("preferences", Context.MODE_PRIVATE))
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         if(sharedPreferences.contains("toggle_value")) {
@@ -95,6 +97,7 @@ public class SettingsActivity: AppCompatActivity() {
     override fun onStop() {
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         toggle.settingsToolbar(isChecked)
+        toggle.settingsToolbar(this)
         super.onStop()
         saveToggle(this, toggle.isChecked)
     }
@@ -103,6 +106,7 @@ public class SettingsActivity: AppCompatActivity() {
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val putBoolean("toggle_value", isToggles).apply())
         editor.putBoolean("toggle_value", isToggled).apply()
         editor.putBoolean(("toggle_value"))
     }
