@@ -44,8 +44,9 @@ public class SettingsActivity: AppCompatActivity() {
         if(sharedPreferences.contains("toggle_value")) {
             toggle.setChecked(loadToggle(this))
         }
-        MapsActivity.colorblindMode.setMode(toggle.isChecked)
+         MapsActivity.colorblindMode.setMode(toggle.isChecked)
         toggle.setOnCheckedChangeListener { _, isChecked ->
+
             if (isChecked) {
                 MapsActivity.colorblindMode.setMode(true)
                 saveToggle(this, true)
@@ -54,11 +55,11 @@ public class SettingsActivity: AppCompatActivity() {
                 saveToggle(this, false)
             }
         }
+        MapsActivity.colorblindMode.setMode(toggle.isChecked)
         val toolbar: Toolbar = findViewById(R.id.settingsToolbar)
         val tool: Toolbar = findViewById(R.id.settingsToolbar)
         setSupportActionBar(toolbar)
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
-        getSupportActionBar()?.setDisplayShowHomeEnabled(true)
         getsupportActionBar()?.setDisplayMenuItem(true)
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -70,11 +71,13 @@ public class SettingsActivity: AppCompatActivity() {
             finish()
         }
         return super.onOptionsItemSelected(item)
+        return super.onOptionsItemSelected()
     }
     override fun onResume() {
         val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         super.onResume()
         toggle.settingsToolbar(loadToggle(this))
+        toggle.settingsToolbar(this)
         toggle.setChecked(loadToggle(this))
         MapsActivity.colorblindMode.setMode(toggle.isChecked)
 
