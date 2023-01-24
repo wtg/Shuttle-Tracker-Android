@@ -27,4 +27,39 @@
         app:titleTextColor="#FFFFFF"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@id/colorblindSwitch"
+        >
+
+    <EditText
+        android:id="@+id/editServerURL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/saveURLButton"
+        android:ems="12"
+        android:inputType="text"
+        android:text="https://shuttletracker.app" />
+
+    <Button
+        android:id="@+id/saveURLButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:text="Apply"
+         />
+
+    <Button
+        android:id="@+id/resetURLButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editServerURL"
+        android:text="RESET SERVER URL"/>
+
+    </RelativeLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,14 +2,20 @@ package edu.rpi.shuttletracker;
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.activity_maps.*
+
 
 
 public class SettingsActivity: AppCompatActivity() {
@@ -30,13 +36,36 @@ public class SettingsActivity: AppCompatActivity() {
 //        bMap = BitmapFactory.decodeFile(getString(R.string.colorblind_crowdsourced_bus))
 //        cbcrowdbus.setImageBitmap(bMap)
 //    }
+
+//    private var EditText url_settings_view = (EditText) findViewById(r.id.editServerURL);
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings)
 //        drawBusIcons()
-        val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+
+        val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        val res: Resources = getResources()
+
+        val serverURLText = findViewById<EditText>(R.id.editServerURL)
+        serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
+        val saveServerURLButton = findViewById<Button>(R.id.saveURLButton)
+
+        val resetURLButton = findViewById<Button>(R.id.resetURLButton)
+
+        saveServerURLButton.setOnClickListener {
+            saveServerURL(this)
+        }
+
+        resetURLButton.setOnClickListener{
+            resetServerURL(this)
+        }
+
         if(sharedPreferences.contains("toggle_value")) {
             toggle.setChecked(loadToggle(this))
         }
@@ -95,6 +124,36 @@ public class SettingsActivity: AppCompatActivity() {
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean("toggle_value", true)
+    }
+
+    private fun saveServerURL(context: Context) {
+        val serverURLText = findViewById<EditText>(R.id.editServerURL)
+        val serverURL = serverURLText.text.toString()
+
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("server_base_url", serverURL).apply()
+
+        val text = "Saved URL"
+        val duration = Toast.LENGTH_SHORT
+        val toast = Toast.makeText(applicationContext, text, duration)
+        toast.show()
+    }
+
+    private fun resetServerURL(context: Context){
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val res: Resources = getResources()
+        val editor = sharedPreferences.edit()
+        editor.putString("server_base_url", res.getString(R.string.default_server_url)).apply()
+        val serverURLText = findViewById<EditText>(R.id.editServerURL)
+        serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
+
+        val text = "Reset URL"
+        val duration = Toast.LENGTH_SHORT
+        val toast = Toast.makeText(applicationContext, text, duration)
+        toast.show()
     }
 
 }

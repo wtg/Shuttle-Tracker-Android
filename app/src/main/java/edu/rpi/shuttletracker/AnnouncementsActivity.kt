@@ -1,4 +1,7 @@
 package edu.rpi.shuttletracker
+import android.content.Context
+import android.content.SharedPreferences
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +20,10 @@ class AnnouncementsActivity : AppCompatActivity(){
         setContentView(R.layout.activity_announcements)
         val thread = Thread(kotlinx.coroutines.Runnable {
             kotlin.run {
-                val announ = URL("https://shuttletracker.app/announcements")
+                val sharedPreferences: SharedPreferences =
+                    getSharedPreferences("preferences", Context.MODE_PRIVATE)
+                val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
+                val announ = URL(server_url + resources.getString(R.string.announcements_url))
                 var announString = announ.readText()
                 val announArray = JSONArray(announString)
                 val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
