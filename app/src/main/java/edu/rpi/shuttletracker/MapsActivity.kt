@@ -370,6 +370,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return false
     }
 
+    private fun calculateBusDistances(): Pair<String, Float> {
+        var closestBusID = "null"
+        var closestDistance = 99999.9f
+        for (bus in busArray){
+            val busLocation = Location("bus location")
+            busLocation.latitude = bus.latitude
+            busLocation.longitude = bus.longitude
+            val distanceToBus = currentLocation?.distanceTo(busLocation)!!
+
+            if (distanceToBus < closestDistance) {
+                closestBusID = bus.id.toString()
+                closestDistance = distanceToBus
+            }
+        }
+        return Pair(closestBusID, closestDistance)
+    }
+
     /**
      *  Keep sending data every 5 seconds.
      *  @return A thread which keeps sending data packs to the server every 5 seconds.
