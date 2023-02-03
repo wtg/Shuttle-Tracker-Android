@@ -284,8 +284,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if (!checkNearbyStop()) {
                 return@setOnClickListener
             }
-            val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
+
+            var busNumberArray: Array<String>
+            val busNumArray = getAvailableBusNumbers().sorted().map { it.toString() }
                 .toTypedArray() // convert Array<Int> to Array<String>
+            val suggestedBus = getNearestBus()
+            if (suggestedBus.first != "null" && suggestedBus.second < 20f) {
+                busNumberArray = arrayOf("Suggested: " + suggestedBus.first) + busNumArray
+            } else {
+                busNumberArray = busNumArray
+            }
+
             if (internet_connection()) {
                 // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
                 val chooseBusDialogBuilder = AlertDialog.Builder(this)
@@ -370,7 +379,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return false
     }
 
-    private fun calculateBusDistances(): Pair<String, Float> {
+    private fun getNearestBus(): Pair<String, Float> {
         var closestBusID = "null"
         var closestDistance = 99999.9f
         for (bus in busArray){
