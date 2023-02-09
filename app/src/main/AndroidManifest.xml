@@ -57,5 +57,11 @@
             android:exported="false"
             android:label="@string/title_activity_maps">
         </activity>
+        <activity
+            android:name=".BeaconPermissionsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.DayNight.Dialog.Alert"
+            android:label="test">
+        </activity>
     </application>
 </manifest>
