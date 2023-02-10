@@ -11,26 +11,37 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 
 
 import android.Manifest
-import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
-import android.Manifest.permission.BLUETOOTH_SCAN
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.BLUETOOTH_CONNECT
+import android.Manifest.permission.BLUETOOTH_SCAN
+import android.animation.Animator
 import android.app.AlertDialog
+import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.Color
 import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Build
-
 import android.os.Bundle
 import android.os.Looper
+import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -43,6 +54,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.Runnable
@@ -61,29 +73,6 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import android.content.Intent
-import android.net.Uri
-import android.system.Os.accept
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import android.animation.Animator
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
-import android.content.res.Resources
-import android.graphics.Color
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.core.graphics.rotationMatrix
-import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.*
-import kotlin.system.*
-import kotlin.coroutines.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -634,12 +623,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         latlngmultiroutes.add(latlngarr)
                     }
                     runOnUiThread {
-                        val colorArr = arrayListOf<Pair<String, Int>>(Pair("red", Color.RED),
-                            Pair("orange", Color.parseColor("#ee6002")), Pair("yellow", Color.YELLOW),
-                            Pair("green", Color.GREEN), Pair("blue", Color.BLUE),
+                        val colorArr = arrayListOf<Pair<String, Int>>(
+                            Pair("red", Color.RED),
+                            Pair("orange", Color.parseColor("#ee6002")),
+                            Pair("yellow", Color.YELLOW),
+                            Pair("green", Color.GREEN),
+                            Pair("blue", Color.BLUE),
                             Pair("purple", Color.parseColor("#a200e0")),
                             Pair("pink", Color.parseColor("#ef4fa6")),
-                            Pair("gray", Color.GRAY),)
+                            Pair("gray", Color.GRAY),
+                        )
                         var polylineArr = ArrayList<Polyline>()
                         for(i in 0 until latlngmultiroutes.size) {
                             var color : Int = 0
@@ -1086,27 +1079,43 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     mMap.setMyLocationEnabled(false)
                 }
                 .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
-                    ActivityCompat.requestPermissions(
-                        this,
-                        when {
-                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> arrayOf(
-                                ACCESS_FINE_LOCATION,
-                                ACCESS_BACKGROUND_LOCATION,
-                                BLUETOOTH_SCAN,
-                                BLUETOOTH_CONNECT
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                        startActivity(
+                            Intent(
+                                ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.parse("package:" + BuildConfig.APPLICATION_ID)
                             )
-                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> arrayOf(
-                                ACCESS_FINE_LOCATION,
-                                ACCESS_BACKGROUND_LOCATION
-                            )
-                            else -> arrayOf(
-                                ACCESS_FINE_LOCATION
-                            )
-                        },
-                        MY_PERMISSIONS_REQUEST_LOCATION
-                    )
+                        ) else ActivityCompat.requestPermissions(
+                            this,
+                            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q)
+                                arrayOf(
+                                    ACCESS_FINE_LOCATION,
+                                    ACCESS_BACKGROUND_LOCATION
+                                ) else arrayOf(ACCESS_FINE_LOCATION),
+                            MY_PERMISSIONS_REQUEST_LOCATION
+                        )
                 }
                 .show()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(resources.getString(R.string.alertTitle))
+                    .setMessage(resources.getString(R.string.supporting_text))
+                    .setNegativeButton(resources.getString(R.string.cancel)) { dialog, which ->
+                        // Respond to negative button press
+                        mMap.setMyLocationEnabled(false)
+                    }
+                    .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
+                        ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(
+                                BLUETOOTH_SCAN,
+                                BLUETOOTH_CONNECT
+                            ),
+                            MY_PERMISSIONS_REQUEST_BLUETOOTH
+                        )
+                    }
+                    .show()
+            }
         }
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
@@ -1157,6 +1166,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 offline_check()
             }
         }
+    }
+
+    fun permissionsChecker(){
+
     }
 
     // Store bus date in marker
@@ -1242,5 +1255,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     companion object {
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 99
+        private const val MY_PERMISSIONS_REQUEST_BLUETOOTH = 98
     }
 }
