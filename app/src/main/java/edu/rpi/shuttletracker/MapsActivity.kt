@@ -12,6 +12,9 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
+import android.Manifest.permission.BLUETOOTH_SCAN
+import android.Manifest.permission.BLUETOOTH_CONNECT
 import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -1085,7 +1088,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
                     ActivityCompat.requestPermissions(
                         this,
-                        arrayOf(ACCESS_FINE_LOCATION),
+                        when {
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> arrayOf(
+                                ACCESS_FINE_LOCATION,
+                                ACCESS_BACKGROUND_LOCATION,
+                                BLUETOOTH_SCAN,
+                                BLUETOOTH_CONNECT
+                            )
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> arrayOf(
+                                ACCESS_FINE_LOCATION,
+                                ACCESS_BACKGROUND_LOCATION
+                            )
+                            else -> arrayOf(
+                                ACCESS_FINE_LOCATION
+                            )
+                        },
                         MY_PERMISSIONS_REQUEST_LOCATION
                     )
                 }
