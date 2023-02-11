@@ -288,7 +288,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val mutableBusList = getAvailableBusNumbers().sorted().map { it.toString() }.toMutableList()
 
             val suggestedBus = getNearestBus()
-            if (suggestedBus.first != "null" && suggestedBus.second < 20f) {
+            val busToUserDistanceThreshold: Float = 20f
+            if (suggestedBus.first != "null" && suggestedBus.second < busToUserDistanceThreshold) {
                 mutableBusList.remove(suggestedBus.first)
                 mutableBusList.add(0, suggestedBus.first)
             }
