@@ -12,22 +12,32 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.animation.Animator
 import android.app.AlertDialog
+import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.Color
 import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Build
-
 import android.os.Bundle
 import android.os.Looper
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -40,15 +50,19 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.InputStreamReader
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -81,6 +95,7 @@ import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.*
 import kotlin.system.*
 import kotlin.coroutines.*
+import kotlin.system.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -898,6 +913,44 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         while(data.value==-1){}
         return data.value == apikey
 
+    }
+
+    private fun saveLogsToFile(){
+        Log.d("log_save", "in save file function")
+        try {
+//            val filename = "logcat_" + System.currentTimeMillis() + ".txt"
+            val filename = "bingbong"
+            val filecontents = "hello world"
+//            val file = File(this.filesDir, filename)
+//            val output_file = File(context?.externalCacheDir, )
+            openFileOutput(filename, Context.MODE_PRIVATE).use {
+                it.write(filecontents.toByteArray())
+                Log.d("log_save", "called write")
+
+            }
+        } catch (e: Exception){
+
+        }
+    }
+
+    private fun readLogs(){
+        Log.d("log_save", "in read file function")
+        val filename = "bingbong"
+        val `in`: FileInputStream = openFileInput(filename)
+        val inputStreamReader = InputStreamReader(`in`)
+        val bufferedReader = BufferedReader(inputStreamReader)
+        val sb = StringBuilder()
+        var line: String?
+        while (bufferedReader.readLine().also { line = it } != null) {
+            sb.append(line)
+        }
+        Log.d("log_save", "read content: " + sb)
+        inputStreamReader.close()
+//        openFileInput(filename).bufferedReader().useLines { lines ->
+//            lines.fold("") { some, text ->
+//                "$some\n$text"
+//            }
+//        }
     }
 
     fun internet_connection(): Boolean {
