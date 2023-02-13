@@ -72,22 +72,10 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import android.content.Intent
-import android.net.Uri
 import android.system.Os.accept
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import android.animation.Animator
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
-import android.content.res.Resources
-import android.graphics.Color
 import android.provider.Settings.Global.getString
 import android.provider.Settings.System.getString
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.Button
-import android.widget.LinearLayout
+import android.util.Log
 import android.widget.TextView
 import androidx.core.graphics.rotationMatrix
 import androidx.core.view.isVisible
@@ -915,42 +903,51 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-    private fun saveLogsToFile(){
-        Log.d("log_save", "in save file function")
-        try {
-//            val filename = "logcat_" + System.currentTimeMillis() + ".txt"
-            val filename = "bingbong"
-            val filecontents = "hello world"
-//            val file = File(this.filesDir, filename)
-//            val output_file = File(context?.externalCacheDir, )
-            openFileOutput(filename, Context.MODE_PRIVATE).use {
-                it.write(filecontents.toByteArray())
-                Log.d("log_save", "called write")
+    fun createLog(message: String) {
+        val logJSON = createLogMessage(message)
+        saveLogsToFile(logJSON)
 
-            }
-        } catch (e: Exception){
-
-        }
     }
 
-    private fun readLogs(){
-        Log.d("log_save", "in read file function")
-        val filename = "bingbong"
-        val `in`: FileInputStream = openFileInput(filename)
-        val inputStreamReader = InputStreamReader(`in`)
-        val bufferedReader = BufferedReader(inputStreamReader)
-        val sb = StringBuilder()
-        var line: String?
-        while (bufferedReader.readLine().also { line = it } != null) {
-            sb.append(line)
+    private fun createLogMessage(message: String): JSONObject{
+        session_uuid = getRandomSessionUuid()
+        date = getCurrentFormattedDate()
+
+        val jsonMap = mapOf("id" to session_uuid, "content" to message, "clientPlatform" to "android", "date" to date)
+        return JSONObject(jsonMap)
+    }
+
+    private fun saveLogsToFile(logJSON: JSONObject){
+        Log.d("log_save", "in save file function")
+        val filename = getRandomSessionUuid()
+        try {
+            val filecontents = logJSON.toString()
+            openFileOutput(filename, Context.MODE_PRIVATE).use {
+                it.write(filecontents.toByteArray())
+                Log.d("log_save", "wrote to file")
+            }
+        } catch (e: Exception){
+            Log.e("Exception", "File write failed: " + e.toString());
         }
-        Log.d("log_save", "read content: " + sb)
-        inputStreamReader.close()
-//        openFileInput(filename).bufferedReader().useLines { lines ->
-//            lines.fold("") { some, text ->
-//                "$some\n$text"
-//            }
-//        }
+        readLogs(filename)
+    }
+
+    private fun readLogs(filename: String){
+        Log.d("log_save", "in read file function")
+        try {
+            val `in`: FileInputStream = openFileInput(filename)
+            val inputStreamReader = InputStreamReader(`in`)
+            val bufferedReader = BufferedReader(inputStreamReader)
+            val sb = StringBuilder()
+            var line: String?
+            while (bufferedReader.readLine().also { line = it } != null) {
+                sb.append(line)
+            }
+            Log.d("log_save", "read content: " + sb)
+            inputStreamReader.close()
+        } catch (e: Exception) {
+            Log.e("Exception", "File read failed: " + e.toString());
+        }
     }
 
     fun internet_connection(): Boolean {
