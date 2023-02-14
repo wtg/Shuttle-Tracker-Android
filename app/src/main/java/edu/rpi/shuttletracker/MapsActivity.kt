@@ -906,7 +906,29 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     fun createLog(message: String) {
         val logJSON = createLogMessage(message)
         saveLogsToFile(logJSON)
+        sendLogsToServer(logJSON)
 
+    }
+
+    private fun sendLogsToServer(logJSONObject: JSONObject) {
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
+        val logsUrl =
+            URL(server_url + resources.getString(R.string.logs_url))
+        Log.d("log_save", "target logs url: $logsUrl")
+        Log.d("log_save", "log json server: " + logJSONObject.toString())
+        // send to server
+        val request = Request.Builder()
+            .url(logsUrl)
+            .patch(
+                logJSONObject.toString().toRequestBody(mediaType)
+            )
+            .build()
+        Log.d("log_save", "logs request: $request")
+
+//        val response = httpClient.newCall(request).execute()
+//        Log.d("log_save", "logs server response: $response")
     }
 
     private fun createLogMessage(message: String): JSONObject{
