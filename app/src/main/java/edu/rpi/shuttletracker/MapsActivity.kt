@@ -1079,27 +1079,40 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     mMap.setMyLocationEnabled(false)
                 }
                 .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-                        startActivity(
+                    when {
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> startActivity(
                             Intent(
                                 ACTION_APPLICATION_DETAILS_SETTINGS,
                                 Uri.parse("package:" + BuildConfig.APPLICATION_ID)
                             )
-                        ) else ActivityCompat.requestPermissions(
+                        )
+
+                        Build.VERSION.SDK_INT == Build.VERSION_CODES.Q -> ActivityCompat.requestPermissions(
                             this,
-                            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q)
-                                arrayOf(
-                                    ACCESS_FINE_LOCATION,
-                                    ACCESS_BACKGROUND_LOCATION
-                                ) else arrayOf(ACCESS_FINE_LOCATION),
+                            arrayOf(
+                                ACCESS_FINE_LOCATION,
+                                ACCESS_BACKGROUND_LOCATION
+                            ),
                             MY_PERMISSIONS_REQUEST_LOCATION
                         )
+
+                        else -> ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(ACCESS_FINE_LOCATION),
+                            MY_PERMISSIONS_REQUEST_LOCATION
+                        )
+
+                    }
                 }
                 .show()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if(ContextCompat.checkSelfPermission(this, BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
+            || ContextCompat.checkSelfPermission(this, BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 MaterialAlertDialogBuilder(this)
-                    .setTitle(resources.getString(R.string.alertTitle))
-                    .setMessage(resources.getString(R.string.supporting_text))
+                    .setTitle(resources.getString(R.string.bluetooth_permissions_title))
+                    .setMessage(resources.getString(R.string.bluetooth_supporting_text))
                     .setNegativeButton(resources.getString(R.string.cancel)) { dialog, which ->
                         // Respond to negative button press
                         mMap.setMyLocationEnabled(false)
@@ -1117,6 +1130,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     .show()
             }
         }
+
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
             if(internet_connection() && APImatch) {//make sure it would run only when connected to internet and after api check
@@ -1166,10 +1180,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 offline_check()
             }
         }
-    }
-
-    fun permissionsChecker(){
-
     }
 
     // Store bus date in marker
