@@ -944,16 +944,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         Log.d("log_save", "target logs url: $logsUrl")
         Log.d("log_save", "log json server: " + logJSONObject.toString())
         // send to server
-        val request = Request.Builder()
-            .url(logsUrl)
-            .patch(
-                logJSONObject.toString().toRequestBody(mediaType)
-            )
-            .build()
-        Log.d("log_save", "logs request: $request")
+        val thread = Thread {
+            kotlin.run {
+                try {
+                    val request = Request.Builder()
+                        .url(logsUrl)
+                        .post(
+                            logJSONObject.toString().toRequestBody(mediaType)
+                        )
+                        .build()
+                    Log.d("log_save", "logs request: $request")
 
-//        val response = httpClient.newCall(request).execute()
-//        Log.d("log_save", "logs server response: $response")
+                    val response = httpClient.newCall(request).execute()
+                    Log.d("log_save", "logs server response: " + response.body?.string() )
+                } catch (e: Exception) {
+                    Log.d("log_save", "server send failed: " + e.toString());
+                    runOnUiThread { offline_check() }
+                }
+            }
+        }
+
+        thread.start()
     }
 
     private fun createLogMessage(message: String): JSONObject{
@@ -974,7 +985,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Log.d("log_save", "wrote to file")
             }
         } catch (e: Exception){
-            Log.e("Exception", "File write failed: " + e.toString());
+            Log.d("log_save", "File write failed: " + e.toString());
         }
         readLogs(filename)
     }
