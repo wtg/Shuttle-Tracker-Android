@@ -51,6 +51,8 @@ public class SettingsActivity: AppCompatActivity() {
         val res: Resources = getResources()
 
         val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        val logsToggle: SwitchMaterial = findViewById(R.id.logsSwitch)
+
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
         val saveServerURLButton = findViewById<Button>(R.id.saveURLButton)
@@ -64,6 +66,8 @@ public class SettingsActivity: AppCompatActivity() {
         resetURLButton.setOnClickListener{
             resetServerURL(this)
         }
+
+        Log.d("log_save", "shared pref color blind is: " + sharedPreferences.getBoolean("colorblind_toggle_value", false))
 
         if(sharedPreferences.contains("colorblind_toggle_value")) {
             colorBlindToggle.setChecked(loadColorBlindToggle(this))
@@ -79,6 +83,12 @@ public class SettingsActivity: AppCompatActivity() {
             }
         }
 
+        logsToggle.setChecked(sharedPreferences.getBoolean("logs_toggle_value", true))
+        logsToggle.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                saveLogsToggle(this, true)
+            } else {
+                saveLogsToggle(this, false)
             }
         }
         val toolbar: Toolbar = findViewById(R.id.settingsToolbar)
@@ -126,6 +136,14 @@ public class SettingsActivity: AppCompatActivity() {
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean("colorblind_toggle_value", false)
+    }
+
+    private fun saveLogsToggle(context: Context, isToggled: Boolean) {
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("logs_toggle_value", isToggled).apply()
+        Log.d("log_save", "logs toggle value is: " + sharedPreferences.getBoolean("logs_toggle_value", true))
     }
 
     private fun saveServerURL(context: Context) {
