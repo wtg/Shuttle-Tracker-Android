@@ -284,14 +284,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if (!checkNearbyStop()) {
                 return@setOnClickListener
             }
-            val busNumberArray = getAvailableBusNumbers().sorted().map { it.toString() }
-                .toTypedArray() // convert Array<Int> to Array<String>
+
+            val mutableBusList = getAvailableBusNumbers().sorted().map { it.toString() }.toMutableList()
+
+            val suggestedBus = getNearestBus()
+            val busToUserDistanceThreshold: Float = 20f
+            if (suggestedBus.first != "null" && suggestedBus.second < busToUserDistanceThreshold) {
+                mutableBusList.remove(suggestedBus.first)
+                mutableBusList.add(0, suggestedBus.first)
+            }
+            var busNumberArray: Array<String> = mutableBusList.toTypedArray()
+
             if (internet_connection()) {
                 // Given an array of bus numbers, create an AlertDialog to let the user choose which bus to board.
                 val chooseBusDialogBuilder = AlertDialog.Builder(this)
                 chooseBusDialogBuilder.setTitle("Bus Selection")
 
-                    // TODO: Find closest bus and recommend this bus to the user.
 
                     .setSingleChoiceItems(busNumberArray, -1) { _, which ->
                         selectedBusNumber = busNumberArray[which]
@@ -368,6 +376,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
         return false
+    }
+
+    private fun getNearestBus(): Pair<String, Float> {
+        var closestBusID = "null"
+        var closestDistance = 99999.9f
+        for (bus in busArray){
+            val busLocation = Location("bus location")
+            busLocation.latitude = bus.latitude
+            busLocation.longitude = bus.longitude
+            val distanceToBus = currentLocation?.distanceTo(busLocation)!!
+
+            if (distanceToBus < closestDistance) {
+                closestBusID = bus.id.toString()
+                closestDistance = distanceToBus
+            }
+        }
+        return Pair(closestBusID, closestDistance)
     }
 
     /**
