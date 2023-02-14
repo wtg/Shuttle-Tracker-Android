@@ -1105,8 +1105,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 //        val sharedPreferences: SharedPreferences =
 //            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        if (sharedPreferences.contains("toggle_value")) {
-            MapsActivity.colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
+        if (sharedPreferences.contains("colorblind_toggle_value")) {
+            MapsActivity.colorblindMode.setMode(sharedPreferences.getBoolean("colorblind_toggle_value", true))
         }
         if (internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
 
