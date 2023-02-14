@@ -36,10 +36,12 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -62,6 +64,8 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.MonitorNotifier
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URL
@@ -73,6 +77,9 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
+import androidx.lifecycle.Observer
+import org.altbeacon.beacon.BeaconParser
+import org.altbeacon.beacon.Region
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -319,6 +326,49 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }else{
                 offline_check()
             }
+        }
+
+        val beaconManager =  BeaconManager.getInstanceForApplication(this)
+        val region = Region("all-beacons-region", null, null, null)
+        beaconManager.beaconParsers.clear();
+        beaconManager.beaconParsers.add(
+            BeaconParser().
+            setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
+        // Set up a Live Data observer so this Activity can get monitoring callbacks
+        // observer will be called each time the monitored regionState changes (inside vs. outside region)
+        beaconManager.getRegionViewModel(region).regionState.observeForever(monitoringObserver)
+        beaconManager.startMonitoring(region)
+
+        /*var region = Region("all-beacons-region", null, null, null)
+        val beaconManager = BeaconManager.getInstanceForApplication(this)
+        BeaconManager.setDebug(true)
+        // removes altbeacon, we need byte layout for ibeacon
+        beaconManager.getBeaconParsers.clear();
+        beaconManager.getBeaconParsers.add(
+            BeaconParser().
+        setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
+
+        beaconManager.getRegionViewModel(region).regionState.observeForever(monitoringObserver)
+        beaconManager.startMonitoring(region)
+        beaconManager.startRangingBeacons(region)
+        // These two lines set up a Live Data observer so this Activity can get beacon data from the Application class
+        val regionViewModel = BeaconManager.getInstanceForApplication(this).getRegionViewModel(region)
+        // observer will be called each time the monitored regionState changes (inside vs. outside region)
+        regionViewModel.regionState.observeForever(monitoringObserver)*/
+
+        //live data observer
+        //val regionViewModel = BeaconManager.getInstanceForApplication(this).getRegionViewModel(beaconApplication.region)
+        // regionViewModel.regionState.observe(this, monitoringObserver)
+    }
+
+    private val monitoringObserver = Observer<Int> { state ->
+        if (state == MonitorNotifier.INSIDE) {
+            println("detected beacon")
+            Log.d("beacon", "Detected beacons(s)")
+        }
+        else {
+            println("stopped detecting")
+            Log.d("beacon", "Stopped detecting beacons")
         }
     }
 
