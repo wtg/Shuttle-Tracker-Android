@@ -104,6 +104,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         OkHttpClient.Builder().build()
     }
 
+    private var logBuffer = ArrayList<String>()
+
     private var stopArray = ArrayList<Stop>()
     private val busArray = ArrayList<Bus>()
 
@@ -929,13 +931,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun createLog(message: String) {
+        val sharedPreferences: SharedPreferences =
+            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val logJSON = createLogMessage(message)
+
         saveLogsToFile(logJSON)
-        sendLogsToServer(logJSON)
+
+        if (sharedPreferences.getBoolean("logs_toggle_value", true)) {
+            Log.d("log_save", "called sendLogToServer")
+            sendLogToServer(logJSON)
+        }
 
     }
 
-    private fun sendLogsToServer(logJSONObject: JSONObject) {
+    private fun sendLogToServer(logJSONObject: JSONObject) {
         val sharedPreferences: SharedPreferences =
             getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
@@ -944,7 +953,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         Log.d("log_save", "target logs url: $logsUrl")
         Log.d("log_save", "log json server: " + logJSONObject.toString())
         // send to server
-        val thread = Thread {
+        Thread {
             kotlin.run {
                 try {
                     val request = Request.Builder()
@@ -957,14 +966,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     val response = httpClient.newCall(request).execute()
                     Log.d("log_save", "logs server response: " + response.body?.string() )
+
                 } catch (e: Exception) {
                     Log.d("log_save", "server send failed: " + e.toString());
                     runOnUiThread { offline_check() }
                 }
             }
-        }
+        }.start()
 
-        thread.start()
     }
 
     private fun createLogMessage(message: String): JSONObject{
@@ -973,6 +982,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val jsonMap = mapOf("id" to session_uuid, "content" to message, "clientPlatform" to "android", "date" to date)
         return JSONObject(jsonMap)
+    }
+
+    private fun saveToLogBuffer(message: String){
+        val currTime = getCurrentFormattedDate()
+        logBuffer.add(currTime + " " + message)
+    }
+
+    private fun flushLogBuffer(){
+        logBuffer.clear()
     }
 
     private fun saveLogsToFile(logJSON: JSONObject){
