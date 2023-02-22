@@ -33,6 +33,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
@@ -64,8 +65,6 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.altbeacon.beacon.BeaconManager
-import org.altbeacon.beacon.MonitorNotifier
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URL
@@ -78,8 +77,7 @@ import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 import androidx.lifecycle.Observer
-import org.altbeacon.beacon.BeaconParser
-import org.altbeacon.beacon.Region
+import org.altbeacon.beacon.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -119,7 +117,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.channel_name)
             val descriptionText = getString(R.string.channel_description)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
@@ -337,28 +335,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Set up a Live Data observer so this Activity can get monitoring callbacks
         // observer will be called each time the monitored regionState changes (inside vs. outside region)
         beaconManager.getRegionViewModel(region).regionState.observeForever(monitoringObserver)
+        beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, idObserver)
         beaconManager.startMonitoring(region)
 
-        /*var region = Region("all-beacons-region", null, null, null)
-        val beaconManager = BeaconManager.getInstanceForApplication(this)
-        BeaconManager.setDebug(true)
-        // removes altbeacon, we need byte layout for ibeacon
-        beaconManager.getBeaconParsers.clear();
-        beaconManager.getBeaconParsers.add(
-            BeaconParser().
-        setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
 
-        beaconManager.getRegionViewModel(region).regionState.observeForever(monitoringObserver)
-        beaconManager.startMonitoring(region)
-        beaconManager.startRangingBeacons(region)
-        // These two lines set up a Live Data observer so this Activity can get beacon data from the Application class
-        val regionViewModel = BeaconManager.getInstanceForApplication(this).getRegionViewModel(region)
-        // observer will be called each time the monitored regionState changes (inside vs. outside region)
-        regionViewModel.regionState.observeForever(monitoringObserver)*/
-
-        //live data observer
-        //val regionViewModel = BeaconManager.getInstanceForApplication(this).getRegionViewModel(beaconApplication.region)
-        // regionViewModel.regionState.observe(this, monitoringObserver)
     }
 
     private val monitoringObserver = Observer<Int> { state ->
@@ -369,6 +349,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         else {
             println("stopped detecting")
             Log.d("beacon", "Stopped detecting beacons")
+        }
+    }
+
+    private val idObserver = Observer<Collection<Beacon>> { beacons ->
+        Log.d("beacon", "Ranged: ${beacons.count()} beacons")
+        for (beacon: Beacon in beacons) {
+            Log.d("beacon", "$beacon's id 1: ${beacon.id1}, id2: ${beacon.id2}, id3: ${beacon.id3}")
         }
     }
 
@@ -1118,26 +1105,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            mMap.setMyLocationEnabled(true)
-        } else {
+        if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            || (SDK_INT >= Build.VERSION_CODES.Q && ContextCompat.checkSelfPermission(this, ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             MaterialAlertDialogBuilder(this)
                 .setTitle(resources.getString(R.string.alertTitle))
-                .setMessage(resources.getString(R.string.supporting_text))
+                .setMessage(resources.getString(if (SDK_INT < Build.VERSION_CODES.R) R.string.supporting_text else R.string.supporting_text_settings))
                 .setNegativeButton(resources.getString(R.string.cancel)) { dialog, which ->
                     // Respond to negative button press
                     mMap.setMyLocationEnabled(false)
                 }
                 .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
                     when {
-                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> startActivity(
+                        SDK_INT >= Build.VERSION_CODES.R -> startActivity(
                             Intent(
                                 ACTION_APPLICATION_DETAILS_SETTINGS,
                                 Uri.parse("package:" + BuildConfig.APPLICATION_ID)
                             )
                         )
 
-                        Build.VERSION.SDK_INT == Build.VERSION_CODES.Q -> ActivityCompat.requestPermissions(
+                        SDK_INT == Build.VERSION_CODES.Q -> ActivityCompat.requestPermissions(
                             this,
                             arrayOf(
                                 ACCESS_FINE_LOCATION,
@@ -1155,18 +1141,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                 }
                 .show()
+        } else {
+            mMap.setMyLocationEnabled(true)
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (SDK_INT >= Build.VERSION_CODES.S) {
             if(ContextCompat.checkSelfPermission(this, BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
             || ContextCompat.checkSelfPermission(this, BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 MaterialAlertDialogBuilder(this)
                     .setTitle(resources.getString(R.string.bluetooth_permissions_title))
                     .setMessage(resources.getString(R.string.bluetooth_supporting_text))
-                    .setNegativeButton(resources.getString(R.string.cancel)) { dialog, which ->
-                        // Respond to negative button press
-                        mMap.setMyLocationEnabled(false)
-                    }
                     .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
                         ActivityCompat.requestPermissions(
                             this,
