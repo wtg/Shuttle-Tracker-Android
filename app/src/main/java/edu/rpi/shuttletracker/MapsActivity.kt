@@ -217,7 +217,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
                 ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             return
@@ -319,36 +319,47 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
         }
 
         val beaconManager =  BeaconManager.getInstanceForApplication(this)
-        val region = Region("all-beacons-region", null, Identifier.fromInt(504), null)
+        val region = Region("all-beacons-region", null, null, null)
         beaconManager.beaconParsers.clear()
         beaconManager.beaconParsers.add(
             BeaconParser().
             setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
         BeaconManager.setDebug(true)
 
-        val builder = Notification.Builder(this)
-        builder.setSmallIcon(R.drawable.ic_launcher_foreground)
-        builder.setContentTitle("Looking for Shuttles")
-        if (SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "My Notification Channel ID",
-                "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT
-            )
-            channel.description = "My Notification Channel Description"
-            val notificationManager = getSystemService(
-                NOTIFICATION_SERVICE
-            ) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-            builder.setChannelId(channel.id)
-        }
+        if(!beaconManager.isAnyConsumerBound){
+            val builder = Notification.Builder(this)
+            builder.setSmallIcon(R.drawable.ic_launcher_foreground)
+            builder.setContentTitle("Looking for Shuttles")
+            if (SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    "My Notification Channel ID",
+                    "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT
+                )
+                channel.description = "My Notification Channel Description"
+                val notificationManager = getSystemService(
+                    NOTIFICATION_SERVICE
+                ) as NotificationManager
+                notificationManager.createNotificationChannel(channel)
+                builder.setChannelId(channel.id)
+            }
 
-        beaconManager.enableForegroundServiceScanning(builder.build(), 456);
-        beaconManager.setEnableScheduledScanJobs(false)
-        beaconManager.backgroundBetweenScanPeriod = 0
-        beaconManager.backgroundScanPeriod = 1100
+            beaconManager.enableForegroundServiceScanning(builder.build(), 456);
+            beaconManager.setEnableScheduledScanJobs(false)
+            beaconManager.backgroundBetweenScanPeriod = 0
+            beaconManager.backgroundScanPeriod = 1100
+        }
 
         beaconManager.addMonitorNotifier(this)
         beaconManager.startMonitoring(region)
+
+        val rangeNotifier = RangeNotifier { beacons, region ->
+            while(beacons.iterator().hasNext()) {
+                val beacon = beacons.iterator().next();
+                Log.d("beacon","Beacon details: " + beacon.toString() + " is about " + beacon.distance + " meters away.")
+            }
+        }
+        beaconManager.addRangeNotifier(rangeNotifier)
+        beaconManager.startRangingBeacons(region)
     }
 
     override fun didEnterRegion(region: Region) {
