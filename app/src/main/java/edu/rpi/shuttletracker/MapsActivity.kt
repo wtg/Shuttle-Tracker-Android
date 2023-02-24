@@ -11,10 +11,7 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 
 
 import android.Manifest
-import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
-import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.Manifest.permission.BLUETOOTH_CONNECT
-import android.Manifest.permission.BLUETOOTH_SCAN
+import android.Manifest.permission.*
 import android.animation.Animator
 import android.app.AlertDialog
 import android.app.Application
@@ -42,7 +39,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -65,6 +61,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.altbeacon.beacon.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URL
@@ -76,10 +73,8 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import androidx.lifecycle.Observer
-import org.altbeacon.beacon.*
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
 
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
     private var busesDrawn : Boolean = false
@@ -327,36 +322,34 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         val beaconManager =  BeaconManager.getInstanceForApplication(this)
-        val region = Region("all-beacons-region", null, null, null)
+        val region = Region("all-beacons-region", null, Identifier.fromInt(504), null)
         beaconManager.beaconParsers.clear();
         beaconManager.beaconParsers.add(
             BeaconParser().
             setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
-        // Set up a Live Data observer so this Activity can get monitoring callbacks
-        // observer will be called each time the monitored regionState changes (inside vs. outside region)
-        beaconManager.getRegionViewModel(region).regionState.observeForever(monitoringObserver)
-        beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, idObserver)
+        BeaconManager.setDebug(true)
+
+        //beaconManager.setEnableScheduledScanJobs(false);
+        //beaconManager.setBackgroundBetweenScanPeriod(0);
+        //beaconManager.setBackgroundScanPeriod(1100);
+
+        beaconManager.addMonitorNotifier(this)
         beaconManager.startMonitoring(region)
-
-
     }
 
-    private val monitoringObserver = Observer<Int> { state ->
-        if (state == MonitorNotifier.INSIDE) {
-            println("detected beacon")
-            Log.d("beacon", "Detected beacons(s)")
-        }
-        else {
-            println("stopped detecting")
-            Log.d("beacon", "Stopped detecting beacons")
-        }
+    override fun didEnterRegion(region: Region) {
+        println("entered region")
+        Log.d("beacon", "entered region")
     }
 
-    private val idObserver = Observer<Collection<Beacon>> { beacons ->
-        Log.d("beacon", "Ranged: ${beacons.count()} beacons")
-        for (beacon: Beacon in beacons) {
-            Log.d("beacon", "$beacon's id 1: ${beacon.id1}, id2: ${beacon.id2}, id3: ${beacon.id3}")
-        }
+    override fun didExitRegion(region: Region) {
+        println("exited region")
+        Log.d("beacon", "exited region")
+    }
+
+    override fun didDetermineStateForRegion(state: Int, region: Region) {
+        println("didDetermineStateForRegion")
+        Log.d("beacon", "state: $state")
     }
 
     /**
@@ -1297,6 +1290,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+
     companion object {
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 99
         private const val MY_PERMISSIONS_REQUEST_BLUETOOTH = 98
