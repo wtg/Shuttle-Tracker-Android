@@ -13,10 +13,7 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 import android.Manifest
 import android.Manifest.permission.*
 import android.animation.Animator
-import android.app.AlertDialog
-import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
+import android.app.*
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -323,15 +320,32 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
 
         val beaconManager =  BeaconManager.getInstanceForApplication(this)
         val region = Region("all-beacons-region", null, Identifier.fromInt(504), null)
-        beaconManager.beaconParsers.clear();
+        beaconManager.beaconParsers.clear()
         beaconManager.beaconParsers.add(
             BeaconParser().
             setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
         BeaconManager.setDebug(true)
 
-        //beaconManager.setEnableScheduledScanJobs(false);
-        //beaconManager.setBackgroundBetweenScanPeriod(0);
-        //beaconManager.setBackgroundScanPeriod(1100);
+        val builder = Notification.Builder(this)
+        builder.setSmallIcon(R.drawable.ic_launcher_foreground)
+        builder.setContentTitle("Looking for Shuttles")
+        if (SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "My Notification Channel ID",
+                "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT
+            )
+            channel.description = "My Notification Channel Description"
+            val notificationManager = getSystemService(
+                NOTIFICATION_SERVICE
+            ) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+            builder.setChannelId(channel.id)
+        }
+
+        beaconManager.enableForegroundServiceScanning(builder.build(), 456);
+        beaconManager.setEnableScheduledScanJobs(false)
+        beaconManager.backgroundBetweenScanPeriod = 0
+        beaconManager.backgroundScanPeriod = 1100
 
         beaconManager.addMonitorNotifier(this)
         beaconManager.startMonitoring(region)
