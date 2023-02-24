@@ -930,28 +930,32 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-    fun createLog(message: String) {
-        val sharedPreferences: SharedPreferences =
-            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        val logJSON = createLogMessage(message)
+//    fun createLog(message: String) {
+//        val sharedPreferences: SharedPreferences =
+//            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+//        val logJSON = createLogMessage(message)
+//
+//        saveLogsToFile(logJSON)
+//
+//        if (sharedPreferences.getBoolean("logs_toggle_value", true)) {
+//            Log.d("log_save", "called sendLogToServer")
+//            sendLogToServer(logJSON)
+//        }
+//
+//    }
 
-        saveLogsToFile(logJSON)
-
-        if (sharedPreferences.getBoolean("logs_toggle_value", true)) {
-            Log.d("log_save", "called sendLogToServer")
-            sendLogToServer(logJSON)
-        }
-
-    }
-
-    private fun sendLogToServer(logJSONObject: JSONObject) {
+    private fun sendLogsToServer() {
         val sharedPreferences: SharedPreferences =
             getSharedPreferences("preferences", Context.MODE_PRIVATE)
+
         val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
         val logsUrl =
             URL(server_url + resources.getString(R.string.logs_url))
         Log.d("log_save", "target logs url: $logsUrl")
+
+        val logJSONObject = createLogMessage(logBuffer.toString())
         Log.d("log_save", "log json server: " + logJSONObject.toString())
+
         // send to server
         Thread {
             kotlin.run {
@@ -971,6 +975,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     Log.d("log_save", "server send failed: " + e.toString());
                     runOnUiThread { offline_check() }
                 }
+                flushLogBuffer()
             }
         }.start()
 
@@ -984,9 +989,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return JSONObject(jsonMap)
     }
 
-    private fun saveToLogBuffer(message: String){
+    private fun writeToLogBuffer(message: String){
         val currTime = getCurrentFormattedDate()
-        logBuffer.add(currTime + " " + message)
+        logBuffer.add(currTime + " " + message + "\n")
     }
 
     private fun flushLogBuffer(){
