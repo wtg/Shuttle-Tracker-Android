@@ -251,19 +251,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         //btn_announcements.isVisible = true
 
         btn_settings.setOnClickListener {
+            writeToLogBuffer("clicked settings button")
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
         btn_info.setOnClickListener {
+            writeToLogBuffer("clicked info button")
             val intent = Intent(this, InfoActivity::class.java)
             startActivity(intent)
         }
         btn_about.setOnClickListener {
+            writeToLogBuffer("clicked about button")
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
         }
         //button reference for announcements section
         btn_announcements.setOnClickListener {
+            writeToLogBuffer("clicked annoucements button")
             val intent = Intent(this, AnnouncementsActivity::class.java)
             startActivity(intent);
         }
@@ -275,6 +279,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  3. send data to server
              *  4. update this client's state and change the button to "leave bus"
              */
+
+            writeToLogBuffer("clicked board bus button")
 
             val notificationTimer = Timer("notificationTimer", true)
 
@@ -331,6 +337,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             ;
             leaveBusButton.setOnClickListener {
+                writeToLogBuffer("clicked leave bus button")
                 stopService(wakelockIntent)
                 onBus = false // this variable controls when the data-transmitting thread ends
                 boardBusButton.visibility = View.VISIBLE
@@ -377,6 +384,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             println("current location: $currentLocation") // // TODO: remove/comment this testing clause
             println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
             if (currentLocation?.distanceTo(stopLocation)!! <= 50) {
+                writeToLogBuffer("user is ${currentLocation?.distanceTo(stopLocation).toString()} from stop")
                 return true
             }
         }
@@ -397,6 +405,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 closestDistance = distanceToBus
             }
         }
+        writeToLogBuffer("closest bus is bus $closestBusID with distance ${closestDistance.toString()}")
         return Pair(closestBusID, closestDistance)
     }
 
@@ -436,6 +445,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         val boardBusUrl =
                             URL(server_url + resources.getString(R.string.buses_url) + "/$selectedBusNumber")
                         println("Target URL: $boardBusUrl") // TODO: remove/comment this testing clause
+                        writeToLogBuffer("sendOnBusData target url: $boardBusUrl")
 
                         // send to server
                         val request = Request.Builder()
@@ -445,9 +455,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             )
                             .build()
                         println("Request: $request") // TODO: remove/comment this testing clause
+                        writeToLogBuffer("sendOnBusData Request: $request")
 
                         val response = httpClient.newCall(request).execute()
                         println("response: $response") // TODO: remove/comment this testing clause
+                        writeToLogBuffer("sendOnBusData Response: $response")
 
                         // wait for 5 seconds
                         Thread.sleep(5000L)
@@ -455,6 +467,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
+                    sendLogsToServer()
                     runOnUiThread{offline_check()}
                 }
             }
@@ -479,6 +492,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         getSharedPreferences("preferences", Context.MODE_PRIVATE)
                     val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
                     val url = URL(server_url + resources.getString(R.string.bus_numbers_url))
+                    writeToLogBuffer("getAvailableBusNumbers target url: $url")
                     val jsonString = url.readText()
                     val jsonArray = JSONArray(jsonString)
                     for (i in 0 until jsonArray.length()) {
@@ -487,6 +501,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch (ex: Exception)
                 {
+                    sendLogsToServer()
                     runOnUiThread{offline_check()}
                 }
             }
@@ -605,6 +620,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             kotlin.run {
                 try {
                     val url = URL(url)
+                    writeToLogBuffer("drawStops target url: $url")
                     val jsonString = url.readText()
                     var jsonArray = JSONArray(jsonString)
                     for (i in 0 until jsonArray.length()) {
@@ -630,6 +646,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
+                    sendLogsToServer()
                     runOnUiThread{offline_check()}
                 }
             }
@@ -642,6 +659,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             kotlin.run {
                 try {
                     val url = URL(url)
+                    writeToLogBuffer("drawRoutes target url: $url")
                     val jsonString = url.readText()
                     var jsonArray = JSONArray(jsonString)
                     var latlngmultiroutes = ArrayList<ArrayList<LatLng>>()
@@ -693,6 +711,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
+                    sendLogsToServer()
                     runOnUiThread{offline_check()}
                 }
             }
@@ -709,6 +728,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             kotlin.run {
                 try {
                     val url = URL(url)
+                    writeToLogBuffer("drawBuses target url: $url")
                     val jsonString = url.readText()
                     var jsonArray = JSONArray(jsonString)
                     for (i in 0 until jsonArray.length()) {
@@ -753,6 +773,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     for (i in 0 until busArray.size) {
                         val current = busArray.get(i)
                         val stopPos = LatLng(current.latitude, current.longitude)
+                        writeToLogBuffer("drew bus ${current.id} on map")
                         runOnUiThread {
                             markerArray.add(
                                 mMap.addMarker(
@@ -770,6 +791,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
+                    sendLogsToServer()
                     runOnUiThread{offline_check()}
                 }
             }
@@ -780,7 +802,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     //@RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
+        writeToLogBuffer("updating buses")
         if (markerArray.size == 0 && !busesDrawn) {
+            writeToLogBuffer("markerArray size is 0")
             return markerArray
         }
         val busArray = ArrayList<Bus>()
@@ -789,6 +813,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             kotlin.run {
                 try {
                     val url = URL(url)
+                    writeToLogBuffer("updateBuses target url: $url")
                     val jsonString = url.readText()
                     var jsonArray = JSONArray(jsonString)
                     for (i in 0 until jsonArray.length()) {
@@ -828,6 +853,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     markerArray.get(i)
                                         .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                     //println("Bus " + id + " updated.")
+                                    writeToLogBuffer("bus $id updated")
                                 }
                             }
                             val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -845,6 +871,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         markerArray.get(i)
                                             .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                         //println("Bus " + id + " updated.")
+                                        writeToLogBuffer("bus $id updated")
                                         markerArray.get(i).tag = busDate
                                     }
                                 }
@@ -880,6 +907,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     }
                 } catch (ex: Exception) {
+                    sendLogsToServer()
                     runOnUiThread { offline_check() }
                 }
             }
@@ -889,6 +917,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun updateApp(){
+        writeToLogBuffer("called updateApp")
         val browserIntent = Intent(
             Intent.ACTION_VIEW,
             Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
@@ -998,38 +1027,38 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         logBuffer.clear()
     }
 
-    private fun saveLogsToFile(logJSON: JSONObject){
-        Log.d("log_save", "in save file function")
-        val filename = getRandomSessionUuid()
-        try {
-            val filecontents = logJSON.toString()
-            openFileOutput(filename, Context.MODE_PRIVATE).use {
-                it.write(filecontents.toByteArray())
-                Log.d("log_save", "wrote to file")
-            }
-        } catch (e: Exception){
-            Log.d("log_save", "File write failed: " + e.toString());
-        }
-        readLogs(filename)
-    }
-
-    private fun readLogs(filename: String){
-        Log.d("log_save", "in read file function")
-        try {
-            val `in`: FileInputStream = openFileInput(filename)
-            val inputStreamReader = InputStreamReader(`in`)
-            val bufferedReader = BufferedReader(inputStreamReader)
-            val sb = StringBuilder()
-            var line: String?
-            while (bufferedReader.readLine().also { line = it } != null) {
-                sb.append(line)
-            }
-            Log.d("log_save", "read content: " + sb)
-            inputStreamReader.close()
-        } catch (e: Exception) {
-            Log.e("Exception", "File read failed: " + e.toString());
-        }
-    }
+//    private fun saveLogsToFile(logJSON: JSONObject){
+//        Log.d("log_save", "in save file function")
+//        val filename = getRandomSessionUuid()
+//        try {
+//            val filecontents = logJSON.toString()
+//            openFileOutput(filename, Context.MODE_PRIVATE).use {
+//                it.write(filecontents.toByteArray())
+//                Log.d("log_save", "wrote to file")
+//            }
+//        } catch (e: Exception){
+//            Log.d("log_save", "File write failed: " + e.toString());
+//        }
+//        readLogs(filename)
+//    }
+//
+//    private fun readLogs(filename: String){
+//        Log.d("log_save", "in read file function")
+//        try {
+//            val `in`: FileInputStream = openFileInput(filename)
+//            val inputStreamReader = InputStreamReader(`in`)
+//            val bufferedReader = BufferedReader(inputStreamReader)
+//            val sb = StringBuilder()
+//            var line: String?
+//            while (bufferedReader.readLine().also { line = it } != null) {
+//                sb.append(line)
+//            }
+//            Log.d("log_save", "read content: " + sb)
+//            inputStreamReader.close()
+//        } catch (e: Exception) {
+//            Log.e("Exception", "File read failed: " + e.toString());
+//        }
+//    }
 
     fun internet_connection(): Boolean {
         //Check if connected to internet, output accordingly
@@ -1100,6 +1129,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val sharedPreferences: SharedPreferences =
             getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
+        writeToLogBuffer("onMapReady target url: $server_url")
 
         mMap = googleMap
         mMap.getUiSettings().setMapToolbarEnabled(false)
@@ -1157,6 +1187,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //        actionBar?.hide()
 
         if (!internet_connection()) {
+            writeToLogBuffer("no internet connection")
             val alertDialogBuilder = AlertDialog.Builder(this)
             alertDialogBuilder.setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again")
@@ -1192,7 +1223,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
 
             stopArray = drawStops(server_url + res.getString(R.string.stops_url))
+            writeToLogBuffer("retrieved stop array")
+
             drawRoutes(server_url + res.getString(R.string.routes_url))
+            writeToLogBuffer("drew routes")
         }
         val busTimer = Timer("busTimer", true)
         val markerTimer = Timer("markerTimer",true)
@@ -1200,6 +1234,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (APImatch){
             if (!busesDrawn) {//TODO: bandage for now
                 busMarkerArray = drawBuses(server_url + res.getString(R.string.buses_url))
+                writeToLogBuffer("retrieved bus marker array")
             }
         }
 
