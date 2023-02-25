@@ -3,8 +3,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "31.0.0"
+    compileSdkVersion 33
+    buildToolsVersion "33.0.0"
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -15,8 +15,8 @@ android {
 
     defaultConfig {
         applicationId "edu.rpi.shuttletracker"
-        minSdkVersion 26
-        targetSdkVersion 31
+        minSdkVersion 27
+        targetSdkVersion 33
         versionCode 8
         versionName "1.22"
 

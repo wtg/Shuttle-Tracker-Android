@@ -26,7 +26,6 @@ import android.os.Build
 
 import android.os.Bundle
 import android.os.Looper
-import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -70,13 +69,15 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.provider.Settings.Global.getString
 import android.provider.Settings.System.getString
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.graphics.rotationMatrix
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.*
 import kotlin.system.*
@@ -133,6 +134,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             notificationManager.createNotificationChannel(channel)
         }
     }
+
 
     private fun notificationbanner(){//Sample Notification that's not being used
         var builder = NotificationCompat.Builder(this, "1")
@@ -238,10 +240,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             locationCallback,
             Looper.getMainLooper()
         )
-
-
-
-
+        transparentStatusAndNavigation()
 
         //btn_announcements.isVisible = true
 
@@ -337,6 +336,42 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+
+
+    private fun transparentStatusAndNavigation() {
+        //make full transparent statusBar
+        if (Build.VERSION.SDK_INT >= 19 && Build.VERSION.SDK_INT < 21) {
+            setWindowFlag(
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+                        or WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION, true
+            )
+        }
+        if (Build.VERSION.SDK_INT >= 19) {
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
+        }
+        if (Build.VERSION.SDK_INT >= 21) {
+            setWindowFlag(
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+                        or WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION, false
+            )
+            window.statusBarColor = Color.TRANSPARENT
+            window.navigationBarColor = Color.TRANSPARENT
+        }
+    }
+
+    private fun setWindowFlag(bits: Int, on: Boolean) {
+        val win = window
+        val winParams = win.attributes
+        if (on) {
+            winParams.flags = winParams.flags or bits
+        } else {
+            winParams.flags = winParams.flags and bits.inv()
+        }
+        win.attributes = winParams
+    }
+
 
     /**
      *  Run the is-near-any-stop check. If user is not near any stop, pop up an AlertDialog.
