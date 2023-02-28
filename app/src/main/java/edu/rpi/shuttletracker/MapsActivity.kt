@@ -99,6 +99,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
     private var selectedBusNumber: String? = null
     private lateinit var session_uuid: String
     private var currentLocation: Location? = null
+    private var boardTime: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
     //private var latitude: Float? = null
     //private var longitude: Float? = null
     private var type = "user"
@@ -319,23 +320,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
         }
 
         val beaconManager =  BeaconManager.getInstanceForApplication(this)
-        val region = Region("all-beacons-region", null, null, null)
+        val region = Region("all-beacons-region", Identifier.fromUuid(UUID.fromString("3bb7876d-403d-cb84-5e4c-907adc953f9c")), null, null)
         beaconManager.beaconParsers.clear()
         beaconManager.beaconParsers.add(
             BeaconParser().
             setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
         BeaconManager.setDebug(true)
 
-        if(!beaconManager.isAnyConsumerBound){
+        if(!beaconManager.isAnyConsumerBound) {
             val builder = Notification.Builder(this)
             builder.setSmallIcon(R.drawable.ic_launcher_foreground)
             builder.setContentTitle("Looking for Shuttles")
             if (SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(
-                    "My Notification Channel ID",
-                    "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT
+                    "Shuttle Background Detection",
+                    "Searching for shuttles in background", NotificationManager.IMPORTANCE_DEFAULT
                 )
-                channel.description = "My Notification Channel Description"
+                channel.description =
+                    "This app is able to detect iBeacons from RPI shuttles even when the app is off"
                 val notificationManager = getSystemService(
                     NOTIFICATION_SERVICE
                 ) as NotificationManager
@@ -346,16 +348,46 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
             beaconManager.enableForegroundServiceScanning(builder.build(), 456);
             beaconManager.setEnableScheduledScanJobs(false)
             beaconManager.backgroundBetweenScanPeriod = 0
-            beaconManager.backgroundScanPeriod = 1100
+            beaconManager.backgroundScanPeriod = 2000
         }
 
         beaconManager.addMonitorNotifier(this)
         beaconManager.startMonitoring(region)
 
         val rangeNotifier = RangeNotifier { beacons, region ->
-            while(beacons.iterator().hasNext()) {
-                val beacon = beacons.iterator().next();
-                Log.d("beacon","Beacon details: " + beacon.toString() + " is about " + beacon.distance + " meters away.")
+            val now = LocalDateTime.now(ZoneOffset.UTC)
+            if(beacons.isNotEmpty()) {
+                if(onBus) {
+                    for(beacon in beacons){
+                        if(beacon.id2.toString() == selectedBusNumber){
+                            boardTime = now
+                            return@RangeNotifier
+                        }
+                    }
+                    if(ChronoUnit.SECONDS.between(boardTime, now) < 30){
+                        return@RangeNotifier
+                    }
+                }
+                startForegroundService(wakelockIntent)
+                val sendDataThread = sendOnBusData()
+                sendDataThread.start()
+                boardBusButton.visibility = View.GONE
+                leaveBusButton.visibility = View.VISIBLE
+                boardTime = now
+                selectedBusNumber = beacons.iterator().next().id2.toString()
+                leaveBusButton.setOnClickListener {
+                    stopService(wakelockIntent)
+                    onBus = false
+                    boardBusButton.visibility = View.VISIBLE
+                    leaveBusButton.visibility = View.GONE
+                }
+            } else {
+                if(onBus && ChronoUnit.SECONDS.between(boardTime, now) >= 30){
+                    boardBusButton.visibility = View.VISIBLE
+                    leaveBusButton.visibility = View.GONE
+                    stopService(wakelockIntent)
+                    onBus = false
+                }
             }
         }
         beaconManager.addRangeNotifier(rangeNotifier)
