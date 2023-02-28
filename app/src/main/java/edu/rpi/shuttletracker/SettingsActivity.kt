@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
@@ -66,8 +65,6 @@ public class SettingsActivity: AppCompatActivity() {
         resetURLButton.setOnClickListener{
             resetServerURL(this)
         }
-
-        Log.d("log_save", "shared pref color blind is: " + sharedPreferences.getBoolean("colorblind_toggle_value", false))
 
         if(sharedPreferences.contains("colorblind_toggle_value")) {
             colorBlindToggle.setChecked(loadColorBlindToggle(this))
@@ -143,7 +140,6 @@ public class SettingsActivity: AppCompatActivity() {
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putBoolean("logs_toggle_value", isToggled).apply()
-        Log.d("log_save", "logs toggle value is: " + sharedPreferences.getBoolean("logs_toggle_value", true))
     }
 
     private fun saveServerURL(context: Context) {

@@ -75,7 +75,6 @@ import kotlin.concurrent.scheduleAtFixedRate
 import android.system.Os.accept
 import android.provider.Settings.Global.getString
 import android.provider.Settings.System.getString
-import android.util.Log
 import android.widget.TextView
 import androidx.core.graphics.rotationMatrix
 import androidx.core.view.isVisible
@@ -103,8 +102,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val httpClient by lazy {
         OkHttpClient.Builder().build()
     }
-
-    private var logBuffer = ArrayList<String>()
 
     private var stopArray = ArrayList<Stop>()
     private val busArray = ArrayList<Bus>()
@@ -286,6 +283,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             // 18 minutes after they board we check if they are still on the bus
             notificationTimer.schedule(1080000){
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"displayed leave bus notification")
                 if(boardBusButton.visibility == View.GONE) {
                     leaveNotification()
                 }
@@ -364,6 +362,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     println("Location Check: Not near a stop") // TODO: remove/comment this testing clause
                     dialog.cancel()
                 }
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"user is not near a stop")
             noNearbyStopDialogBuilder.create()
             noNearbyStopDialogBuilder.show()
             false
@@ -466,7 +465,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
-                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
@@ -500,7 +499,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch (ex: Exception)
                 {
-                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
@@ -645,7 +644,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
-                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
@@ -710,7 +709,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
-                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
@@ -790,7 +789,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
-                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
@@ -905,7 +904,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     }
                 } catch (ex: Exception) {
-                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread { offline_check() }
                 }

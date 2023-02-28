@@ -75,6 +75,20 @@ object Logs {
         trimLogsBuffer()
     }
 
+    // overloaded function, in case there is no parent function name
+    fun writeToLogBuffer(message: String){
+        val currTime = getCurrentFormattedDate()
+        logBuffer.add("[$currTime] $message \n")
+        trimLogsBuffer()
+    }
+
+    fun writeExceptionToLogBuffer(functionName: Any, ex: Exception){
+        val currTime = getCurrentFormattedDate()
+        logBuffer.add("[$currTime] $functionName " + Log.getStackTraceString(ex) + " \n")
+        logBuffer.add("[$currTime] $functionName " + ex.toString() + " \n")
+        trimLogsBuffer()
+    }
+
     private fun trimLogsBuffer(){
         // we only need to store the last x amount of log data
         val maxLogSize = 100

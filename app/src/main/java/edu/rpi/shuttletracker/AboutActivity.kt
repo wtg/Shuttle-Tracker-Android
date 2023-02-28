@@ -37,6 +37,7 @@ class AboutActivity : AppCompatActivity() {
                 Intent.ACTION_VIEW,
                 Uri.parse(res.getString(R.string.privacy_url))
             )
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "opened browser to privacy policy")
             startActivity(browserIntent)
         }
     }

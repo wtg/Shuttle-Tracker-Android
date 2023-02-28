@@ -47,9 +47,9 @@ class AnnouncementsActivity : AppCompatActivity(){
                 if(announString.length>0)
                     announcementsTextView.text = announString
             } catch (ex : Exception){
-                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
-                }
+            }
         }} )
         thread.start()
         val toolbar: Toolbar = findViewById(R.id.announcementsToolbar)
