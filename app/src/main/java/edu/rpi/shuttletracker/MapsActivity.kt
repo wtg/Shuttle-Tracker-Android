@@ -467,7 +467,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 catch(ex: Exception)
                 {
                     Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
-                    Logs.sendLogsToServer(this)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -501,7 +501,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 catch (ex: Exception)
                 {
                     Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
-                    Logs.sendLogsToServer(this)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -646,7 +646,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 catch(ex: Exception)
                 {
                     Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
-                    Logs.sendLogsToServer(this)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -711,7 +711,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 catch(ex: Exception)
                 {
                     Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
-                    Logs.sendLogsToServer(this)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -791,7 +791,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 catch(ex: Exception)
                 {
                     Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
-                    Logs.sendLogsToServer(this)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -802,7 +802,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     //@RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
-        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"updating buses")
         if (markerArray.size == 0 && !busesDrawn) {
             Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"markerArray size is 0")
             return markerArray
@@ -907,7 +906,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                 } catch (ex: Exception) {
                     Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
-                    Logs.sendLogsToServer(this)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread { offline_check() }
                 }
             }
@@ -957,6 +956,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         while(data.value==-1){}
         return data.value == apikey
 
+    }
+
+    private fun getLogsURL(): URL {
+        val res : Resources = getResources()
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
+        val logsUrl =
+            URL(server_url + res.getString(R.string.logs_url))
+        return logsUrl
     }
 
 //    fun createLog(message: String) {

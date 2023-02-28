@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.activity_maps.*
-
+import java.net.URL
 
 
 public class SettingsActivity: AppCompatActivity() {
@@ -154,6 +154,7 @@ public class SettingsActivity: AppCompatActivity() {
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("server_base_url", serverURL).apply()
+        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"saved server URL: $serverURL")
 
         val text = "Saved URL"
         val duration = Toast.LENGTH_SHORT
@@ -169,11 +170,23 @@ public class SettingsActivity: AppCompatActivity() {
         editor.putString("server_base_url", res.getString(R.string.default_server_url)).apply()
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
+        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"server URL reset")
 
         val text = "URL Reset"
         val duration = Toast.LENGTH_SHORT
         val toast = Toast.makeText(applicationContext, text, duration)
         toast.show()
+    }
+
+    // for future logging
+    private fun getLogsURL(): URL {
+        val res : Resources = getResources()
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
+        val logsUrl =
+            URL(server_url + res.getString(R.string.logs_url))
+        return logsUrl
     }
 
 }

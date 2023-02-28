@@ -24,17 +24,9 @@ object Logs {
 
     private var logBuffer = ArrayList<String>()
 
-    fun sendLogsToServer(context: Context) {
+    fun sendLogsToServer(logsURL: URL) {
 
-        val res : Resources = context.getResources()
-
-        val sharedPreferences: SharedPreferences =
-            getSharedPreferences("preferences", Context.MODE_PRIVATE)
-
-        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
-        val logsUrl =
-            URL(server_url + res.getString(R.string.logs_url))
-        Log.d("log_save", "target logs url: $logsUrl")
+        Log.d("log_save", "target logs url: $logsURL")
 
 //        logBuffer.toList().joinToString(separator = "")
 
@@ -46,7 +38,7 @@ object Logs {
             kotlin.run {
                 try {
                     val request = Request.Builder()
-                        .url(logsUrl)
+                        .url(logsURL)
                         .post(
                             logJSONObject.toString().toRequestBody(mediaType)
                         )
