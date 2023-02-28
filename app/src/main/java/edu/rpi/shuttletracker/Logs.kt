@@ -27,8 +27,7 @@ object Logs {
     fun sendLogsToServer(logsURL: URL) {
 
         Log.d("log_save", "target logs url: $logsURL")
-
-//        logBuffer.toList().joinToString(separator = "")
+        trimLogsBuffer()
 
         val logJSONObject = createLogMessage(logBuffer.toList().joinToString(separator = ""))
         Log.d("log_save", "log json server: " + logJSONObject.toString())
@@ -72,6 +71,16 @@ object Logs {
             logBuffer.add("[$currTime] [$functionName] $message \n")
         } catch (ex : Exception) {
             logBuffer.add("[$currTime] [error adding function name] $message \n")
+        }
+        trimLogsBuffer()
+    }
+
+    private fun trimLogsBuffer(){
+        // we only need to store the last x amount of log data
+        val maxLogSize = 100
+        if (logBuffer.size > maxLogSize){
+            val removeIndex = logBuffer.size - maxLogSize
+            logBuffer.subList(0, removeIndex).clear()
         }
     }
 
