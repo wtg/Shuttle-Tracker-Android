@@ -251,23 +251,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         //btn_announcements.isVisible = true
 
         btn_settings.setOnClickListener {
-            writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked settings button")
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked settings button")
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
         btn_info.setOnClickListener {
-            writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked info button")
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked info button")
             val intent = Intent(this, InfoActivity::class.java)
             startActivity(intent)
         }
         btn_about.setOnClickListener {
-            writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked about button")
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked about button")
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
         }
         //button reference for announcements section
         btn_announcements.setOnClickListener {
-            writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked annoucements button")
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked annoucements button")
             val intent = Intent(this, AnnouncementsActivity::class.java)
             startActivity(intent);
         }
@@ -280,7 +280,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  4. update this client's state and change the button to "leave bus"
              */
 
-            writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked board bus button")
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked board bus button")
 
             val notificationTimer = Timer("notificationTimer", true)
 
@@ -337,7 +337,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             ;
             leaveBusButton.setOnClickListener {
-                writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked leave bus button")
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked leave bus button")
                 stopService(wakelockIntent)
                 onBus = false // this variable controls when the data-transmitting thread ends
                 boardBusButton.visibility = View.VISIBLE
@@ -384,7 +384,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             println("current location: $currentLocation") // // TODO: remove/comment this testing clause
             println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
             if (currentLocation?.distanceTo(stopLocation)!! <= 50) {
-                writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"user is ${currentLocation?.distanceTo(stopLocation).toString()} from stop")
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"user is ${currentLocation?.distanceTo(stopLocation).toString()} from stop")
                 return true
             }
         }
@@ -405,7 +405,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 closestDistance = distanceToBus
             }
         }
-        writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"closest bus is bus $closestBusID with distance ${closestDistance.toString()}")
+        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"closest bus is bus $closestBusID with distance ${closestDistance.toString()}")
         return Pair(closestBusID, closestDistance)
     }
 
@@ -454,11 +454,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             )
                             .build()
                         println("Request: $request") // TODO: remove/comment this testing clause
-                        writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"sendOnBusData Request: $request")
+                        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"sendOnBusData Request: $request")
 
                         val response = httpClient.newCall(request).execute()
                         println("response: $response") // TODO: remove/comment this testing clause
-                        writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"sendOnBusData Response: $response")
+                        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"sendOnBusData Response: $response")
 
                         // wait for 5 seconds
                         Thread.sleep(5000L)
@@ -466,8 +466,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
-                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
-                    sendLogsToServer()
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
+                    Logs.sendLogsToServer(this)
                     runOnUiThread{offline_check()}
                 }
             }
@@ -500,8 +500,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch (ex: Exception)
                 {
-                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
-                    sendLogsToServer()
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
+                    Logs.sendLogsToServer(this)
                     runOnUiThread{offline_check()}
                 }
             }
@@ -645,8 +645,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
-                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
-                    sendLogsToServer()
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
+                    Logs.sendLogsToServer(this)
                     runOnUiThread{offline_check()}
                 }
             }
@@ -710,8 +710,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
-                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
-                    sendLogsToServer()
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, ex.toString())
+                    Logs.sendLogsToServer(this)
                     runOnUiThread{offline_check()}
                 }
             }
@@ -772,7 +772,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     for (i in 0 until busArray.size) {
                         val current = busArray.get(i)
                         val stopPos = LatLng(current.latitude, current.longitude)
-                        writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "drew bus ${current.id} on map")
+                        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "drew bus ${current.id} on map")
                         runOnUiThread {
                             markerArray.add(
                                 mMap.addMarker(
@@ -790,8 +790,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
-                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
-                    sendLogsToServer()
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
+                    Logs.sendLogsToServer(this)
                     runOnUiThread{offline_check()}
                 }
             }
@@ -802,9 +802,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     //@RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
-        writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"updating buses")
+        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"updating buses")
         if (markerArray.size == 0 && !busesDrawn) {
-            writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"markerArray size is 0")
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"markerArray size is 0")
             return markerArray
         }
         val busArray = ArrayList<Bus>()
@@ -852,7 +852,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     markerArray.get(i)
                                         .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                     //println("Bus " + id + " updated.")
-                                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"bus $id updated")
+                                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"bus $id updated")
                                 }
                             }
                             val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -870,7 +870,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         markerArray.get(i)
                                             .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                         //println("Bus " + id + " updated.")
-                                        writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"bus $id updated")
+                                        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"bus $id updated")
                                         markerArray.get(i).tag = busDate
                                     }
                                 }
@@ -906,8 +906,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     }
                 } catch (ex: Exception) {
-                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
-                    sendLogsToServer()
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
+                    Logs.sendLogsToServer(this)
                     runOnUiThread { offline_check() }
                 }
             }
@@ -917,7 +917,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun updateApp(){
-        writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"called updateApp")
+        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"called updateApp")
         val browserIntent = Intent(
             Intent.ACTION_VIEW,
             Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
@@ -973,64 +973,64 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //
 //    }
 
-    private fun sendLogsToServer() {
-        val sharedPreferences: SharedPreferences =
-            getSharedPreferences("preferences", Context.MODE_PRIVATE)
-
-        val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
-        val logsUrl =
-            URL(server_url + resources.getString(R.string.logs_url))
-        Log.d("log_save", "target logs url: $logsUrl")
-
-//        logBuffer.toList().joinToString(separator = "")
-
-        val logJSONObject = createLogMessage(logBuffer.toList().joinToString(separator = ""))
-        Log.d("log_save", "log json server: " + logJSONObject.toString())
-
-        // send to server
-        Thread {
-            kotlin.run {
-                try {
-                    val request = Request.Builder()
-                        .url(logsUrl)
-                        .post(
-                            logJSONObject.toString().toRequestBody(mediaType)
-                        )
-                        .build()
-                    Log.d("log_save", "logs request: $request")
-
-                    val response = httpClient.newCall(request).execute()
-                    Log.d("log_save", "logs server response: " + response.body?.string() )
-
-                } catch (ex: Exception) {
-                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
-                    Log.d("log_save", "server send failed: " + ex.toString());
-                    runOnUiThread { offline_check() }
-                }
-                flushLogBuffer()
-            }
-        }.start()
-
-    }
-
-    private fun createLogMessage(message: String): JSONObject{
-        session_uuid = getRandomSessionUuid()
-        date = getCurrentFormattedDate()
-
-        val jsonMap = mapOf("id" to session_uuid, "content" to message, "clientPlatform" to "android", "date" to date)
-        return JSONObject(jsonMap)
-    }
-
-    private fun writeToLogBuffer(functionName: Any, message: String){
-        val currTime = getCurrentFormattedDate()
-        logBuffer.add("[$currTime] [$functionName] $message \n")
-
-
-    }
-
-    private fun flushLogBuffer(){
-        logBuffer.clear()
-    }
+//    private fun sendLogsToServer() {
+//        val sharedPreferences: SharedPreferences =
+//            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+//
+//        val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
+//        val logsUrl =
+//            URL(server_url + resources.getString(R.string.logs_url))
+//        Log.d("log_save", "target logs url: $logsUrl")
+//
+////        logBuffer.toList().joinToString(separator = "")
+//
+//        val logJSONObject = createLogMessage(logBuffer.toList().joinToString(separator = ""))
+//        Log.d("log_save", "log json server: " + logJSONObject.toString())
+//
+//        // send to server
+//        Thread {
+//            kotlin.run {
+//                try {
+//                    val request = Request.Builder()
+//                        .url(logsUrl)
+//                        .post(
+//                            logJSONObject.toString().toRequestBody(mediaType)
+//                        )
+//                        .build()
+//                    Log.d("log_save", "logs request: $request")
+//
+//                    val response = httpClient.newCall(request).execute()
+//                    Log.d("log_save", "logs server response: " + response.body?.string() )
+//
+//                } catch (ex: Exception) {
+//                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
+//                    Log.d("log_save", "server send failed: " + ex.toString());
+//                    runOnUiThread { offline_check() }
+//                }
+//                flushLogBuffer()
+//            }
+//        }.start()
+//
+//    }
+//
+//    private fun createLogMessage(message: String): JSONObject{
+//        session_uuid = getRandomSessionUuid()
+//        date = getCurrentFormattedDate()
+//
+//        val jsonMap = mapOf("id" to session_uuid, "content" to message, "clientPlatform" to "android", "date" to date)
+//        return JSONObject(jsonMap)
+//    }
+//
+//    fun writeToLogBuffer(functionName: Any, message: String){
+//        val currTime = getCurrentFormattedDate()
+//        logBuffer.add("[$currTime] [$functionName] $message \n")
+//
+//
+//    }
+//
+//    private fun flushLogBuffer(){
+//        logBuffer.clear()
+//    }
 
 //    private fun saveLogsToFile(logJSON: JSONObject){
 //        Log.d("log_save", "in save file function")
@@ -1191,7 +1191,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //        actionBar?.hide()
 
         if (!internet_connection()) {
-            writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"no internet connection")
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"no internet connection")
             val alertDialogBuilder = AlertDialog.Builder(this)
             alertDialogBuilder.setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again")
@@ -1227,10 +1227,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
 
             stopArray = drawStops(server_url + res.getString(R.string.stops_url))
-            writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"retrieved stop array")
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"retrieved stop array")
 
             drawRoutes(server_url + res.getString(R.string.routes_url))
-            writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"drew routes")
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"drew routes")
         }
         val busTimer = Timer("busTimer", true)
         val markerTimer = Timer("markerTimer",true)
@@ -1238,7 +1238,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (APImatch){
             if (!busesDrawn) {//TODO: bandage for now
                 busMarkerArray = drawBuses(server_url + res.getString(R.string.buses_url))
-                writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"retrieved bus marker array")
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"retrieved bus marker array")
             }
         }
 
