@@ -12,36 +12,50 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.animation.Animator
 import android.app.AlertDialog
+import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.Color
 import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Build
-
 import android.os.Bundle
 import android.os.Looper
+import android.view.*
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.animation.AnimationUtils
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -57,31 +71,9 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import android.content.Intent
-import android.net.Uri
-import android.system.Os.accept
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import android.animation.Animator
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
-import android.content.res.Resources
-import android.graphics.Color
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
-import android.view.*
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.core.graphics.rotationMatrix
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
-import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.*
-import kotlin.system.*
 import kotlin.coroutines.*
+import kotlin.system.*
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -242,6 +234,53 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         )
         transparentStatusAndNavigation()
 
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.fabLayout5)) { v: View, insets: WindowInsetsCompat ->
+            (v.layoutParams as MarginLayoutParams).topMargin = insets.systemWindowInsetTop
+            insets.consumeSystemWindowInsets()
+        }
+
+        val locationButton: View =
+            ((findViewById("1".toInt()) as View).getParent() as View).findViewById("2".toInt())
+//        val rlp = locationButton.layoutParams as RelativeLayout.LayoutParams
+        ViewCompat.setOnApplyWindowInsetsListener(locationButton) { v: View, insets: WindowInsetsCompat ->
+            (v.layoutParams as MarginLayoutParams).topMargin = insets.systemWindowInsetTop
+            insets.consumeSystemWindowInsets()
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.fab)) { v: View, insets: WindowInsetsCompat ->
+            (v.layoutParams as MarginLayoutParams).bottomMargin = insets.systemWindowInsetBottom
+            insets.consumeSystemWindowInsets()
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.fab1)) { v: View, insets: WindowInsetsCompat ->
+            (v.layoutParams as MarginLayoutParams).bottomMargin = insets.systemWindowInsetBottom
+            insets.consumeSystemWindowInsets()
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.fab2)) { v: View, insets: WindowInsetsCompat ->
+            (v.layoutParams as MarginLayoutParams).bottomMargin = insets.systemWindowInsetBottom
+            insets.consumeSystemWindowInsets()
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.fab3)) { v: View, insets: WindowInsetsCompat ->
+            (v.layoutParams as MarginLayoutParams).bottomMargin = insets.systemWindowInsetBottom
+            insets.consumeSystemWindowInsets()
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.board_bus_button)) { v: View, insets: WindowInsetsCompat ->
+            (v.layoutParams as MarginLayoutParams).bottomMargin = insets.systemWindowInsetBottom
+            insets.consumeSystemWindowInsets()
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.leave_bus_button)) { v: View, insets: WindowInsetsCompat ->
+            (v.layoutParams as MarginLayoutParams).bottomMargin = insets.systemWindowInsetBottom
+            insets.consumeSystemWindowInsets()
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.fab4)) { v: View, insets: WindowInsetsCompat ->
+            (v.layoutParams as MarginLayoutParams).bottomMargin = insets.systemWindowInsetBottom
+            insets.consumeSystemWindowInsets()
+        }
+
+// position on right bottom
+// position on right bottom
+//        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0)
+//        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+//        rlp.setMargins(0, 180, 180, 0)
         //btn_announcements.isVisible = true
 
         btn_settings.setOnClickListener {
@@ -566,7 +605,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
         fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
         fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
-        fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
+        fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_215))
         //fabLayout5.animate().translationY(-resources.getDimension(R.dimen.standard_12))
         var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
         btn_info.bringToFront()
@@ -691,12 +730,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         latlngmultiroutes.add(latlngarr)
                     }
                     runOnUiThread {
-                        val colorArr = arrayListOf<Pair<String, Int>>(Pair("red", Color.RED),
-                            Pair("orange", Color.parseColor("#ee6002")), Pair("yellow", Color.YELLOW),
-                            Pair("green", Color.GREEN), Pair("blue", Color.BLUE),
+                        val colorArr = arrayListOf<Pair<String, Int>>(
+                            Pair("red", Color.RED),
+                            Pair("orange", Color.parseColor("#ee6002")),
+                            Pair("yellow", Color.YELLOW),
+                            Pair("green", Color.GREEN),
+                            Pair("blue", Color.BLUE),
                             Pair("purple", Color.parseColor("#a200e0")),
                             Pair("pink", Color.parseColor("#ef4fa6")),
-                            Pair("gray", Color.GRAY),)
+                            Pair("gray", Color.GRAY),
+                        )
                         var polylineArr = ArrayList<Polyline>()
                         for(i in 0 until latlngmultiroutes.size) {
                             var color : Int = 0
