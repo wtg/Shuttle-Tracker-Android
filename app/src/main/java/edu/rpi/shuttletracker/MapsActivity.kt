@@ -625,6 +625,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                  updateBuses(server_url + res.getString(R.string.buses_url), busMarkerArray)
             }
         }
+
+        if (this::mMap.isInitialized && !mMap.isMyLocationEnabled() &&
+            (ActivityCompat.checkSelfPermission(
+                this,
+                ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+                this,
+                ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED)
+        ) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location:Location ->
+                currentLocation = location
+            }
+            mMap.setMyLocationEnabled(true)
+        }
     }
 
     fun drawStops(url: String) : ArrayList<Stop> {
@@ -1170,7 +1185,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                 }
                 .show()
-        } else {
+        }
+
+        if(ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
         }
 
