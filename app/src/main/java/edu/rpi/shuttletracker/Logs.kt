@@ -1,16 +1,12 @@
 package edu.rpi.shuttletracker
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
-import edu.rpi.shuttletracker.MapsActivity.colorblindMode.getSharedPreferences
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.net.URL
-import android.content.res.Resources
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,11 +22,8 @@ object Logs {
 
     fun sendLogsToServer(logsURL: URL) {
 
-        Log.d("log_save", "target logs url: $logsURL")
         trimLogsBuffer()
-
         val logJSONObject = createLogMessage(logBuffer.toList().joinToString(separator = ""))
-        Log.d("log_save", "log json server: " + logJSONObject.toString())
 
         // send to server
         Thread {
@@ -42,14 +35,12 @@ object Logs {
                             logJSONObject.toString().toRequestBody(mediaType)
                         )
                         .build()
-                    Log.d("log_save", "logs request: $request")
 
                     val response = httpClient.newCall(request).execute()
-                    Log.d("log_save", "logs server response: " + response.body?.string() )
 
                 } catch (ex: Exception) {
-                    writeToLogBuffer(object{}.javaClass.enclosingMethod.name,ex.toString())
-                    Log.d("log_save", "server send failed: " + ex.toString())
+                    //TODO: allow feature for user to store logs locally
+                    writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                 }
                 flushLogBuffer()
             }
@@ -65,6 +56,7 @@ object Logs {
         return JSONObject(jsonMap)
     }
 
+    // function name should be retrieved by calling object{}.javaClass.enclosingMethod.name
     fun writeToLogBuffer(functionName: Any, message: String){
         val currTime = getCurrentFormattedDate()
         try {
@@ -108,6 +100,8 @@ object Logs {
 
         return sdf.format(Date())
     }
+
+    // TODO: allow feature to save logs locally and allow user to upload them manually
 
 //    private fun saveLogsToFile(logJSON: JSONObject){
 //        Log.d("log_save", "in save file function")

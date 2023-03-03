@@ -283,8 +283,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             // 18 minutes after they board we check if they are still on the bus
             notificationTimer.schedule(1080000){
-                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"displayed leave bus notification")
                 if(boardBusButton.visibility == View.GONE) {
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"displayed leave bus notification")
                     leaveNotification()
                 }
             }
@@ -343,6 +343,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             };
             // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         }else{
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"tried to click board button, but user is offline")
                 offline_check()
             }
         }
@@ -383,7 +384,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             println("current location: $currentLocation") // // TODO: remove/comment this testing clause
             println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
             if (currentLocation?.distanceTo(stopLocation)!! <= 50) {
-                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"user is ${currentLocation?.distanceTo(stopLocation).toString()} from stop")
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"user is distance ${currentLocation?.distanceTo(stopLocation).toString()} from stop")
                 return true
             }
         }
@@ -850,7 +851,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     markerArray.get(i)
                                         .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                     //println("Bus " + id + " updated.")
-                                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"bus $id updated")
                                 }
                             }
                             val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
