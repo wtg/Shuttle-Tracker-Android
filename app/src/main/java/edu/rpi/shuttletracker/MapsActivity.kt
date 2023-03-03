@@ -71,7 +71,7 @@ import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var busMarkerArray: ArrayList<Marker> = ArrayList<Marker>()
     private var busesDrawn : Boolean = false
@@ -167,6 +167,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
         fun setMode(mode : Boolean) {
             colorblind = mode
         }
+    }
+    private fun leaveBus(boardBusButton: View, leaveBusButton: View){
+        stopService(wakelockIntent)
+        onBus = false // this variable controls when the data-transmitting thread ends
+        boardBusButton.visibility = View.VISIBLE
+        leaveBusButton.visibility = View.GONE
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -308,10 +314,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
 
             ;
             leaveBusButton.setOnClickListener {
-                stopService(wakelockIntent)
-                onBus = false // this variable controls when the data-transmitting thread ends
-                boardBusButton.visibility = View.VISIBLE
-                leaveBusButton.visibility = View.GONE
+                leaveBus(boardBusButton, leaveBusButton)
             };
             // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         }else{
@@ -351,9 +354,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
             beaconManager.backgroundScanPeriod = 2000
         }
 
-        beaconManager.addMonitorNotifier(this)
-        beaconManager.startMonitoring(region)
-
         val rangeNotifier = RangeNotifier { beacons, region ->
             val now = LocalDateTime.now(ZoneOffset.UTC)
             if(beacons.isNotEmpty()) {
@@ -376,37 +376,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, MonitorNotifier {
                 boardTime = now
                 selectedBusNumber = beacons.iterator().next().id2.toString()
                 leaveBusButton.setOnClickListener {
-                    stopService(wakelockIntent)
-                    onBus = false
-                    boardBusButton.visibility = View.VISIBLE
-                    leaveBusButton.visibility = View.GONE
+                    leaveBus(boardBusButton, leaveBusButton)
                 }
             } else {
                 if(onBus && ChronoUnit.SECONDS.between(boardTime, now) >= 30){
-                    boardBusButton.visibility = View.VISIBLE
-                    leaveBusButton.visibility = View.GONE
-                    stopService(wakelockIntent)
-                    onBus = false
+                    leaveBus(boardBusButton, leaveBusButton)
                 }
             }
         }
         beaconManager.addRangeNotifier(rangeNotifier)
         beaconManager.startRangingBeacons(region)
-    }
-
-    override fun didEnterRegion(region: Region) {
-        println("entered region")
-        Log.d("beacon", "entered region")
-    }
-
-    override fun didExitRegion(region: Region) {
-        println("exited region")
-        Log.d("beacon", "exited region")
-    }
-
-    override fun didDetermineStateForRegion(state: Int, region: Region) {
-        println("didDetermineStateForRegion")
-        Log.d("beacon", "state: $state")
     }
 
     /**
