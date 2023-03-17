@@ -367,6 +367,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         leaveBusButton.setOnClickListener {
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked on leave bus button")
             leaveBus(boardBusButton, leaveBusButton)
         }
 
@@ -423,9 +424,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 leaveBusButton.visibility = View.VISIBLE
                 boardTime = now
                 selectedBusNumber = beacons.iterator().next().id2.toString()
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"automatically boarded bus $selectedBusNumber")
             } else {
                 if(onBus && ChronoUnit.SECONDS.between(boardTime, now) >= 30){
                     leaveBus(boardBusButton, leaveBusButton)
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"automatically leaving bus $selectedBusNumber")
                 }
             }
         }
