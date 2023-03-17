@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
@@ -15,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.activity_maps.*
-
+import java.net.URL
 
 
 public class SettingsActivity: AppCompatActivity() {
@@ -48,9 +47,10 @@ public class SettingsActivity: AppCompatActivity() {
 
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-
-        val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         val res: Resources = getResources()
+
+        val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        val logsToggle: SwitchMaterial = findViewById(R.id.logsSwitch)
 
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
@@ -66,17 +66,26 @@ public class SettingsActivity: AppCompatActivity() {
             resetServerURL(this)
         }
 
-        if(sharedPreferences.contains("toggle_value")) {
-            toggle.setChecked(loadToggle(this))
+        if(sharedPreferences.contains("colorblind_toggle_value")) {
+            colorBlindToggle.setChecked(loadColorBlindToggle(this))
         }
-        MapsActivity.colorblindMode.setMode(toggle.isChecked)
-        toggle.setOnCheckedChangeListener { _, isChecked ->
+        MapsActivity.colorblindMode.setMode(colorBlindToggle.isChecked)
+        colorBlindToggle.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 MapsActivity.colorblindMode.setMode(true)
-                saveToggle(this, true)
+                saveColorBlindToggle(this, true)
             } else {
                 MapsActivity.colorblindMode.setMode(false)
-                saveToggle(this, false)
+                saveColorBlindToggle(this, false)
+            }
+        }
+
+        logsToggle.setChecked(sharedPreferences.getBoolean("logs_toggle_value", true))
+        logsToggle.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                saveLogsToggle(this, true)
+            } else {
+                saveLogsToggle(this, false)
             }
         }
         val toolbar: Toolbar = findViewById(R.id.settingsToolbar)
@@ -92,38 +101,45 @@ public class SettingsActivity: AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
     override fun onResume() {
-        val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         super.onResume()
-        toggle.setChecked(loadToggle(this))
-        MapsActivity.colorblindMode.setMode(toggle.isChecked)
+        colorBlindToggle.setChecked(loadColorBlindToggle(this))
+        MapsActivity.colorblindMode.setMode(colorBlindToggle.isChecked)
     }
     override fun onPause() {
-        val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         super.onPause()
-        saveToggle(this, toggle.isChecked)
+        saveColorBlindToggle(this, colorBlindToggle.isChecked)
     }
     override fun onStart() {
-        val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         super.onStart()
-        toggle.setChecked(loadToggle(this))
-        MapsActivity.colorblindMode.setMode(toggle.isChecked)
+        colorBlindToggle.setChecked(loadColorBlindToggle(this))
+        MapsActivity.colorblindMode.setMode(colorBlindToggle.isChecked)
     }
     override fun onStop() {
-        val toggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
+        val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         super.onStop()
-        saveToggle(this, toggle.isChecked)
+        saveColorBlindToggle(this, colorBlindToggle.isChecked)
     }
-    private fun saveToggle(context: Context, isToggled: Boolean) {
+    private fun saveColorBlindToggle(context: Context, isToggled: Boolean) {
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        editor.putBoolean("toggle_value", isToggled).apply()
+        editor.putBoolean("colorblind_toggle_value", isToggled).apply()
     }
 
-    private fun loadToggle(context: Context): Boolean {
+    private fun loadColorBlindToggle(context: Context): Boolean {
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        return sharedPreferences.getBoolean("toggle_value", true)
+        return sharedPreferences.getBoolean("colorblind_toggle_value", false)
+    }
+
+    private fun saveLogsToggle(context: Context, isToggled: Boolean) {
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("logs_toggle_value", isToggled).apply()
     }
 
     private fun saveServerURL(context: Context) {
@@ -134,6 +150,7 @@ public class SettingsActivity: AppCompatActivity() {
             context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("server_base_url", serverURL).apply()
+        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"saved server URL: $serverURL")
 
         val text = "Saved URL"
         val duration = Toast.LENGTH_SHORT
@@ -149,11 +166,23 @@ public class SettingsActivity: AppCompatActivity() {
         editor.putString("server_base_url", res.getString(R.string.default_server_url)).apply()
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
+        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"server URL reset")
 
-        val text = "Reset URL"
+        val text = "URL Reset"
         val duration = Toast.LENGTH_SHORT
         val toast = Toast.makeText(applicationContext, text, duration)
         toast.show()
+    }
+
+    // for future logging
+    private fun getLogsURL(): URL {
+        val res : Resources = getResources()
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
+        val logsUrl =
+            URL(server_url + res.getString(R.string.logs_url))
+        return logsUrl
     }
 
 }

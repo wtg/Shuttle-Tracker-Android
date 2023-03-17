@@ -20,6 +20,7 @@ class AnnouncementsActivity : AppCompatActivity(){
         setContentView(R.layout.activity_announcements)
         val thread = Thread(kotlinx.coroutines.Runnable {
             kotlin.run {
+                try {
                 val sharedPreferences: SharedPreferences =
                     getSharedPreferences("preferences", Context.MODE_PRIVATE)
                 val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
@@ -45,8 +46,11 @@ class AnnouncementsActivity : AppCompatActivity(){
                 }
                 if(announString.length>0)
                     announcementsTextView.text = announString
+            } catch (ex : Exception){
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                    Logs.sendLogsToServer(getLogsURL())
             }
-        })
+        }} )
         thread.start()
         val toolbar: Toolbar = findViewById(R.id.announcementsToolbar)
         setSupportActionBar(toolbar)
@@ -59,5 +63,15 @@ class AnnouncementsActivity : AppCompatActivity(){
                     finish() // close this activity and return to preview activity (if there is any)
                 }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun getLogsURL(): URL {
+        val res : Resources = getResources()
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
+        val logsUrl =
+            URL(server_url + res.getString(R.string.logs_url))
+        return logsUrl
     }
 }
