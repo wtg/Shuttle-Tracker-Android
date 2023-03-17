@@ -8,13 +8,21 @@
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/colorblindSwitch"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="72dp"
+        android:padding="16dp"
         android:text="Colorblind Mode"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/settingsToolbar" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/logsSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Automatically Upload Logs"
+        app:layout_constraintStart_toStartOf="@id/colorblindSwitch"
+        app:layout_constraintTop_toBottomOf="@id/colorblindSwitch" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/settingsToolbar"
@@ -32,7 +40,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/colorblindSwitch"
+        app:layout_constraintTop_toBottomOf="@id/logsSwitch"
         >
 
     <EditText

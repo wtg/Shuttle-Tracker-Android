@@ -12,22 +12,32 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.animation.Animator
 import android.app.AlertDialog
+import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
+import android.graphics.Color
 import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Build
-
 import android.os.Bundle
 import android.os.Looper
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -40,15 +50,19 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.InputStreamReader
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -58,22 +72,9 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import android.content.Intent
-import android.net.Uri
 import android.system.Os.accept
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import android.animation.Animator
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
-import android.content.res.Resources
-import android.graphics.Color
 import android.provider.Settings.Global.getString
 import android.provider.Settings.System.getString
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.graphics.rotationMatrix
 import androidx.core.view.isVisible
@@ -81,6 +82,7 @@ import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.*
 import kotlin.system.*
 import kotlin.coroutines.*
+import kotlin.system.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -246,19 +248,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         //btn_announcements.isVisible = true
 
         btn_settings.setOnClickListener {
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked settings button")
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
         btn_info.setOnClickListener {
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked info button")
             val intent = Intent(this, InfoActivity::class.java)
             startActivity(intent)
         }
         btn_about.setOnClickListener {
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked about button")
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
         }
         //button reference for announcements section
         btn_announcements.setOnClickListener {
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked annoucements button")
             val intent = Intent(this, AnnouncementsActivity::class.java)
             startActivity(intent);
         }
@@ -271,11 +277,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
              *  4. update this client's state and change the button to "leave bus"
              */
 
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked board bus button")
+
             val notificationTimer = Timer("notificationTimer", true)
 
             // 18 minutes after they board we check if they are still on the bus
             notificationTimer.schedule(1080000){
                 if(boardBusButton.visibility == View.GONE) {
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"displayed leave bus notification")
                     leaveNotification()
                 }
             }
@@ -326,6 +335,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             ;
             leaveBusButton.setOnClickListener {
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked leave bus button")
                 stopService(wakelockIntent)
                 onBus = false // this variable controls when the data-transmitting thread ends
                 boardBusButton.visibility = View.VISIBLE
@@ -333,6 +343,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             };
             // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         }else{
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"tried to click board button, but user is offline")
                 offline_check()
             }
         }
@@ -352,6 +363,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     println("Location Check: Not near a stop") // TODO: remove/comment this testing clause
                     dialog.cancel()
                 }
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"user is not near a stop")
             noNearbyStopDialogBuilder.create()
             noNearbyStopDialogBuilder.show()
             false
@@ -372,6 +384,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             println("current location: $currentLocation") // // TODO: remove/comment this testing clause
             println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
             if (currentLocation?.distanceTo(stopLocation)!! <= 50) {
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"user is distance ${currentLocation?.distanceTo(stopLocation).toString()} from stop")
                 return true
             }
         }
@@ -392,6 +405,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 closestDistance = distanceToBus
             }
         }
+        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"closest bus is bus $closestBusID with distance ${closestDistance.toString()}")
         return Pair(closestBusID, closestDistance)
     }
 
@@ -440,9 +454,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             )
                             .build()
                         println("Request: $request") // TODO: remove/comment this testing clause
+                        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"sendOnBusData Request: $request")
 
                         val response = httpClient.newCall(request).execute()
                         println("response: $response") // TODO: remove/comment this testing clause
+                        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"sendOnBusData Response: $response")
 
                         // wait for 5 seconds
                         Thread.sleep(5000L)
@@ -450,6 +466,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -482,6 +500,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch (ex: Exception)
                 {
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -625,6 +645,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -688,6 +710,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -748,6 +772,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     for (i in 0 until busArray.size) {
                         val current = busArray.get(i)
                         val stopPos = LatLng(current.latitude, current.longitude)
+                        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "drew bus ${current.id} on map")
                         runOnUiThread {
                             markerArray.add(
                                 mMap.addMarker(
@@ -765,6 +790,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 catch(ex: Exception)
                 {
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread{offline_check()}
                 }
             }
@@ -776,6 +803,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //@RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
         if (markerArray.size == 0 && !busesDrawn) {
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"markerArray size is 0")
             return markerArray
         }
         val busArray = ArrayList<Bus>()
@@ -840,6 +868,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                         markerArray.get(i)
                                             .setIcon(BitmapDescriptorFactory.fromAsset(busIcon))
                                         //println("Bus " + id + " updated.")
+                                        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"bus $id updated")
                                         markerArray.get(i).tag = busDate
                                     }
                                 }
@@ -875,6 +904,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     }
                 } catch (ex: Exception) {
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                    Logs.sendLogsToServer(getLogsURL())
                     runOnUiThread { offline_check() }
                 }
             }
@@ -884,6 +915,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun updateApp(){
+        Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"called updateApp")
         val browserIntent = Intent(
             Intent.ACTION_VIEW,
             Uri.parse("https://play.google.com/store/apps/details?id=edu.rpi.shuttletracker")
@@ -923,6 +955,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         while(data.value==-1){}
         return data.value == apikey
 
+    }
+
+    private fun getLogsURL(): URL {
+        val res : Resources = getResources()
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
+        val logsUrl =
+            URL(server_url + res.getString(R.string.logs_url))
+        return logsUrl
     }
 
     fun internet_connection(): Boolean {
@@ -1051,6 +1093,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 //        actionBar?.hide()
 
         if (!internet_connection()) {
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"no internet connection")
             val alertDialogBuilder = AlertDialog.Builder(this)
             alertDialogBuilder.setTitle("No Internet Connection")
                 .setMessage("Please check your internet connection and try again")
@@ -1080,13 +1123,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 //        val sharedPreferences: SharedPreferences =
 //            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        if (sharedPreferences.contains("toggle_value")) {
-            MapsActivity.colorblindMode.setMode(sharedPreferences.getBoolean("toggle_value", true))
+        if (sharedPreferences.contains("colorblind_toggle_value")) {
+            MapsActivity.colorblindMode.setMode(sharedPreferences.getBoolean("colorblind_toggle_value", true))
         }
         if (internet_connection() && APImatch) {//TODO:make sure the stops and routes are only draw once
 
             stopArray = drawStops(server_url + res.getString(R.string.stops_url))
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"retrieved stop array")
+
             drawRoutes(server_url + res.getString(R.string.routes_url))
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"drew routes")
         }
         val busTimer = Timer("busTimer", true)
         val markerTimer = Timer("markerTimer",true)
@@ -1094,6 +1140,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (APImatch){
             if (!busesDrawn) {//TODO: bandage for now
                 busMarkerArray = drawBuses(server_url + res.getString(R.string.buses_url))
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"retrieved bus marker array")
             }
         }
 

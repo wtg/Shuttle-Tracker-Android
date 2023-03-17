@@ -50,6 +50,7 @@
     <string name="bus_numbers_url">/buses/all</string>
     <string name="stops_url">/stops</string>
     <string name="routes_url">/routes</string>
+    <string name="logs_url">/logs</string>
     <string name="privacy_url">https://web.shuttletracker.app/privacy-policy</string>
     <string name="board_bus_button_text">Board Bus</string>
     <string name="leave_bus_button_text">Leave Bus</string>
