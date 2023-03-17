@@ -95,7 +95,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     // All data used in a data package which will be sent to server
-    private var onBus: Boolean = false // This user's status. It controls the end of data transmission thread.
+    private var onBus: Boolean = true // This user's status. It controls the end of data transmission thread.
     private var selectedBusNumber: String? = null
     private lateinit var session_uuid: String
     private var currentLocation: Location? = null
@@ -168,9 +168,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             colorblind = mode
         }
     }
+
+    private fun setOnBusStatus(onBusStatus: Boolean){
+        onBus = onBusStatus
+        val sharedPref = getSharedPreferences("onBus", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.apply {
+            putBoolean("onBusBoolean", onBusStatus)
+        }.apply()
+    }
+
     private fun leaveBus(boardBusButton: View, leaveBusButton: View){
         stopService(wakelockIntent)
-        onBus = false // this variable controls when the data-transmitting thread ends
+        setOnBusStatus(false) // this variable controls when the data-transmitting thread ends
         boardBusButton.visibility = View.VISIBLE
         leaveBusButton.visibility = View.GONE
     }
@@ -188,6 +198,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        // load onBus bool saved
+        val sharedPref = getSharedPreferences("onBus", Context.MODE_PRIVATE)
+        onBus = sharedPref.getBoolean("onBusBoolean", false)
+
         createNotificationChannel()
         fabBGLayout.setOnClickListener { closeFABMenu() }
         //button variable initiation
@@ -197,6 +211,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
         val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
+        if(onBus){
+            boardBusButton.visibility = View.GONE
+            leaveBusButton.visibility = View.VISIBLE
+        }
 
         //placement
         val mapFragment = supportFragmentManager
@@ -311,15 +329,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                 chooseBusDialogBuilder.create()
                 chooseBusDialogBuilder.show()
-
-            ;
-            leaveBusButton.setOnClickListener {
-                leaveBus(boardBusButton, leaveBusButton)
-            };
             // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         }else{
                 offline_check()
             }
+        }
+
+        leaveBusButton.setOnClickListener {
+            leaveBus(boardBusButton, leaveBusButton)
         }
 
         val beaconManager =  BeaconManager.getInstanceForApplication(this)
@@ -328,7 +345,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         beaconManager.beaconParsers.add(
             BeaconParser().
             setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
-        BeaconManager.setDebug(true)
+        // BeaconManager.setDebug(true)
 
         if(!beaconManager.isAnyConsumerBound) {
             val builder = Notification.Builder(this)
@@ -350,8 +367,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             beaconManager.enableForegroundServiceScanning(builder.build(), 456);
             beaconManager.setEnableScheduledScanJobs(false)
-            beaconManager.backgroundBetweenScanPeriod = 0
-            beaconManager.backgroundScanPeriod = 2000
+            beaconManager.backgroundBetweenScanPeriod = 10000
+            beaconManager.backgroundScanPeriod = 1100
         }
 
         val rangeNotifier = RangeNotifier { beacons, region ->
@@ -375,9 +392,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 leaveBusButton.visibility = View.VISIBLE
                 boardTime = now
                 selectedBusNumber = beacons.iterator().next().id2.toString()
-                leaveBusButton.setOnClickListener {
-                    leaveBus(boardBusButton, leaveBusButton)
-                }
             } else {
                 if(onBus && ChronoUnit.SECONDS.between(boardTime, now) >= 30){
                     leaveBus(boardBusButton, leaveBusButton)
@@ -440,7 +454,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             kotlin.run {
                 try
                 {
-                    onBus = true
+                    setOnBusStatus(true)
                     while (onBus) {
                         date = getCurrentFormattedDate()
                         println("parsed date: $date") // TODO: remove/comment this testing clause
@@ -1232,7 +1246,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if(!internet_connection()&&onBus){
 
 
-                onBus = false // this variable controls when the data-transmitting thread ends
+                setOnBusStatus(false) // this variable controls when the data-transmitting thread ends
                 runOnUiThread() {
                     boardBusButton.visibility = View.VISIBLE
                     leaveBusButton.visibility = View.GONE
