@@ -5,16 +5,12 @@
     <string name="crowdsourced_bus">greenbus.png</string>
     <string name="colorblind_GPS_bus">cbredbus.png</string>
     <string name="colorblind_crowdsourced_bus">cbgreenbus.png</string>
-    <string name="info_page">
+    <string name="info_intro">
         Shuttle Tracker shows you the real-time locations of the RPI campus shuttles,
         powered by crowd-sourced location data.
-
-        \n\nSchedule
-        \nMonday through Friday: 7:00 AM to 11:45 PM
-        \nSaturday: 9:00 AM to 11:45 PM
-        \nSunday: 9:00 AM to 8:00 PM
-
-        \n\nInstructions
+    </string>
+    <string name="info_instructions">
+        Instructions
         \nThe map is automatically refreshed every 5 seconds.
         Green buses have high-quality location data,
         and red buses have low-quality location data. In colorblind mode, the green buses
