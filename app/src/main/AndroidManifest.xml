@@ -63,5 +63,9 @@
             android:exported="false"
             android:label="@string/title_activity_maps">
         </activity>
+        <service android:name="org.altbeacon.beacon.service.BeaconService"
+            tools:node="replace">
+            <meta-data android:name="longScanForcingEnabled" android:value="true"/>
+        </service>
     </application>
 </manifest>
