@@ -111,6 +111,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // All data used in a data package which will be sent to server
     private var onBus: Boolean = true // This user's status. It controls the end of data transmission thread.
+    private var automaticBoardBus: Boolean = false
     private var selectedBusNumber: String? = null
     private lateinit var session_uuid: String
     private var currentLocation: Location? = null
@@ -195,6 +196,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun leaveBus(boardBusButton: View, leaveBusButton: View){
         stopService(wakelockIntent)
+        automaticBoardBus = false
+        val sharedPref = getSharedPreferences("onBus", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.apply {
+            putBoolean("automaticBoardBusBoolean", false)
+        }.apply()
         setOnBusStatus(false) // this variable controls when the data-transmitting thread ends
         boardBusButton.visibility = View.VISIBLE
         leaveBusButton.visibility = View.GONE
@@ -216,6 +223,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // load onBus bool saved
         val sharedPref = getSharedPreferences("onBus", Context.MODE_PRIVATE)
         onBus = sharedPref.getBoolean("onBusBoolean", false)
+        automaticBoardBus = sharedPref.getBoolean("automaticBoardBusBoolean", false)
 
         createNotificationChannel()
         fabBGLayout.setOnClickListener { closeFABMenu() }
@@ -399,9 +407,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             beaconManager.enableForegroundServiceScanning(builder.build(), 456);
             beaconManager.setEnableScheduledScanJobs(false)
-            beaconManager.backgroundBetweenScanPeriod = 10000
+            beaconManager.backgroundBetweenScanPeriod = 1000
             beaconManager.backgroundScanPeriod = 1100
-        }
+            beaconManager.foregroundBetweenScanPeriod = 1000
+            beaconManager.foregroundScanPeriod = 1100
+            }
 
         val rangeNotifier = RangeNotifier { beacons, region ->
             val now = LocalDateTime.now(ZoneOffset.UTC)
@@ -417,6 +427,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         return@RangeNotifier
                     }
                 }
+
+                val sharedPref = getSharedPreferences("onBus", Context.MODE_PRIVATE)
+                val editor = sharedPref.edit()
+                editor.apply {
+                    putBoolean("automaticBoardBusBoolean", true)
+                }.apply()
+                automaticBoardBus = true
                 startForegroundService(wakelockIntent)
                 val sendDataThread = sendOnBusData()
                 sendDataThread.start()
@@ -426,12 +443,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 selectedBusNumber = beacons.iterator().next().id2.toString()
                 Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"automatically boarded bus $selectedBusNumber")
             } else {
-                if(onBus && ChronoUnit.SECONDS.between(boardTime, now) >= 30){
+                if(automaticBoardBus && onBus && ChronoUnit.SECONDS.between(boardTime, now) >= 30){
                     leaveBus(boardBusButton, leaveBusButton)
                     Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"automatically leaving bus $selectedBusNumber")
                 }
             }
         }
+        beaconManager.removeAllRangeNotifiers()
         beaconManager.addRangeNotifier(rangeNotifier)
         beaconManager.startRangingBeacons(region)
     }
