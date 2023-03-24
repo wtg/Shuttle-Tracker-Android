@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.widget.Toolbar
+import org.json.JSONArray
 import java.net.URL
 
 class InfoActivity : AppCompatActivity() {
@@ -24,6 +25,24 @@ class InfoActivity : AppCompatActivity() {
             finish() // close this activity and return to preview activity (if there is any)
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun getSchedule(): Thread{
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
+        val sched = URL(server_url + resources.getString(R.string.schedule_url))
+        val thread = Thread {
+            kotlin.run{
+                try {
+                    val scheduleArray = JSONArray(sched.readText())
+                } catch (ex: Exception) {
+                    Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                    Logs.sendLogsToServer(getLogsURL())
+                }
+            }
+        }
+        return thread
     }
 
     // for future logging
