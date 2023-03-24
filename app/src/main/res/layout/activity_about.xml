@@ -24,14 +24,13 @@
         android:id="@+id/aboutTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="72dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
         android:text="@string/about_page"
         android:textDirection="ltr"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/aboutToolbar" />
 
     <Button
         android:id="@+id/githubButton"
