@@ -5,10 +5,15 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
+import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import org.json.JSONArray
 import java.net.URL
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class InfoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,6 +23,10 @@ class InfoActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
         getSupportActionBar()?.setDisplayShowHomeEnabled(true)
+
+        val scheduleText: TextView = findViewById(R.id.infoScheduleTextView)
+        scheduleText.text = getSchedule()
+
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // handle arrow click here
@@ -27,7 +36,8 @@ class InfoActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun getSchedule(): Thread{
+    private fun getSchedule(): String {
+        var scheduleString = ""
         val sharedPreferences: SharedPreferences =
             getSharedPreferences("preferences", Context.MODE_PRIVATE)
         val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
@@ -35,14 +45,41 @@ class InfoActivity : AppCompatActivity() {
         val thread = Thread {
             kotlin.run{
                 try {
+                    val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                    val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+                    Log.d("dynamic scheduling", "current date: $currentDate")
                     val scheduleArray = JSONArray(sched.readText())
+                    (0 until scheduleArray.length()).forEach {
+                        val semester = scheduleArray.getJSONObject(it)
+//                        Log.d("dynamic scheduling", semester.toString() + " break ")
+
+                        val start = semester.getString("start")
+                        val end = semester.getString("end")
+                        val startDate = LocalDateTime.parse(start, format)
+                        val endDate = LocalDateTime.parse(end, format)
+
+//                        Log.d("dynamic scheduling", "start date: $startDate")
+//                        Log.d("dynamic scheduling", "end date: $endDate")
+//
+//                        Log.d("dynamic scheduling", "current date is within bounds: ${currentDate.isAfter(startDate) && currentDate.isBefore(endDate)}")
+
+                        if(currentDate.isAfter(startDate) && currentDate.isBefore(endDate)){
+                            val content = semester.getJSONObject("content")
+                            Log.d("dynamic scheduling", "content: $content")
+                            scheduleString = content.toString()
+                        }
+                    }
                 } catch (ex: Exception) {
                     Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
                 }
             }
         }
-        return thread
+        thread.start()
+        thread.join()
+
+        return scheduleString
+    }
     }
 
     // for future logging

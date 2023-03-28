@@ -41,12 +41,21 @@
             android:text="@string/info_intro"/>
 
         <TextView
-            android:id="@+id/infoInstructionsTextView"
+            android:id="@+id/infoScheduleTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textDirection="ltr"
             android:textSize="16sp"
             android:layout_below="@id/infoIntroTextView"
+            android:text="Esse fuga consectetur excepturi et. Odit nobis repellat. Sapiente tenetur dicta dignissimos cum excepturi. Nobis suscipit nam aut deleniti similique libero quo."/>
+
+        <TextView
+            android:id="@+id/infoInstructionsTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textDirection="ltr"
+            android:textSize="16sp"
+            android:layout_below="@id/infoScheduleTextView"
             android:text="@string/info_instructions"/>
 
 

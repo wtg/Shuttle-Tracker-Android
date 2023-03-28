@@ -41,7 +41,7 @@
     <string name="repo_url">https://github.com/wtg/Shuttle-Tracker-Android</string>
     <string name="default_server_url">https://shuttletracker.app</string>
     <string name="announcements_url">/announcements</string>
-    <string name="schedule_url">/tempschedule</string>
+    <string name="schedule_url">/schedule</string>
     <string name="version_url">/version</string>
     <string name="buses_url">/buses</string>
     <string name="bus_numbers_url">/buses/all</string>
