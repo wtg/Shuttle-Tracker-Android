@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "161092362021",
+    "project_id": "shuttle-tracker-fb4c3",
+    "storage_bucket": "shuttle-tracker-fb4c3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161092362021:android:df3581eb46aaa3a18884cc",
+        "android_client_info": {
+          "package_name": "edu.rpi.shuttletracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "161092362021-h3g6dni07crjnrfuqmql7aujpgasd2ce.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKkJ65H_BL1JjEcwO5_exbNbXrCTQC3c0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "161092362021-h3g6dni07crjnrfuqmql7aujpgasd2ce.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
