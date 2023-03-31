@@ -94,8 +94,8 @@ class InfoActivity : AppCompatActivity() {
         for (i in weekArray.indices){
 //            Log.d("dynamic scheduling", "${content.getJSONObject(weekArray[i])}")
             val daySchedule = content.getJSONObject(weekArray[i])
-            scheduleString.append(weekArray[i])
             scheduleString.append(daySchedule.getString("start"))
+            scheduleString.append(" to ")
             scheduleString.appendLine(daySchedule.getString("end"))
         }
 
