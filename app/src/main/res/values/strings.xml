@@ -37,6 +37,7 @@
         If you would like to view our source code, click the button below and open our GitHub page, and you can
         open an \"issue\" to leave feedback for us. View our privacy policy with the button below.</string>
     <string name="day_schedule">Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday</string>
+    <string name="schedule_default_text">No current schedule</string>
     <string name="announcements_default_text">No current announcements.</string>
     <string name="github_button_text">Click to access our GitHub Repository!</string>
     <string name="repo_url">https://github.com/wtg/Shuttle-Tracker-Android</string>

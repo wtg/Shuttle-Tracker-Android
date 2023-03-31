@@ -51,26 +51,19 @@ class InfoActivity : AppCompatActivity() {
                 try {
                     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                     val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
-                    Log.d("dynamic scheduling", "current date: $currentDate")
                     val scheduleArray = JSONArray(sched.readText())
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "retrieved JSON schedule from server: $scheduleArray")
                     (0 until scheduleArray.length()).forEach {
                         val semester = scheduleArray.getJSONObject(it)
-//                        Log.d("dynamic scheduling", semester.toString() + " break ")
 
                         val start = semester.getString("start")
                         val end = semester.getString("end")
                         val startDate = LocalDateTime.parse(start, format)
                         val endDate = LocalDateTime.parse(end, format)
 
-//                        Log.d("dynamic scheduling", "start date: $startDate")
-//                        Log.d("dynamic scheduling", "end date: $endDate")
-//
-//                        Log.d("dynamic scheduling", "current date is within bounds: ${currentDate.isAfter(startDate) && currentDate.isBefore(endDate)}")
-
                         if(currentDate.isAfter(startDate) && currentDate.isBefore(endDate)){
+                            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "current date $currentDate is between $start and $end")
                             val content = semester.getJSONObject("content")
-//                            Log.d("dynamic scheduling", "content: $content")
-
                             scheduleString = formateSchedule(content)
                         }
                     }
@@ -83,7 +76,6 @@ class InfoActivity : AppCompatActivity() {
         thread.start()
         thread.join()
 
-        Log.d("dynamic scheduling", scheduleString)
         return scheduleString
     }
 
@@ -92,17 +84,20 @@ class InfoActivity : AppCompatActivity() {
         val scheduleString = StringBuilder()
 
         for (i in weekArray.indices){
-//            Log.d("dynamic scheduling", "${content.getJSONObject(weekArray[i])}")
-            val daySchedule = content.getJSONObject(weekArray[i])
-            scheduleString.append(daySchedule.getString("start"))
-            scheduleString.append(" to ")
-            scheduleString.appendLine(daySchedule.getString("end"))
+            try {
+                val daySchedule = content.getJSONObject(weekArray[i])
+                scheduleString.append(daySchedule.getString("start"))
+                scheduleString.append(" to ")
+                scheduleString.appendLine(daySchedule.getString("end"))
+            } catch (ex: Exception) {
+                Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                Logs.sendLogsToServer(getLogsURL())
+            }
         }
 
         return scheduleString.toString()
     }
 
-    // for future logging
     private fun getLogsURL(): URL {
         val res : Resources = getResources()
         val sharedPreferences: SharedPreferences =
