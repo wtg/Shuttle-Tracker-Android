@@ -10,12 +10,16 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import org.json.JSONArray
+import org.json.JSONObject
 import java.net.URL
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 class InfoActivity : AppCompatActivity() {
+
+    private val weekArray = arrayOf("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_info)
@@ -65,8 +69,9 @@ class InfoActivity : AppCompatActivity() {
 
                         if(currentDate.isAfter(startDate) && currentDate.isBefore(endDate)){
                             val content = semester.getJSONObject("content")
-                            Log.d("dynamic scheduling", "content: $content")
-                            scheduleString = content.toString()
+//                            Log.d("dynamic scheduling", "content: $content")
+
+                            scheduleString = formateSchedule(content)
                         }
                     }
                 } catch (ex: Exception) {
@@ -78,8 +83,23 @@ class InfoActivity : AppCompatActivity() {
         thread.start()
         thread.join()
 
+        Log.d("dynamic scheduling", scheduleString)
         return scheduleString
     }
+
+    private fun formateSchedule(content: JSONObject): String {
+
+        val scheduleString = StringBuilder()
+
+        for (i in weekArray.indices){
+//            Log.d("dynamic scheduling", "${content.getJSONObject(weekArray[i])}")
+            val daySchedule = content.getJSONObject(weekArray[i])
+            scheduleString.append(weekArray[i])
+            scheduleString.append(daySchedule.getString("start"))
+            scheduleString.appendLine(daySchedule.getString("end"))
+        }
+
+        return scheduleString.toString()
     }
 
     // for future logging
