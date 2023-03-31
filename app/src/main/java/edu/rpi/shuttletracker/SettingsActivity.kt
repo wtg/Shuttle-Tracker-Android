@@ -51,6 +51,7 @@ public class SettingsActivity: AppCompatActivity() {
 
         val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         val logsToggle: SwitchMaterial = findViewById(R.id.logsSwitch)
+        val automaticBoardToggle: SwitchMaterial = findViewById(R.id.autoBoardSwitch)
 
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
@@ -88,6 +89,17 @@ public class SettingsActivity: AppCompatActivity() {
                 saveLogsToggle(this, false)
             }
         }
+
+        automaticBoardToggle.setChecked(sharedPreferences.getBoolean("enable_automatic_board_bus", true))
+        automaticBoardToggle.setOnCheckedChangeListener { _, isChecked ->
+            val editor = sharedPreferences.edit()
+            if (isChecked) {
+                editor.putBoolean("enable_automatic_board_bus", true).apply()
+            } else {
+                editor.putBoolean("enable_automatic_board_bus", false).apply()
+            }
+        }
+
         val toolbar: Toolbar = findViewById(R.id.settingsToolbar)
         setSupportActionBar(toolbar)
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)

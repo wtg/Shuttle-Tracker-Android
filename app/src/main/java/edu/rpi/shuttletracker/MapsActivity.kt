@@ -450,8 +450,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
         beaconManager.removeAllRangeNotifiers()
-        beaconManager.addRangeNotifier(rangeNotifier)
-        beaconManager.startRangingBeacons(region)
+        val sharedPreferences: SharedPreferences = this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        if(sharedPreferences.getBoolean("enable_automatic_board_bus", true)) {
+            beaconManager.addRangeNotifier(rangeNotifier)
+            beaconManager.startRangingBeacons(region)
+        }
     }
 
     /**
