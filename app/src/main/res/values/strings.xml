@@ -64,6 +64,8 @@
     <string name="bluetooth_permissions_title">Bluetooth Permissions</string>
     <string name="bluetooth_supporting_text">Please select \"Allow\" in the following prompt.</string>
     <string name="more_details_bluetooth">Bluetooth is required to crowd source bus locations with automatic board and leave bus whenever the device detects a shuttle tracker iBeacon in its vicinity. It will only detect and connect to shuttle tracker\'s beacons.</string>
+    <string name="restart_title">Restart This App</string>
+    <string name="restart_supporting_text">Please restart Shuttle Tracker to save the changes to your settings.</string>
     <string name="cancel">Cancel</string>
     <string name="accept">OK</string>
     <string name="privacy_button_text">Link to Privacy Policy</string>
