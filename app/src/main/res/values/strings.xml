@@ -57,10 +57,13 @@
     <string name="channel_name">ShuttleTrackerRPI</string>
     <string name="channel_description">ShuttleTrackerRPI</string>
     <string name="alertTitle">Location Permissions</string>
-    <string name="supporting_text"><![CDATA[Shuttle Tracker collects location data to enable crowdsourcing shuttle locations, showing the user\'s location on the map, & tracking shuttles through board bus in the background, even when the app is closed or not in use. This feature is required to crowdsource bus locations, please select \"Allow all the time\" in the following prompt.]]></string>
-    <string name="supporting_text_settings"><![CDATA[Shuttle Tracker collects location data to enable crowdsourcing shuttle locations, showing the user\'s location on the map, tracking shuttles through board bus, and automatic board/leave bus in the background, even when the app is closed or not in use. This feature is required to crowdsource bus locations, please select \"Permissions\" then \"Location\" then \"Allow all the time\" in the following prompt!]]></string>
+    <string name="supporting_text">Please select \"Allow all the time\" in the following prompt.</string>
+    <string name="supporting_text_settings">Please select \"Permissions\" then \"Location\" then \"Allow all the time\" in the following prompt!</string>
+    <string name="more_details">Why?</string>
+    <string name="more_details_location"><![CDATA[Shuttle Tracker collects location data to enable crowdsourcing shuttle locations, showing the user\'s location on the map, tracking shuttles through board bus, and automatic board/leave bus in the background even when the app is closed or not in use. This feature is required to crowdsource bus location.]]></string>
     <string name="bluetooth_permissions_title">Bluetooth Permissions</string>
-    <string name="bluetooth_supporting_text">Bluetooth is required to crowd source bus locations with automatic board and leave bus whenever the device detects a shuttle tracker iBeacon in its vicinity. Please select \"Allow\" in the following prompt.</string>
+    <string name="bluetooth_supporting_text">Please select \"Allow\" in the following prompt.</string>
+    <string name="more_details_bluetooth">Bluetooth is required to crowd source bus locations with automatic board and leave bus whenever the device detects a shuttle tracker iBeacon in its vicinity. It will only detect and connect to shuttle tracker\'s beacons.</string>
     <string name="cancel">Cancel</string>
     <string name="accept">OK</string>
     <string name="privacy_button_text">Link to Privacy Policy</string>
