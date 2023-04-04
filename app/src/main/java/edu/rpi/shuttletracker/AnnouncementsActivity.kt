@@ -52,6 +52,7 @@ class AnnouncementsActivity : AppCompatActivity(){
             }
         }} )
         thread.start()
+        thread.join()
         val toolbar: Toolbar = findViewById(R.id.announcementsToolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

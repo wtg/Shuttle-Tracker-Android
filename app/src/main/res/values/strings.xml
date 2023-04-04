@@ -56,6 +56,8 @@
     <string name="channel_name">ShuttleTrackerRPI</string>
     <string name="channel_description">ShuttleTrackerRPI</string>
     <string name="alertTitle">Location Permissions</string>
+    <string name="supporting_text">Please select \"Allow all the time\" in the following prompt.</string>
+    <string name="supporting_text_settings">Please select \"Permissions\" then \"Location\" then \"Allow all the time\" in the following prompt!</string>
     <string name="more_details">Why?</string>
     <string name="more_details_location"><![CDATA[Shuttle Tracker collects location data to enable crowdsourcing shuttle locations, showing the user\'s location on the map, tracking shuttles through board bus, and automatic board/leave bus in the background even when the app is closed or not in use. This feature is required to crowdsource bus location.]]></string>
     <string name="bluetooth_permissions_title">Bluetooth Permissions</string>
