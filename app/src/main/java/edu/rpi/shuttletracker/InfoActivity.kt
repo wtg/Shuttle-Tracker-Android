@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +19,7 @@ import java.time.format.DateTimeFormatter
 
 class InfoActivity : AppCompatActivity() {
 
-    private val weekArray = arrayOf("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+    private val WEEK_ARRAY = arrayOf("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,13 +96,14 @@ class InfoActivity : AppCompatActivity() {
     private fun formatSchedule(content: JSONObject): String? {
         val scheduleString = StringBuilder()
 
-        for (i in weekArray.indices){
+        for (i in WEEK_ARRAY.indices){
             try {
-                val daySchedule = content.getJSONObject(weekArray[i])
+                val daySchedule = content.getJSONObject(WEEK_ARRAY[i])
                 scheduleString.append(daySchedule.getString("start"))
                 scheduleString.append(" to ")
                 scheduleString.appendLine(daySchedule.getString("end"))
             } catch (ex: Exception) {
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "JSON content not in form of Monday, Tuesday,...")
                 Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                 Logs.sendLogsToServer(getLogsURL())
                 return null
