@@ -32,13 +32,12 @@ class InfoActivity : AppCompatActivity() {
 
         val scheduleText: TextView = findViewById(R.id.infoScheduleTextView)
         val dayScheduleText: TextView = findViewById(R.id.daySchedule)
-//        val formattedSchedule = getSchedule()
-
-        val formattedSchedule = null
+        val formattedSchedule = getSchedule()
 
         if (formattedSchedule != null) {
             scheduleText.text = formattedSchedule
         } else {
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "no schedule found, displaying default schedule message")
             dayScheduleText.visibility = View.GONE
             val param = scheduleText.layoutParams as ViewGroup.MarginLayoutParams
             param.setMargins(0,20,0,20)
@@ -111,7 +110,7 @@ class InfoActivity : AppCompatActivity() {
             }
         }
 
-        return scheduleString.toString()
+        return scheduleString.dropLast(1).toString()
     }
 
     private fun getLogsURL(): URL {
