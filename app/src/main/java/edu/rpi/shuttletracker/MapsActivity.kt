@@ -10,13 +10,9 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 */
 
 
-import android.Manifest
-import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.*
 import android.animation.Animator
-import android.app.AlertDialog
-import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
+import android.app.*
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -30,8 +26,10 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Looper
+import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -58,11 +56,9 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.altbeacon.beacon.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.FileInputStream
-import java.io.InputStreamReader
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -72,17 +68,9 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import android.system.Os.accept
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
-import android.widget.TextView
-import androidx.core.graphics.rotationMatrix
-import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.*
-import kotlin.system.*
 import kotlin.coroutines.*
 import kotlin.system.*
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -108,10 +96,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     // All data used in a data package which will be sent to server
-    private var onBus: Boolean = false // This user's status. It controls the end of data transmission thread.
+    private var onBus: Boolean = true // This user's status. It controls the end of data transmission thread.
+    private var automaticBoardBus: Boolean = false
     private var selectedBusNumber: String? = null
     private lateinit var session_uuid: String
     private var currentLocation: Location? = null
+    private var boardTime: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
     //private var latitude: Float? = null
     //private var longitude: Float? = null
     private var type = "user"
@@ -122,7 +112,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.channel_name)
             val descriptionText = getString(R.string.channel_description)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
@@ -181,6 +171,28 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private fun setOnBusStatus(onBusStatus: Boolean){
+        onBus = onBusStatus
+        val sharedPref = getSharedPreferences("onBus", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.apply {
+            putBoolean("onBusBoolean", onBusStatus)
+        }.apply()
+    }
+
+    private fun leaveBus(boardBusButton: View, leaveBusButton: View){
+        stopService(wakelockIntent)
+        automaticBoardBus = false
+        val sharedPref = getSharedPreferences("onBus", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.apply {
+            putBoolean("automaticBoardBusBoolean", false)
+        }.apply()
+        setOnBusStatus(false) // this variable controls when the data-transmitting thread ends
+        boardBusButton.visibility = View.VISIBLE
+        leaveBusButton.visibility = View.GONE
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
 
@@ -194,6 +206,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        // load onBus bool saved
+        val sharedPref = getSharedPreferences("onBus", Context.MODE_PRIVATE)
+        onBus = sharedPref.getBoolean("onBusBoolean", false)
+        automaticBoardBus = sharedPref.getBoolean("automaticBoardBusBoolean", false)
+
         createNotificationChannel()
         fabBGLayout.setOnClickListener { closeFABMenu() }
         //button variable initiation
@@ -203,6 +220,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         var btn_info = findViewById<LinearLayout>(R.id.fabLayout3)
         val boardBusButton = findViewById<Button>(R.id.board_bus_button)
         val leaveBusButton = findViewById<Button>(R.id.leave_bus_button)
+        if(onBus){
+            boardBusButton.visibility = View.GONE
+            leaveBusButton.visibility = View.VISIBLE
+        }
 
         //placement
         val mapFragment = supportFragmentManager
@@ -230,7 +251,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             return
@@ -332,20 +353,93 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                 chooseBusDialogBuilder.create()
                 chooseBusDialogBuilder.show()
-
-            ;
-            leaveBusButton.setOnClickListener {
-                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked leave bus button")
-                stopService(wakelockIntent)
-                onBus = false // this variable controls when the data-transmitting thread ends
-                boardBusButton.visibility = View.VISIBLE
-                leaveBusButton.visibility = View.GONE
-            };
             // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         }else{
                 Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"tried to click board button, but user is offline")
                 offline_check()
             }
+        }
+
+        leaveBusButton.setOnClickListener {
+            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"clicked on leave bus button")
+            leaveBus(boardBusButton, leaveBusButton)
+        }
+
+        val beaconManager =  BeaconManager.getInstanceForApplication(this)
+        val region = Region("all-beacons-region", Identifier.fromUuid(UUID.fromString("3bb7876d-403d-cb84-5e4c-907adc953f9c")), null, null)
+        beaconManager.beaconParsers.clear()
+        beaconManager.beaconParsers.add(
+            BeaconParser().
+            setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
+        // BeaconManager.setDebug(true)
+
+        if(!beaconManager.isAnyConsumerBound) {
+            val builder = Notification.Builder(this)
+            builder.setSmallIcon(R.drawable.ic_launcher_foreground)
+            builder.setContentTitle("Looking for Shuttles")
+            if (SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    "Shuttle Background Detection",
+                    "Searching for shuttles in background", NotificationManager.IMPORTANCE_DEFAULT
+                )
+                channel.description =
+                    "This app is able to detect iBeacons from RPI shuttles even when the app is off"
+                val notificationManager = getSystemService(
+                    NOTIFICATION_SERVICE
+                ) as NotificationManager
+                notificationManager.createNotificationChannel(channel)
+                builder.setChannelId(channel.id)
+            }
+
+            beaconManager.enableForegroundServiceScanning(builder.build(), 456);
+            beaconManager.setEnableScheduledScanJobs(false)
+            beaconManager.backgroundBetweenScanPeriod = 1000
+            beaconManager.backgroundScanPeriod = 1100
+            beaconManager.foregroundBetweenScanPeriod = 1000
+            beaconManager.foregroundScanPeriod = 1100
+            }
+
+        val rangeNotifier = RangeNotifier { beacons, region ->
+            val now = LocalDateTime.now(ZoneOffset.UTC)
+            if(beacons.isNotEmpty()) {
+                if(onBus) {
+                    for(beacon in beacons){
+                        if(beacon.id2.toString() == selectedBusNumber){
+                            boardTime = now
+                            return@RangeNotifier
+                        }
+                    }
+                    if(ChronoUnit.SECONDS.between(boardTime, now) < 30){
+                        return@RangeNotifier
+                    }
+                }
+
+                val sharedPref = getSharedPreferences("onBus", Context.MODE_PRIVATE)
+                val editor = sharedPref.edit()
+                editor.apply {
+                    putBoolean("automaticBoardBusBoolean", true)
+                }.apply()
+                automaticBoardBus = true
+                startForegroundService(wakelockIntent)
+                val sendDataThread = sendOnBusData()
+                sendDataThread.start()
+                boardBusButton.visibility = View.GONE
+                leaveBusButton.visibility = View.VISIBLE
+                boardTime = now
+                selectedBusNumber = beacons.iterator().next().id2.toString()
+                Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"automatically boarded bus $selectedBusNumber")
+            } else {
+                if(automaticBoardBus && onBus && ChronoUnit.SECONDS.between(boardTime, now) >= 30){
+                    leaveBus(boardBusButton, leaveBusButton)
+                    Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name,"automatically leaving bus $selectedBusNumber")
+                }
+            }
+        }
+        beaconManager.removeAllRangeNotifiers()
+        val sharedPreferences: SharedPreferences = this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        if(sharedPreferences.getBoolean("enable_automatic_board_bus", true)) {
+            beaconManager.addRangeNotifier(rangeNotifier)
+            beaconManager.startRangingBeacons(region)
         }
     }
 
@@ -421,7 +515,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             kotlin.run {
                 try
                 {
-                    onBus = true
+                    setOnBusStatus(true)
                     while (onBus) {
                         date = getCurrentFormattedDate()
                         println("parsed date: $date") // TODO: remove/comment this testing clause
@@ -612,6 +706,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                  updateBuses(server_url + res.getString(R.string.buses_url), busMarkerArray)
             }
         }
+
+        if (this::mMap.isInitialized && !mMap.isMyLocationEnabled() &&
+            (ActivityCompat.checkSelfPermission(
+                this,
+                ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+                this,
+                ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED)
+        ) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location:Location ->
+                currentLocation = location
+            }
+            mMap.setMyLocationEnabled(true)
+        }
     }
 
     fun drawStops(url: String) : ArrayList<Stop> {
@@ -678,12 +787,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         latlngmultiroutes.add(latlngarr)
                     }
                     runOnUiThread {
-                        val colorArr = arrayListOf<Pair<String, Int>>(Pair("red", Color.RED),
-                            Pair("orange", Color.parseColor("#ee6002")), Pair("yellow", Color.YELLOW),
-                            Pair("green", Color.GREEN), Pair("blue", Color.BLUE),
+                        val colorArr = arrayListOf<Pair<String, Int>>(
+                            Pair("red", Color.RED),
+                            Pair("orange", Color.parseColor("#ee6002")),
+                            Pair("yellow", Color.YELLOW),
+                            Pair("green", Color.GREEN),
+                            Pair("blue", Color.BLUE),
                             Pair("purple", Color.parseColor("#a200e0")),
                             Pair("pink", Color.parseColor("#ef4fa6")),
-                            Pair("gray", Color.GRAY),)
+                            Pair("gray", Color.GRAY),
+                        )
                         var polylineArr = ArrayList<Polyline>()
                         for(i in 0 until latlngmultiroutes.size) {
                             var color : Int = 0
@@ -1144,25 +1257,110 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            mMap.setMyLocationEnabled(true)
-        } else {
+        if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            || (SDK_INT >= Build.VERSION_CODES.Q && ContextCompat.checkSelfPermission(this, ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             MaterialAlertDialogBuilder(this)
                 .setTitle(resources.getString(R.string.alertTitle))
-                .setMessage(resources.getString(R.string.supporting_text))
+                .setMessage(resources.getString(if (SDK_INT < Build.VERSION_CODES.R) R.string.supporting_text else R.string.supporting_text_settings))
                 .setNegativeButton(resources.getString(R.string.cancel)) { dialog, which ->
                     // Respond to negative button press
                     mMap.setMyLocationEnabled(false)
                 }
+                .setNeutralButton(resources.getString(R.string.more_details)) { dialog, which ->
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle(resources.getString(R.string.more_details))
+                        .setMessage(resources.getString(R.string.more_details_location))
+                        .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
+                            when {
+                                SDK_INT >= Build.VERSION_CODES.R -> startActivity(
+                                    Intent(
+                                        ACTION_APPLICATION_DETAILS_SETTINGS,
+                                        Uri.parse("package:" + BuildConfig.APPLICATION_ID)
+                                    )
+                                )
+                                SDK_INT == Build.VERSION_CODES.Q -> ActivityCompat.requestPermissions(
+                                    this,
+                                    arrayOf(
+                                        ACCESS_FINE_LOCATION,
+                                        ACCESS_BACKGROUND_LOCATION
+                                    ),
+                                    MY_PERMISSIONS_REQUEST_LOCATION
+                                )
+                                else -> ActivityCompat.requestPermissions(
+                                    this,
+                                    arrayOf(ACCESS_FINE_LOCATION),
+                                    MY_PERMISSIONS_REQUEST_LOCATION
+                                )
+                            }
+                        }
+                        .show()
+                }
                 .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
-                    ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(ACCESS_FINE_LOCATION),
-                        MY_PERMISSIONS_REQUEST_LOCATION
-                    )
+                    when {
+                        SDK_INT >= Build.VERSION_CODES.R -> startActivity(
+                            Intent(
+                                ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.parse("package:" + BuildConfig.APPLICATION_ID)
+                            )
+                        )
+                        SDK_INT == Build.VERSION_CODES.Q -> ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(
+                                ACCESS_FINE_LOCATION,
+                                ACCESS_BACKGROUND_LOCATION
+                            ),
+                            MY_PERMISSIONS_REQUEST_LOCATION
+                        )
+                        else -> ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(ACCESS_FINE_LOCATION),
+                            MY_PERMISSIONS_REQUEST_LOCATION
+                        )
+                    }
                 }
                 .show()
         }
+
+        if(ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mMap.setMyLocationEnabled(true)
+        }
+
+        if (SDK_INT >= Build.VERSION_CODES.S) {
+            if(ContextCompat.checkSelfPermission(this, BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
+            || ContextCompat.checkSelfPermission(this, BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(resources.getString(R.string.bluetooth_permissions_title))
+                    .setMessage(resources.getString(R.string.bluetooth_supporting_text))
+                    .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
+                        ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(
+                                BLUETOOTH_SCAN,
+                                BLUETOOTH_CONNECT
+                            ),
+                            MY_PERMISSIONS_REQUEST_BLUETOOTH
+                        )
+                    }
+                    .setNeutralButton(resources.getString(R.string.more_details)){ dialog, which ->
+                        MaterialAlertDialogBuilder(this)
+                            .setTitle(resources.getString(R.string.more_details))
+                            .setMessage(resources.getString(R.string.more_details_bluetooth))
+                            .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
+                                ActivityCompat.requestPermissions(
+                                    this,
+                                    arrayOf(
+                                        BLUETOOTH_SCAN,
+                                        BLUETOOTH_CONNECT
+                                    ),
+                                    MY_PERMISSIONS_REQUEST_BLUETOOTH
+                                )
+                            }
+                            .show()
+                    }
+                    .show()
+            }
+        }
+
         busTimer.scheduleAtFixedRate(0, 5000) {
             //if(APIMatch)
             if(internet_connection() && APImatch) {//make sure it would run only when connected to internet and after api check
@@ -1184,7 +1382,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if(!internet_connection()&&onBus){
 
 
-                onBus = false // this variable controls when the data-transmitting thread ends
+                setOnBusStatus(false) // this variable controls when the data-transmitting thread ends
                 runOnUiThread() {
                     boardBusButton.visibility = View.VISIBLE
                     leaveBusButton.visibility = View.GONE
@@ -1295,7 +1493,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+
     companion object {
         private const val MY_PERMISSIONS_REQUEST_LOCATION = 99
+        private const val MY_PERMISSIONS_REQUEST_BLUETOOTH = 98
     }
 }

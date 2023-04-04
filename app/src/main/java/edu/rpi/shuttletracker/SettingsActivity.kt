@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker;
 
+import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
@@ -12,6 +13,8 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.activity_maps.*
 import java.net.URL
@@ -51,6 +54,7 @@ public class SettingsActivity: AppCompatActivity() {
 
         val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         val logsToggle: SwitchMaterial = findViewById(R.id.logsSwitch)
+        val automaticBoardToggle: SwitchMaterial = findViewById(R.id.autoBoardSwitch)
 
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
@@ -88,6 +92,22 @@ public class SettingsActivity: AppCompatActivity() {
                 saveLogsToggle(this, false)
             }
         }
+
+        automaticBoardToggle.setChecked(sharedPreferences.getBoolean("enable_automatic_board_bus", true))
+        automaticBoardToggle.setOnCheckedChangeListener { _, isChecked ->
+            val editor = sharedPreferences.edit()
+            if (isChecked) {
+                editor.putBoolean("enable_automatic_board_bus", true).apply()
+            } else {
+                editor.putBoolean("enable_automatic_board_bus", false).apply()
+            }
+            MaterialAlertDialogBuilder(this)
+                .setTitle(resources.getString(R.string.restart_title))
+                .setMessage(resources.getString(R.string.restart_supporting_text))
+                .setPositiveButton(resources.getString(R.string.accept)){ dialog, which -> }
+                .show()
+        }
+
         val toolbar: Toolbar = findViewById(R.id.settingsToolbar)
         setSupportActionBar(toolbar)
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
