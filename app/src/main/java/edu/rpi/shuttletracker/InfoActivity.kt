@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import org.json.JSONArray
@@ -29,7 +31,19 @@ class InfoActivity : AppCompatActivity() {
         getSupportActionBar()?.setDisplayShowHomeEnabled(true)
 
         val scheduleText: TextView = findViewById(R.id.infoScheduleTextView)
-        scheduleText.text = getSchedule()
+        val dayScheduleText: TextView = findViewById(R.id.daySchedule)
+//        val formattedSchedule = getSchedule()
+
+        val formattedSchedule = null
+
+        if (formattedSchedule != null) {
+            scheduleText.text = formattedSchedule
+        } else {
+            dayScheduleText.visibility = View.GONE
+            val param = scheduleText.layoutParams as ViewGroup.MarginLayoutParams
+            param.setMargins(0,20,0,20)
+            dayScheduleText.layoutParams = param
+        }
 
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -40,10 +54,11 @@ class InfoActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun getSchedule(): String {
-        var scheduleString = ""
+    private fun getSchedule(): String? {
+        val res : Resources = getResources()
         val sharedPreferences: SharedPreferences =
             getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        var scheduleString: String? = null
         val server_url = sharedPreferences.getString("server_base_url", resources.getString(R.string.default_server_url))
         val sched = URL(server_url + resources.getString(R.string.schedule_url))
         val thread = Thread {
@@ -64,12 +79,13 @@ class InfoActivity : AppCompatActivity() {
                         if(currentDate.isAfter(startDate) && currentDate.isBefore(endDate)){
                             Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "current date $currentDate is between $start and $end")
                             val content = semester.getJSONObject("content")
-                            scheduleString = formateSchedule(content)
+                            scheduleString = formatSchedule(content)
                         }
                     }
                 } catch (ex: Exception) {
                     Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
+                    scheduleString = null
                 }
             }
         }
@@ -79,8 +95,7 @@ class InfoActivity : AppCompatActivity() {
         return scheduleString
     }
 
-    private fun formateSchedule(content: JSONObject): String {
-
+    private fun formatSchedule(content: JSONObject): String? {
         val scheduleString = StringBuilder()
 
         for (i in weekArray.indices){
@@ -92,6 +107,7 @@ class InfoActivity : AppCompatActivity() {
             } catch (ex: Exception) {
                 Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                 Logs.sendLogsToServer(getLogsURL())
+                return null
             }
         }
 

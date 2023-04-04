@@ -45,6 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             android:layout_marginRight="8dp"
             android:textDirection="ltr"
             android:textSize="18sp"
@@ -57,12 +58,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             android:layout_marginLeft="8dp"
             android:textDirection="ltr"
             android:textSize="18sp"
             android:layout_below="@id/infoIntroTextView"
             android:layout_toRightOf="@id/daySchedule"
-            android:text="Esse fuga consectetur excepturi et. Odit nobis repellat. Sapiente tenetur dicta dignissimos cum excepturi. Nobis suscipit nam aut deleniti similique libero quo."/>
+            android:text="@string/schedule_default_text"/>
 
         <TextView
             android:id="@+id/infoInstructionsTextView"
