@@ -17,3 +17,6 @@ google_maps_api.xml
 /app/src/main/java/edu/rpi/.DS_Store
 /app/src/main/res/.DS_Store
 /app/release/.DS_Store
+/build/intermediates/lint-cache/maven.google/com/google/.DS_Store
+/app/src/main/res/values/.DS_Store
+/build/intermediates/lint-cache/maven.google/com/google/android/.DS_Store
