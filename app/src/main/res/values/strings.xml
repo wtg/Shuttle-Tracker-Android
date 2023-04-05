@@ -5,16 +5,12 @@
     <string name="crowdsourced_bus">greenbus.png</string>
     <string name="colorblind_GPS_bus">cbredbus.png</string>
     <string name="colorblind_crowdsourced_bus">cbgreenbus.png</string>
-    <string name="info_page">
+    <string name="info_intro">
         Shuttle Tracker shows you the real-time locations of the RPI campus shuttles,
         powered by crowd-sourced location data.
-
-        \n\nSchedule
-        \nMonday through Friday: 7:00 AM to 11:45 PM
-        \nSaturday: 9:00 AM to 11:45 PM
-        \nSunday: 9:00 AM to 8:00 PM
-
-        \n\nInstructions
+    </string>
+    <string name="info_instructions">
+        Instructions
         \nThe map is automatically refreshed every 5 seconds.
         Green buses have high-quality location data,
         and red buses have low-quality location data. In colorblind mode, the green buses
@@ -40,11 +36,14 @@
         regardless of experience! Any contributions are welcome, as well as feedback for our current team.
         If you would like to view our source code, click the button below and open our GitHub page, and you can
         open an \"issue\" to leave feedback for us. View our privacy policy with the button below.</string>
+    <string name="day_schedule">Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday</string>
+    <string name="schedule_default_text">No schedule available</string>
     <string name="announcements_default_text">No current announcements.</string>
     <string name="github_button_text">Click to access our GitHub Repository!</string>
     <string name="repo_url">https://github.com/wtg/Shuttle-Tracker-Android</string>
     <string name="default_server_url">https://shuttletracker.app</string>
     <string name="announcements_url">/announcements</string>
+    <string name="schedule_url">/schedule</string>
     <string name="version_url">/version</string>
     <string name="buses_url">/buses</string>
     <string name="bus_numbers_url">/buses/all</string>
