@@ -59,13 +59,15 @@ public class SettingsActivity: AppCompatActivity() {
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url)))
         val saveServerURLButton = findViewById<Button>(R.id.saveURLButton)
-
         val resetURLButton = findViewById<Button>(R.id.resetURLButton)
 
-//TODO: REENABLE FOR PUBLIC RELEASE - SERVER CHOICE RESTRICTED TO STAGING SERVER FOR BETA RELEASE.
+          //TODO: REENABLE FOR PUBLIC RELEASE - SERVER CHOICE RESTRICTED TO STAGING SERVER FOR BETA RELEASE.
 //        saveServerURLButton.setOnClickListener {
 //            saveServerURL(this)
 //        }
+
+        //TODO: REMOVE AFTER BETA
+        resetServerURL(this)
 
         resetURLButton.setOnClickListener{
             resetServerURL(this)
