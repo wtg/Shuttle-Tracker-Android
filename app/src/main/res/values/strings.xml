@@ -41,7 +41,8 @@
     <string name="announcements_default_text">No current announcements.</string>
     <string name="github_button_text">Click to access our GitHub Repository!</string>
     <string name="repo_url">https://github.com/wtg/Shuttle-Tracker-Android</string>
-    <string name="default_server_url">https://shuttletracker.app</string>
+    <!--TODO: FIX FOR PUBLIC RELEASE - BETA TESTERS RESTRICTED TO STAGING SERVER-->
+    <string name="default_server_url">https://staging.shuttletracker.app</string>
     <string name="announcements_url">/announcements</string>
     <string name="schedule_url">/schedule</string>
     <string name="version_url">/version</string>

@@ -62,9 +62,10 @@ public class SettingsActivity: AppCompatActivity() {
 
         val resetURLButton = findViewById<Button>(R.id.resetURLButton)
 
-        saveServerURLButton.setOnClickListener {
-            saveServerURL(this)
-        }
+//TODO: REENABLE FOR PUBLIC RELEASE - SERVER CHOICE RESTRICTED TO STAGING SERVER FOR BETA RELEASE.
+//        saveServerURLButton.setOnClickListener {
+//            saveServerURL(this)
+//        }
 
         resetURLButton.setOnClickListener{
             resetServerURL(this)
