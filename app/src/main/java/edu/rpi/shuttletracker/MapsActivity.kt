@@ -10,7 +10,6 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 */
 
 
-import android.Manifest
 import android.Manifest.permission.*
 import android.animation.Animator
 import android.app.*
@@ -31,7 +30,6 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -61,9 +59,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.altbeacon.beacon.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.FileInputStream
-import java.io.InputStreamReader
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -73,15 +68,6 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import android.system.Os.accept
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
-import android.widget.TextView
-import androidx.core.graphics.rotationMatrix
-import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.*
-import kotlin.system.*
 import kotlin.coroutines.*
 import kotlin.system.*
 
@@ -450,8 +436,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
         beaconManager.removeAllRangeNotifiers()
-        beaconManager.addRangeNotifier(rangeNotifier)
-        beaconManager.startRangingBeacons(region)
+        val sharedPreferences: SharedPreferences = this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        if(sharedPreferences.getBoolean("enable_automatic_board_bus", true)) {
+            beaconManager.addRangeNotifier(rangeNotifier)
+            beaconManager.startRangingBeacons(region)
+        }
     }
 
     /**
@@ -1277,6 +1266,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     // Respond to negative button press
                     mMap.setMyLocationEnabled(false)
                 }
+                .setNeutralButton(resources.getString(R.string.more_details)) { dialog, which ->
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle(resources.getString(R.string.more_details))
+                        .setMessage(resources.getString(R.string.more_details_location))
+                        .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
+                            when {
+                                SDK_INT >= Build.VERSION_CODES.R -> startActivity(
+                                    Intent(
+                                        ACTION_APPLICATION_DETAILS_SETTINGS,
+                                        Uri.parse("package:" + BuildConfig.APPLICATION_ID)
+                                    )
+                                )
+                                SDK_INT == Build.VERSION_CODES.Q -> ActivityCompat.requestPermissions(
+                                    this,
+                                    arrayOf(
+                                        ACCESS_FINE_LOCATION,
+                                        ACCESS_BACKGROUND_LOCATION
+                                    ),
+                                    MY_PERMISSIONS_REQUEST_LOCATION
+                                )
+                                else -> ActivityCompat.requestPermissions(
+                                    this,
+                                    arrayOf(ACCESS_FINE_LOCATION),
+                                    MY_PERMISSIONS_REQUEST_LOCATION
+                                )
+                            }
+                        }
+                        .show()
+                }
                 .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
                     when {
                         SDK_INT >= Build.VERSION_CODES.R -> startActivity(
@@ -1285,7 +1303,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 Uri.parse("package:" + BuildConfig.APPLICATION_ID)
                             )
                         )
-
                         SDK_INT == Build.VERSION_CODES.Q -> ActivityCompat.requestPermissions(
                             this,
                             arrayOf(
@@ -1294,13 +1311,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             ),
                             MY_PERMISSIONS_REQUEST_LOCATION
                         )
-
                         else -> ActivityCompat.requestPermissions(
                             this,
                             arrayOf(ACCESS_FINE_LOCATION),
                             MY_PERMISSIONS_REQUEST_LOCATION
                         )
-
                     }
                 }
                 .show()
@@ -1325,6 +1340,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             ),
                             MY_PERMISSIONS_REQUEST_BLUETOOTH
                         )
+                    }
+                    .setNeutralButton(resources.getString(R.string.more_details)){ dialog, which ->
+                        MaterialAlertDialogBuilder(this)
+                            .setTitle(resources.getString(R.string.more_details))
+                            .setMessage(resources.getString(R.string.more_details_bluetooth))
+                            .setPositiveButton(resources.getString(R.string.accept)) { dialog, which ->
+                                ActivityCompat.requestPermissions(
+                                    this,
+                                    arrayOf(
+                                        BLUETOOTH_SCAN,
+                                        BLUETOOTH_CONNECT
+                                    ),
+                                    MY_PERMISSIONS_REQUEST_BLUETOOTH
+                                )
+                            }
+                            .show()
                     }
                     .show()
             }
