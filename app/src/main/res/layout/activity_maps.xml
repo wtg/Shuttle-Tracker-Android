@@ -29,7 +29,8 @@
             android:id="@+id/fabBGLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/board_bus_button"/>
 
         <LinearLayout
             android:id="@+id/fabLayout1"
