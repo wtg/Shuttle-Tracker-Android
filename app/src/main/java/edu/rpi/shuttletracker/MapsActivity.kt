@@ -10,9 +10,17 @@ import kotlinx.android.synthetic.main.activity_maps.fabLayout4
 */
 
 
-import android.Manifest.permission.*
+import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.BLUETOOTH_CONNECT
+import android.Manifest.permission.BLUETOOTH_SCAN
 import android.animation.Animator
-import android.app.*
+import android.app.AlertDialog
+import android.app.Application
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -42,21 +50,34 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.android.synthetic.main.activity_maps.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Runnable
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.altbeacon.beacon.*
+import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.BeaconParser
+import org.altbeacon.beacon.Identifier
+import org.altbeacon.beacon.RangeNotifier
+import org.altbeacon.beacon.Region
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URL
@@ -65,11 +86,13 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import java.util.Timer
+import java.util.UUID
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import kotlin.coroutines.*
-import kotlin.system.*
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -198,8 +221,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
-        fab.setOnClickListener {
-            if (View.GONE == fabBGLayout.visibility) {
+        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
+            if (View.GONE == findViewById<View>(R.id.fabBGLayout).visibility) {
                 showFABMenu()
             } else {
                 closeFABMenu()
@@ -212,7 +235,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         automaticBoardBus = sharedPref.getBoolean("automaticBoardBusBoolean", false)
 
         createNotificationChannel()
-        fabBGLayout.setOnClickListener { closeFABMenu() }
+        findViewById<View>(R.id.fabBGLayout).setOnClickListener { closeFABMenu() }
         //button variable initiation
         var btn_announcements = findViewById(R.id.fabLayout5) as LinearLayout
         var btn_settings = findViewById<LinearLayout>(R.id.fabLayout1)
@@ -635,23 +658,30 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return JSONObject(jsonMap)
     }
     private fun showFABMenu() {
-        fabLayout1.visibility = View.VISIBLE
-        fabLayout2.visibility = View.VISIBLE
-        fabLayout3.visibility = View.VISIBLE
+        findViewById<LinearLayout>(R.id.fabLayout1).visibility = View.VISIBLE
+        findViewById<LinearLayout>(R.id.fabLayout2).visibility = View.VISIBLE
+        findViewById<LinearLayout>(R.id.fabLayout3).visibility = View.VISIBLE
         //fablayout4 (the refresh button) is already visible at the start
-        fabLayout5.visibility = View.VISIBLE
-        fabBGLayout.visibility = View.VISIBLE
-        fab.animate().rotationBy(180F)
-        fabLayout1.animate().translationY(-resources.getDimension(R.dimen.standard_75))
-        fabLayout2.animate().translationY(-resources.getDimension(R.dimen.standard_135))
-        fabLayout3.animate().translationY(-resources.getDimension(R.dimen.standard_215))
-        fabLayout4.animate().translationY(-resources.getDimension(R.dimen.standard_210))
+        findViewById<LinearLayout>(R.id.fabLayout5).visibility = View.VISIBLE
+        findViewById<View>(R.id.fabBGLayout).visibility = View.VISIBLE
+        findViewById<FloatingActionButton>(R.id.fab).animate().rotationBy(180F)
+        findViewById<LinearLayout>(R.id.fabLayout1).animate().translationY(-resources.getDimension(R.dimen.standard_75))
+        findViewById<LinearLayout>(R.id.fabLayout2).animate().translationY(-resources.getDimension(R.dimen.standard_135))
+        findViewById<LinearLayout>(R.id.fabLayout3).animate().translationY(-resources.getDimension(R.dimen.standard_215))
+        findViewById<LinearLayout>(R.id.fabLayout4).animate().translationY(-resources.getDimension(R.dimen.standard_210))
         //fabLayout5.animate().translationY(-resources.getDimension(R.dimen.standard_12))
         var btn_info = findViewById(R.id.fabLayout3) as LinearLayout
         btn_info.bringToFront()
     }
 
     private fun closeFABMenu() {
+        val fab = findViewById<FloatingActionButton>(R.id.fab)
+        val fabBGLayout = findViewById<View>(R.id.fabBGLayout)
+        val fabLayout1 = findViewById<LinearLayout>(R.id.fabLayout1)
+        val fabLayout2 = findViewById<LinearLayout>(R.id.fabLayout2)
+        val fabLayout3 = findViewById<LinearLayout>(R.id.fabLayout3)
+        val fabLayout4 = findViewById<LinearLayout>(R.id.fabLayout4)
+
         fabBGLayout.visibility = View.GONE
         fab.bringToFront()
         fab.animate().rotation(0F)
@@ -887,16 +917,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         val stopPos = LatLng(current.latitude, current.longitude)
                         Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "drew bus ${current.id} on map")
                         runOnUiThread {
-                            markerArray.add(
-                                mMap.addMarker(
-                                    MarkerOptions().position(stopPos).title(
-                                        "Bus " + current.id
-                                    ).icon(
-                                        BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                    ).zIndex(1F).snippet("0 seconds ago")
+                            mMap.addMarker(
+                                MarkerOptions().position(stopPos).title(
+                                    "Bus " + current.id
+                                ).icon(
+                                    BitmapDescriptorFactory.fromAsset(current.busIcon)
+                                ).zIndex(1F).snippet("0 seconds ago")
 
+                            )?.let {
+                                markerArray.add(
+                                    it
                                 )
-                            )
+                            }
                             markerArray.get(i).tag = current.busDate;
                         }
                     }
@@ -973,8 +1005,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             var found = false
                             for (i in 0 until markerArray.size) {
                                 runOnUiThread {
-                                    var len = markerArray.get(i).title.length
-                                    var busID = markerArray.get(i).title.substring(4, len).toInt()
+                                    var len = markerArray.get(i).title?.length
+                                    var busID =
+                                        len?.let {
+                                            markerArray.get(i).title?.substring(4,
+                                                it
+                                            )?.toInt() ?: -1
+                                        }
                                     if (busID!!.equals(id)) {
                                         found = true
                                         markerArray.get(i).setPosition(LatLng(latitude, longitude))
@@ -1002,15 +1039,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             val current = busArray.get(i)
                             val stopPos = LatLng(current.latitude, current.longitude)
                             runOnUiThread {
-                                markerArray.add(
-                                    mMap.addMarker(
-                                        MarkerOptions().position(stopPos).title(
-                                            "Bus " + current.id
-                                        ).icon(
-                                            BitmapDescriptorFactory.fromAsset(current.busIcon)
-                                        ).zIndex(1F).snippet("0 seconds ago")
+                                mMap.addMarker(
+                                    MarkerOptions().position(stopPos).title(
+                                        "Bus " + current.id
+                                    ).icon(
+                                        BitmapDescriptorFactory.fromAsset(current.busIcon)
+                                    ).zIndex(1F).snippet("0 seconds ago")
+                                )?.let {
+                                    markerArray.add(
+                                        it
                                     )
-                                )
+                                }
                                 markerArray.get(i).tag = (current.busDate)
                                 //println(current.busDate)
                             }
@@ -1466,6 +1505,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_LOCATION -> {
                 // If request is cancelled, the result arrays are empty.

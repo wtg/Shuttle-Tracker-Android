@@ -4,9 +4,9 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import kotlinx.android.synthetic.main.activity_announcements.*
 import org.json.JSONArray
 import java.net.URL
 import java.time.LocalDateTime
@@ -45,7 +45,7 @@ class AnnouncementsActivity : AppCompatActivity(){
                                 announArray.getJSONObject(i).getString("body") + "\n" + "\n\n\n"
                 }
                 if(announString.length>0)
-                    announcementsTextView.text = announString
+                    findViewById<TextView>(R.id.announcementsTextView).text = announString
             } catch (ex : Exception){
                     Logs.writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
                     Logs.sendLogsToServer(getLogsURL())
