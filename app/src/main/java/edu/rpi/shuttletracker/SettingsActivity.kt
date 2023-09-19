@@ -1,22 +1,17 @@
 package edu.rpi.shuttletracker;
 
-import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.ActivityCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
-import kotlinx.android.synthetic.main.activity_maps.*
 import java.net.URL
 
 
