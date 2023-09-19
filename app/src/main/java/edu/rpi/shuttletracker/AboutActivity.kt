@@ -5,10 +5,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Resources
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import java.net.URL
 
@@ -21,13 +21,16 @@ class AboutActivity : AppCompatActivity() {
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
         getSupportActionBar()?.setDisplayShowHomeEnabled(true)
         val button: Button = findViewById(R.id.githubButton)
-        val res : Resources = getResources()
+        val res: Resources = getResources()
         button.setOnClickListener {
             val browserIntent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse(res.getString(R.string.repo_url))
+                Uri.parse(res.getString(R.string.repo_url)),
             )
-            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "opened browser to github link")
+            Logs.writeToLogBuffer(
+                object {}.javaClass.enclosingMethod.name,
+                "opened browser to github link",
+            )
             startActivity(browserIntent)
         }
 
@@ -35,12 +38,16 @@ class AboutActivity : AppCompatActivity() {
         privacybutton.setOnClickListener {
             val browserIntent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse(res.getString(R.string.privacy_url))
+                Uri.parse(res.getString(R.string.privacy_url)),
             )
-            Logs.writeToLogBuffer(object{}.javaClass.enclosingMethod.name, "opened browser to privacy policy")
+            Logs.writeToLogBuffer(
+                object {}.javaClass.enclosingMethod.name,
+                "opened browser to privacy policy",
+            )
             startActivity(browserIntent)
         }
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // handle arrow click here
         if (item.getItemId() == android.R.id.home) {
@@ -51,10 +58,13 @@ class AboutActivity : AppCompatActivity() {
 
     // for future logging
     private fun getLogsURL(): URL {
-        val res : Resources = getResources()
+        val res: Resources = getResources()
         val sharedPreferences: SharedPreferences =
             getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        val server_url = sharedPreferences.getString("server_base_url", res.getString(R.string.default_server_url))
+        val server_url = sharedPreferences.getString(
+            "server_base_url",
+            res.getString(R.string.default_server_url),
+        )
         val logsUrl =
             URL(server_url + res.getString(R.string.logs_url))
         return logsUrl

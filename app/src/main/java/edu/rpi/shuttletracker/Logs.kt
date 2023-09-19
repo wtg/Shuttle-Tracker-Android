@@ -21,7 +21,6 @@ object Logs {
     private var logBuffer = ArrayList<String>()
 
     fun sendLogsToServer(logsURL: URL) {
-
         trimLogsBuffer()
         val logJSONObject = createLogMessage(logBuffer.toList().joinToString(separator = ""))
 
@@ -32,65 +31,68 @@ object Logs {
                     val request = Request.Builder()
                         .url(logsURL)
                         .post(
-                            logJSONObject.toString().toRequestBody(mediaType)
+                            logJSONObject.toString().toRequestBody(mediaType),
                         )
                         .build()
 
                     val response = httpClient.newCall(request).execute()
-
                 } catch (ex: Exception) {
-                    //TODO: allow feature for user to store logs locally
-                    writeExceptionToLogBuffer(object{}.javaClass.enclosingMethod.name, ex)
+                    // TODO: allow feature for user to store logs locally
+                    writeExceptionToLogBuffer(object {}.javaClass.enclosingMethod.name, ex)
                 }
                 flushLogBuffer()
             }
         }.start()
-
     }
 
     private fun createLogMessage(message: String): JSONObject {
         val session_uuid = UUID.randomUUID().toString()
         val date = getCurrentFormattedDate()
 
-        val jsonMap = mapOf("id" to session_uuid, "content" to message, "clientPlatform" to "android", "date" to date)
+        val jsonMap = mapOf(
+            "id" to session_uuid,
+            "content" to message,
+            "clientPlatform" to "android",
+            "date" to date,
+        )
         return JSONObject(jsonMap)
     }
 
     // function name should be retrieved by calling object{}.javaClass.enclosingMethod.name
-    fun writeToLogBuffer(functionName: Any, message: String){
+    fun writeToLogBuffer(functionName: Any, message: String) {
         val currTime = getCurrentFormattedDate()
         try {
             logBuffer.add("[$currTime] [$functionName] $message \n")
-        } catch (ex : Exception) {
+        } catch (ex: Exception) {
             logBuffer.add("[$currTime] [error adding function name] $message \n")
         }
         trimLogsBuffer()
     }
 
     // overloaded function, in case there is no parent function name
-    fun writeToLogBuffer(message: String){
+    fun writeToLogBuffer(message: String) {
         val currTime = getCurrentFormattedDate()
         logBuffer.add("[$currTime] $message \n")
         trimLogsBuffer()
     }
 
-    fun writeExceptionToLogBuffer(functionName: Any, ex: Exception){
+    fun writeExceptionToLogBuffer(functionName: Any, ex: Exception) {
         val currTime = getCurrentFormattedDate()
         logBuffer.add("[$currTime] $functionName " + Log.getStackTraceString(ex) + " \n")
         logBuffer.add("[$currTime] $functionName " + ex.toString() + " \n")
         trimLogsBuffer()
     }
 
-    private fun trimLogsBuffer(){
+    private fun trimLogsBuffer() {
         // we only need to store the last x amount of log data
         val maxLogSize = 100
-        if (logBuffer.size > maxLogSize){
+        if (logBuffer.size > maxLogSize) {
             val removeIndex = logBuffer.size - maxLogSize
             logBuffer.subList(0, removeIndex).clear()
         }
     }
 
-    private fun flushLogBuffer(){
+    private fun flushLogBuffer() {
         logBuffer.clear()
     }
 
@@ -136,7 +138,6 @@ object Logs {
 //        }
 //    }
 
-
     //    fun createLog(message: String) {
 //        val sharedPreferences: SharedPreferences =
 //            this.getSharedPreferences("preferences", Context.MODE_PRIVATE)
@@ -150,6 +151,4 @@ object Logs {
 //        }
 //
 //    }
-
-
 }

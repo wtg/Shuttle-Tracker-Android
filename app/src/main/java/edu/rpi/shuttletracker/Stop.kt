@@ -1,7 +1,7 @@
 package edu.rpi.shuttletracker
 
-class Stop (
+data class Stop(
     val latitude: Double,
     val longitude: Double,
-    val name: String
+    val name: String,
 )
