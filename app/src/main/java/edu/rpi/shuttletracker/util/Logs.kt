@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker
+package edu.rpi.shuttletracker.util
 
 import android.util.Log
 import okhttp3.MediaType.Companion.toMediaTypeOrNull

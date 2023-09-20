@@ -25,16 +25,17 @@
 
 
     <application
+        android:name=".ShuttleTrackerApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".AboutActivity"
+            android:name=".ui.AboutActivity"
             android:exported="false" />
         <activity
-            android:name=".InfoActivity"
+            android:name=".ui.InfoActivity"
             android:exported="false" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -47,10 +48,10 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
-        <service android:name="Wakelock"
+        <service android:name=".util.Wakelock"
             android:foregroundServiceType="location"/>
         <activity
-            android:name=".MapsActivity"
+            android:name=".ui.MapsActivity"
             android:label="@string/title_activity_maps"
             android:exported="true">
             <intent-filter>
@@ -59,12 +60,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name=".ui.SettingsActivity"
             android:exported="false"
             android:label="@string/title_activity_maps">
         </activity>
         <activity
-            android:name=".AnnouncementsActivity"
+            android:name=".ui.AnnouncementsActivity"
             android:exported="false"
             android:label="@string/title_activity_maps">
         </activity>

@@ -7,7 +7,7 @@
     android:configChanges="uiMode"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivity"
+    tools:context=".ui.MapsActivity"
     >
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

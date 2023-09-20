@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker
+package edu.rpi.shuttletracker.ui
 
 import android.content.Context
 import android.content.Intent
@@ -10,6 +10,8 @@ import android.view.MenuItem
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.util.Logs
 import java.net.URL
 
 class AboutActivity : AppCompatActivity() {

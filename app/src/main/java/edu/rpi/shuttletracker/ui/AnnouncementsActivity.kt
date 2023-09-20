@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker
+package edu.rpi.shuttletracker.ui
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -8,6 +8,8 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.util.Logs
 import org.json.JSONArray
 import java.net.URL
 import java.time.LocalDateTime
