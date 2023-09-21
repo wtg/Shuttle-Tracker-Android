@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.util
+package edu.rpi.shuttletracker.util.services
 
 import android.R
 import android.app.Notification

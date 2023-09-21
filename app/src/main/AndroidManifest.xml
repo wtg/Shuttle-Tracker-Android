@@ -48,7 +48,7 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
-        <service android:name=".util.Wakelock"
+        <service android:name=".util.services.Wakelock"
             android:foregroundServiceType="location"/>
         <activity
             android:name=".ui.maps.MapsActivity"
@@ -75,5 +75,7 @@
             android:exported="false">
             <meta-data android:name="longScanForcingEnabled" android:value="true"/>
         </service>
+        <service android:name=".util.services.LocationService"
+            android:foregroundServiceType="location" />
     </application>
 </manifest>

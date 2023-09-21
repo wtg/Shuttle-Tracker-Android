@@ -13,10 +13,10 @@ data class BoardBus(
     val uuid: String,
 
     @Flatten("coordinate::latitude")
-    val latitude: Float,
+    val latitude: Double,
 
     @Flatten("coordinate::longitude")
-    val longitude: Float,
+    val longitude: Double,
 
     @SerializedName("type")
     val type: String,

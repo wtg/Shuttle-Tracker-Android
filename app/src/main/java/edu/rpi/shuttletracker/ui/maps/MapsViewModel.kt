@@ -13,10 +13,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
+import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
+import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,25 +27,40 @@ import javax.inject.Inject
 class MapsViewModel @Inject constructor(
     private val apiRepository: ShuttleTrackerRepository,
 ) : ViewModel() {
-
     private val busMarkers = HashMap<Int, Marker>()
 
-    private val _mapsUiState = MutableStateFlow(MapsUIState(listOf()))
+    private val _mapsUiState = MutableStateFlow(MapsUIState())
     val mapsUIState: StateFlow<MapsUIState> = _mapsUiState
+
+    fun loadAll() {
+        loadStops()
+        loadBuses()
+        loadRoutes()
+    }
 
     // for compose
     fun loadBuses() {
         viewModelScope.launch {
-            Log.d("oncreate", "loadBuses: ${apiRepository.getBuses()}")
-            _mapsUiState.value = _mapsUiState.value.copy(buses = apiRepository.getBuses())
+            _mapsUiState.update {
+                it.copy(buses = apiRepository.getBuses())
+            }
         }
     }
 
     // for compose
     fun loadStops() {
         viewModelScope.launch {
-            Log.d("oncreate", "loadStops: ${apiRepository.getStops()}")
-            _mapsUiState.value = _mapsUiState.value.copy(stops = apiRepository.getStops())
+            _mapsUiState.update {
+                it.copy(stops = apiRepository.getStops())
+            }
+        }
+    }
+
+    fun loadRoutes() {
+        viewModelScope.launch {
+            _mapsUiState.update {
+                it.copy(routes = apiRepository.getRoutes())
+            }
         }
     }
 
@@ -52,8 +70,10 @@ class MapsViewModel @Inject constructor(
         }
     }
 
-    fun updateBoardedState() {
-        _mapsUiState.value = _mapsUiState.value.copy(isBoarded = !_mapsUiState.value.isBoarded)
+    fun updateBoardedState(to: Boolean = !_mapsUiState.value.isBoarded) {
+        _mapsUiState.update {
+            it.copy(isBoarded = to)
+        }
     }
 
     // TODO DELETE EVERYTHING UNDER FOR NORMAL VIEWS
@@ -133,5 +153,6 @@ class MapsViewModel @Inject constructor(
 data class MapsUIState(
     val buses: List<Bus> = listOf(),
     val stops: List<Stop> = listOf(),
-    val isBoarded: Boolean = false,
+    val routes: List<Route> = listOf(),
+    val isBoarded: Boolean = LocationService.IS_SERVICE_RUNNING,
 )

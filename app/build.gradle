@@ -87,4 +87,7 @@ dependencies {
     // maps
     implementation 'com.google.maps.android:maps-compose:2.14.0'
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
+
+    // accompanist
+    implementation 'com.google.accompanist:accompanist-systemuicontroller:0.30.1'
 }

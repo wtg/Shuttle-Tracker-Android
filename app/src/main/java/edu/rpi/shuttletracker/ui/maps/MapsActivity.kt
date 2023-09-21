@@ -44,8 +44,13 @@ import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -74,8 +79,9 @@ import edu.rpi.shuttletracker.ui.AboutActivity
 import edu.rpi.shuttletracker.ui.AnnouncementsActivity
 import edu.rpi.shuttletracker.ui.InfoActivity
 import edu.rpi.shuttletracker.ui.SettingsActivity
+import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.util.Logs
-import edu.rpi.shuttletracker.util.Wakelock
+import edu.rpi.shuttletracker.util.services.Wakelock
 import kotlinx.coroutines.Runnable
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -230,15 +236,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-     /*   setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background,
-            ) {
-                MapsScreen()
+        setContent {
+            ShuttleTrackerTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
+                ) {
+                    MapsScreen()
+                }
             }
         }
-        return*/
+        return
 
         setContentView(R.layout.activity_maps)
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
