@@ -1,13 +1,21 @@
 package edu.rpi.shuttletracker.data.network
 
+import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
+import org.json.JSONObject
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
+import retrofit2.http.Path
 
 interface ApiService {
-    @GET("/buses")
+    @GET("buses")
     suspend fun getBuses(): List<Bus>
 
-    @GET("/stops")
+    @GET("stops")
     suspend fun getStops(): List<Stop>
+
+    @PATCH("buses/{busNum}")
+    suspend fun addBus(@Path("busNum") busNum: Int, @Body bus: BoardBus)
 }

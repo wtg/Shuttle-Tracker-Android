@@ -12,8 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
-import edu.rpi.shuttletracker.util.Logs
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.ui.maps.MapsActivity
+import edu.rpi.shuttletracker.util.Logs
 import java.net.URL
 
 public class SettingsActivity : AppCompatActivity() {

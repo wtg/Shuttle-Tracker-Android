@@ -19,7 +19,7 @@ import javax.inject.Singleton
 object ShuttleTrackerModule {
 
     @Provides
-    fun provideBaseUrl() = "https://staging.shuttletracker.app"
+    fun provideBaseUrl() = "https://staging.shuttletracker.app/"
 
     @Singleton
     @Provides

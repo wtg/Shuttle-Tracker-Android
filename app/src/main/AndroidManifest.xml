@@ -51,7 +51,7 @@
         <service android:name=".util.Wakelock"
             android:foregroundServiceType="location"/>
         <activity
-            android:name=".ui.MapsActivity"
+            android:name=".ui.maps.MapsActivity"
             android:label="@string/title_activity_maps"
             android:exported="true">
             <intent-filter>

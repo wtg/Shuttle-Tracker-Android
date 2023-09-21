@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.data.repositories
 
+import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.network.ApiHelperImpl
 import javax.inject.Inject
 
@@ -9,4 +10,6 @@ class ShuttleTrackerRepository @Inject constructor(
     suspend fun getBuses() = apiHelper.getBuses()
 
     suspend fun getStops() = apiHelper.getStops()
+
+    suspend fun addBus(busNum: Int, bus: BoardBus) = apiHelper.addBus(busNum, bus)
 }

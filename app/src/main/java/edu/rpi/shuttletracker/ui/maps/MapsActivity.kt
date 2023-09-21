@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui
+package edu.rpi.shuttletracker.ui.maps
 
 /*
 import kotlinx.android.synthetic.main.activity_maps.fabBGLayout
@@ -37,7 +37,6 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -60,11 +59,9 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -72,9 +69,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Data
-import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.ui.AboutActivity
+import edu.rpi.shuttletracker.ui.AnnouncementsActivity
+import edu.rpi.shuttletracker.ui.InfoActivity
+import edu.rpi.shuttletracker.ui.SettingsActivity
 import edu.rpi.shuttletracker.util.Logs
 import edu.rpi.shuttletracker.util.Wakelock
 import kotlinx.coroutines.Runnable
@@ -93,7 +92,6 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Locale
@@ -108,7 +106,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val mapsViewModel: MapsViewModel by viewModels()
 
-    private var busMarkerArray: ArrayList<Marker> = ArrayList()
+    // private var busMarkerArray: ArrayList<Marker> = ArrayList()
     private var busesDrawn: Boolean = false
     private var routeDrawn: Boolean = false
     private var alertPrompted: Boolean = false
@@ -125,8 +123,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         OkHttpClient.Builder().build()
     }
 
-    private var stopArray = ArrayList<Stop>()
-    private val busArray = ArrayList<Bus>()
+//    private var stopArray = ArrayList<Stop>()
+//    private val busArray = ArrayList<Bus>()
 
     // All data used in a data package which will be sent to server
     private var onBus: Boolean =
@@ -232,6 +230,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+     /*   setContent {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background,
+            ) {
+                MapsScreen()
+            }
+        }
+        return*/
 
         setContentView(R.layout.activity_maps)
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
@@ -541,10 +548,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     private fun isNearStop(): Boolean {
         // updateCurrentLocation()
-        for (stop in stopArray) {
+        mapsViewModel.mapsUIState.value.stops.forEach {
             val stopLocation = Location("stop location")
-            stopLocation.latitude = stop.latitude
-            stopLocation.longitude = stop.longitude
+            stopLocation.latitude = it.latitude
+            stopLocation.longitude = it.longitude
             println("current location: $currentLocation") // // TODO: remove/comment this testing clause
             println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
             if (currentLocation?.distanceTo(stopLocation)!! <= 50) {
@@ -555,20 +562,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 return true
             }
         }
+
         return false
     }
 
     private fun getNearestBus(): Pair<String, Float> {
         var closestBusID = "null"
         var closestDistance = 99999.9f
-        for (bus in busArray) {
+        mapsViewModel.mapsUIState.value.buses.forEach {
             val busLocation = Location("bus location")
-            busLocation.latitude = bus.latitude
-            busLocation.longitude = bus.longitude
+            busLocation.latitude = it.latitude
+            busLocation.longitude = it.longitude
             val distanceToBus = currentLocation?.distanceTo(busLocation)!!
 
             if (distanceToBus < closestDistance) {
-                closestBusID = bus.id.toString()
+                closestBusID = it.id.toString()
                 closestDistance = distanceToBus
             }
         }
@@ -608,12 +616,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             getCurrentFormattedDate(),
                         )
                         println("parsed JSONObject: $boardBusJSONObject") // TODO: remove/comment this testing clause
-                        val sharedPreferences: SharedPreferences =
-                            getSharedPreferences("preferences", Context.MODE_PRIVATE)
-                        val server_url = sharedPreferences.getString(
-                            "server_base_url",
-                            resources.getString(R.string.default_server_url),
-                        )
+                        val server_url = "https://staging.shuttletracker.app"
                         val boardBusUrl =
                             URL(server_url + resources.getString(R.string.buses_url) + "/$selectedBusNumber")
                         println("Target URL: $boardBusUrl") // TODO: remove/comment this testing clause
@@ -637,7 +640,59 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             object {}.javaClass.enclosingMethod.name,
                             "sendOnBusData Response: $response",
                         )
+                        /*if (currentLocation != null) {
+                            val boardBusJSONObject = parseDataToJSONObject(
+                                session_uuid,
+                                currentLocation?.latitude?.toFloat(),
+                                currentLocation?.longitude?.toFloat(),
+                                type,
+                                getCurrentFormattedDate(),
+                            )
+                            Log.d("FATAL", "sendOnBusData: $boardBusJSONObject")
+                            val gson = GsonBuilder()
+                                .registerTypeAdapterFactory(FlattenTypeAdapterFactory())
+                                .create()
 
+                            Log.d(
+                                "FATAL",
+                                "sendOnBusData2: ${gson.toJson(
+                                    BoardBus(
+                                        session_uuid,
+                                        currentLocation!!.latitude.toFloat(),
+                                        currentLocation!!.longitude.toFloat(),
+                                        type,
+                                        getCurrentFormattedDate(),
+                                    ),
+                                )}",
+                            )
+
+                            val sharedPreferences: SharedPreferences =
+                                getSharedPreferences("preferences", Context.MODE_PRIVATE)
+                            val server_url = sharedPreferences.getString(
+                                "server_base_url",
+                                resources.getString(R.string.default_server_url),
+                            )
+                            val boardBusUrl =
+                                URL(server_url + resources.getString(R.string.buses_url) + "/$selectedBusNumber")
+
+                            val request = Request.Builder()
+                                .url(boardBusUrl)
+                                .patch(
+                                    boardBusJSONObject.toString().toRequestBody(mediaType),
+                                )
+                                .build()
+                            httpClient.newCall(request).execute()*/
+                        /*    mapsViewModel.addBus(
+                                selectedBusNumber!!.toInt(),
+                                BoardBus(
+                                    session_uuid,
+                                    currentLocation!!.latitude.toFloat(),
+                                    currentLocation!!.longitude.toFloat(),
+                                    type,
+                                    getCurrentFormattedDate(),
+                                ),
+                            )
+                        }*/
                         // wait for 5 seconds
                         Thread.sleep(5000L)
                     }
@@ -805,14 +860,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             res.getString(R.string.default_server_url),
         )
         if (internet_connection()) {
-            busMarkerArray = if (!busesDrawn) {
-                drawBuses(server_url + res.getString(R.string.buses_url))
-            } else {
-                updateBuses(server_url + res.getString(R.string.buses_url), busMarkerArray)
+            if (this::mMap.isInitialized) {
+                mapsViewModel.loadBuses(mMap, application)
             }
         }
 
-        if (this::mMap.isInitialized && !mMap.isMyLocationEnabled() &&
+        if (this::mMap.isInitialized && !mMap.isMyLocationEnabled &&
             (
                 ActivityCompat.checkSelfPermission(
                     this,
@@ -830,7 +883,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    fun drawStops(url: String): ArrayList<Stop> {
+  /*  fun drawStops(url: String): ArrayList<Stop> {
         val stopArray = ArrayList<Stop>()
         val thread = Thread(
             Runnable {
@@ -869,7 +922,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         )
         thread.start()
         return stopArray
-    }
+    }*/
 
     fun drawRoutes(url: String) {
         val thread2 = Thread(
@@ -943,7 +996,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         routeDrawn = true
     }
 
-    // @RequiresApi(Build.VERSION_CODES.O)
+    /*// @RequiresApi(Build.VERSION_CODES.O)
     fun drawBuses(url: String): ArrayList<Marker> {
         // val busArray = ArrayList<Bus>()
         var markerArray = ArrayList<Marker>()
@@ -1028,9 +1081,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         thread.start()
         busesDrawn = true
         return markerArray
-    }
+    }*/
 
-    // @RequiresApi(Build.VERSION_CODES.O)
+  /*  // @RequiresApi(Build.VERSION_CODES.O)
     fun updateBuses(url: String, markerArray: ArrayList<Marker>): ArrayList<Marker> {
         if (markerArray.size == 0 && !busesDrawn) {
             Logs.writeToLogBuffer(object {}.javaClass.enclosingMethod.name, "markerArray size is 0")
@@ -1159,7 +1212,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         )
         thread.start()
         return markerArray
-    }
+    }*/
 
     fun updateApp() {
         Logs.writeToLogBuffer(object {}.javaClass.enclosingMethod.name, "called updateApp")
@@ -1390,8 +1443,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
         if (internet_connection() && APImatch) { // TODO:make sure the stops and routes are only draw once
+            mapsViewModel.loadStops(mMap)
 
-            stopArray = drawStops(server_url + res.getString(R.string.stops_url))
+//            stopArray = drawStops(server_url + res.getString(R.string.stops_url))
             Logs.writeToLogBuffer(object {}.javaClass.enclosingMethod.name, "retrieved stop array")
 
             drawRoutes(server_url + res.getString(R.string.routes_url))
@@ -1402,7 +1456,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if (APImatch) {
             if (!busesDrawn) { // TODO: bandage for now
-                busMarkerArray = drawBuses(server_url + res.getString(R.string.buses_url))
+                mapsViewModel.loadBuses(mMap, application)
                 Logs.writeToLogBuffer(
                     object {}.javaClass.enclosingMethod.name,
                     "retrieved bus marker array",
@@ -1541,10 +1595,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         busTimer.scheduleAtFixedRate(0, 5000) {
             // if(APIMatch)
             if (internet_connection() && APImatch) { // make sure it would run only when connected to internet and after api check
-                busMarkerArray =
-                    updateBuses(server_url + res.getString(R.string.buses_url), busMarkerArray)
+                mapsViewModel.loadBuses(mMap, application)
                 if (!routeDrawn) {
-                    stopArray = drawStops(server_url + res.getString(R.string.stops_url))
+//                    stopArray = drawStops(server_url + res.getString(R.string.stops_url))
                     drawRoutes(server_url + res.getString(R.string.routes_url))
                 }
             }
@@ -1553,9 +1606,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         markerTimer.scheduleAtFixedRate(0, 1000) {
             println("Current location is ")
             println(currentLocation)
-            if (busesDrawn) {
-                runOnUiThread { updateMarker(busMarkerArray) }
-            }
+            mapsViewModel.loadBuses(mMap, application)
+
             if (!internet_connection() && onBus) {
                 setOnBusStatus(false) // this variable controls when the data-transmitting thread ends
                 runOnUiThread() {
@@ -1575,21 +1627,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     promptDownload()
                 }
                 if (!routeDrawn) {
-                    stopArray = drawStops(server_url + res.getString(R.string.stops_url))
+//                    stopArray = drawStops(server_url + res.getString(R.string.stops_url))
                     drawRoutes(server_url + res.getString(R.string.routes_url))
                 }
                 btn_refresh.startAnimation(rotate)
                 Toast.makeText(applicationContext, "Refreshed!", Toast.LENGTH_SHORT).show()
-                busMarkerArray =
-                    updateBuses(server_url + res.getString(R.string.buses_url), busMarkerArray)
+                mapsViewModel.loadBuses(mMap, application)
             } else {
                 offline_check()
             }
-
-            mapsViewModel.loadBuses()
-            Log.d("TEST", "onCreate: ${mapsViewModel.mapsUIState.value.buses}")
-            mapsViewModel.loadStops()
-            Log.d("TEST", "onCreate: ${mapsViewModel.mapsUIState.value.stops}")
         }
     }
 
