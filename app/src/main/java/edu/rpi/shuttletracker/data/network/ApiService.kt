@@ -11,7 +11,7 @@ import retrofit2.http.Path
 
 interface ApiService {
     @GET("buses")
-    suspend fun getBuses(): List<Bus>
+    suspend fun getRunningBuses(): List<Bus>
 
     @GET("stops")
     suspend fun getStops(): List<Stop>
@@ -21,4 +21,7 @@ interface ApiService {
 
     @PATCH("buses/{busNum}")
     suspend fun addBus(@Path("busNum") busNum: Int, @Body bus: BoardBus)
+
+    @GET("buses/all")
+    suspend fun getAllBuses(): List<Int>
 }

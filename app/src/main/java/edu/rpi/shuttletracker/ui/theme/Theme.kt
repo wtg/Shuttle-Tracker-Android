@@ -35,12 +35,13 @@ fun ShuttleTrackerTheme(
 
     // Transparent system bars
     val systemUiController = rememberSystemUiController()
-    val useDarkIcons = !darkTheme
     SideEffect {
         systemUiController.setSystemBarsColor(
             color = Color.Transparent,
-            darkIcons = useDarkIcons,
+            darkIcons = darkTheme,
         )
+
+        systemUiController.setNavigationBarColor(Color.Transparent)
     }
 
     MaterialTheme(
