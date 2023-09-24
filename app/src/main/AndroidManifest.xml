@@ -8,7 +8,6 @@
          location permissions for the "MyLocation" functionality.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -30,7 +29,8 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.ShuttleTracker">
+            android:theme="@style/Theme.ShuttleTracker"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -48,6 +48,9 @@
 <!--            <meta-data android:name="longScanForcingEnabled" android:value="true"/>-->
 <!--        </service>-->
         <service android:name=".util.services.LocationService"
+            android:foregroundServiceType="location" />
+
+        <service android:name=".util.services.BeaconService"
             android:foregroundServiceType="location" />
 
         <receiver

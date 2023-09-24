@@ -29,7 +29,6 @@ class PermissionUtils {
     companion object {
         val LOCATION = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
         )
 
         @RequiresApi(Build.VERSION_CODES.S)
@@ -43,7 +42,9 @@ class PermissionUtils {
     }
 }
 
-// Checks all of the permissions necessary for the app to run
+/**
+ * Checks all of the permissions necessary for the app to run
+ * */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable

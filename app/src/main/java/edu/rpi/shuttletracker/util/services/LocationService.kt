@@ -9,7 +9,6 @@ import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Looper
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -21,6 +20,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
 import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
 import edu.rpi.shuttletracker.util.notifications.Notifications
@@ -60,6 +60,8 @@ class LocationService : Service() {
     }
 
     override fun onCreate() {
+        super.onCreate()
+
         // gets location changes of 2 meters ever 5 secs
         request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
@@ -72,7 +74,7 @@ class LocationService : Service() {
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         startForeground(
-            Notifications.ID_TRACKING_PROGRESS,
+            Notifications.ID_TRACKING_BUS,
             notify(),
         )
     }
@@ -88,9 +90,6 @@ class LocationService : Service() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION,
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // no location permissions
@@ -98,7 +97,7 @@ class LocationService : Service() {
         }
 
         with(NotificationManagerCompat.from(this)) {
-            notify(Notifications.ID_TRACKING_PROGRESS, notify(busNum))
+            notify(Notifications.ID_TRACKING_BUS, notify(busNum))
 
             notify(busNum)
         }
@@ -134,22 +133,24 @@ class LocationService : Service() {
         locationClient.removeLocationUpdates(locationCallback)
     }
 
+    /**
+     * Sends updated bus location to server
+     * */
     private suspend fun updateLocation(busNum: Int, location: Location, uuid: String) {
-        Log.d("PIEEE", "updateLocation: LOCATION CHANGED")
-        // apiRepository.addBus(
-        //    busNum,
-        //    BoardBus(
-        //        uuid,
-        //        location.latitude,
-        //        location.longitude,
-        //        "User",
-        //    ),
-        // )
+        apiRepository.addBus(
+            busNum,
+            BoardBus(
+                uuid,
+                location.latitude,
+                location.longitude,
+                "user",
+            ),
+        )
     }
 
     private fun notify() = NotificationCompat.Builder(
         this,
-        Notifications.CHANNEL_TRACKER,
+        Notifications.CHANNEL_TRACKING_BUS,
     ).setContentTitle("Launching Location Service")
         .setSmallIcon(R.mipmap.ic_launcher)
         .build()
@@ -157,7 +158,7 @@ class LocationService : Service() {
     private fun notify(busNum: Int): Notification {
         return NotificationCompat.Builder(
             this,
-            Notifications.CHANNEL_TRACKER,
+            Notifications.CHANNEL_TRACKING_BUS,
         ).setContentTitle("Tracking bus $busNum")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentText("IM TRYING")
@@ -166,6 +167,7 @@ class LocationService : Service() {
                 "Stop Tracking",
                 NotificationReceiver.stopLocationService(this),
             )
+            .setContentIntent(NotificationReceiver.openMaps(this))
             .build()
     }
 }

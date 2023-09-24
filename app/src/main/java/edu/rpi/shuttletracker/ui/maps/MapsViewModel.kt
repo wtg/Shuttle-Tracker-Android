@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -74,6 +73,4 @@ data class MapsUIState(
     val allBuses: List<Int> = listOf(),
     val stops: List<Stop> = listOf(),
     val routes: List<Route> = listOf(),
-    val isBoarded: Boolean = false,
-    val uuid: String = UUID.randomUUID().toString(),
 )

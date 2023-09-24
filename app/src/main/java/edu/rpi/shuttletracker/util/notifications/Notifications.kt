@@ -5,37 +5,46 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationChannelGroupCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_DEFAULT
+import androidx.core.app.NotificationManagerCompat.IMPORTANCE_LOW
 
 object Notifications {
 
-    const val CHANNEL_TRACKER = "tracker_channel"
-    const val ID_TRACKING_PROGRESS = 1
+    private const val GROUP_TRACKER = "group_tracker"
+    const val CHANNEL_TRACKING_BUS = "tracking_bus_channel"
+    const val ID_TRACKING_BUS = 1
+    const val CHANNEL_AUTO_BOARD = "auto_board_channel"
+    const val ID_AUTO_BOARD = 2
+    const val CHANNEL_DEBUG = "debug_channel"
+    const val ID_DEBUG = 3
 
     fun createChannels(context: Context) {
         val notificationManager = NotificationManagerCompat.from(context)
 
         notificationManager.createNotificationChannelGroupsCompat(
             listOf(
-                buildNotificationChannelGroup(CHANNEL_TRACKER, "Bus Tracker"),
+                buildNotificationChannelGroup(GROUP_TRACKER, "Bus Tracker"),
             ),
         )
 
         notificationManager.createNotificationChannelsCompat(
             listOf(
-                buildNotificationChannel(CHANNEL_TRACKER, IMPORTANCE_DEFAULT, "Bus Tracker"),
+                buildNotificationChannel(GROUP_TRACKER, CHANNEL_TRACKING_BUS, IMPORTANCE_DEFAULT, "Bus Tracker"),
+                buildNotificationChannel(GROUP_TRACKER, CHANNEL_AUTO_BOARD, IMPORTANCE_LOW, "Bus auto boarder"),
+                buildNotificationChannel(GROUP_TRACKER, CHANNEL_DEBUG, IMPORTANCE_DEFAULT, "debug"),
             ),
         )
     }
 
-    private fun buildNotificationChannelGroup(channelId: String, name: String) =
+    private fun buildNotificationChannelGroup(groupId: String, name: String) =
         NotificationChannelGroupCompat
-            .Builder(channelId)
+            .Builder(groupId)
             .setName(name)
             .build()
 
-    private fun buildNotificationChannel(channelId: String, importance: Int, name: String) =
+    private fun buildNotificationChannel(groupId: String, channelId: String, importance: Int, name: String) =
         NotificationChannelCompat
             .Builder(channelId, importance)
+            .setGroup(groupId)
             .setName(name)
             .build()
 }

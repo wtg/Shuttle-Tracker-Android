@@ -1,6 +1,6 @@
 package edu.rpi.shuttletracker
 
-import org.junit.Assert.*
+import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
 /**
@@ -16,7 +16,6 @@ class ExampleUnitTest {
 
     // @Test
     // fun test() {
-    //    val bus = Bus(42.728961696245655, -73.68700258379315, 502, "user", "2023-09-20T22:00:21Z")
-    //    println(bus.getTimeAgo())
+    //    println(Date())
     // }
 }

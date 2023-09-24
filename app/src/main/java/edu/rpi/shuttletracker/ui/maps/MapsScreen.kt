@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,16 +18,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.LocationDisabled
+import androidx.compose.material.icons.filled.ShareLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,6 +47,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
@@ -54,12 +57,13 @@ import com.google.maps.android.compose.rememberMarkerState
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.ui.permissions.BluetoothPermissionChecker
 import edu.rpi.shuttletracker.ui.permissions.LocationPermissionsChecker
+import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapsScreen(
     viewModel: MapsViewModel = hiltViewModel(),
@@ -70,9 +74,15 @@ fun MapsScreen(
 
     LocationPermissionsChecker(onPermissionGranted = { mapLocationEnabled = true })
 
+    val context = LocalContext.current
+
     Scaffold(
-        floatingActionButton = { BoardBusFab(state.allBuses) },
-        floatingActionButtonPosition = FabPosition.Center,
+        floatingActionButton = {
+            Column(horizontalAlignment = Alignment.End) {
+                AutoBoardBusFab()
+                BoardBusFab(state.allBuses)
+            }
+        },
 
     ) {
         Box {
@@ -86,7 +96,15 @@ fun MapsScreen(
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
-                properties = MapProperties(isMyLocationEnabled = mapLocationEnabled),
+                properties = MapProperties(
+                    isMyLocationEnabled = mapLocationEnabled,
+                    mapStyleOptions = if (isSystemInDarkTheme()) {
+                        MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
+                    } else {
+                        MapStyleOptions("[]")
+                    },
+
+                ),
             ) {
                 state.stops.forEach {
                     StopMarker(stop = it)
@@ -116,12 +134,16 @@ fun MapsScreen(
  * */
 @Composable
 fun StopMarker(stop: Stop) {
-    val markerState = rememberMarkerState(null, stop.latLng())
+    val markerState = rememberMarkerState(stop.name, stop.latLng())
     val icon = BitmapDescriptorFactory.fromAsset("simplecircle.png")
     Marker(
         state = markerState,
         title = stop.name,
         icon = icon,
+        onClick = {
+            it.showInfoWindow()
+            true
+        },
     )
 }
 
@@ -130,7 +152,7 @@ fun StopMarker(stop: Stop) {
  * */
 @Composable
 fun BusMarker(bus: Bus) {
-    val markerState = rememberMarkerState(null, bus.latLng())
+    val markerState = rememberMarkerState(bus.id.toString(), bus.latLng())
 
     val context = LocalContext.current
 
@@ -148,6 +170,10 @@ fun BusMarker(bus: Bus) {
         title = "Bus ${bus.id}",
         icon = icon,
         snippet = bus.getTimeAgo(),
+        onClick = {
+            it.showInfoWindow()
+            true
+        },
     )
 }
 
@@ -156,7 +182,9 @@ fun BusMarker(bus: Bus) {
  * */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun BoardBusFab(buses: List<Int>) {
+fun BoardBusFab(
+    buses: List<Int>,
+) {
     val isLocationServiceRunning = LocationService.isRunning.collectAsState().value
     val context = LocalContext.current
 
@@ -195,9 +223,66 @@ fun BoardBusFab(buses: List<Int>) {
                 checkLocationPermissionsState = true
             }
         },
-        icon = { Icon(Icons.Default.ShoppingCart, "Board Bus") },
+        icon = { Icon(Icons.Default.DirectionsBus, "Board Bus") },
         text = { Text(text = if (isLocationServiceRunning) "Leave Bus" else "Board Bus") },
     )
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@Composable
+fun AutoBoardBusFab() {
+    val context = LocalContext.current
+
+    val isBeaconServiceRunning = BeaconService.isRunning.collectAsState().value
+
+    var checkLocationPermissionsState by remember { mutableStateOf(false) }
+    var checkBluetoothPermissionsState by remember { mutableStateOf(false) }
+
+    // checks for location permissions first, if they have check for bluetooth
+    if (checkLocationPermissionsState) {
+        LocationPermissionsChecker(
+            onPermissionGranted = {
+                checkBluetoothPermissionsState = true
+                checkLocationPermissionsState = false
+            },
+            onPermissionDenied = { checkLocationPermissionsState = false },
+        )
+    }
+
+    // if there is bluetooth permissions then start the peacon service
+    if (checkBluetoothPermissionsState) {
+        BluetoothPermissionChecker(
+            onPermissionGranted = {
+                context.startService(Intent(context, BeaconService::class.java))
+                checkBluetoothPermissionsState = false
+            },
+            onPermissionDenied = { checkBluetoothPermissionsState = false },
+        )
+    }
+
+    SmallFloatingActionButton(
+        onClick = {
+            if (!isBeaconServiceRunning) {
+                checkLocationPermissionsState = true
+            } else {
+                context.stopService(Intent(context, BeaconService::class.java))
+            }
+        },
+        containerColor = if (isBeaconServiceRunning) {
+            MaterialTheme.colorScheme.tertiaryContainer
+        } else {
+            MaterialTheme.colorScheme.errorContainer
+        },
+    ) {
+        Icon(
+            if (isBeaconServiceRunning) {
+                Icons.Default.ShareLocation
+            } else {
+                Icons.Default.LocationDisabled
+            },
+            "Location",
+        )
+    }
 }
 
 /**
@@ -218,7 +303,10 @@ fun BusPicker(
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Column(modifier = Modifier.padding(10.dp)) {
+            Column(
+                modifier = Modifier.padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 Text(
                     text = "Choose a Bus",
                     style = MaterialTheme.typography.headlineLarge,
@@ -229,9 +317,12 @@ fun BusPicker(
                         .fillMaxWidth()
                         .height(500.dp)
                         .padding(10.dp),
+
                 ) {
                     items(items = buses, itemContent = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             RadioButton(
                                 selected = selectedBus == it,
                                 onClick = { selectedBus = it },
