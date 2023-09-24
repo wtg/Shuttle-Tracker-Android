@@ -1,18 +1,20 @@
 package edu.rpi.shuttletracker.data.network
 
+import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
+import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 
 interface ApiHelper {
-    suspend fun getRunningBuses(): List<Bus>
+    suspend fun getRunningBuses(): NetworkResponse<List<Bus>, ErrorResponse>
 
-    suspend fun getStops(): List<Stop>
+    suspend fun getStops(): NetworkResponse<List<Stop>, ErrorResponse>
 
-    suspend fun getRoutes(): List<Route>
+    suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse>
 
-    suspend fun addBus(busNum: Int, bus: BoardBus)
+    suspend fun addBus(busNum: Int, bus: BoardBus): NetworkResponse<Bus, ErrorResponse>
 
-    suspend fun getAllBuses(): List<Int>
+    suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse>
 }

@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.ui.maps
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.widget.Toast
@@ -50,6 +49,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -57,13 +57,15 @@ import com.google.maps.android.compose.rememberMarkerState
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.ui.errors.NetworkError
+import edu.rpi.shuttletracker.ui.errors.ServerError
+import edu.rpi.shuttletracker.ui.errors.UnknownError
 import edu.rpi.shuttletracker.ui.permissions.BluetoothPermissionChecker
 import edu.rpi.shuttletracker.ui.permissions.LocationPermissionsChecker
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MapsScreen(
     viewModel: MapsViewModel = hiltViewModel(),
@@ -76,6 +78,39 @@ fun MapsScreen(
 
     val context = LocalContext.current
 
+    if (state.networkError != null) {
+        NetworkError(
+            error = state.networkError,
+            onDismissRequest = { viewModel.clearErrors() },
+            onSuccessRequest = {
+                viewModel.loadAll()
+                viewModel.clearErrors()
+            },
+        )
+    }
+
+    if (state.serverError != null) {
+        ServerError(
+            error = state.serverError,
+            onDismissRequest = { viewModel.clearErrors() },
+            onSuccessRequest = {
+                viewModel.loadAll()
+                viewModel.clearErrors()
+            },
+        )
+    }
+
+    if (state.unknownError != null) {
+        UnknownError(
+            error = state.unknownError,
+            onDismissRequest = { viewModel.clearErrors() },
+            onSuccessRequest = {
+                viewModel.loadAll()
+                viewModel.clearErrors()
+            },
+        )
+    }
+
     Scaffold(
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
@@ -84,7 +119,7 @@ fun MapsScreen(
             }
         },
 
-    ) {
+    ) { scaffoldPadding ->
         Box {
             val cameraPositionState = rememberCameraPositionState {
                 position = CameraPosition.fromLatLngZoom(
@@ -95,7 +130,12 @@ fun MapsScreen(
 
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
+
+                // makes sure the items drawn (current location and compas) are clickable
+                contentPadding = scaffoldPadding,
                 cameraPositionState = cameraPositionState,
+
+                // auto dark theme
                 properties = MapProperties(
                     isMyLocationEnabled = mapLocationEnabled,
                     mapStyleOptions = if (isSystemInDarkTheme()) {
@@ -103,7 +143,11 @@ fun MapsScreen(
                     } else {
                         MapStyleOptions("[]")
                     },
+                ),
 
+                // removes the zoom control which was covered by the FAB
+                uiSettings = MapUiSettings(
+                    zoomControlsEnabled = false,
                 ),
             ) {
                 state.stops.forEach {
@@ -199,7 +243,7 @@ fun BoardBusFab(
                 val intent = Intent(context, LocationService::class.java).apply {
                     putExtra(LocationService.BUNDLE_BUS_ID, it)
                 }
-                context.startService(intent)
+                context.startForegroundService(intent)
             },
             onDismiss = { busPickerState = false },
         )
@@ -249,11 +293,11 @@ fun AutoBoardBusFab() {
         )
     }
 
-    // if there is bluetooth permissions then start the peacon service
+    // if there is bluetooth permissions then start the beacon service
     if (checkBluetoothPermissionsState) {
         BluetoothPermissionChecker(
             onPermissionGranted = {
-                context.startService(Intent(context, BeaconService::class.java))
+                context.startForegroundService(Intent(context, BeaconService::class.java))
                 checkBluetoothPermissionsState = false
             },
             onPermissionDenied = { checkBluetoothPermissionsState = false },

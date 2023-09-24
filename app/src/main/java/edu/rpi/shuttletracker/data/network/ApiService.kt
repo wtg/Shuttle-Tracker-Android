@@ -1,7 +1,9 @@
 package edu.rpi.shuttletracker.data.network
 
+import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
+import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import retrofit2.http.Body
@@ -11,17 +13,17 @@ import retrofit2.http.Path
 
 interface ApiService {
     @GET("buses")
-    suspend fun getRunningBuses(): List<Bus>
+    suspend fun getRunningBuses(): NetworkResponse<List<Bus>, ErrorResponse>
 
     @GET("stops")
-    suspend fun getStops(): List<Stop>
+    suspend fun getStops(): NetworkResponse<List<Stop>, ErrorResponse>
 
     @GET("routes")
-    suspend fun getRoutes(): List<Route>
+    suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse>
 
     @PATCH("buses/{busNum}")
-    suspend fun addBus(@Path("busNum") busNum: Int, @Body bus: BoardBus)
+    suspend fun addBus(@Path("busNum") busNum: Int, @Body bus: BoardBus): NetworkResponse<Bus, ErrorResponse>
 
     @GET("buses/all")
-    suspend fun getAllBuses(): List<Int>
+    suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse>
 }

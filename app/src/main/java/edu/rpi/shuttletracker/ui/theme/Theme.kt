@@ -38,7 +38,7 @@ fun ShuttleTrackerTheme(
     SideEffect {
         systemUiController.setSystemBarsColor(
             color = Color.Transparent,
-            darkIcons = darkTheme,
+            darkIcons = !darkTheme,
         )
 
         systemUiController.setNavigationBarColor(Color.Transparent)

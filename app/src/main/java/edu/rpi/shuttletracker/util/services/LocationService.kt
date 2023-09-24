@@ -73,10 +73,7 @@ class LocationService : Service() {
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        startForeground(
-            Notifications.ID_TRACKING_BUS,
-            notify(),
-        )
+        startForeground(Notifications.ID_TRACKING_BUS, notify())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

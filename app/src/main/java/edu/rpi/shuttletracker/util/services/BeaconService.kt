@@ -55,11 +55,11 @@ class BeaconService : Service() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION,
-            ) != PackageManager.PERMISSION_GRANTED &&
+            ) != PackageManager.PERMISSION_GRANTED ||
             ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.BLUETOOTH_SCAN,
-            ) != PackageManager.PERMISSION_GRANTED &&
+            ) != PackageManager.PERMISSION_GRANTED ||
             ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.BLUETOOTH_CONNECT,
@@ -68,13 +68,20 @@ class BeaconService : Service() {
             // no bluetooth & location permissions
             stopSelf()
         }
+
         beaconManager.beaconParsers.apply {
             clear()
             add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
         }
 
+        var prevClosest: Beacon? = null
         rangingObserver = Observer { beacons ->
-            if (beacons.isEmpty()) {
+
+            // gets the min distance beacon
+            val closest = beacons.minByOrNull { it.distance }
+
+            // no beacons nearby
+            if (closest == null) {
                 // TODO DELETE
                 (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
                     .notify(Notifications.ID_DEBUG, notifyDebug(beacons.size))
@@ -83,7 +90,8 @@ class BeaconService : Service() {
                 return@Observer
             }
 
-            val closest = beacons.minBy { it.distance }
+            // still on same bus
+            if (prevClosest == closest) return@Observer
 
             // TODO DELETE
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
@@ -94,6 +102,8 @@ class BeaconService : Service() {
             }
 
             // startService(serviceIntent)
+
+            prevClosest = closest
         }
 
         beaconManager.apply {

@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker
 
 import com.google.gson.GsonBuilder
+import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,6 +45,7 @@ object ShuttleTrackerModule {
 
         return Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create(gson))
+            .addCallAdapterFactory(NetworkResponseAdapterFactory())
             .baseUrl(baseUrl)
             .client(okHttpClient)
             .build()
