@@ -30,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -43,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -70,7 +72,7 @@ import edu.rpi.shuttletracker.util.services.LocationService
 fun MapsScreen(
     viewModel: MapsViewModel = hiltViewModel(),
 ) {
-    val state = viewModel.mapsUIState.collectAsState().value
+    val mapsUIState = viewModel.mapsUIState.collectAsStateWithLifecycle().value
 
     var mapLocationEnabled by remember { mutableStateOf(false) }
 
@@ -78,9 +80,9 @@ fun MapsScreen(
 
     val context = LocalContext.current
 
-    if (state.networkError != null) {
+    if (mapsUIState.networkError != null) {
         NetworkError(
-            error = state.networkError,
+            error = mapsUIState.networkError,
             onDismissRequest = { viewModel.clearErrors() },
             onSuccessRequest = {
                 viewModel.loadAll()
@@ -89,9 +91,9 @@ fun MapsScreen(
         )
     }
 
-    if (state.serverError != null) {
+    if (mapsUIState.serverError != null) {
         ServerError(
-            error = state.serverError,
+            error = mapsUIState.serverError,
             onDismissRequest = { viewModel.clearErrors() },
             onSuccessRequest = {
                 viewModel.loadAll()
@@ -100,9 +102,9 @@ fun MapsScreen(
         )
     }
 
-    if (state.unknownError != null) {
+    if (mapsUIState.unknownError != null) {
         UnknownError(
-            error = state.unknownError,
+            error = mapsUIState.unknownError,
             onDismissRequest = { viewModel.clearErrors() },
             onSuccessRequest = {
                 viewModel.loadAll()
@@ -115,7 +117,7 @@ fun MapsScreen(
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
                 AutoBoardBusFab()
-                BoardBusFab(state.allBuses)
+                BoardBusFab(mapsUIState.allBuses)
             }
         },
 
@@ -150,15 +152,15 @@ fun MapsScreen(
                     zoomControlsEnabled = false,
                 ),
             ) {
-                state.stops.forEach {
+                mapsUIState.stops.forEach {
                     StopMarker(stop = it)
                 }
 
-                state.runningBuses.forEach {
+                mapsUIState.runningBuses.forEach {
                     BusMarker(bus = it)
                 }
 
-                state.routes.forEach {
+                mapsUIState.routes.forEach {
                     Polyline(
                         points = it.latLng(),
                         color = Color(
@@ -196,7 +198,12 @@ fun StopMarker(stop: Stop) {
  * */
 @Composable
 fun BusMarker(bus: Bus) {
-    val markerState = rememberMarkerState(bus.id.toString(), bus.latLng())
+    val markerState = rememberMarkerState(position = bus.latLng())
+
+    // every time bus changes, update the position of the marker
+    LaunchedEffect(bus) {
+        markerState.position = bus.latLng()
+    }
 
     val context = LocalContext.current
 

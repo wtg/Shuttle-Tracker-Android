@@ -26,16 +26,10 @@ data class Bus(
     @Flatten("location::date")
     val date: String,
 
+    @Flatten("location::id")
+    val uuid: String,
+
 ) {
-
-    override fun equals(other: Any?): Boolean {
-        // compares busses only by id
-        if (other is Bus) {
-            return id == other.id
-        }
-
-        return super.equals(other)
-    }
     fun getTimeAgo(): String {
         // gets current time and rounds to nearest second
         val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)

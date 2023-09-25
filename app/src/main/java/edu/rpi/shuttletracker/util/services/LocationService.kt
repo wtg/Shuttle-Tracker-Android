@@ -50,8 +50,6 @@ class LocationService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private lateinit var uuid: String
-
     companion object {
         private val _isRunning = MutableStateFlow(false)
         val isRunning = _isRunning.asStateFlow()
@@ -81,7 +79,6 @@ class LocationService : Service() {
         val extras: Bundle = intent!!.extras!!
 
         val busNum = extras.getInt(BUNDLE_BUS_ID)
-        uuid = UUID.randomUUID().toString()
 
         // checks for location permissions
         if (ActivityCompat.checkSelfPermission(
@@ -107,7 +104,7 @@ class LocationService : Service() {
 
                 serviceScope.launch {
                     if (currentLocation != null) {
-                        updateLocation(busNum, currentLocation, uuid)
+                        updateLocation(busNum, currentLocation)
                     }
                 }
             }
@@ -133,11 +130,11 @@ class LocationService : Service() {
     /**
      * Sends updated bus location to server
      * */
-    private suspend fun updateLocation(busNum: Int, location: Location, uuid: String) {
+    private suspend fun updateLocation(busNum: Int, location: Location) {
         apiRepository.addBus(
             busNum,
             BoardBus(
-                uuid,
+                UUID.randomUUID().toString(),
                 location.latitude,
                 location.longitude,
                 "user",

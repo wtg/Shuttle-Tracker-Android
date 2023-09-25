@@ -10,7 +10,9 @@ import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,6 +26,7 @@ class MapsViewModel @Inject constructor(
 
     init {
         loadAll()
+        loadRunningBuses()
     }
 
     fun loadAll() {
@@ -38,8 +41,6 @@ class MapsViewModel @Inject constructor(
         if (mapsUIState.value.allBuses.isEmpty()) {
             loadAllBuses()
         }
-
-        loadRunningBuses()
     }
 
     fun clearErrors() {
@@ -53,13 +54,22 @@ class MapsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * This auto updates the map every 5 seconds when the view-model is still active
+     * TODO: Prevent flow from running when UI not in view (most likely by combining flows)
+     * */
     private fun loadRunningBuses() {
         viewModelScope.launch {
-            when (val response = apiRepository.getRunningBuses()) {
-                is NetworkResponse.Success -> updateRunningBuses(response.body)
-                is NetworkResponse.ServerError -> serverError(response)
-                is NetworkResponse.NetworkError -> networkError(response)
-                is NetworkResponse.UnknownError -> unknownError(response)
+            apiRepository.getRunningBuses().shareIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+            ).collect { response ->
+                when (response) {
+                    is NetworkResponse.Success -> updateRunningBuses(response.body)
+                    is NetworkResponse.ServerError -> serverError(response)
+                    is NetworkResponse.NetworkError -> networkError(response)
+                    is NetworkResponse.UnknownError -> unknownError(response)
+                }
             }
         }
     }

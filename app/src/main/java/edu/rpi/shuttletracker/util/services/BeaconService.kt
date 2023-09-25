@@ -82,10 +82,6 @@ class BeaconService : Service() {
 
             // no beacons nearby
             if (closest == null) {
-                // TODO DELETE
-                (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
-                    .notify(Notifications.ID_DEBUG, notifyDebug(beacons.size))
-
                 stopService(Intent(this, LocationService::class.java))
                 return@Observer
             }
