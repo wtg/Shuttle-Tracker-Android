@@ -71,7 +71,7 @@ class LocationService : Service() {
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        startForeground(Notifications.ID_TRACKING_BUS, notify())
+        startForeground(Notifications.ID_TRACKING_BUS, notifyLaunch())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -142,11 +142,12 @@ class LocationService : Service() {
         )
     }
 
-    private fun notify() = NotificationCompat.Builder(
+    private fun notifyLaunch() = NotificationCompat.Builder(
         this,
         Notifications.CHANNEL_TRACKING_BUS,
-    ).setContentTitle("Launching Location Service")
-        .setSmallIcon(R.mipmap.ic_launcher)
+    ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+        .setContentTitle("Launching Location Service")
+        .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
         .build()
 
     private fun notify(busNum: Int): Notification {
@@ -154,7 +155,7 @@ class LocationService : Service() {
             this,
             Notifications.CHANNEL_TRACKING_BUS,
         ).setContentTitle("Tracking bus $busNum")
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
             .setContentText("IM TRYING")
             .addAction(
                 R.drawable.baseline_location_off_24,

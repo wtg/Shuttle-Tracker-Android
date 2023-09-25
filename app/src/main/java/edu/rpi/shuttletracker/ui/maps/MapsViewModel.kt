@@ -10,8 +10,10 @@ import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -21,14 +23,24 @@ import javax.inject.Inject
 class MapsViewModel @Inject constructor(
     private val apiRepository: ShuttleTrackerRepository,
 ) : ViewModel() {
+
+    // represents the ui state of the view
     private val _mapsUiState = MutableStateFlow(MapsUIState())
     val mapsUIState: StateFlow<MapsUIState> = _mapsUiState
+
+    // shared flow of the running busses, this is to be subscribed to in UI
+    lateinit var runningBusesState: SharedFlow<Unit>
+        private set
 
     init {
         loadAll()
         loadRunningBuses()
     }
 
+    /**
+     * loads any vars in ui state that hasn't been loaded
+     * THIS IGNORES THE RUNNING BUSES AS THIS SHOULD BE SUBSCRIBED TO FROM UI
+     * */
     fun loadAll() {
         if (mapsUIState.value.stops.isEmpty()) {
             loadStops()
@@ -43,6 +55,9 @@ class MapsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * sets all the errors to none
+     * */
     fun clearErrors() {
         loadAll()
         _mapsUiState.update {
@@ -55,100 +70,85 @@ class MapsViewModel @Inject constructor(
     }
 
     /**
-     * This auto updates the map every 5 seconds when the view-model is still active
-     * TODO: Prevent flow from running when UI not in view (most likely by combining flows)
+     * Creates a shared flow to update the ui state when subscribed
+     * THIS MUST BE SUBSCRIBED TO IN UI
      * */
     private fun loadRunningBuses() {
         viewModelScope.launch {
-            apiRepository.getRunningBuses().shareIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
-            ).collect { response ->
-                when (response) {
-                    is NetworkResponse.Success -> updateRunningBuses(response.body)
-                    is NetworkResponse.ServerError -> serverError(response)
-                    is NetworkResponse.NetworkError -> networkError(response)
-                    is NetworkResponse.UnknownError -> unknownError(response)
+            runningBusesState = apiRepository.getRunningBuses()
+                .map { response ->
+                    readApiResponse(response) { buses ->
+                        _mapsUiState.update {
+                            it.copy(runningBuses = buses)
+                        }
+                    }
+                }
+                .shareIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5000),
+                    1,
+                )
+        }
+    }
+
+    /**
+     * Loads all possible buses and maps the API response
+     * */
+    private fun loadAllBuses() {
+        viewModelScope.launch {
+            readApiResponse(apiRepository.getAllBuses()) { buses ->
+                _mapsUiState.update {
+                    it.copy(allBuses = buses)
                 }
             }
         }
     }
 
-    private fun loadAllBuses() {
-        viewModelScope.launch {
-            when (val response = apiRepository.getAllBuses()) {
-                is NetworkResponse.Success -> updateAllBuses(response.body)
-                is NetworkResponse.ServerError -> serverError(response)
-                is NetworkResponse.NetworkError -> networkError(response)
-                is NetworkResponse.UnknownError -> unknownError(response)
-            }
-        }
-    }
-
+    /**
+     * Loads all possible stops and maps the API response
+     * */
     private fun loadStops() {
         viewModelScope.launch {
-            when (val response = apiRepository.getStops()) {
-                is NetworkResponse.Success -> updateStops(response.body)
-                is NetworkResponse.ServerError -> serverError(response)
-                is NetworkResponse.NetworkError -> networkError(response)
-                is NetworkResponse.UnknownError -> unknownError(response)
+            readApiResponse(apiRepository.getStops()) { stops ->
+                _mapsUiState.update {
+                    it.copy(stops = stops)
+                }
             }
         }
     }
 
+    /**
+     * Loads all possible routes and maps the API response
+     * */
     private fun loadRoutes() {
         viewModelScope.launch {
-            when (val response = apiRepository.getRoutes()) {
-                is NetworkResponse.Success -> updateRoutes(response.body)
-                is NetworkResponse.ServerError -> serverError(response)
-                is NetworkResponse.NetworkError -> networkError(response)
-                is NetworkResponse.UnknownError -> unknownError(response)
+            readApiResponse(apiRepository.getRoutes()) { routes ->
+                _mapsUiState.update {
+                    it.copy(routes = routes)
+                }
             }
         }
     }
 
-    private fun networkError(error: NetworkResponse.NetworkError<*, ErrorResponse>) {
-        _mapsUiState.update {
-            it.copy(networkError = error)
-        }
-    }
-
-    private fun serverError(error: NetworkResponse.ServerError<*, ErrorResponse>) {
-        _mapsUiState.update {
-            it.copy(serverError = error)
-        }
-    }
-    private fun unknownError(error: NetworkResponse.UnknownError<*, ErrorResponse>) {
-        _mapsUiState.update {
-            it.copy(unknownError = error)
-        }
-    }
-
-    private fun updateRunningBuses(buses: List<Bus>) {
-        _mapsUiState.update {
-            it.copy(runningBuses = buses)
-        }
-    }
-
-    private fun updateAllBuses(buses: List<Int>) {
-        _mapsUiState.update {
-            it.copy(allBuses = buses)
-        }
-    }
-
-    private fun updateStops(stops: List<Stop>) {
-        _mapsUiState.update {
-            it.copy(stops = stops)
-        }
-    }
-
-    private fun updateRoutes(routes: List<Route>) {
-        _mapsUiState.update {
-            it.copy(routes = routes)
+    /**
+     * Reads the network response and maps it to correct place
+     * */
+    private fun <T> readApiResponse(
+        response: NetworkResponse<T, ErrorResponse>,
+        success: (body: T) -> Unit,
+    ) {
+        when (response) {
+            is NetworkResponse.Success -> success(response.body)
+            is NetworkResponse.ServerError -> _mapsUiState.update { it.copy(serverError = response) }
+            is NetworkResponse.NetworkError -> _mapsUiState.update { it.copy(networkError = response) }
+            is NetworkResponse.UnknownError -> _mapsUiState.update { it.copy(unknownError = response) }
         }
     }
 }
 
+/**
+ * Representation of the screen
+ * */
 data class MapsUIState(
     val runningBuses: List<Bus> = listOf(),
     val allBuses: List<Int> = listOf(),

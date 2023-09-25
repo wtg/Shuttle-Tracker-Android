@@ -47,7 +47,7 @@ class BeaconService : Service() {
             null,
         )
 
-        startForeground(Notifications.ID_AUTO_BOARD, notify())
+        startForeground(Notifications.ID_AUTO_BOARD, notifyLaunch())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -133,11 +133,12 @@ class BeaconService : Service() {
         _isRunning.update { false }
     }
 
-    private fun notify() = NotificationCompat.Builder(
+    private fun notifyLaunch() = NotificationCompat.Builder(
         this,
         Notifications.CHANNEL_AUTO_BOARD,
-    ).setContentTitle("Auto-board service")
-        .setSmallIcon(R.mipmap.ic_launcher)
+    ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+        .setContentTitle("Auto-board service")
+        .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
         .build()
 
     private fun notifyDebug(buses: Int, distance: Double = -1.0, busNum: String = "") = NotificationCompat.Builder(
@@ -145,6 +146,6 @@ class BeaconService : Service() {
         Notifications.CHANNEL_DEBUG,
     ).setContentTitle("DEBUG INFO ${Date()}")
         .setContentText("$buses buses, distance: $distance, #$busNum")
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
         .build()
 }

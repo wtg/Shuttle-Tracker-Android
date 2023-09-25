@@ -6,8 +6,8 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -59,9 +60,7 @@ import com.google.maps.android.compose.rememberMarkerState
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.ui.errors.NetworkError
-import edu.rpi.shuttletracker.ui.errors.ServerError
-import edu.rpi.shuttletracker.ui.errors.UnknownError
+import edu.rpi.shuttletracker.ui.errors.CheckResponseError
 import edu.rpi.shuttletracker.ui.permissions.BluetoothPermissionChecker
 import edu.rpi.shuttletracker.ui.permissions.LocationPermissionsChecker
 import edu.rpi.shuttletracker.util.services.BeaconService
@@ -72,46 +71,20 @@ import edu.rpi.shuttletracker.util.services.LocationService
 fun MapsScreen(
     viewModel: MapsViewModel = hiltViewModel(),
 ) {
+    // makes sure the 2 flows are collected when ui is open
     val mapsUIState = viewModel.mapsUIState.collectAsStateWithLifecycle().value
+    viewModel.runningBusesState.collectAsStateWithLifecycle({})
 
-    var mapLocationEnabled by remember { mutableStateOf(false) }
-
-    LocationPermissionsChecker(onPermissionGranted = { mapLocationEnabled = true })
-
-    val context = LocalContext.current
-
-    if (mapsUIState.networkError != null) {
-        NetworkError(
-            error = mapsUIState.networkError,
-            onDismissRequest = { viewModel.clearErrors() },
-            onSuccessRequest = {
-                viewModel.loadAll()
-                viewModel.clearErrors()
-            },
-        )
-    }
-
-    if (mapsUIState.serverError != null) {
-        ServerError(
-            error = mapsUIState.serverError,
-            onDismissRequest = { viewModel.clearErrors() },
-            onSuccessRequest = {
-                viewModel.loadAll()
-                viewModel.clearErrors()
-            },
-        )
-    }
-
-    if (mapsUIState.unknownError != null) {
-        UnknownError(
-            error = mapsUIState.unknownError,
-            onDismissRequest = { viewModel.clearErrors() },
-            onSuccessRequest = {
-                viewModel.loadAll()
-                viewModel.clearErrors()
-            },
-        )
-    }
+    CheckResponseError(
+        mapsUIState.networkError,
+        mapsUIState.serverError,
+        mapsUIState.unknownError,
+        ignoreErrorRequest = { viewModel.clearErrors() },
+        retryErrorRequest = {
+            viewModel.clearErrors()
+            viewModel.loadAll()
+        },
+    )
 
     Scaffold(
         floatingActionButton = {
@@ -121,56 +94,76 @@ fun MapsScreen(
             }
         },
 
-    ) { scaffoldPadding ->
-        Box {
-            val cameraPositionState = rememberCameraPositionState {
-                position = CameraPosition.fromLatLngZoom(
-                    LatLng(42.730426, -73.676573),
-                    13.5f,
-                )
-            }
+    ) { padding ->
+        BusMap(mapsUIState = mapsUIState, padding = padding)
+    }
+}
 
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
+/**
+ * Creates the map displaying everything
+ *
+ * @param mapsUIState: The UI state of the view from the view-model
+ * @param padding: Padding needed for the map content padding
+ * */
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@Composable
+fun BusMap(mapsUIState: MapsUIState, padding: PaddingValues) {
+    var mapLocationEnabled by remember { mutableStateOf(false) }
+    LocationPermissionsChecker(onPermissionGranted = { mapLocationEnabled = true })
 
-                // makes sure the items drawn (current location and compas) are clickable
-                contentPadding = scaffoldPadding,
-                cameraPositionState = cameraPositionState,
+    val context = LocalContext.current
 
-                // auto dark theme
-                properties = MapProperties(
-                    isMyLocationEnabled = mapLocationEnabled,
-                    mapStyleOptions = if (isSystemInDarkTheme()) {
-                        MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
-                    } else {
-                        MapStyleOptions("[]")
-                    },
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(42.73068146020498, -73.67619731950525),
+            14.3f,
+        )
+    }
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+
+        // makes sure the items drawn (current location and compass) are clickable
+        contentPadding = padding,
+        cameraPositionState = cameraPositionState,
+
+        // auto dark theme
+        properties = MapProperties(
+            latLngBoundsForCameraTarget = LatLngBounds(
+                LatLng(42.72095724005504, -73.70196321825452),
+                LatLng(42.741173465236876, -73.6543446409232),
+            ),
+            minZoomPreference = 13f,
+            isMyLocationEnabled = mapLocationEnabled,
+            mapStyleOptions = if (isSystemInDarkTheme()) {
+                MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
+            } else {
+                MapStyleOptions("[]")
+            },
+        ),
+
+        // removes the zoom control which was covered by the FAB
+        uiSettings = MapUiSettings(
+            zoomControlsEnabled = false,
+        ),
+    ) {
+        mapsUIState.stops.forEach {
+            StopMarker(stop = it)
+        }
+
+        mapsUIState.runningBuses.forEach {
+            BusMarker(bus = it)
+        }
+
+        mapsUIState.routes.forEach {
+            Polyline(
+                points = it.latLng(),
+                color = Color(
+                    android.graphics.Color.valueOf(
+                        android.graphics.Color.parseColor(it.colorName),
+                    ).toArgb(),
                 ),
-
-                // removes the zoom control which was covered by the FAB
-                uiSettings = MapUiSettings(
-                    zoomControlsEnabled = false,
-                ),
-            ) {
-                mapsUIState.stops.forEach {
-                    StopMarker(stop = it)
-                }
-
-                mapsUIState.runningBuses.forEach {
-                    BusMarker(bus = it)
-                }
-
-                mapsUIState.routes.forEach {
-                    Polyline(
-                        points = it.latLng(),
-                        color = Color(
-                            android.graphics.Color.valueOf(
-                                android.graphics.Color.parseColor(it.colorName),
-                            ).toArgb(),
-                        ),
-                    )
-                }
-            }
+            )
         }
     }
 }
@@ -279,6 +272,9 @@ fun BoardBusFab(
     )
 }
 
+/**
+ * Creates the FAB to enable auto-boarding
+ * */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun AutoBoardBusFab() {
@@ -345,6 +341,7 @@ fun BusPicker(
     onBusChosen: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    // -1 will be unselected
     var selectedBus by remember { mutableIntStateOf(-1) }
     val context = LocalContext.current
 
