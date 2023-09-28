@@ -22,7 +22,7 @@ interface ApiService {
     suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse>
 
     @PATCH("buses/{busNum}")
-    suspend fun addBus(@Path("busNum") busNum: Int, @Body bus: BoardBus): NetworkResponse<Bus, ErrorResponse>
+    suspend fun addBus(@Path("busNum") busNum: Int, @Body bus: BoardBus): NetworkResponse<Unit, ErrorResponse>
 
     @GET("buses/all")
     suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse>

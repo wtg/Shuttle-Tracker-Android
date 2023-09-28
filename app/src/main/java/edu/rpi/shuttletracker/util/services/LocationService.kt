@@ -18,9 +18,11 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.BoardBus
+import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
 import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
 import edu.rpi.shuttletracker.util.notifications.Notifications
@@ -51,10 +53,18 @@ class LocationService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
-        private val _isRunning = MutableStateFlow(false)
-        val isRunning = _isRunning.asStateFlow()
+        private val _busNum = MutableStateFlow<Int?>(null)
+        val busNum = _busNum.asStateFlow()
+
+        private val _error = MutableStateFlow<NetworkResponse<*, ErrorResponse>?>(null)
+        val error = _error.asStateFlow()
 
         const val BUNDLE_BUS_ID = "BUS_ID"
+        const val BUNDLE_DISPLAY_ERROR = "DISPLAY_ERROR"
+
+        fun dismissError() {
+            _error.update { null }
+        }
     }
 
     override fun onCreate() {
@@ -79,6 +89,9 @@ class LocationService : Service() {
         val extras: Bundle = intent!!.extras!!
 
         val busNum = extras.getInt(BUNDLE_BUS_ID)
+        val displayError = extras.getBoolean(BUNDLE_DISPLAY_ERROR, true)
+
+        _error.update { null }
 
         // checks for location permissions
         if (ActivityCompat.checkSelfPermission(
@@ -104,7 +117,7 @@ class LocationService : Service() {
 
                 serviceScope.launch {
                     if (currentLocation != null) {
-                        updateLocation(busNum, currentLocation)
+                        updateLocation(busNum, currentLocation, displayError)
                     }
                 }
             }
@@ -113,7 +126,7 @@ class LocationService : Service() {
         // starts getting location changes
         locationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
 
-        _isRunning.update { true }
+        _busNum.update { busNum }
 
         return START_STICKY
     }
@@ -121,7 +134,7 @@ class LocationService : Service() {
     override fun onDestroy() {
         super.onDestroy()
 
-        _isRunning.update { false }
+        _busNum.update { null }
 
         // unsubscribes from location updates
         locationClient.removeLocationUpdates(locationCallback)
@@ -130,8 +143,8 @@ class LocationService : Service() {
     /**
      * Sends updated bus location to server
      * */
-    private suspend fun updateLocation(busNum: Int, location: Location) {
-        apiRepository.addBus(
+    private suspend fun updateLocation(busNum: Int, location: Location, displayError: Boolean) {
+        val response = apiRepository.addBus(
             busNum,
             BoardBus(
                 UUID.randomUUID().toString(),
@@ -140,6 +153,16 @@ class LocationService : Service() {
                 "user",
             ),
         )
+
+        // report error and end service
+        if (
+            response is NetworkResponse.NetworkError ||
+            response is NetworkResponse.UnknownError ||
+            response is NetworkResponse.ServerError
+        ) {
+            if (displayError) _error.update { response }
+            stopSelf()
+        }
     }
 
     private fun notifyLaunch() = NotificationCompat.Builder(

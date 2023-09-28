@@ -98,7 +98,7 @@ class MapsViewModel @Inject constructor(
         viewModelScope.launch {
             readApiResponse(apiRepository.getAllBuses()) { buses ->
                 _mapsUiState.update {
-                    it.copy(allBuses = buses)
+                    it.copy(allBuses = buses.sorted())
                 }
             }
         }

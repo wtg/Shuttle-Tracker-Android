@@ -61,6 +61,7 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.errors.CheckResponseError
+import edu.rpi.shuttletracker.ui.errors.Error
 import edu.rpi.shuttletracker.ui.permissions.BluetoothPermissionChecker
 import edu.rpi.shuttletracker.ui.permissions.LocationPermissionsChecker
 import edu.rpi.shuttletracker.util.services.BeaconService
@@ -85,6 +86,21 @@ fun MapsScreen(
             viewModel.loadAll()
         },
     )
+
+    with(LocationService.error.collectAsStateWithLifecycle().value) {
+        if (this != null) {
+            Error(
+                error = this,
+                onSecondaryRequest = { LocationService.dismissError() },
+                onPrimaryRequest = { LocationService.dismissError() },
+                errorType = "Location service",
+                errorBody = "You may be too far from a stop (50 ft)",
+                primaryButtonText = "I understand",
+                showSecondaryButton = false,
+
+            )
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -229,7 +245,7 @@ fun BusMarker(bus: Bus) {
 fun BoardBusFab(
     buses: List<Int>,
 ) {
-    val isLocationServiceRunning = LocationService.isRunning.collectAsState().value
+    val locationServiceBusNumber = LocationService.busNum.collectAsStateWithLifecycle().value
     val context = LocalContext.current
 
     var busPickerState by remember { mutableStateOf(false) }
@@ -261,14 +277,14 @@ fun BoardBusFab(
 
     ExtendedFloatingActionButton(
         onClick = {
-            if (isLocationServiceRunning) {
+            if (locationServiceBusNumber != null) {
                 context.stopService(Intent(context, LocationService::class.java))
             } else {
                 checkLocationPermissionsState = true
             }
         },
         icon = { Icon(Icons.Default.DirectionsBus, "Board Bus") },
-        text = { Text(text = if (isLocationServiceRunning) "Leave Bus" else "Board Bus") },
+        text = { Text(text = if (locationServiceBusNumber != null) "Leave Bus" else "Board Bus") },
     )
 }
 

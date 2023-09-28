@@ -32,63 +32,77 @@ fun CheckResponseError(
     if (networkError != null) {
         Error(
             error = networkError,
-            ignoreErrorRequest = { ignoreErrorRequest() },
-            retryErrorRequest = { retryErrorRequest() },
-            "Network error",
-            Icons.Default.WifiOff,
+            onSecondaryRequest = { ignoreErrorRequest() },
+            onPrimaryRequest = { retryErrorRequest() },
+            errorType = "Network error",
+            icon = Icons.Default.WifiOff,
         )
     }
 
     if (serverError != null) {
         Error(
             error = serverError,
-            ignoreErrorRequest = { ignoreErrorRequest() },
-            retryErrorRequest = { retryErrorRequest() },
-            "Server error",
-            Icons.Default.Dns,
+            onSecondaryRequest = { ignoreErrorRequest() },
+            onPrimaryRequest = { retryErrorRequest() },
+            errorType = "Server error",
+            icon = Icons.Default.Dns,
         )
     }
 
     if (unknownError != null) {
         Error(
             error = unknownError,
-            ignoreErrorRequest = { ignoreErrorRequest() },
-            retryErrorRequest = { retryErrorRequest() },
-
-            "Unknown error",
+            onSecondaryRequest = { ignoreErrorRequest() },
+            onPrimaryRequest = { retryErrorRequest() },
+            errorType = "Unknown error",
         )
     }
 }
 
 /**
  * @param error: the error you want to display
- * @param ignoreErrorRequest: what happens when error is ignored
- * @param retryErrorRequest: what happens when you want to retry what caused the error
+ * @param onSecondaryRequest: what happens when error is ignored
+ * @param onPrimaryRequest: what happens when you want to retry what caused the error
  *
  * @param errorType: What kind of error has occurred
  * @param icon: The icon for the alert
  * */
 @Composable
-private fun Error(
+fun Error(
     error: Any,
-    ignoreErrorRequest: () -> Unit,
-    retryErrorRequest: () -> Unit,
+    onSecondaryRequest: () -> Unit,
+    onPrimaryRequest: () -> Unit,
     errorType: String = "Error",
+    errorBody: String = "",
     icon: ImageVector = Icons.Default.Error,
+    primaryButtonText: String = "Retry",
+    secondaryButtonText: String = "Ignore",
+    showSecondaryButton: Boolean = true,
 ) {
     AlertDialog(
         icon = { Icon(icon, "Error") },
         title = { Text(text = errorType) },
-        text = { Text(text = error.toString()) },
-        onDismissRequest = { ignoreErrorRequest() },
+        text = {
+            Text(
+                text = if (errorBody != "") {
+                    errorBody + "\n\n"
+                } else {
+                    ""
+                } + error.toString(),
+            )
+        },
+        onDismissRequest = { onSecondaryRequest() },
+
         dismissButton = {
-            Button(onClick = { ignoreErrorRequest() }) {
-                Text(text = "Ignore")
+            if (showSecondaryButton) {
+                Button(onClick = { onSecondaryRequest() }) {
+                    Text(text = secondaryButtonText)
+                }
             }
         },
         confirmButton = {
-            Button(onClick = { retryErrorRequest() }) {
-                Text(text = "Retry")
+            Button(onClick = { onPrimaryRequest() }) {
+                Text(text = primaryButtonText)
             }
         },
     )

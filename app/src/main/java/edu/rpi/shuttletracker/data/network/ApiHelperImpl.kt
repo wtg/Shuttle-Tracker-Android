@@ -25,7 +25,7 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
     override suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse> =
         apiService.getRoutes()
 
-    override suspend fun addBus(busNum: Int, bus: BoardBus): NetworkResponse<Bus, ErrorResponse> =
+    override suspend fun addBus(busNum: Int, bus: BoardBus): NetworkResponse<Unit, ErrorResponse> =
         apiService.addBus(busNum, bus)
 
     override suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse> =

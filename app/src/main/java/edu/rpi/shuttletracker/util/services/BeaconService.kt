@@ -95,6 +95,7 @@ class BeaconService : Service() {
 
             val serviceIntent = Intent(this, LocationService::class.java).apply {
                 putExtra(LocationService.BUNDLE_BUS_ID, closest.id2.toString())
+                putExtra(LocationService.BUNDLE_DISPLAY_ERROR, false)
             }
 
             // startService(serviceIntent)
