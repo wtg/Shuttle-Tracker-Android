@@ -115,7 +115,7 @@ public class SettingsActivity : AppCompatActivity() {
         discreteSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val editor = sharedPreferences.edit()
-                editor.putInt("min_stop_dist", progress)
+                editor.putFloat("min_stop_dist", progress.toFloat())
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
