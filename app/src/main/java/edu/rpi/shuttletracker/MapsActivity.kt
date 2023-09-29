@@ -528,11 +528,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // updateCurrentLocation()
         for (stop in stopArray) {
             val stopLocation = Location("stop location")
+            val sharedPref = getSharedPreferences("min_stop_dist", Context.MODE_PRIVATE)
             stopLocation.latitude = stop.latitude
             stopLocation.longitude = stop.longitude
             println("current location: $currentLocation") // // TODO: remove/comment this testing clause
             println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
-            if (currentLocation?.distanceTo(stopLocation)!! <= 50) {
+            if (currentLocation?.distanceTo(stopLocation)!! <= sharedPref.getFloat("min_stop_dist", 50F)) {
                 Logs.writeToLogBuffer(
                     object {}.javaClass.enclosingMethod.name,
                     "user is distance ${currentLocation?.distanceTo(stopLocation)} from stop",

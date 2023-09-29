@@ -7,8 +7,10 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatSeekBar
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -47,6 +49,7 @@ public class SettingsActivity : AppCompatActivity() {
         val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         val logsToggle: SwitchMaterial = findViewById(R.id.logsSwitch)
         val automaticBoardToggle: SwitchMaterial = findViewById(R.id.autoBoardSwitch)
+        val discreteSlider: AppCompatSeekBar = findViewById(R.id.discreteSlider)
 
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(
@@ -108,6 +111,26 @@ public class SettingsActivity : AppCompatActivity() {
                 .setPositiveButton(resources.getString(R.string.accept)) { dialog, which -> }
                 .show()
         }
+
+        discreteSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val editor = sharedPreferences.edit()
+                editor.putInt("min_stop_dist", progress)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                TODO("Not yet implemented")
+            }
+        })
+
+        /*val editor = sharedPreferences.edit()
+            if (isChecked) {
+                editor.putFloat("min_stop_dist", discreteSlider.value)
+            })*/
 
         val toolbar: Toolbar = findViewById(R.id.settingsToolbar)
         setSupportActionBar(toolbar)
