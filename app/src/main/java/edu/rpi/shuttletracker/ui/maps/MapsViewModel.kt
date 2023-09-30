@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.ui.maps
 
+import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
@@ -54,6 +55,20 @@ class MapsViewModel @Inject constructor(
             loadAllBuses()
         }
     }
+
+    /**
+     * @param location: users current location
+     * @return returns the distance to closest stop in METERS
+     * */
+    fun closestDistanceToStop(location: Location): Float =
+        _mapsUiState.value.stops.minOf {
+            location.distanceTo(
+                Location("stop").apply {
+                    longitude = it.longitude
+                    latitude = it.latitude
+                },
+            )
+        }
 
     /**
      * sets all the errors to none

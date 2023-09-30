@@ -53,6 +53,13 @@ fun AnnouncementsScreen(
 fun AnnouncementItem(announcement: Announcement) {
     Column {
         Text(
+            text = announcement.subject,
+            style = MaterialTheme.typography.headlineLarge,
+        )
+
+        Spacer(modifier = Modifier.height(5.dp))
+
+        Text(
             text = "Effective from ${announcement.startTime} to ${announcement.endTime}",
             style = MaterialTheme.typography.titleMedium,
         )

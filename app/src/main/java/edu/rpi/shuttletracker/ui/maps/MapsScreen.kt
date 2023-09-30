@@ -1,6 +1,8 @@
 package edu.rpi.shuttletracker.ui.maps
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.location.Location
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -105,7 +108,7 @@ fun MapsScreen(
                 onSecondaryRequest = { LocationService.dismissError() },
                 onPrimaryRequest = { LocationService.dismissError() },
                 errorType = "Location service",
-                errorBody = "You may be too far from a stop (50 ft)",
+                errorBody = "You may be too far from a stop (50 ft) or selected an invalid bus",
                 primaryButtonText = "I understand",
                 showSecondaryButton = false,
 
@@ -117,7 +120,7 @@ fun MapsScreen(
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
                 AutoBoardBusFab()
-                BoardBusFab(mapsUIState.allBuses)
+                BoardBusFab(mapsUIState.allBuses, viewModel::closestDistanceToStop)
             }
         },
 
@@ -277,10 +280,12 @@ fun BusMarker(bus: Bus) {
 /**
  * The Floating Action Button for boarding the bus
  * */
+@SuppressLint("MissingPermission") // permissions checked in external composable
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun BoardBusFab(
     buses: List<Int>,
+    checkDistanceToStop: (location: Location) -> Float,
 ) {
     val locationServiceBusNumber = LocationService.busNum.collectAsStateWithLifecycle().value
     val context = LocalContext.current
@@ -305,9 +310,23 @@ fun BoardBusFab(
     if (checkLocationPermissionsState) {
         LocationPermissionsChecker(
             onPermissionGranted = {
-                busPickerState = true
+                // MissingPermission suppressed here as location is already checked
+                // This receives the most recent position of the user
+                LocationServices.getFusedLocationProviderClient(context).lastLocation
+                    .addOnSuccessListener { location: Location? ->
+
+                        // if they a location was found and they are 50 ft away from a stop
+                        if (location != null && checkDistanceToStop(location) * 3.28084 <= 50) {
+                            busPickerState = true
+                        } else {
+                            // not close enough to a stop
+                            Toast.makeText(context, "Must be 50 ft from bus to board", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
                 checkLocationPermissionsState = false
             },
+
             onPermissionDenied = { checkLocationPermissionsState = false },
         )
     }

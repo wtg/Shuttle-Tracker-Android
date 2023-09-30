@@ -69,7 +69,7 @@ fun CheckResponseError(
  * */
 @Composable
 fun Error(
-    error: Any,
+    error: Any?,
     onSecondaryRequest: () -> Unit,
     onPrimaryRequest: () -> Unit,
     errorType: String = "Error",
@@ -84,11 +84,13 @@ fun Error(
         title = { Text(text = errorType) },
         text = {
             Text(
-                text = if (errorBody != "") {
-                    errorBody + "\n\n"
-                } else {
-                    ""
-                } + error.toString(),
+                text = (
+                    if (errorBody != "") {
+                        errorBody + "\n\n"
+                    } else {
+                        ""
+                    }
+                    ) + error?.toString(),
             )
         },
         onDismissRequest = { onSecondaryRequest() },
