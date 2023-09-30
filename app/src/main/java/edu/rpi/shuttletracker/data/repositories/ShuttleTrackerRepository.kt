@@ -16,4 +16,6 @@ class ShuttleTrackerRepository @Inject constructor(
     suspend fun addBus(busNum: Int, bus: BoardBus) = apiHelper.addBus(busNum, bus)
 
     suspend fun getAllBuses() = apiHelper.getAllBuses()
+
+    suspend fun getAnnouncements() = apiHelper.getAnnouncements()
 }

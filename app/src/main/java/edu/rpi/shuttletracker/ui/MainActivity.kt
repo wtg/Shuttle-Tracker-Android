@@ -10,8 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
+import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
-import edu.rpi.shuttletracker.ui.maps.MapsScreen
 import edu.rpi.shuttletracker.ui.permissions.NotificationPermissionChecker
 import edu.rpi.shuttletracker.ui.permissions.RequestAllPermissions
 import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
                     RequestAllPermissions()
                     NotificationPermissionChecker()
 
-                    MapsScreen()
+                    DestinationsNavHost(navGraph = NavGraphs.root)
                 }
             }
         }

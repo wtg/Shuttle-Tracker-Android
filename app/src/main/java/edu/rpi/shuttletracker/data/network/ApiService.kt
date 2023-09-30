@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.data.network
 
 import com.haroldadmin.cnradapter.NetworkResponse
+import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
@@ -26,4 +27,7 @@ interface ApiService {
 
     @GET("buses/all")
     suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse>
+
+    @GET("announcements")
+    suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse>
 }

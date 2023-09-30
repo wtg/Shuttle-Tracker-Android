@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,14 +14,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Announcement
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.LocationDisabled
 import androidx.compose.material.icons.filled.ShareLocation
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -57,9 +62,12 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.ui.destinations.AnnouncementsScreenDestination
 import edu.rpi.shuttletracker.ui.errors.CheckResponseError
 import edu.rpi.shuttletracker.ui.errors.Error
 import edu.rpi.shuttletracker.ui.permissions.BluetoothPermissionChecker
@@ -67,9 +75,12 @@ import edu.rpi.shuttletracker.ui.permissions.LocationPermissionsChecker
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 
+/**TODO follow thread https://github.com/googlemaps/android-maps-compose/pull/347 */
+@Destination(start = true)
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MapsScreen(
+    navigator: DestinationsNavigator,
     viewModel: MapsViewModel = hiltViewModel(),
 ) {
     // makes sure the 2 flows are collected when ui is open
@@ -112,6 +123,28 @@ fun MapsScreen(
 
     ) { padding ->
         BusMap(mapsUIState = mapsUIState, padding = padding)
+
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
+        ) {
+            Button(
+                onClick = { navigator.navigate(AnnouncementsScreenDestination()) },
+                modifier = Modifier
+                    .padding(10.dp)
+                    .size(50.dp),
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+            ) {
+                Icon(Icons.Default.Announcement, "Announcements")
+            }
+        }
     }
 }
 
@@ -123,7 +156,10 @@ fun MapsScreen(
  * */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun BusMap(mapsUIState: MapsUIState, padding: PaddingValues) {
+fun BusMap(
+    mapsUIState: MapsUIState,
+    padding: PaddingValues,
+) {
     var mapLocationEnabled by remember { mutableStateOf(false) }
     LocationPermissionsChecker(onPermissionGranted = { mapLocationEnabled = true })
 
@@ -149,6 +185,7 @@ fun BusMap(mapsUIState: MapsUIState, padding: PaddingValues) {
                 LatLng(42.72095724005504, -73.70196321825452),
                 LatLng(42.741173465236876, -73.6543446409232),
             ),
+            isBuildingEnabled = true,
             minZoomPreference = 13f,
             isMyLocationEnabled = mapLocationEnabled,
             mapStyleOptions = if (isSystemInDarkTheme()) {
