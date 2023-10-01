@@ -6,6 +6,7 @@ import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
+import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Stop
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -34,4 +35,7 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
 
     override suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse> =
         apiService.getAnnouncements()
+
+    override suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse> =
+        apiService.getSchedule()
 }

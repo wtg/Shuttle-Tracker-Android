@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Announcement
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.LocationDisabled
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.ShareLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -71,6 +72,7 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.destinations.AnnouncementsScreenDestination
+import edu.rpi.shuttletracker.ui.destinations.ScheduleScreenDestination
 import edu.rpi.shuttletracker.ui.errors.CheckResponseError
 import edu.rpi.shuttletracker.ui.errors.Error
 import edu.rpi.shuttletracker.ui.permissions.BluetoothPermissionChecker
@@ -87,13 +89,13 @@ fun MapsScreen(
     viewModel: MapsViewModel = hiltViewModel(),
 ) {
     // makes sure the 2 flows are collected when ui is open
-    val mapsUIState = viewModel.mapsUIState.collectAsStateWithLifecycle().value
+    val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
     viewModel.runningBusesState.collectAsStateWithLifecycle({})
 
     CheckResponseError(
-        mapsUIState.networkError,
-        mapsUIState.serverError,
-        mapsUIState.unknownError,
+        mapsUiState.networkError,
+        mapsUiState.serverError,
+        mapsUiState.unknownError,
         ignoreErrorRequest = { viewModel.clearErrors() },
         retryErrorRequest = {
             viewModel.clearErrors()
@@ -108,7 +110,7 @@ fun MapsScreen(
                 onSecondaryRequest = { LocationService.dismissError() },
                 onPrimaryRequest = { LocationService.dismissError() },
                 errorType = "Location service",
-                errorBody = "You may be too far from a stop (50 ft) or selected an invalid bus",
+                errorBody = "You may be too far from a stop (20m) or selected an invalid bus",
                 primaryButtonText = "I understand",
                 showSecondaryButton = false,
 
@@ -120,32 +122,25 @@ fun MapsScreen(
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
                 AutoBoardBusFab()
-                BoardBusFab(mapsUIState.allBuses, viewModel::closestDistanceToStop)
+                BoardBusFab(mapsUiState.allBuses, viewModel::closestDistanceToStop)
             }
         },
 
     ) { padding ->
-        BusMap(mapsUIState = mapsUIState, padding = padding)
+        BusMap(mapsUIState = mapsUiState, padding = padding)
 
         Box(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            Button(
-                onClick = { navigator.navigate(AnnouncementsScreenDestination()) },
+            Column(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .size(50.dp),
-                shape = CircleShape,
-                contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground,
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                    .fillMaxSize(),
             ) {
-                Icon(Icons.Default.Announcement, "Announcements")
+                AnnouncementsButton(navigator)
+
+                ScheduleButton(navigator)
             }
         }
     }
@@ -316,11 +311,11 @@ fun BoardBusFab(
                     .addOnSuccessListener { location: Location? ->
 
                         // if they a location was found and they are 50 ft away from a stop
-                        if (location != null && checkDistanceToStop(location) * 3.28084 <= 50) {
+                        if (location != null && checkDistanceToStop(location) <= 20) {
                             busPickerState = true
                         } else {
                             // not close enough to a stop
-                            Toast.makeText(context, "Must be 50 ft from bus to board", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Must be 20m from bus to board", Toast.LENGTH_SHORT).show()
                         }
                     }
 
@@ -474,5 +469,43 @@ fun BusPicker(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun AnnouncementsButton(navigator: DestinationsNavigator) {
+    Button(
+        onClick = { navigator.navigate(AnnouncementsScreenDestination()) },
+        modifier = Modifier
+            .padding(10.dp)
+            .size(50.dp),
+        shape = CircleShape,
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+    ) {
+        Icon(Icons.Default.Announcement, "Announcements")
+    }
+}
+
+@Composable
+fun ScheduleButton(navigator: DestinationsNavigator) {
+    Button(
+        onClick = { navigator.navigate(ScheduleScreenDestination()) },
+        modifier = Modifier
+            .padding(10.dp)
+            .size(50.dp),
+        shape = CircleShape,
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+    ) {
+        Icon(Icons.Default.Schedule, "Schedule")
     }
 }

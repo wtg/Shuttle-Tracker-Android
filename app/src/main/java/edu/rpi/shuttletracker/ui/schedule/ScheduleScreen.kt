@@ -1,0 +1,118 @@
+package edu.rpi.shuttletracker.ui.schedule
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import edu.rpi.shuttletracker.data.models.Schedule
+import edu.rpi.shuttletracker.ui.errors.CheckResponseError
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Destination
+@Composable
+fun ScheduleScreen(
+    navigator: DestinationsNavigator,
+    viewModel: ScheduleViewModel = hiltViewModel(),
+) {
+    val scheduleUiState = viewModel.scheduleUiState.collectAsStateWithLifecycle().value
+
+    CheckResponseError(
+        scheduleUiState.networkError,
+        scheduleUiState.serverError,
+        scheduleUiState.unknownError,
+        ignoreErrorRequest = { viewModel.clearErrors() },
+        retryErrorRequest = {
+            viewModel.clearErrors()
+            viewModel.loadAll()
+        },
+    )
+
+    val pagerState = rememberPagerState(
+        pageCount = { scheduleUiState.schedule.size },
+        initialPage = scheduleUiState.schedule.size,
+    )
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Schedule") },
+                navigationIcon = {
+                    IconButton(onClick = { navigator.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, "back")
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.padding(padding),
+            reverseLayout = true,
+        ) { page ->
+            SchedulePagerItem(schedule = scheduleUiState.schedule[page])
+        }
+    }
+}
+
+@Composable
+fun SchedulePagerItem(schedule: Schedule) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        Text(text = schedule.name, style = MaterialTheme.typography.headlineLarge)
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column {
+                Text(text = "Monday")
+                Text(text = "Tuesday")
+                Text(text = "Wednesday")
+                Text(text = "Thursday")
+                Text(text = "Friday")
+                Text(text = "Saturday")
+                Text(text = "Sunday")
+            }
+
+            Column {
+                Text(text = schedule.monday.toString())
+                Text(text = schedule.tuesday.toString())
+                Text(text = schedule.wednesday.toString())
+                Text(text = schedule.thursday.toString())
+                Text(text = schedule.friday.toString())
+                Text(text = schedule.saturday.toString())
+                Text(text = schedule.sunday.toString())
+            }
+        }
+
+        Spacer(modifier = Modifier.height(15.dp))
+
+        Text(text = "Effective from ${schedule.startTime} - ${schedule.endTime}")
+    }
+}

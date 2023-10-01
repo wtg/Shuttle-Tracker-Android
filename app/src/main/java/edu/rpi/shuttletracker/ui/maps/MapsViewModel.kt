@@ -27,7 +27,7 @@ class MapsViewModel @Inject constructor(
 
     // represents the ui state of the view
     private val _mapsUiState = MutableStateFlow(MapsUIState())
-    val mapsUIState: StateFlow<MapsUIState> = _mapsUiState
+    val mapsUiState: StateFlow<MapsUIState> = _mapsUiState
 
     // shared flow of the running busses, this is to be subscribed to in UI
     lateinit var runningBusesState: SharedFlow<Unit>
@@ -43,15 +43,15 @@ class MapsViewModel @Inject constructor(
      * THIS IGNORES THE RUNNING BUSES AS THIS SHOULD BE SUBSCRIBED TO FROM UI
      * */
     fun loadAll() {
-        if (mapsUIState.value.stops.isEmpty()) {
+        if (mapsUiState.value.stops.isEmpty()) {
             loadStops()
         }
 
-        if (mapsUIState.value.routes.isEmpty()) {
+        if (mapsUiState.value.routes.isEmpty()) {
             loadRoutes()
         }
 
-        if (mapsUIState.value.allBuses.isEmpty()) {
+        if (mapsUiState.value.allBuses.isEmpty()) {
             loadAllBuses()
         }
     }

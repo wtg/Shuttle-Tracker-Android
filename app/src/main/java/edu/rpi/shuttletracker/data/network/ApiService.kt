@@ -6,6 +6,7 @@ import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
+import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Stop
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -30,4 +31,7 @@ interface ApiService {
 
     @GET("announcements")
     suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse>
+
+    @GET("schedule")
+    suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse>
 }

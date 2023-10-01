@@ -6,6 +6,7 @@ import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
+import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Stop
 import kotlinx.coroutines.flow.Flow
 
@@ -21,4 +22,6 @@ interface ApiHelper {
     suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse>
 
     suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse>
+
+    suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse>
 }

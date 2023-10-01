@@ -18,4 +18,6 @@ class ShuttleTrackerRepository @Inject constructor(
     suspend fun getAllBuses() = apiHelper.getAllBuses()
 
     suspend fun getAnnouncements() = apiHelper.getAnnouncements()
+
+    suspend fun getSchedule() = apiHelper.getSchedule()
 }
