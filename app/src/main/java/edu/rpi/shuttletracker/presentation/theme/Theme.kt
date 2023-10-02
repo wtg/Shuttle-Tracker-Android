@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.theme
+package edu.rpi.shuttletracker.presentation.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

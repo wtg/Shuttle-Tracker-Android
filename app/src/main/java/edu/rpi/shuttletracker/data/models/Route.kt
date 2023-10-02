@@ -2,7 +2,6 @@ package edu.rpi.shuttletracker.data.models
 
 import com.google.android.gms.maps.model.LatLng
 
-// https://staging.shuttletracker.app/routes
 data class Route(
     val colorName: String,
 

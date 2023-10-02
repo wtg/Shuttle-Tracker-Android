@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.maps
+package edu.rpi.shuttletracker.presentation.maps
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,9 +28,12 @@ import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.LocationDisabled
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.ShareLocation
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -71,12 +75,12 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.ui.destinations.AnnouncementsScreenDestination
-import edu.rpi.shuttletracker.ui.destinations.ScheduleScreenDestination
-import edu.rpi.shuttletracker.ui.errors.CheckResponseError
-import edu.rpi.shuttletracker.ui.errors.Error
-import edu.rpi.shuttletracker.ui.permissions.BluetoothPermissionChecker
-import edu.rpi.shuttletracker.ui.permissions.LocationPermissionsChecker
+import edu.rpi.shuttletracker.presentation.destinations.AnnouncementsScreenDestination
+import edu.rpi.shuttletracker.presentation.destinations.ScheduleScreenDestination
+import edu.rpi.shuttletracker.presentation.errors.CheckResponseError
+import edu.rpi.shuttletracker.presentation.errors.Error
+import edu.rpi.shuttletracker.presentation.permissions.BluetoothPermissionChecker
+import edu.rpi.shuttletracker.presentation.permissions.LocationPermissionsChecker
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 
@@ -132,13 +136,18 @@ fun MapsScreen(
         Box(
             modifier = Modifier
                 .padding(padding)
+                .padding(horizontal = 10.dp)
                 .fillMaxSize(),
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                AnnouncementsButton(navigator)
+                AnnouncementsButton(
+                    navigator,
+                    mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
+                )
 
                 ScheduleButton(navigator)
             }
@@ -472,22 +481,33 @@ fun BusPicker(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnnouncementsButton(navigator: DestinationsNavigator) {
-    Button(
-        onClick = { navigator.navigate(AnnouncementsScreenDestination()) },
-        modifier = Modifier
-            .padding(10.dp)
-            .size(50.dp),
-        shape = CircleShape,
-        contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-        ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+fun AnnouncementsButton(navigator: DestinationsNavigator, notificationsUnread: Int) {
+    BadgedBox(
+        badge = {
+            if (notificationsUnread > 0) {
+                // moves the badge on top of the circle
+                Badge(modifier = Modifier.offset((-10).dp, 10.dp)) {
+                    Text(text = notificationsUnread.toString())
+                }
+            }
+        },
     ) {
-        Icon(Icons.Default.Announcement, "Announcements")
+        Button(
+            onClick = { navigator.navigate(AnnouncementsScreenDestination()) },
+            modifier = Modifier
+                .size(50.dp),
+            shape = CircleShape,
+            contentPadding = PaddingValues(0.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onBackground,
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+        ) {
+            Icon(Icons.Default.Announcement, "Announcements")
+        }
     }
 }
 
@@ -496,7 +516,6 @@ fun ScheduleButton(navigator: DestinationsNavigator) {
     Button(
         onClick = { navigator.navigate(ScheduleScreenDestination()) },
         modifier = Modifier
-            .padding(10.dp)
             .size(50.dp),
         shape = CircleShape,
         contentPadding = PaddingValues(0.dp),

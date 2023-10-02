@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.maps
+package edu.rpi.shuttletracker.presentation.maps
 
 import android.location.Location
 import androidx.lifecycle.ViewModel
@@ -10,6 +10,7 @@ import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
+import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MapsViewModel @Inject constructor(
     private val apiRepository: ShuttleTrackerRepository,
+    private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
     // represents the ui state of the view
@@ -36,6 +38,14 @@ class MapsViewModel @Inject constructor(
     init {
         loadAll()
         loadRunningBuses()
+
+        viewModelScope.launch {
+            userPreferencesRepository.getNotificationsRead().collect { count ->
+                _mapsUiState.update {
+                    it.copy(notificationsRead = count)
+                }
+            }
+        }
     }
 
     /**
@@ -53,6 +63,10 @@ class MapsViewModel @Inject constructor(
 
         if (mapsUiState.value.allBuses.isEmpty()) {
             loadAllBuses()
+        }
+
+        if (mapsUiState.value.notificationsRead == -1) {
+            loadAnnouncementCount()
         }
     }
 
@@ -81,6 +95,16 @@ class MapsViewModel @Inject constructor(
                 networkError = null,
                 serverError = null,
             )
+        }
+    }
+
+    private fun loadAnnouncementCount() {
+        viewModelScope.launch {
+            readApiResponse(apiRepository.getAnnouncements()) { announcements ->
+                _mapsUiState.update {
+                    it.copy(totalAnnouncements = announcements.size)
+                }
+            }
         }
     }
 
@@ -172,4 +196,6 @@ data class MapsUIState(
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
     val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
+    val notificationsRead: Int = -1,
+    val totalAnnouncements: Int = -1,
 )

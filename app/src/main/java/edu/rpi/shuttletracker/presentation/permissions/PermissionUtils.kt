@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.permissions
+package edu.rpi.shuttletracker.presentation.permissions
 
 import android.Manifest
 import android.os.Build

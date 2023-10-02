@@ -1,11 +1,11 @@
-package edu.rpi.shuttletracker.ui.announcements
+package edu.rpi.shuttletracker.presentation.schedule
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.ErrorResponse
+import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,21 +14,20 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AnnouncementsViewModel @Inject constructor(
+class ScheduleViewModel @Inject constructor(
     private val apiRepository: ShuttleTrackerRepository,
 ) : ViewModel() {
-
     // represents the ui state of the view
-    private val _announcementsUiState = MutableStateFlow(AnnouncementsUIState())
-    val announcementsUiState: StateFlow<AnnouncementsUIState> = _announcementsUiState
+    private val _scheduleUiState = MutableStateFlow(ScheduleUIState())
+    val scheduleUiState: StateFlow<ScheduleUIState> = _scheduleUiState
 
     init {
         loadAll()
     }
 
     fun loadAll() {
-        if (announcementsUiState.value.announcements.isEmpty()) {
-            getAnnouncements()
+        if (scheduleUiState.value.schedule.isEmpty()) {
+            getSchedule()
         }
     }
 
@@ -37,7 +36,7 @@ class AnnouncementsViewModel @Inject constructor(
      * */
     fun clearErrors() {
         loadAll()
-        _announcementsUiState.update {
+        _scheduleUiState.update {
             it.copy(
                 unknownError = null,
                 networkError = null,
@@ -46,11 +45,11 @@ class AnnouncementsViewModel @Inject constructor(
         }
     }
 
-    private fun getAnnouncements() {
+    private fun getSchedule() {
         viewModelScope.launch {
-            readApiResponse(apiRepository.getAnnouncements()) { response ->
-                _announcementsUiState.update {
-                    it.copy(announcements = response.reversed())
+            readApiResponse(apiRepository.getSchedule()) { response ->
+                _scheduleUiState.update {
+                    it.copy(schedule = response.reversed())
                 }
             }
         }
@@ -65,15 +64,15 @@ class AnnouncementsViewModel @Inject constructor(
     ) {
         when (response) {
             is NetworkResponse.Success -> success(response.body)
-            is NetworkResponse.ServerError -> _announcementsUiState.update { it.copy(serverError = response) }
-            is NetworkResponse.NetworkError -> _announcementsUiState.update { it.copy(networkError = response) }
-            is NetworkResponse.UnknownError -> _announcementsUiState.update { it.copy(unknownError = response) }
+            is NetworkResponse.ServerError -> _scheduleUiState.update { it.copy(serverError = response) }
+            is NetworkResponse.NetworkError -> _scheduleUiState.update { it.copy(networkError = response) }
+            is NetworkResponse.UnknownError -> _scheduleUiState.update { it.copy(unknownError = response) }
         }
     }
 }
 
-data class AnnouncementsUIState(
-    val announcements: List<Announcement> = listOf(),
+data class ScheduleUIState(
+    val schedule: List<Schedule> = listOf(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
     val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,

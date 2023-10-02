@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.schedule
+package edu.rpi.shuttletracker.presentation.schedule
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.ui.errors.CheckResponseError
+import edu.rpi.shuttletracker.presentation.errors.CheckResponseError
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Destination
