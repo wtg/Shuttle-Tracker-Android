@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.presentation.schedule
+package edu.rpi.shuttletracker.ui.schedule
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

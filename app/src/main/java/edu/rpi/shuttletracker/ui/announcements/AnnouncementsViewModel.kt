@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.presentation.announcements
+package edu.rpi.shuttletracker.ui.announcements
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

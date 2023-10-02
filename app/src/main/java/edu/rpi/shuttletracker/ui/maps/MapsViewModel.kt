@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.presentation.maps
+package edu.rpi.shuttletracker.ui.maps
 
 import android.location.Location
 import androidx.lifecycle.ViewModel

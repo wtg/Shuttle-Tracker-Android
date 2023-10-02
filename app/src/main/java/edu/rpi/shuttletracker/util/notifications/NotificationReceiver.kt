@@ -4,7 +4,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import edu.rpi.shuttletracker.presentation.MainActivity
+import edu.rpi.shuttletracker.ui.MainActivity
 import edu.rpi.shuttletracker.util.services.LocationService
 
 class NotificationReceiver : BroadcastReceiver() {

@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.presentation
+package edu.rpi.shuttletracker.ui
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -12,9 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
-import edu.rpi.shuttletracker.presentation.permissions.NotificationPermissionChecker
-import edu.rpi.shuttletracker.presentation.permissions.RequestAllPermissions
-import edu.rpi.shuttletracker.presentation.theme.ShuttleTrackerTheme
+import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
+import edu.rpi.shuttletracker.ui.util.NotificationPermissionChecker
+import edu.rpi.shuttletracker.ui.util.RequestAllPermissions
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.presentation.errors
+package edu.rpi.shuttletracker.ui.util
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dns

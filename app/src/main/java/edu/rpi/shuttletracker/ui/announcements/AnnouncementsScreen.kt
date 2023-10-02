@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.presentation.announcements
+package edu.rpi.shuttletracker.ui.announcements
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,7 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.data.models.Announcement
-import edu.rpi.shuttletracker.presentation.errors.CheckResponseError
+import edu.rpi.shuttletracker.ui.util.CheckResponseError
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination

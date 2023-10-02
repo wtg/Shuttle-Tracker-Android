@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.presentation.maps
+package edu.rpi.shuttletracker.ui.maps
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -23,10 +23,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Announcement
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.LocationDisabled
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShareLocation
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -52,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -75,16 +77,18 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.presentation.destinations.AnnouncementsScreenDestination
-import edu.rpi.shuttletracker.presentation.destinations.ScheduleScreenDestination
-import edu.rpi.shuttletracker.presentation.errors.CheckResponseError
-import edu.rpi.shuttletracker.presentation.errors.Error
-import edu.rpi.shuttletracker.presentation.permissions.BluetoothPermissionChecker
-import edu.rpi.shuttletracker.presentation.permissions.LocationPermissionsChecker
+import edu.rpi.shuttletracker.ui.destinations.AnnouncementsScreenDestination
+import edu.rpi.shuttletracker.ui.destinations.ScheduleScreenDestination
+import edu.rpi.shuttletracker.ui.destinations.SettingsScreenDestination
+import edu.rpi.shuttletracker.ui.util.BluetoothPermissionChecker
+import edu.rpi.shuttletracker.ui.util.CheckResponseError
+import edu.rpi.shuttletracker.ui.util.Error
+import edu.rpi.shuttletracker.ui.util.LocationPermissionsChecker
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 
 /**TODO follow thread https://github.com/googlemaps/android-maps-compose/pull/347 */
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination(start = true)
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -144,12 +148,22 @@ fun MapsScreen(
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                AnnouncementsButton(
-                    navigator,
+                // navigates to announcements
+                ActionButton(
+                    Icons.Default.Notifications,
                     mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
-                )
+                ) {
+                    navigator.navigate(AnnouncementsScreenDestination())
+                }
 
-                ScheduleButton(navigator)
+                // navigates to the schedule
+                ActionButton(Icons.Default.Schedule) {
+                    navigator.navigate(ScheduleScreenDestination())
+                }
+
+                ActionButton(Icons.Default.Settings) {
+                    navigator.navigate(SettingsScreenDestination())
+                }
             }
         }
     }
@@ -324,7 +338,7 @@ fun BoardBusFab(
                             busPickerState = true
                         } else {
                             // not close enough to a stop
-                            Toast.makeText(context, "Must be 20m from bus to board", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Must be 20m from a stop to board", Toast.LENGTH_SHORT).show()
                         }
                     }
 
@@ -481,21 +495,30 @@ fun BusPicker(
     }
 }
 
+/**
+ * Buttons that let you do things that is displayed on the map
+ * @param badgeCount: if a badge is needed for a item, it will display
+ * @param action: what to do on button click
+ * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnnouncementsButton(navigator: DestinationsNavigator, notificationsUnread: Int) {
+fun ActionButton(
+    icon: ImageVector,
+    badgeCount: Int = 0,
+    action: () -> Unit,
+) {
     BadgedBox(
         badge = {
-            if (notificationsUnread > 0) {
+            if (badgeCount > 0) {
                 // moves the badge on top of the circle
                 Badge(modifier = Modifier.offset((-10).dp, 10.dp)) {
-                    Text(text = notificationsUnread.toString())
+                    Text(text = badgeCount.toString())
                 }
             }
         },
     ) {
         Button(
-            onClick = { navigator.navigate(AnnouncementsScreenDestination()) },
+            onClick = { action() },
             modifier = Modifier
                 .size(50.dp),
             shape = CircleShape,
@@ -506,25 +529,7 @@ fun AnnouncementsButton(navigator: DestinationsNavigator, notificationsUnread: I
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
         ) {
-            Icon(Icons.Default.Announcement, "Announcements")
+            Icon(icon, icon.name)
         }
-    }
-}
-
-@Composable
-fun ScheduleButton(navigator: DestinationsNavigator) {
-    Button(
-        onClick = { navigator.navigate(ScheduleScreenDestination()) },
-        modifier = Modifier
-            .size(50.dp),
-        shape = CircleShape,
-        contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-        ),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-    ) {
-        Icon(Icons.Default.Schedule, "Schedule")
     }
 }
