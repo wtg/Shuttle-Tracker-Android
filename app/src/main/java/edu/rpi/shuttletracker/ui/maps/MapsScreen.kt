@@ -24,11 +24,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsBus
-import androidx.compose.material.icons.filled.LocationDisabled
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShareLocation
+import androidx.compose.material.icons.outlined.LocationDisabled
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.ShareLocation
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -88,7 +88,6 @@ import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 
 /**TODO follow thread https://github.com/googlemaps/android-maps-compose/pull/347 */
-@OptIn(ExperimentalMaterial3Api::class)
 @Destination(start = true)
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -150,18 +149,19 @@ fun MapsScreen(
             ) {
                 // navigates to announcements
                 ActionButton(
-                    Icons.Default.Notifications,
+                    Icons.Outlined.Notifications,
                     mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
                 ) {
                     navigator.navigate(AnnouncementsScreenDestination())
                 }
 
                 // navigates to the schedule
-                ActionButton(Icons.Default.Schedule) {
+                ActionButton(Icons.Outlined.Schedule) {
                     navigator.navigate(ScheduleScreenDestination())
                 }
 
-                ActionButton(Icons.Default.Settings) {
+                // navigates to settings
+                ActionButton(Icons.Outlined.Settings) {
                     navigator.navigate(SettingsScreenDestination())
                 }
             }
@@ -413,9 +413,9 @@ fun AutoBoardBusFab() {
     ) {
         Icon(
             if (isBeaconServiceRunning) {
-                Icons.Default.ShareLocation
+                Icons.Outlined.ShareLocation
             } else {
-                Icons.Default.LocationDisabled
+                Icons.Outlined.LocationDisabled
             },
             "Location",
         )

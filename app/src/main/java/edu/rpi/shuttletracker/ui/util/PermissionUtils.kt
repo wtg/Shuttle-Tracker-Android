@@ -5,9 +5,9 @@ import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOff
-import androidx.compose.material.icons.filled.NearbyError
-import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.outlined.LocationOff
+import androidx.compose.material.icons.outlined.NearbyError
+import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -83,7 +83,7 @@ fun LocationPermissionsChecker(
     CheckPermission(
         locationPermissionsState,
         "Location",
-        Icons.Default.LocationOff,
+        Icons.Outlined.LocationOff,
         "Location permissions are for you to know where you currently are and for others to be able to keep track of the buses",
         onPermissionGranted,
         onPermissionDenied,
@@ -107,7 +107,7 @@ fun BluetoothPermissionChecker(
     CheckPermission(
         bluetoothPermissionsState,
         "Nearby devices",
-        Icons.Default.NearbyError,
+        Icons.Outlined.NearbyError,
         "Nearby devices are needed to enable auto-boarding",
         onPermissionGranted,
         onPermissionDenied,
@@ -131,7 +131,7 @@ fun NotificationPermissionChecker(
     CheckPermission(
         notificationPermissionState,
         "Notifications",
-        Icons.Default.NotificationsOff,
+        Icons.Outlined.NotificationsOff,
         "Notification permissions are for you to know which bus tracking services are currently running",
         onPermissionGranted,
         onPermissionDenied,

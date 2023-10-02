@@ -1,9 +1,9 @@
 package edu.rpi.shuttletracker.ui.util
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.WifiOff
+import androidx.compose.material.icons.outlined.Dns
+import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -35,7 +35,7 @@ fun CheckResponseError(
             onSecondaryRequest = { ignoreErrorRequest() },
             onPrimaryRequest = { retryErrorRequest() },
             errorType = "Network error",
-            icon = Icons.Default.WifiOff,
+            icon = Icons.Outlined.WifiOff,
         )
     }
 
@@ -45,7 +45,7 @@ fun CheckResponseError(
             onSecondaryRequest = { ignoreErrorRequest() },
             onPrimaryRequest = { retryErrorRequest() },
             errorType = "Server error",
-            icon = Icons.Default.Dns,
+            icon = Icons.Outlined.Dns,
         )
     }
 
@@ -74,7 +74,7 @@ fun Error(
     onPrimaryRequest: () -> Unit,
     errorType: String = "Error",
     errorBody: String = "",
-    icon: ImageVector = Icons.Default.Error,
+    icon: ImageVector = Icons.Outlined.Error,
     primaryButtonText: String = "Retry",
     secondaryButtonText: String = "Ignore",
     showSecondaryButton: Boolean = true,

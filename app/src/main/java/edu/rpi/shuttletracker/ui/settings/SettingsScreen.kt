@@ -3,8 +3,8 @@ package edu.rpi.shuttletracker.ui.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,14 +33,14 @@ fun SettingsScreen(
                 title = { Text(text = "Settings") },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, "back")
+                        Icon(Icons.Outlined.ArrowBack, "back")
                     }
                 },
             )
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).padding(horizontal = 10.dp)) {
-            SettingsItem(Icons.Default.Info, "About") {
+            SettingsItem(Icons.Outlined.Info, "About") {
                 navigator.navigate(AboutScreenDestination())
             }
         }

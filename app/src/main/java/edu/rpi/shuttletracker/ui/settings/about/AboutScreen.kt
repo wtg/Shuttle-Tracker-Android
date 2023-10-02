@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,7 +42,7 @@ fun AboutScreen(
                 title = { Text(text = "About") },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, "back")
+                        Icon(Icons.Outlined.ArrowBack, "back")
                     }
                 },
             )
@@ -62,15 +62,15 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            SettingsItem(icon = Icons.Default.Code, title = "Check out the repository") {
+            SettingsItem(icon = Icons.Outlined.Code, title = "Check out the repository") {
                 uriHandler.openUri("https://github.com/wtg/Shuttle-Tracker-Android")
             }
 
-            SettingsItem(icon = Icons.Default.BugReport, title = "Report a problem") {
+            SettingsItem(icon = Icons.Outlined.BugReport, title = "Report a problem") {
                 uriHandler.openUri("https://github.com/wtg/Shuttle-Tracker-Android/issues")
             }
 
-            SettingsItem(icon = Icons.Default.Info, title = "Version", BuildConfig.VERSION_NAME)
+            SettingsItem(icon = Icons.Outlined.Info, title = "Version", BuildConfig.VERSION_NAME)
         }
     }
 }
