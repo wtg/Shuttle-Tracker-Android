@@ -130,7 +130,7 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
                     rootElement.asJsonObject.add(
                         cacheElement.name,
                         element,
-                    ) // FIXME: 19.05.2016 serializedName
+                    )
                 }
                 return delegateAdapter.fromJsonTree(rootElement)
             }

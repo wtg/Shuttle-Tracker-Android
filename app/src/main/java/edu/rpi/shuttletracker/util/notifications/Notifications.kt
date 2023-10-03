@@ -14,8 +14,6 @@ object Notifications {
     const val ID_TRACKING_BUS = 1
     const val CHANNEL_AUTO_BOARD = "auto_board_channel"
     const val ID_AUTO_BOARD = 2
-    const val CHANNEL_DEBUG = "debug_channel"
-    const val ID_DEBUG = 3
 
     fun createChannels(context: Context) {
         val notificationManager = NotificationManagerCompat.from(context)
@@ -30,7 +28,6 @@ object Notifications {
             listOf(
                 buildNotificationChannel(GROUP_TRACKER, CHANNEL_TRACKING_BUS, IMPORTANCE_DEFAULT, "Bus Tracker"),
                 buildNotificationChannel(GROUP_TRACKER, CHANNEL_AUTO_BOARD, IMPORTANCE_LOW, "Bus auto boarder"),
-                buildNotificationChannel(GROUP_TRACKER, CHANNEL_DEBUG, IMPORTANCE_DEFAULT, "debug"),
             ),
         )
     }

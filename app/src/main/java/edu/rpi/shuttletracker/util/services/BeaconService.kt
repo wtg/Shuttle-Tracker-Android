@@ -1,12 +1,13 @@
 package edu.rpi.shuttletracker.util.services
 
 import android.Manifest
-import android.app.NotificationManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+import android.os.Build
 import android.os.IBinder
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Observer
@@ -20,7 +21,6 @@ import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.Identifier
 import org.altbeacon.beacon.Region
-import java.util.Date
 import java.util.UUID
 
 class BeaconService : Service() {
@@ -36,6 +36,7 @@ class BeaconService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate() {
         super.onCreate()
 
@@ -47,7 +48,11 @@ class BeaconService : Service() {
             null,
         )
 
-        startForeground(Notifications.ID_AUTO_BOARD, notifyLaunch())
+        beaconManager.beaconParsers.apply {
+            add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
+        }
+
+        startForeground(Notifications.ID_AUTO_BOARD, notifyLaunch(), FOREGROUND_SERVICE_TYPE_LOCATION)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -69,38 +74,27 @@ class BeaconService : Service() {
             stopSelf()
         }
 
-        beaconManager.beaconParsers.apply {
-            clear()
-            add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
-        }
-
-        var prevClosest: Beacon? = null
         rangingObserver = Observer { beacons ->
 
             // gets the min distance beacon
             val closest = beacons.minByOrNull { it.distance }
 
-            // no beacons nearby
+            // no beacons nearby and runs till death
             if (closest == null) {
                 stopService(Intent(this, LocationService::class.java))
+
                 return@Observer
             }
 
-            // still on same bus
-            if (prevClosest == closest) return@Observer
-
-            // TODO DELETE
-            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
-                .notify(Notifications.ID_DEBUG, notifyDebug(beacons.size, closest.distance, closest.id2.toString()))
+            val closestId = closest.id2.toInt()
+            if (LocationService.busNum.value == closestId) { return@Observer }
 
             val serviceIntent = Intent(this, LocationService::class.java).apply {
-                putExtra(LocationService.BUNDLE_BUS_ID, closest.id2.toString())
+                putExtra(LocationService.BUNDLE_BUS_ID, closestId)
                 putExtra(LocationService.BUNDLE_DISPLAY_ERROR, false)
             }
 
-            // startService(serviceIntent)
-
-            prevClosest = closest
+            startService(serviceIntent)
         }
 
         beaconManager.apply {
@@ -109,13 +103,13 @@ class BeaconService : Service() {
 
             getRegionViewModel(region).rangedBeacons.observeForever(rangingObserver)
 
-            // scans every 30 sec for 1 sec in background
+            // scans every 30 sec for 10 sec in background
             backgroundBetweenScanPeriod = 30000
-            backgroundScanPeriod = 1000
+            backgroundScanPeriod = 10000
 
-            // scans every 10 sec for 1 sec in background
+            // scans every 10 sec for 10 sec in background
             foregroundBetweenScanPeriod = 10000
-            backgroundScanPeriod = 1000
+            backgroundScanPeriod = 10000
 
             startRangingBeacons(region)
         }
@@ -139,14 +133,6 @@ class BeaconService : Service() {
         Notifications.CHANNEL_AUTO_BOARD,
     ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
         .setContentTitle("Auto-board service")
-        .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
-        .build()
-
-    private fun notifyDebug(buses: Int, distance: Double = -1.0, busNum: String = "") = NotificationCompat.Builder(
-        this,
-        Notifications.CHANNEL_DEBUG,
-    ).setContentTitle("DEBUG INFO ${Date()}")
-        .setContentText("$buses buses, distance: $distance, #$busNum")
         .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
         .build()
 }
