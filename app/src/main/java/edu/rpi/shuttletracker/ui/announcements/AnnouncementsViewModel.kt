@@ -6,7 +6,7 @@ import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.ErrorResponse
-import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
+import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AnnouncementsViewModel @Inject constructor(
-    private val apiRepository: ShuttleTrackerRepository,
+    private val apiRepository: ApiRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 

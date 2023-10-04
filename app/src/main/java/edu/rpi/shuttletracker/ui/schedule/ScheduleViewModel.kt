@@ -6,7 +6,7 @@ import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
+import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ScheduleViewModel @Inject constructor(
-    private val apiRepository: ShuttleTrackerRepository,
+    private val apiRepository: ApiRepository,
 ) : ViewModel() {
     // represents the ui state of the view
     private val _scheduleUiState = MutableStateFlow(ScheduleUIState())

@@ -10,7 +10,7 @@ import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
+import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +28,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MapsViewModel @Inject constructor(
-    private val apiRepository: ShuttleTrackerRepository,
+    private val apiRepository: ApiRepository,
     userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 

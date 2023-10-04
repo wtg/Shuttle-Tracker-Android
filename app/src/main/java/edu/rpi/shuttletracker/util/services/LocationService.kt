@@ -26,7 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
-import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
+import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
 import edu.rpi.shuttletracker.util.notifications.Notifications
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +45,7 @@ import javax.inject.Inject
 class LocationService : Service() {
 
     @Inject
-    lateinit var apiRepository: ShuttleTrackerRepository
+    lateinit var apiRepository: ApiRepository
 
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var request: LocationRequest

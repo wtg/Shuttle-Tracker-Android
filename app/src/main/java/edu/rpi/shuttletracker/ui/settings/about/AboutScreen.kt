@@ -16,9 +16,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -36,6 +39,8 @@ fun AboutScreen(
 ) {
     val uriHandler = LocalUriHandler.current
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -45,8 +50,10 @@ fun AboutScreen(
                         Icon(Icons.Outlined.ArrowBack, "back")
                     }
                 },
+                scrollBehavior = scrollBehavior,
             )
         },
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
         Column(
             modifier = Modifier
@@ -62,13 +69,17 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            SettingsItem(icon = Icons.Outlined.Code, title = "Check out the repository") {
-                uriHandler.openUri("https://github.com/wtg/Shuttle-Tracker-Android")
-            }
+            SettingsItem(
+                icon = Icons.Outlined.Code,
+                title = "Check out the repository",
+                onClick = { uriHandler.openUri("https://github.com/wtg/Shuttle-Tracker-Android") },
+            )
 
-            SettingsItem(icon = Icons.Outlined.BugReport, title = "Report a problem") {
-                uriHandler.openUri("https://github.com/wtg/Shuttle-Tracker-Android/issues")
-            }
+            SettingsItem(
+                icon = Icons.Outlined.BugReport,
+                title = "Report a problem",
+                onClick = { uriHandler.openUri("https://github.com/wtg/Shuttle-Tracker-Android/issues") },
+            )
 
             SettingsItem(icon = Icons.Outlined.Info, title = "Version", BuildConfig.VERSION_NAME)
         }

@@ -15,6 +15,7 @@ class UserPreferencesRepository @Inject constructor(
     companion object {
         private val NOTIFICATIONS_READ = intPreferencesKey("notifications_read")
         private val AUTO_BOARD_SERVICE = booleanPreferencesKey("auto_board_service")
+        private val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
     }
 
     fun getNotificationsRead(): Flow<Int> = dataStore.data.map {
@@ -34,6 +35,16 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun saveAutoBoardService(autoBoardServiceState: Boolean) {
         dataStore.edit {
             it[AUTO_BOARD_SERVICE] = autoBoardServiceState
+        }
+    }
+
+    fun getColorBlindMode(): Flow<Boolean> = dataStore.data.map {
+        it[COLOR_BLIND_MODE] ?: false
+    }
+
+    suspend fun saveColorBlindMode(colorBlindMode: Boolean) {
+        dataStore.edit {
+            it[COLOR_BLIND_MODE] = colorBlindMode
         }
     }
 }

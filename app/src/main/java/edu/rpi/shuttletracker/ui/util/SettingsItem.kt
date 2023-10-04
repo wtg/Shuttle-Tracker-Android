@@ -20,27 +20,37 @@ fun SettingsItem(
     icon: ImageVector,
     title: String,
     description: String = "",
-    onClick: (() -> Unit)? = null,
+    onClick: () -> Unit = {},
+    actions: @Composable () -> Unit = {},
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(30.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
-            .clickable { onClick?.let { it() } }
+            .clickable { onClick() }
             .fillMaxWidth()
             .padding(10.dp),
+
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, title)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(30.dp),
+            modifier = Modifier.padding(horizontal = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(icon, title)
 
-        Column {
-            Text(text = title)
+            Column {
+                Text(text = title)
 
-            if (description != "") {
-                Text(
-                    text = description,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                if (description != "") {
+                    Text(
+                        text = description,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
+
+        actions()
     }
 }
