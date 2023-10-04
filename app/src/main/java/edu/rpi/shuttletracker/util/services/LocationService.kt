@@ -85,11 +85,16 @@ class LocationService : Service() {
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        startForeground(Notifications.ID_TRACKING_BUS, notifyLaunch(), FOREGROUND_SERVICE_TYPE_LOCATION)
+        startForeground(
+            Notifications.ID_TRACKING_BUS,
+            notifyLaunch(),
+            FOREGROUND_SERVICE_TYPE_LOCATION,
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+
         val extras: Bundle = intent!!.extras!!
 
         val busNum = extras.getInt(BUNDLE_BUS_ID)

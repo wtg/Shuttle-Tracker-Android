@@ -44,7 +44,6 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -80,6 +79,7 @@ import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.destinations.AnnouncementsScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.ScheduleScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SettingsScreenDestination
+import edu.rpi.shuttletracker.ui.util.BackgroundLocationPermissionChecker
 import edu.rpi.shuttletracker.ui.util.BluetoothPermissionChecker
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.ui.util.Error
@@ -370,14 +370,14 @@ fun BoardBusFab(
 fun AutoBoardBusFab() {
     val context = LocalContext.current
 
-    val isBeaconServiceRunning = BeaconService.isRunning.collectAsState().value
+    val isBeaconServiceRunning = BeaconService.isRunning.collectAsStateWithLifecycle().value
 
     var checkLocationPermissionsState by remember { mutableStateOf(false) }
     var checkBluetoothPermissionsState by remember { mutableStateOf(false) }
 
     // checks for location permissions first, if they have check for bluetooth
     if (checkLocationPermissionsState) {
-        LocationPermissionsChecker(
+        BackgroundLocationPermissionChecker(
             onPermissionGranted = {
                 checkBluetoothPermissionsState = true
                 checkLocationPermissionsState = false

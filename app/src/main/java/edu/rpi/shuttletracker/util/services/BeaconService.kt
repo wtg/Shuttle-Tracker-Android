@@ -4,30 +4,44 @@ import android.Manifest
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Observer
+import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.notifications.Notifications
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.Identifier
 import org.altbeacon.beacon.Region
 import java.util.UUID
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class BeaconService : Service() {
+
+    @Inject
+    lateinit var userPreferencesRepository: UserPreferencesRepository
 
     private lateinit var beaconManager: BeaconManager
     private lateinit var region: Region
     private lateinit var rangingObserver: Observer<Collection<Beacon>>
+
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     companion object {
         private val _isRunning = MutableStateFlow(false)
@@ -52,10 +66,16 @@ class BeaconService : Service() {
             add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
         }
 
-        startForeground(Notifications.ID_AUTO_BOARD, notifyLaunch(), FOREGROUND_SERVICE_TYPE_LOCATION)
+        startForeground(
+            Notifications.ID_AUTO_BOARD,
+            notifyLaunch(),
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+
         // checks for bluetooth & location permissions
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -73,6 +93,12 @@ class BeaconService : Service() {
             // no bluetooth & location permissions
             stopSelf()
         }
+
+        serviceScope.launch {
+            userPreferencesRepository.saveAutoBoardService(true)
+        }
+
+        _isRunning.update { true }
 
         rangingObserver = Observer { beacons ->
 
@@ -114,18 +140,23 @@ class BeaconService : Service() {
             startRangingBeacons(region)
         }
 
-        _isRunning.update { true }
-
         return START_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
+        Log.d("CHANGING", "onDestroy: DESTROYED")
+
+        serviceScope.launch {
+            userPreferencesRepository.saveAutoBoardService(false)
+        }
+
+        _isRunning.update { false }
+
         // stops looking for beacons
         beaconManager.getRegionViewModel(region).rangedBeacons.removeObserver(rangingObserver)
         beaconManager.stopRangingBeacons(region)
-        _isRunning.update { false }
     }
 
     private fun notifyLaunch() = NotificationCompat.Builder(

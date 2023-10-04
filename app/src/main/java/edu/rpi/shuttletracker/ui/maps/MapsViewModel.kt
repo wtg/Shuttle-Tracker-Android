@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.ui.maps
 
 import android.location.Location
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
@@ -11,11 +12,15 @@ import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.repositories.ShuttleTrackerRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -24,7 +29,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MapsViewModel @Inject constructor(
     private val apiRepository: ShuttleTrackerRepository,
-    private val userPreferencesRepository: UserPreferencesRepository,
+    userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
     // represents the ui state of the view
@@ -39,13 +44,24 @@ class MapsViewModel @Inject constructor(
         loadAll()
         loadRunningBuses()
 
-        viewModelScope.launch {
-            userPreferencesRepository.getNotificationsRead().collect { count ->
+        // sets auto board service state
+        userPreferencesRepository.getAutoBoardService()
+            .flowOn(Dispatchers.Default)
+            .onEach { autoBoardService ->
+                Log.d("HELP", ": CHANGING $autoBoardService")
+                _mapsUiState.update {
+                    it.copy(autoBoardService = autoBoardService)
+                }
+            }.launchIn(viewModelScope)
+
+        // sets the notification read count
+        userPreferencesRepository.getNotificationsRead()
+            .flowOn(Dispatchers.Default)
+            .onEach { count ->
                 _mapsUiState.update {
                     it.copy(notificationsRead = count)
                 }
-            }
-        }
+            }.launchIn(viewModelScope)
     }
 
     /**
@@ -198,4 +214,5 @@ data class MapsUIState(
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
     val notificationsRead: Int = -1,
     val totalAnnouncements: Int = -1,
+    val autoBoardService: Boolean = false,
 )

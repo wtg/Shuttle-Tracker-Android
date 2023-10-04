@@ -2,19 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 
     xmlns:tools="http://schemas.android.com/tools">
-    <!--
-         The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
-         Google Maps Android API v2, but you must specify either coarse or fine
-         location permissions for the "MyLocation" functionality.
-    -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-
 
     <application
         android:name=".ShuttleTrackerApplication"
@@ -39,21 +39,26 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-<!--        <service android:name="org.altbeacon.beacon.service.BeaconService"-->
-<!--            tools:node="replace"-->
-<!--            android:foregroundServiceType="location"-->
-<!--            android:exported="false">-->
-<!--            <meta-data android:name="longScanForcingEnabled" android:value="true"/>-->
-<!--        </service>-->
         <service android:name=".util.services.LocationService"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="location"
+            android:exported="false" />
 
         <service android:name=".util.services.BeaconService"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="location"
+            android:exported="false"/>
 
         <receiver
             android:name=".util.notifications.NotificationReceiver"
-            android:exported="false"/>
+            android:exported="false" />
+
+        <receiver
+            android:name=".util.Restarter"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
 
     </application>

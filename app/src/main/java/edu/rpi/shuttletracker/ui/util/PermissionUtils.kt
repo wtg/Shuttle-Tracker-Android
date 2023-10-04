@@ -27,8 +27,10 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 class PermissionUtils {
     companion object {
+        @RequiresApi(Build.VERSION_CODES.Q)
         val LOCATION = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
         )
 
         @RequiresApi(Build.VERSION_CODES.S)
@@ -63,6 +65,43 @@ fun RequestAllPermissions() {
 
     SideEffect {
         permissionState.launchMultiplePermissionRequest()
+    }
+}
+
+/**
+ * Requests for location permissions and gives a rational if denied
+ * */
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun BackgroundLocationPermissionChecker(
+    onPermissionGranted: () -> Unit = {},
+    onPermissionDenied: () -> Unit = {},
+) {
+    val locationPermissionsState = rememberMultiplePermissionsState(
+        listOf(
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+        ),
+    )
+
+    var showCheckBackgroundLocationPermissions by remember { mutableStateOf(false) }
+
+    LocationPermissionsChecker(
+        onPermissionGranted = {
+            showCheckBackgroundLocationPermissions = true
+        },
+    )
+
+    if (showCheckBackgroundLocationPermissions) {
+        CheckPermission(
+            locationPermissionsState,
+            "Location",
+            Icons.Outlined.LocationOff,
+            "Background Location is needed to enable auto boarding\n\nClick \"Allow all the time\" on the proceeding screen to enable",
+            onPermissionGranted,
+            onPermissionDenied,
+            true,
+        )
     }
 }
 
@@ -150,11 +189,11 @@ fun CheckPermission(
     rational: String,
     onPermissionGranted: () -> Unit = {},
     onPermissionDenied: () -> Unit = {},
+    showDialogFirst: Boolean = false,
 ) {
     var rationalDialogState by remember { mutableStateOf(true) }
-
     SideEffect {
-        if (!permissionState.shouldShowRationale) {
+        if (!showDialogFirst) {
             permissionState.launchMultiplePermissionRequest()
         }
     }
