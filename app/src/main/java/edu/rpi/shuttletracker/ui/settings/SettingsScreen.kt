@@ -1,8 +1,6 @@
 package edu.rpi.shuttletracker.ui.settings
 
 import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -32,12 +30,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.ui.destinations.AboutScreenDestination
-import edu.rpi.shuttletracker.ui.util.BackgroundLocationPermissionChecker
-import edu.rpi.shuttletracker.ui.util.BluetoothPermissionChecker
+import edu.rpi.shuttletracker.ui.util.AutoBoardingPermissionsChecker
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 import edu.rpi.shuttletracker.util.services.BeaconService
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
@@ -49,30 +45,17 @@ fun SettingsScreen(
 
     val settingsUiState = viewModel.settingsUiState.collectAsStateWithLifecycle().value
 
-    var checkLocationPermissionsState by remember { mutableStateOf(false) }
-    var checkBluetoothPermissionsState by remember { mutableStateOf(false) }
-
     val context = LocalContext.current
 
-    // checks for location permissions first, if they have check for bluetooth
-    if (checkLocationPermissionsState) {
-        BackgroundLocationPermissionChecker(
-            onPermissionGranted = {
-                checkBluetoothPermissionsState = true
-                checkLocationPermissionsState = false
-            },
-            onPermissionDenied = { checkLocationPermissionsState = false },
-        )
-    }
+    var checkAutoBoardPermissions by remember { mutableStateOf(false) }
 
-    // if there is bluetooth permissions then start the beacon service
-    if (checkBluetoothPermissionsState) {
-        BluetoothPermissionChecker(
+    if (checkAutoBoardPermissions) {
+        AutoBoardingPermissionsChecker(
             onPermissionGranted = {
                 context.startForegroundService(Intent(context, BeaconService::class.java))
-                checkBluetoothPermissionsState = false
+                checkAutoBoardPermissions = false
             },
-            onPermissionDenied = { checkBluetoothPermissionsState = false },
+            onPermissionDenied = { checkAutoBoardPermissions = false },
         )
     }
 
@@ -96,7 +79,7 @@ fun SettingsScreen(
                     checked = settingsUiState.autoBoardService,
                     onCheckedChange = {
                         if (it) {
-                            checkLocationPermissionsState = true
+                            checkAutoBoardPermissions = !checkAutoBoardPermissions
                         } else {
                             viewModel.updateAutoBoardService(false)
                             context.stopService(Intent(context, BeaconService::class.java))

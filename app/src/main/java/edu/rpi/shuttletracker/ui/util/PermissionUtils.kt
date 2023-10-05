@@ -47,18 +47,29 @@ class PermissionUtils {
 /**
  * Checks all of the permissions necessary for the app to run
  * */
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun RequestAllPermissions() {
-    var permissions = listOf(
-        PermissionUtils.NOTIFICATION,
-        PermissionUtils.LOCATION,
-        PermissionUtils.BLUETOOTH,
-    )
+    var permissions = mutableListOf<List<String>>()
 
-    permissions = permissions.filter { !rememberMultiplePermissionsState(it).shouldShowRationale }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        permissions.add(PermissionUtils.NOTIFICATION)
+    }
 
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        permissions.add(PermissionUtils.LOCATION)
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        permissions.add(PermissionUtils.BLUETOOTH)
+    }
+
+    // gets only those that does not need rationals
+    permissions = permissions.filter {
+        !rememberMultiplePermissionsState(it).shouldShowRationale
+    }.toMutableList()
+
+    // makes the list flat so its no longer 2d
     val permissionState = rememberMultiplePermissionsState(
         permissions = permissions.flatten(),
     )
@@ -69,15 +80,62 @@ fun RequestAllPermissions() {
 }
 
 /**
+ * checks for location, background location, and bluetooth permissions
+ * */
+@Composable
+fun AutoBoardingPermissionsChecker(
+    onPermissionGranted: () -> Unit = {},
+    onPermissionDenied: () -> Unit = {},
+) {
+    var checkLocationPermissionsState by remember { mutableStateOf(true) }
+    var checkBluetoothPermissionsState by remember { mutableStateOf(false) }
+
+    // checks for location permissions first, if they have check for bluetooth
+    if (checkLocationPermissionsState) {
+        BackgroundLocationPermissionChecker(
+            onPermissionGranted = {
+                checkBluetoothPermissionsState = true
+                checkLocationPermissionsState = false
+            },
+            onPermissionDenied = {
+                onPermissionDenied()
+                checkLocationPermissionsState = false
+            },
+        )
+    }
+
+    // if there is bluetooth permissions then start the beacon service
+    if (checkBluetoothPermissionsState) {
+        BluetoothPermissionChecker(
+            onPermissionGranted = {
+                onPermissionGranted()
+                checkBluetoothPermissionsState = false
+            },
+            onPermissionDenied = {
+                onPermissionDenied()
+                checkBluetoothPermissionsState = false
+            },
+        )
+    }
+}
+
+/**
  * Requests for location permissions and gives a rational if denied
  * */
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun BackgroundLocationPermissionChecker(
     onPermissionGranted: () -> Unit = {},
     onPermissionDenied: () -> Unit = {},
 ) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        LocationPermissionsChecker(
+            onPermissionGranted,
+            onPermissionDenied,
+        )
+        return
+    }
+
     val locationPermissionsState = rememberMultiplePermissionsState(
         listOf(
             Manifest.permission.ACCESS_BACKGROUND_LOCATION,
@@ -90,6 +148,7 @@ fun BackgroundLocationPermissionChecker(
         onPermissionGranted = {
             showCheckBackgroundLocationPermissions = true
         },
+        onPermissionDenied = onPermissionDenied,
     )
 
     if (showCheckBackgroundLocationPermissions) {
@@ -97,10 +156,10 @@ fun BackgroundLocationPermissionChecker(
             locationPermissionsState,
             "Location",
             Icons.Outlined.LocationOff,
-            "Background Location is needed to enable auto boarding\n\nClick \"Allow all the time\" on the proceeding screen to enable",
+            "Background Location is needed to enable auto boarding\n\n" +
+                "Click \"Allow all the time\" on the proceeding screen to enable",
             onPermissionGranted,
             onPermissionDenied,
-            true,
         )
     }
 }
@@ -108,13 +167,17 @@ fun BackgroundLocationPermissionChecker(
 /**
  * Requests for location permissions and gives a rational if denied
  * */
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LocationPermissionsChecker(
     onPermissionGranted: () -> Unit = {},
     onPermissionDenied: () -> Unit = {},
 ) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        onPermissionGranted()
+        return
+    }
+
     val locationPermissionsState = rememberMultiplePermissionsState(
         PermissionUtils.LOCATION,
     )
@@ -132,13 +195,18 @@ fun LocationPermissionsChecker(
 /**
  * Requests for bluetooth permissions and gives a rational if denied
  * */
-@RequiresApi(Build.VERSION_CODES.S)
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun BluetoothPermissionChecker(
     onPermissionGranted: () -> Unit = {},
     onPermissionDenied: () -> Unit = {},
 ) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+        onPermissionGranted()
+        return
+    }
+
     val bluetoothPermissionsState = rememberMultiplePermissionsState(
         PermissionUtils.BLUETOOTH,
     )
@@ -156,16 +224,26 @@ fun BluetoothPermissionChecker(
 /**
  * Requests for notification permissions and gives a rational if denied
  * */
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun NotificationPermissionChecker(
     onPermissionGranted: () -> Unit = {},
     onPermissionDenied: () -> Unit = {},
 ) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        onPermissionGranted()
+        return
+    }
+
     val notificationPermissionState = rememberMultiplePermissionsState(
         PermissionUtils.NOTIFICATION,
-    )
+    ) { result ->
+        if (result.values.all { !it }) {
+            onPermissionGranted()
+        } else {
+            onPermissionDenied()
+        }
+    }
 
     CheckPermission(
         notificationPermissionState,
@@ -189,24 +267,18 @@ fun CheckPermission(
     rational: String,
     onPermissionGranted: () -> Unit = {},
     onPermissionDenied: () -> Unit = {},
-    showDialogFirst: Boolean = false,
 ) {
     var rationalDialogState by remember { mutableStateOf(true) }
-    SideEffect {
-        if (!showDialogFirst) {
-            permissionState.launchMultiplePermissionRequest()
-        }
-    }
 
-    // makes the rational dialog show every recomposition
-    LaunchedEffect(false) {
-        rationalDialogState = true
+    LaunchedEffect(permissionState.allPermissionsGranted) {
+        if (permissionState.allPermissionsGranted) {
+            onPermissionGranted()
+        }
     }
 
     if (permissionState.allPermissionsGranted) {
         onPermissionGranted()
     } else if (permissionState.shouldShowRationale && rationalDialogState) {
-        // shows the rational of why permission is needed
         AlertDialog(
             title = { Text(text = permissions) },
             icon = { Icon(icon, "Needed permission") },
@@ -218,6 +290,7 @@ fun CheckPermission(
             confirmButton = {
                 Button(onClick = {
                     permissionState.launchMultiplePermissionRequest()
+                    rationalDialogState = false
                 }) {
                     Text(text = "I understand")
                 }
@@ -225,8 +298,7 @@ fun CheckPermission(
         )
     } else {
         // permissions not granted (user ignored the rational)
-        rationalDialogState = false
+        LaunchedEffect(key1 = Unit) { permissionState.launchMultiplePermissionRequest() }
         Toast.makeText(LocalContext.current, "Permissions required", Toast.LENGTH_SHORT).show()
-        onPermissionDenied()
     }
 }

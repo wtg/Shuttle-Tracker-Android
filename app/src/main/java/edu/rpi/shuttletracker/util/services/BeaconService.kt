@@ -7,8 +7,6 @@ import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Observer
@@ -50,7 +48,6 @@ class BeaconService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate() {
         super.onCreate()
 
@@ -66,11 +63,18 @@ class BeaconService : Service() {
             add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
         }
 
-        startForeground(
-            Notifications.ID_AUTO_BOARD,
-            notifyLaunch(),
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                Notifications.ID_AUTO_BOARD,
+                notifyLaunch(),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
+            )
+        } else {
+            startForeground(
+                Notifications.ID_AUTO_BOARD,
+                notifyLaunch(),
+            )
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -145,8 +149,6 @@ class BeaconService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-
-        Log.d("CHANGING", "onDestroy: DESTROYED")
 
         serviceScope.launch {
             userPreferencesRepository.saveAutoBoardService(false)

@@ -1,7 +1,6 @@
 package edu.rpi.shuttletracker.ui.maps
 
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
@@ -48,7 +47,6 @@ class MapsViewModel @Inject constructor(
         userPreferencesRepository.getAutoBoardService()
             .flowOn(Dispatchers.Default)
             .onEach { autoBoardService ->
-                Log.d("HELP", ": CHANGING $autoBoardService")
                 _mapsUiState.update {
                     it.copy(autoBoardService = autoBoardService)
                 }

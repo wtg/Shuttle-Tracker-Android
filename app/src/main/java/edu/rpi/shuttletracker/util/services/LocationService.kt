@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Looper
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -70,7 +69,6 @@ class LocationService : Service() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate() {
         super.onCreate()
 
@@ -85,11 +83,18 @@ class LocationService : Service() {
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        startForeground(
-            Notifications.ID_TRACKING_BUS,
-            notifyLaunch(),
-            FOREGROUND_SERVICE_TYPE_LOCATION,
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                Notifications.ID_TRACKING_BUS,
+                notifyLaunch(),
+                FOREGROUND_SERVICE_TYPE_LOCATION,
+            )
+        } else {
+            startForeground(
+                Notifications.ID_TRACKING_BUS,
+                notifyLaunch(),
+            )
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

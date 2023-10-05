@@ -3,9 +3,7 @@ package edu.rpi.shuttletracker.ui.maps
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.location.Location
-import android.os.Build
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,8 +77,7 @@ import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.destinations.AnnouncementsScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.ScheduleScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SettingsScreenDestination
-import edu.rpi.shuttletracker.ui.util.BackgroundLocationPermissionChecker
-import edu.rpi.shuttletracker.ui.util.BluetoothPermissionChecker
+import edu.rpi.shuttletracker.ui.util.AutoBoardingPermissionsChecker
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.ui.util.Error
 import edu.rpi.shuttletracker.ui.util.LocationPermissionsChecker
@@ -89,7 +86,6 @@ import edu.rpi.shuttletracker.util.services.LocationService
 
 /**TODO follow thread https://github.com/googlemaps/android-maps-compose/pull/347 */
 @Destination(start = true)
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MapsScreen(
     navigator: DestinationsNavigator,
@@ -175,7 +171,7 @@ fun MapsScreen(
  * @param mapsUIState: The UI state of the view from the view-model
  * @param padding: Padding needed for the map content padding
  * */
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
 @Composable
 fun BusMap(
     mapsUIState: MapsUIState,
@@ -299,7 +295,6 @@ fun BusMarker(bus: Bus) {
  * The Floating Action Button for boarding the bus
  * */
 @SuppressLint("MissingPermission") // permissions checked in external composable
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun BoardBusFab(
     buses: List<Int>,
@@ -354,7 +349,7 @@ fun BoardBusFab(
             if (locationServiceBusNumber != null) {
                 context.stopService(Intent(context, LocationService::class.java))
             } else {
-                checkLocationPermissionsState = true
+                checkLocationPermissionsState = !checkLocationPermissionsState
             }
         },
         icon = { Icon(Icons.Default.DirectionsBus, "Board Bus") },
@@ -365,42 +360,28 @@ fun BoardBusFab(
 /**
  * Creates the FAB to enable auto-boarding
  * */
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun AutoBoardBusFab() {
     val context = LocalContext.current
 
     val isBeaconServiceRunning = BeaconService.isRunning.collectAsStateWithLifecycle().value
 
-    var checkLocationPermissionsState by remember { mutableStateOf(false) }
-    var checkBluetoothPermissionsState by remember { mutableStateOf(false) }
+    var checkAutoBoardPermissions by remember { mutableStateOf(false) }
 
-    // checks for location permissions first, if they have check for bluetooth
-    if (checkLocationPermissionsState) {
-        BackgroundLocationPermissionChecker(
-            onPermissionGranted = {
-                checkBluetoothPermissionsState = true
-                checkLocationPermissionsState = false
-            },
-            onPermissionDenied = { checkLocationPermissionsState = false },
-        )
-    }
-
-    // if there is bluetooth permissions then start the beacon service
-    if (checkBluetoothPermissionsState) {
-        BluetoothPermissionChecker(
+    if (checkAutoBoardPermissions) {
+        AutoBoardingPermissionsChecker(
             onPermissionGranted = {
                 context.startForegroundService(Intent(context, BeaconService::class.java))
-                checkBluetoothPermissionsState = false
+                checkAutoBoardPermissions = false
             },
-            onPermissionDenied = { checkBluetoothPermissionsState = false },
+            onPermissionDenied = { checkAutoBoardPermissions = false },
         )
     }
 
     SmallFloatingActionButton(
         onClick = {
             if (!isBeaconServiceRunning) {
-                checkLocationPermissionsState = true
+                checkAutoBoardPermissions = !checkAutoBoardPermissions
             } else {
                 context.stopService(Intent(context, BeaconService::class.java))
             }

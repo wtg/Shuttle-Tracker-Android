@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
@@ -21,7 +20,6 @@ class Restarter : BroadcastReceiver() {
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("CHANGING", "onReceive: ${intent.action}")
         when (intent.action) {
             Intent.ACTION_MY_PACKAGE_REPLACED -> startBeaconService(context)
             Intent.ACTION_BOOT_COMPLETED -> startBeaconService(context)
