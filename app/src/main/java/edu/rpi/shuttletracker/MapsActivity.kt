@@ -533,11 +533,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             stopLocation.longitude = stop.longitude
             println("current location: $currentLocation") // // TODO: remove/comment this testing clause
             println("stop location: $stopLocation") // // TODO: remove/comment this testing clause
-            if (currentLocation?.distanceTo(stopLocation)!! <= sharedPref.getFloat("min_stop_dist", 50F)) {
+            if (currentLocation?.distanceTo(stopLocation)!! <= sharedPref.getInt("min_stop_dist", 50)) {
                 Logs.writeToLogBuffer(
                     object {}.javaClass.enclosingMethod.name,
                     "user is distance ${currentLocation?.distanceTo(stopLocation)} from stop",
                 )
+                Toast.makeText(baseContext, "Shuttle stop detected within ${sharedPref.getInt("min_stop_dist", 50)}, auto boarding bus.", Toast.LENGTH_SHORT).show()
                 return true
             }
         }

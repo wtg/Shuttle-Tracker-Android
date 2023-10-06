@@ -10,7 +10,6 @@ import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatSeekBar
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -49,7 +48,7 @@ public class SettingsActivity : AppCompatActivity() {
         val colorBlindToggle: SwitchMaterial = findViewById(R.id.colorblindSwitch)
         val logsToggle: SwitchMaterial = findViewById(R.id.logsSwitch)
         val automaticBoardToggle: SwitchMaterial = findViewById(R.id.autoBoardSwitch)
-        val discreteSlider: AppCompatSeekBar = findViewById(R.id.discreteSlider)
+        val discreteSlider: SeekBar = findViewById(R.id.sb)
 
         val serverURLText = findViewById<EditText>(R.id.editServerURL)
         serverURLText.setText(
@@ -115,15 +114,14 @@ public class SettingsActivity : AppCompatActivity() {
         discreteSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val editor = sharedPreferences.edit()
-                editor.putFloat("min_stop_dist", progress.toFloat())
+                editor.putInt("min_stop_dist", progress)
+                Toast.makeText(baseContext, "Minimum stop distance is: ${sharedPreferences.getInt("min_stop_dist", 50)}", Toast.LENGTH_SHORT).show()
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                TODO("Not yet implemented")
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                TODO("Not yet implemented")
             }
         })
 

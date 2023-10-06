@@ -33,17 +33,15 @@
         app:layout_constraintStart_toStartOf="@id/logsSwitch"
         app:layout_constraintTop_toBottomOf="@id/logsSwitch" />
 
-    <androidx.appcompat.widget.AppCompatSeekBar
-        android:id="@+id/discreteSlider"
+    <SeekBar
+        android:id="@+id/sb"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:max="10"
+        android:min="10"
+        android:max="100"
         android:theme="@style/Widget.AppCompat.SeekBar.Discrete"
         android:layout_margin="32dp"
-        android:stepSize="10.0"
         android:text="Minimum Stop Distance"
-        android:valueFrom="0.0"
-        android:valueTo="100.0"
         app:layout_constraintBottom_toTopOf="@+id/relativeLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/autoBoardSwitch"
@@ -59,7 +57,8 @@
         app:title="Settings"
         app:titleTextColor="#FFFFFF"
         tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp" />
+        tools:layout_editor_absoluteY="0dp"
+        tools:ignore="MissingConstraints" />
 
     <RelativeLayout
         android:id="@+id/relativeLayout"
