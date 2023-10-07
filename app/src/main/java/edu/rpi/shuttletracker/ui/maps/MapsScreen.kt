@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.outlined.LocationDisabled
+import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
@@ -65,6 +66,7 @@ import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -92,7 +94,6 @@ import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
 
-/**TODO follow thread https://github.com/googlemaps/android-maps-compose/pull/347 */
 @Destination
 @Composable
 fun MapsScreen(
@@ -107,6 +108,7 @@ fun MapsScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
+    // finds errors when requesting data to server
     CheckResponseError(
         mapsUiState.networkError,
         mapsUiState.serverError,
@@ -118,6 +120,7 @@ fun MapsScreen(
         },
     )
 
+    // shows the error when there is an error from giving current position to server
     with(LocationService.networkError.collectAsStateWithLifecycle().value) {
         if (this != null) {
             Error(
@@ -135,6 +138,7 @@ fun MapsScreen(
     val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
     val errorStartingLocationService = LocationService.permissionError.collectAsStateWithLifecycle().value
 
+    // shows a snackbar whenever the service isn't able to run, usually because of lack of permissions
     LaunchedEffect(errorStartingBeaconService, errorStartingLocationService) {
         if (errorStartingBeaconService || errorStartingLocationService) {
             coroutineScope.launch {
@@ -165,6 +169,7 @@ fun MapsScreen(
         },
 
     ) { padding ->
+
         BusMap(mapsUIState = mapsUiState, padding = padding)
 
         Box(
@@ -180,19 +185,19 @@ fun MapsScreen(
             ) {
                 // navigates to announcements
                 ActionButton(
-                    Icons.Outlined.Notifications,
-                    mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
+                    icon = Icons.Outlined.Notifications,
+                    badgeCount = mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
                 ) {
                     navigator.navigate(AnnouncementsScreenDestination())
                 }
 
                 // navigates to the schedule
-                ActionButton(Icons.Outlined.Schedule) {
+                ActionButton(icon = Icons.Outlined.Schedule) {
                     navigator.navigate(ScheduleScreenDestination())
                 }
 
                 // navigates to settings
-                ActionButton(Icons.Outlined.Settings) {
+                ActionButton(icon = Icons.Outlined.Settings) {
                     navigator.navigate(SettingsScreenDestination())
                 }
             }
@@ -213,7 +218,9 @@ fun BusMap(
     padding: PaddingValues,
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
+    // can't show current location without location
     val mapLocationEnabled by remember {
         mutableStateOf(
             ActivityCompat.checkSelfPermission(
@@ -223,6 +230,7 @@ fun BusMap(
         )
     }
 
+    // keeps track of where the camera currently is
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
             LatLng(42.73068146020498, -73.67619731950525),
@@ -257,15 +265,53 @@ fun BusMap(
         uiSettings = MapUiSettings(
             zoomControlsEnabled = false,
         ),
+
+        myLocationButton = {
+            // makes sure its in the top left
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 10.dp),
+
+                contentAlignment = Alignment.TopEnd,
+            ) {
+                ActionButton(
+                    icon = if (mapLocationEnabled) {
+                        Icons.Outlined.MyLocation
+                    } else {
+                        Icons.Outlined.LocationDisabled
+                    },
+                ) {
+                    // finds current position and moves to there
+                    LocationServices.getFusedLocationProviderClient(context).lastLocation
+                        .addOnSuccessListener { location: Location ->
+                            coroutineScope.launch {
+                                cameraPositionState.animate(
+                                    update = CameraUpdateFactory.newLatLng(
+                                        LatLng(
+                                            location.latitude,
+                                            location.longitude,
+                                        ),
+                                    ),
+                                    durationMs = 1000,
+                                )
+                            }
+                        }
+                }
+            }
+        },
     ) {
+        // creates the stops
         mapsUIState.stops.forEach {
             StopMarker(stop = it)
         }
 
+        // creates the bus markers
         mapsUIState.runningBuses.forEach {
             BusMarker(bus = it)
         }
 
+        // draws the paths
         mapsUIState.routes.forEach {
             Polyline(
                 points = it.latLng(),
@@ -366,10 +412,10 @@ fun BoardBusFab(
                 context.stopService(Intent(context, LocationService::class.java))
             } else {
                 LocationServices.getFusedLocationProviderClient(context).lastLocation
-                    .addOnSuccessListener { location: Location? ->
+                    .addOnSuccessListener { location: Location ->
 
                         // if they a location was found and they are 50 ft away from a stop
-                        if (location != null && checkDistanceToStop(location) <= 20) {
+                        if (checkDistanceToStop(location) <= 20) {
                             busPickerState = true
                         } else {
                             // not close enough to a stop

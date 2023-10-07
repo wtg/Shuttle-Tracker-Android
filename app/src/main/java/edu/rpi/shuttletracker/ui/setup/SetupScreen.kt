@@ -11,6 +11,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -30,12 +31,14 @@ import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.LocationOff
 import androidx.compose.material.icons.outlined.NearbyError
 import androidx.compose.material.icons.outlined.NotificationsOff
+import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -81,6 +84,22 @@ fun SetupScreen(
 
     var sectionHeader by remember { mutableStateOf("") }
 
+    val skipSetupDialog = remember { mutableStateOf(false) }
+
+    BackHandler {
+        skipSetupDialog.value = true
+    }
+
+    if (skipSetupDialog.value) {
+        SkipSetup(showDialog = skipSetupDialog) {
+            navigator.navigate(MapsScreenDestination()) {
+                popUpTo(SetupScreenDestination) {
+                    inclusive = true
+                }
+            }
+        }
+    }
+
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.distinctUntilChanged().collect { page ->
             when (page) {
@@ -95,8 +114,8 @@ fun SetupScreen(
     /**
      * Navigates to the next page, but if at end it will go to maps
      * */
-    fun toNextPage() {
-        if (pagerState.targetPage == TOTAL_PAGES - 1) {
+    fun toNextPage(current: Int = pagerState.targetPage) {
+        if (current == TOTAL_PAGES - 1) {
             navigator.navigate(MapsScreenDestination()) {
                 popUpTo(SetupScreenDestination) {
                     inclusive = true
@@ -113,7 +132,11 @@ fun SetupScreen(
         topBar = { TopAppBar(title = { Text(text = sectionHeader) }) },
         bottomBar = {
             BottomAppBar(
-                actions = {},
+                actions = {
+                    IconButton(onClick = { skipSetupDialog.value = true }) {
+                        Icon(Icons.Outlined.SkipNext, "Skip setup")
+                    }
+                },
                 floatingActionButton = {
                     FloatingActionButton(
                         onClick = { toNextPage() },
@@ -136,13 +159,16 @@ fun SetupScreen(
                 .padding(padding),
         ) {
             when (it) {
-                0 -> PermissionPage { toNextPage() }
-                1 -> AutoBoardingPage { toNextPage() }
+                0 -> PermissionPage { toNextPage(0) }
+                1 -> AutoBoardingPage { toNextPage(1) }
             }
         }
     }
 }
 
+/**
+ * Page asking for general permissions
+ * */
 @Composable
 fun PermissionPage(
     allPermissionsGranted: () -> Unit,
@@ -218,6 +244,9 @@ fun PermissionPage(
     }
 }
 
+/**
+ * Page asking for auto boarder permissions
+ * */
 @Composable
 fun AutoBoardingPage(
     allPermissionsGranted: () -> Unit,
@@ -459,6 +488,33 @@ fun ToSettingsAlertDialog(
             dismissButton = {
                 Button(onClick = { showDialog.value = false }) {
                     Text(text = "Not now")
+                }
+            },
+            onDismissRequest = { showDialog.value = false },
+        )
+    }
+}
+
+@Composable
+fun SkipSetup(
+    showDialog: MutableState<Boolean>,
+    navigateToMaps: () -> Unit,
+) {
+    if (showDialog.value) {
+        AlertDialog(
+            title = { Text(text = "Skip setup") },
+            text = { Text(text = "Are you sure you want to skip the setup?") },
+            dismissButton = {
+                Button(onClick = { showDialog.value = false }) {
+                    Text(text = "Cancel")
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    navigateToMaps()
+                    showDialog.value = false
+                }) {
+                    Text(text = "Skip")
                 }
             },
             onDismissRequest = { showDialog.value = false },
