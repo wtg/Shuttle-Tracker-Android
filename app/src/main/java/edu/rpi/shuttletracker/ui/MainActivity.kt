@@ -11,8 +11,6 @@ import androidx.core.view.WindowCompat
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
-import edu.rpi.shuttletracker.ui.util.NotificationPermissionChecker
-import edu.rpi.shuttletracker.ui.util.RequestAllPermissions
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -33,8 +31,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    RequestAllPermissions()
-                    NotificationPermissionChecker()
+                    // RequestAllPermissions()
+                    // NotificationPermissionChecker()
 
                     DestinationsNavHost(navGraph = NavGraphs.root)
                 }

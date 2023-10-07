@@ -44,6 +44,9 @@ class BeaconService : Service() {
     companion object {
         private val _isRunning = MutableStateFlow(false)
         val isRunning = _isRunning.asStateFlow()
+
+        private val _permissionError = MutableStateFlow(false)
+        val permissionError = _permissionError.asStateFlow()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -63,27 +66,34 @@ class BeaconService : Service() {
             add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                Notifications.ID_AUTO_BOARD,
-                notifyLaunch(),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
-            )
-        } else {
-            startForeground(
-                Notifications.ID_AUTO_BOARD,
-                notifyLaunch(),
-            )
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    Notifications.ID_AUTO_BOARD,
+                    notifyLaunch(),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
+                )
+            } else {
+                startForeground(
+                    Notifications.ID_AUTO_BOARD,
+                    notifyLaunch(),
+                )
+            }
+        } catch (e: Exception) {
+            _permissionError.update { true }
+            stopSelf()
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
+        _permissionError.update { false }
+
         // checks for bluetooth & location permissions
         if (ActivityCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
             ) != PackageManager.PERMISSION_GRANTED ||
             ActivityCompat.checkSelfPermission(
                 this,
@@ -95,7 +105,10 @@ class BeaconService : Service() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // no bluetooth & location permissions
+
+            _permissionError.update { true }
             stopSelf()
+            return START_STICKY
         }
 
         serviceScope.launch {
@@ -154,11 +167,14 @@ class BeaconService : Service() {
             userPreferencesRepository.saveAutoBoardService(false)
         }
 
+        _permissionError.update { false }
         _isRunning.update { false }
 
-        // stops looking for beacons
-        beaconManager.getRegionViewModel(region).rangedBeacons.removeObserver(rangingObserver)
-        beaconManager.stopRangingBeacons(region)
+        try {
+            // stops looking for beacons
+            beaconManager.getRegionViewModel(region).rangedBeacons.removeObserver(rangingObserver)
+            beaconManager.stopRangingBeacons(region)
+        } catch (_: Exception) {}
     }
 
     private fun notifyLaunch() = NotificationCompat.Builder(

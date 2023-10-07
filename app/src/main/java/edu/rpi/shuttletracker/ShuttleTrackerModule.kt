@@ -28,7 +28,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 private const val USER_PREFERENCES = "user_preferences"
-private const val BASE_URL = "https://shuttletracker.app/"
+private const val BASE_URL = "https://staging.shuttletracker.app/"
 
 @Module
 @InstallIn(SingletonComponent::class)

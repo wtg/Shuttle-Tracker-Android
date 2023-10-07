@@ -58,14 +58,17 @@ class LocationService : Service() {
         private val _busNum = MutableStateFlow<Int?>(null)
         val busNum = _busNum.asStateFlow()
 
-        private val _error = MutableStateFlow<NetworkResponse<*, ErrorResponse>?>(null)
-        val error = _error.asStateFlow()
+        private val _networkError = MutableStateFlow<NetworkResponse<*, ErrorResponse>?>(null)
+        val networkError = _networkError.asStateFlow()
+
+        private val _permissionError = MutableStateFlow(false)
+        val permissionError = _permissionError.asStateFlow()
 
         const val BUNDLE_BUS_ID = "BUS_ID"
         const val BUNDLE_DISPLAY_ERROR = "DISPLAY_ERROR"
 
         fun dismissError() {
-            _error.update { null }
+            _networkError.update { null }
         }
     }
 
@@ -83,17 +86,22 @@ class LocationService : Service() {
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                Notifications.ID_TRACKING_BUS,
-                notifyLaunch(),
-                FOREGROUND_SERVICE_TYPE_LOCATION,
-            )
-        } else {
-            startForeground(
-                Notifications.ID_TRACKING_BUS,
-                notifyLaunch(),
-            )
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    Notifications.ID_TRACKING_BUS,
+                    notifyLaunch(),
+                    FOREGROUND_SERVICE_TYPE_LOCATION,
+                )
+            } else {
+                startForeground(
+                    Notifications.ID_TRACKING_BUS,
+                    notifyLaunch(),
+                )
+            }
+        } catch (e: Exception) {
+            _permissionError.update { true }
+            stopSelf()
         }
     }
 
@@ -105,7 +113,8 @@ class LocationService : Service() {
         val busNum = extras.getInt(BUNDLE_BUS_ID)
         val displayError = extras.getBoolean(BUNDLE_DISPLAY_ERROR, true)
 
-        _error.update { null }
+        _networkError.update { null }
+        _permissionError.update { false }
 
         // checks for location permissions
         if (ActivityCompat.checkSelfPermission(
@@ -114,7 +123,9 @@ class LocationService : Service() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // no location permissions
+            _permissionError.update { true }
             stopSelf()
+            return START_STICKY
         }
 
         with(NotificationManagerCompat.from(this)) {
@@ -148,10 +159,13 @@ class LocationService : Service() {
     override fun onDestroy() {
         super.onDestroy()
 
+        _permissionError.update { false }
         _busNum.update { null }
 
-        // unsubscribes from location updates
-        locationClient.removeLocationUpdates(locationCallback)
+        try {
+            // unsubscribes from location updates
+            locationClient.removeLocationUpdates(locationCallback)
+        } catch (_: Exception) {}
     }
 
     /**
@@ -174,7 +188,7 @@ class LocationService : Service() {
             response is NetworkResponse.UnknownError ||
             response is NetworkResponse.ServerError
         ) {
-            if (displayError) _error.update { response }
+            if (displayError) _networkError.update { response }
             stopSelf()
         }
     }

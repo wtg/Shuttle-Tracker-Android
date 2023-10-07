@@ -1,7 +1,9 @@
 package edu.rpi.shuttletracker.ui.maps
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.location.Location
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -39,6 +41,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +52,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +61,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.location.LocationServices
@@ -77,15 +85,15 @@ import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.destinations.AnnouncementsScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.ScheduleScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SettingsScreenDestination
-import edu.rpi.shuttletracker.ui.util.AutoBoardingPermissionsChecker
+import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.ui.util.Error
-import edu.rpi.shuttletracker.ui.util.LocationPermissionsChecker
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
+import kotlinx.coroutines.launch
 
 /**TODO follow thread https://github.com/googlemaps/android-maps-compose/pull/347 */
-@Destination(start = true)
+@Destination
 @Composable
 fun MapsScreen(
     navigator: DestinationsNavigator,
@@ -94,6 +102,10 @@ fun MapsScreen(
     // makes sure the 2 flows are collected when ui is open
     val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
     viewModel.runningBusesState.collectAsStateWithLifecycle({})
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val coroutineScope = rememberCoroutineScope()
 
     CheckResponseError(
         mapsUiState.networkError,
@@ -106,7 +118,7 @@ fun MapsScreen(
         },
     )
 
-    with(LocationService.error.collectAsStateWithLifecycle().value) {
+    with(LocationService.networkError.collectAsStateWithLifecycle().value) {
         if (this != null) {
             Error(
                 error = this,
@@ -116,12 +128,35 @@ fun MapsScreen(
                 errorBody = "You may be too far from a stop (20m) or selected an invalid bus",
                 primaryButtonText = "I understand",
                 showSecondaryButton = false,
-
             )
         }
     }
 
+    val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
+    val errorStartingLocationService = LocationService.permissionError.collectAsStateWithLifecycle().value
+
+    LaunchedEffect(errorStartingBeaconService, errorStartingLocationService) {
+        if (errorStartingBeaconService || errorStartingLocationService) {
+            coroutineScope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = "Missing permissions to use service",
+                    actionLabel = "Fix",
+                    duration = SnackbarDuration.Long,
+                )
+                when (result) {
+                    SnackbarResult.ActionPerformed -> {
+                        navigator.navigate(SetupScreenDestination())
+                    }
+                    SnackbarResult.Dismissed -> { /* IGNORED */ }
+                }
+            }
+        }
+    }
+
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
                 AutoBoardBusFab()
@@ -177,10 +212,16 @@ fun BusMap(
     mapsUIState: MapsUIState,
     padding: PaddingValues,
 ) {
-    var mapLocationEnabled by remember { mutableStateOf(false) }
-    LocationPermissionsChecker(onPermissionGranted = { mapLocationEnabled = true })
-
     val context = LocalContext.current
+
+    val mapLocationEnabled by remember {
+        mutableStateOf(
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            ) == PackageManager.PERMISSION_GRANTED,
+        )
+    }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
@@ -304,7 +345,6 @@ fun BoardBusFab(
     val context = LocalContext.current
 
     var busPickerState by remember { mutableStateOf(false) }
-    var checkLocationPermissionsState by remember { mutableStateOf(false) }
 
     // launches the bus picker dialog
     if (busPickerState) {
@@ -320,11 +360,11 @@ fun BoardBusFab(
         )
     }
 
-    if (checkLocationPermissionsState) {
-        LocationPermissionsChecker(
-            onPermissionGranted = {
-                // MissingPermission suppressed here as location is already checked
-                // This receives the most recent position of the user
+    ExtendedFloatingActionButton(
+        onClick = {
+            if (locationServiceBusNumber != null) {
+                context.stopService(Intent(context, LocationService::class.java))
+            } else {
                 LocationServices.getFusedLocationProviderClient(context).lastLocation
                     .addOnSuccessListener { location: Location? ->
 
@@ -335,21 +375,9 @@ fun BoardBusFab(
                             // not close enough to a stop
                             Toast.makeText(context, "Must be 20m from a stop to board", Toast.LENGTH_SHORT).show()
                         }
+                    }.addOnFailureListener {
+                        Toast.makeText(context, "Unable to find location", Toast.LENGTH_SHORT).show()
                     }
-
-                checkLocationPermissionsState = false
-            },
-
-            onPermissionDenied = { checkLocationPermissionsState = false },
-        )
-    }
-
-    ExtendedFloatingActionButton(
-        onClick = {
-            if (locationServiceBusNumber != null) {
-                context.stopService(Intent(context, LocationService::class.java))
-            } else {
-                checkLocationPermissionsState = !checkLocationPermissionsState
             }
         },
         icon = { Icon(Icons.Default.DirectionsBus, "Board Bus") },
@@ -366,22 +394,10 @@ fun AutoBoardBusFab() {
 
     val isBeaconServiceRunning = BeaconService.isRunning.collectAsStateWithLifecycle().value
 
-    var checkAutoBoardPermissions by remember { mutableStateOf(false) }
-
-    if (checkAutoBoardPermissions) {
-        AutoBoardingPermissionsChecker(
-            onPermissionGranted = {
-                context.startForegroundService(Intent(context, BeaconService::class.java))
-                checkAutoBoardPermissions = false
-            },
-            onPermissionDenied = { checkAutoBoardPermissions = false },
-        )
-    }
-
     SmallFloatingActionButton(
         onClick = {
             if (!isBeaconServiceRunning) {
-                checkAutoBoardPermissions = !checkAutoBoardPermissions
+                context.startForegroundService(Intent(context, BeaconService::class.java))
             } else {
                 context.stopService(Intent(context, BeaconService::class.java))
             }
