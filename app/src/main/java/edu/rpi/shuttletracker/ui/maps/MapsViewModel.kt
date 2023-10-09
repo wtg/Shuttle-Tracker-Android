@@ -60,6 +60,15 @@ class MapsViewModel @Inject constructor(
                     it.copy(notificationsRead = count)
                 }
             }.launchIn(viewModelScope)
+
+        // gets user preference for colorblind mode
+        userPreferencesRepository.getColorBlindMode()
+            .flowOn(Dispatchers.Default)
+            .onEach { colorBlindMode ->
+                _mapsUiState.update {
+                    it.copy(colorBlindMode = colorBlindMode)
+                }
+            }.launchIn(viewModelScope)
     }
 
     /**
@@ -213,4 +222,5 @@ data class MapsUIState(
     val notificationsRead: Int = -1,
     val totalAnnouncements: Int = -1,
     val autoBoardService: Boolean = false,
+    val colorBlindMode: Boolean = false,
 )

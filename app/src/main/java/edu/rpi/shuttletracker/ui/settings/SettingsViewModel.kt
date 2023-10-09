@@ -34,6 +34,12 @@ class SettingsViewModel @Inject constructor(
             userPreferencesRepository.saveAutoBoardService(autoBoardService)
         }
     }
+
+    fun updateColorBlindMode(colorBlindMode: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.saveColorBlindMode(colorBlindMode)
+        }
+    }
 }
 
 data class SettingsUiState(

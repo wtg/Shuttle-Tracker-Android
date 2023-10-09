@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BusAlert
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,14 +50,13 @@ fun SettingsScreen(
 
     val settingsUiState = viewModel.settingsUiState.collectAsStateWithLifecycle().value
 
-    val context = LocalContext.current
-
     val snackbarHostState = remember { SnackbarHostState() }
 
     val coroutineScope = rememberCoroutineScope()
 
     val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
 
+    // listens to beacon service if they don't have permissions or not
     LaunchedEffect(errorStartingBeaconService) {
         if (errorStartingBeaconService) {
             coroutineScope.launch {
@@ -91,19 +91,15 @@ fun SettingsScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
         Column(modifier = Modifier.padding(padding).padding(horizontal = 10.dp)) {
-            SettingsItem(icon = Icons.Outlined.BusAlert, "Auto board bus") {
-                Switch(
-                    checked = settingsUiState.autoBoardService,
-                    onCheckedChange = {
-                        if (it) {
-                            context.startForegroundService(Intent(context, BeaconService::class.java))
-                        } else {
-                            viewModel.updateAutoBoardService(false)
-                            context.stopService(Intent(context, BeaconService::class.java))
-                        }
-                    },
-                )
-            }
+            AutoBoardBusSettingItem(
+                autoBoardService = settingsUiState.autoBoardService,
+                updateAutoBoardService = viewModel::updateAutoBoardService,
+            )
+
+            ColorBlindSettingItem(
+                colorBlindMode = settingsUiState.colorBlindMode,
+                updateColorBlindMode = viewModel::updateColorBlindMode,
+            )
 
             SettingsItem(
                 Icons.Outlined.Info,
@@ -111,5 +107,40 @@ fun SettingsScreen(
                 onClick = { navigator.navigate(AboutScreenDestination()) },
             )
         }
+    }
+}
+
+@Composable
+fun AutoBoardBusSettingItem(
+    autoBoardService: Boolean,
+    updateAutoBoardService: (Boolean) -> Unit,
+) {
+    val context = LocalContext.current
+
+    SettingsItem(icon = Icons.Outlined.BusAlert, "Auto board bus") {
+        Switch(
+            checked = autoBoardService,
+            onCheckedChange = {
+                if (it) {
+                    context.startForegroundService(Intent(context, BeaconService::class.java))
+                } else {
+                    updateAutoBoardService(false)
+                    context.stopService(Intent(context, BeaconService::class.java))
+                }
+            },
+        )
+    }
+}
+
+@Composable
+fun ColorBlindSettingItem(
+    colorBlindMode: Boolean,
+    updateColorBlindMode: (Boolean) -> Unit,
+) {
+    SettingsItem(icon = Icons.Outlined.Visibility, "Color blind mode") {
+        Switch(
+            checked = colorBlindMode,
+            onCheckedChange = { updateColorBlindMode(it) },
+        )
     }
 }

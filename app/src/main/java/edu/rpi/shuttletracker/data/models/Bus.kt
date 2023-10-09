@@ -30,6 +30,9 @@ data class Bus(
     val uuid: String,
 
 ) {
+    /**
+     * Turns the date stored into a time of a generalized time ago from current
+     * */
     fun getTimeAgo(): String {
         // gets current time and rounds to nearest second
         val currentDate: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
@@ -42,7 +45,7 @@ data class Bus(
         val duration: Duration = Duration.between(busDate.toLocalDateTime(), currentDate)
 
         // formats duration to h m s
-        return duration.toString()
+        return "~" + duration.toString()
             .substring(2)
             .replace("(\\d[HMS])(?!$)".toRegex(), "$1 ")
             .lowercase(Locale.ROOT) + " ago"

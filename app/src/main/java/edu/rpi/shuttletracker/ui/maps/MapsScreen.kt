@@ -308,7 +308,10 @@ fun BusMap(
 
         // creates the bus markers
         mapsUIState.runningBuses.forEach {
-            BusMarker(bus = it)
+            BusMarker(
+                bus = it,
+                colorBlindMode = mapsUIState.colorBlindMode,
+            )
         }
 
         // draws the paths
@@ -347,7 +350,7 @@ fun StopMarker(stop: Stop) {
  * Creates a marker for a bus
  * */
 @Composable
-fun BusMarker(bus: Bus) {
+fun BusMarker(bus: Bus, colorBlindMode: Boolean) {
     val markerState = rememberMarkerState(position = bus.latLng())
 
     // every time bus changes, update the position of the marker
@@ -359,9 +362,17 @@ fun BusMarker(bus: Bus) {
 
     // gets proper bus icon
     val busIcon = if (bus.type == "user") {
-        context.getString(R.string.crowdsourced_bus)
+        if (colorBlindMode) {
+            context.getString(R.string.colorblind_crowdsourced_bus)
+        } else {
+            context.getString(R.string.crowdsourced_bus)
+        }
     } else {
-        context.getString(R.string.GPS_bus)
+        if (colorBlindMode) {
+            context.getString(R.string.colorblind_GPS_bus)
+        } else {
+            context.getString(R.string.GPS_bus)
+        }
     }
 
     val icon = BitmapDescriptorFactory.fromAsset(busIcon)
