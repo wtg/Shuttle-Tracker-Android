@@ -125,7 +125,7 @@ class LocationService : Service() {
             // no location permissions
             _permissionError.update { true }
             stopSelf()
-            return START_STICKY
+            return START_NOT_STICKY
         }
 
         with(NotificationManagerCompat.from(this)) {
@@ -133,6 +133,8 @@ class LocationService : Service() {
 
             notify(busNum)
         }
+
+        val uuid = UUID.randomUUID().toString()
 
         // change in location
         locationCallback = object : LocationCallback() {
@@ -142,7 +144,7 @@ class LocationService : Service() {
 
                 serviceScope.launch {
                     if (currentLocation != null) {
-                        updateLocation(busNum, currentLocation, displayError)
+                        updateLocation(busNum, currentLocation, displayError, uuid)
                     }
                 }
             }
@@ -153,7 +155,7 @@ class LocationService : Service() {
 
         _busNum.update { busNum }
 
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
@@ -171,11 +173,16 @@ class LocationService : Service() {
     /**
      * Sends updated bus location to server
      * */
-    private suspend fun updateLocation(busNum: Int, location: Location, displayError: Boolean) {
+    private suspend fun updateLocation(
+        busNum: Int,
+        location: Location,
+        displayError: Boolean,
+        uuid: String,
+    ) {
         val response = apiRepository.addBus(
             busNum,
             BoardBus(
-                UUID.randomUUID().toString(),
+                uuid,
                 location.latitude,
                 location.longitude,
                 "user",

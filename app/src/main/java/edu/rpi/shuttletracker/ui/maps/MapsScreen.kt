@@ -381,7 +381,7 @@ fun BusMarker(bus: Bus, colorBlindMode: Boolean) {
         state = markerState,
         title = "Bus ${bus.id}",
         icon = icon,
-        snippet = bus.getTimeAgo(),
+        snippet = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value,
         onClick = {
             it.showInfoWindow()
             true
