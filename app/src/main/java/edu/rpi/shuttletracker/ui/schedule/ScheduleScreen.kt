@@ -80,7 +80,9 @@ fun ScheduleScreen(
             modifier = Modifier.padding(padding),
             reverseLayout = true,
         ) { page ->
-            SchedulePagerItem(schedule = scheduleUiState.schedule[page])
+            if (page < scheduleUiState.schedule.size) {
+                SchedulePagerItem(schedule = scheduleUiState.schedule[page])
+            }
         }
     }
 }
