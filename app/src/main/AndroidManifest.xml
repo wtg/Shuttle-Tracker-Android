@@ -17,6 +17,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <application
+        android:enableOnBackInvokedCallback="true"
         android:name=".ShuttleTrackerApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

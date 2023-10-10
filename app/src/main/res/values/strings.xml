@@ -7,7 +7,14 @@
     <string name="colorblind_crowdsourced_bus">cbgreenbus.png</string>
     <string name="info_intro">
         Shuttle Tracker shows you the real-time locations of the RPI campus shuttles,
-        powered by crowd-sourced location data.
+        powered by crowd-sourced location data.\n\n
+
+        The map is automatically refreshed every 5 seconds.
+        Green buses have high-quality location data,
+        and red buses have low-quality location data. In colorblind mode, the green buses
+        are replaced by buses with an aqua target/scope icon, and the red buses are replaced by
+        a purple dial icon. When boarding a bus, tap \"Board Bus\", and when getting off,
+        tap \"Leave Bus\". You must be within 20 meters of a stop to board a bus.
     </string>
     <string name="info_instructions">
         Instructions
@@ -30,6 +37,19 @@
         using a combination of system and user-reported data indefinitely,
         but these resolved data don\'t correspond with any
         specific user-reported coordinates.\n\n\n\n
+    </string>
+    <string name="Privacy">
+        Shuttle Tracker sends your location data to our server only when you tap \"Board Bus\"
+        and stops sending these data when you tap \"Leave Bus\".
+        Your location data are associated with an anonymous,
+        random identifier that rotates every time you start a new shuttle trip.
+        These data aren\'t associated with your name,
+        Google account, RCS ID, or any other identifying information.
+        We continuously purge location data that are more than 30 seconds old from our server.
+        We may retain resolved location data that are calculated
+        using a combination of system and user-reported data indefinitely,
+        but these resolved data don\'t correspond with any
+        specific user-reported coordinates.
     </string>
     <string name="about_page">Shuttle tracker is developed by the Rensselaer Center for Open Source
         by your fellow RPI students. As an open source application, anyone can help develop the RPI Shuttle Tracker

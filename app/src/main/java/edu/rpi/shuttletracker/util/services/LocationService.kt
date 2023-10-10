@@ -75,13 +75,12 @@ class LocationService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        // gets location changes of 2 meters ever 5 secs
+        // gets location changes every 5 secs
         request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
             5000,
         ).apply {
             setWaitForAccurateLocation(true)
-            setMinUpdateDistanceMeters(2F)
         }.build()
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)

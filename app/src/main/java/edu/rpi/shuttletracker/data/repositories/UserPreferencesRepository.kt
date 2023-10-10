@@ -16,6 +16,8 @@ class UserPreferencesRepository @Inject constructor(
         private val NOTIFICATIONS_READ = intPreferencesKey("notifications_read")
         private val AUTO_BOARD_SERVICE = booleanPreferencesKey("auto_board_service")
         private val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
+        private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
+        private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
     }
 
     fun getNotificationsRead(): Flow<Int> = dataStore.data.map {
@@ -45,6 +47,26 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun saveColorBlindMode(colorBlindMode: Boolean) {
         dataStore.edit {
             it[COLOR_BLIND_MODE] = colorBlindMode
+        }
+    }
+
+    fun getPrivacyPolicyAccepted(): Flow<Boolean> = dataStore.data.map {
+        it[PRIVACY_POLICY_ACCEPTED] ?: false
+    }
+
+    suspend fun savePrivacyPolicyAccepted(privacyPollicyAccepted: Boolean) {
+        dataStore.edit {
+            it[PRIVACY_POLICY_ACCEPTED] = privacyPollicyAccepted
+        }
+    }
+
+    fun getAboutAccepted(): Flow<Boolean> = dataStore.data.map {
+        it[ABOUT_ACCEPTED] ?: false
+    }
+
+    suspend fun saveAboutAccepted(aboutAccepted: Boolean) {
+        dataStore.edit {
+            it[ABOUT_ACCEPTED] = aboutAccepted
         }
     }
 }

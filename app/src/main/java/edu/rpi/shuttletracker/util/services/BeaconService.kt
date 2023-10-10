@@ -150,7 +150,7 @@ class BeaconService : Service() {
             backgroundBetweenScanPeriod = 30000
             backgroundScanPeriod = 10000
 
-            // scans every 10 sec for 10 sec in background
+            // scans every 10 sec for 10 sec in foreground
             foregroundBetweenScanPeriod = 10000
             backgroundScanPeriod = 10000
 

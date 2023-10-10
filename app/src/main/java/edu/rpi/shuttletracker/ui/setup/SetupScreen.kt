@@ -17,8 +17,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
@@ -39,6 +41,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -60,11 +63,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
+import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.destinations.MapsScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.util.services.BeaconService
@@ -73,7 +78,7 @@ import kotlinx.coroutines.launch
 
 const val DENIED = "denied"
 const val EXPLAINED = "explained"
-const val TOTAL_PAGES = 2
+const val TOTAL_PAGES = 4
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @RootNavGraph(start = true)
@@ -81,6 +86,7 @@ const val TOTAL_PAGES = 2
 @Composable
 fun SetupScreen(
     navigator: DestinationsNavigator,
+    viewModel: SetupScreenViewModel = hiltViewModel(),
 ) {
     val pagerState = rememberPagerState(pageCount = { TOTAL_PAGES })
 
@@ -88,10 +94,16 @@ fun SetupScreen(
 
     val skipSetupDialog = remember { mutableStateOf(false) }
 
+    val setupUiState = viewModel.setupUiState.collectAsStateWithLifecycle().value
+
+    val context = LocalContext.current
+
+    // a dialog will show if they want to skip the setup
     BackHandler {
         skipSetupDialog.value = true
     }
 
+    // dialog shown when skipping setup
     if (skipSetupDialog.value) {
         SkipSetup(showDialog = skipSetupDialog) {
             navigator.navigate(MapsScreenDestination()) {
@@ -102,11 +114,14 @@ fun SetupScreen(
         }
     }
 
+    // when pages change, change title name
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.distinctUntilChanged().collect { page ->
             when (page) {
-                0 -> sectionHeader = "Permissions"
-                1 -> sectionHeader = "Auto boarding"
+                0 -> sectionHeader = "About"
+                1 -> sectionHeader = "Private policy"
+                2 -> sectionHeader = "Permissions"
+                3 -> sectionHeader = "Auto boarding"
             }
         }
     }
@@ -133,25 +148,32 @@ fun SetupScreen(
     Scaffold(
         topBar = { TopAppBar(title = { Text(text = sectionHeader) }) },
         bottomBar = {
-            BottomAppBar(
-                actions = {
-                    IconButton(onClick = { skipSetupDialog.value = true }) {
-                        Icon(Icons.Outlined.SkipNext, "Skip setup")
-                    }
-                },
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { toNextPage() },
-
-                    ) {
-                        if (pagerState.currentPage == TOTAL_PAGES - 1) {
-                            Icon(Icons.Outlined.Done, "Complete setup")
-                        } else {
-                            Icon(Icons.Outlined.ArrowForward, "Next page")
+            Column {
+                // shows how far you are in setup screen
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    progress = (pagerState.currentPage) / (TOTAL_PAGES - 1).toFloat(),
+                )
+                BottomAppBar(
+                    actions = {
+                        IconButton(onClick = { skipSetupDialog.value = true }) {
+                            Icon(Icons.Outlined.SkipNext, "Skip setup")
                         }
-                    }
-                },
-            )
+                    },
+                    floatingActionButton = {
+                        FloatingActionButton(
+                            onClick = { toNextPage() },
+
+                        ) {
+                            if (pagerState.currentPage == TOTAL_PAGES - 1) {
+                                Icon(Icons.Outlined.Done, "Complete setup")
+                            } else {
+                                Icon(Icons.Outlined.ArrowForward, "Next page")
+                            }
+                        }
+                    },
+                )
+            }
         },
     ) { padding ->
         HorizontalPager(
@@ -161,9 +183,50 @@ fun SetupScreen(
                 .padding(padding),
         ) {
             when (it) {
-                0 -> PermissionPage { toNextPage(0) }
-                1 -> AutoBoardingPage { toNextPage(1) }
+                0 -> TextScreen(
+                    onAccept = { toNextPage(0) },
+                    acceptedState = setupUiState.aboutAccepted,
+                    updateState = viewModel::updateAboutAccepted,
+                    text = context.getString(R.string.info_intro),
+                    title = "About",
+                )
+                1 -> TextScreen(
+                    onAccept = { toNextPage(1) },
+                    acceptedState = setupUiState.privacyPolicyAccepted,
+                    updateState = viewModel::updatePrivacyPolicyAccepted,
+                    text = context.getString(R.string.Privacy),
+                    title = "Private policy",
+                )
+                2 -> PermissionPage { toNextPage(2) }
+                3 -> AutoBoardingPage { toNextPage(3) }
             }
+        }
+    }
+}
+
+@Composable
+fun TextScreen(
+    onAccept: () -> Unit,
+    acceptedState: Boolean,
+    updateState: () -> Unit,
+    text: String,
+    title: String,
+) {
+    LaunchedEffect(acceptedState) {
+        if (acceptedState) onAccept()
+    }
+
+    Column(modifier = Modifier.padding(20.dp)) {
+        Text(text = text)
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        if (!acceptedState) {
+            Button(onClick = { updateState() }) {
+                Text(text = "Accept ${title.lowercase()}")
+            }
+        } else {
+            Text(text = "$title acknowledged, Thank you")
         }
     }
 }
@@ -175,10 +238,10 @@ fun SetupScreen(
 fun PermissionPage(
     allPermissionsGranted: () -> Unit,
 ) {
-    val context = LocalContext.current
     val hasLocationPermissions = remember { mutableStateOf(false) }
     val hasNotificationPermissions = remember { mutableStateOf(false) }
 
+    // when all the permissions are granted, call function
     LaunchedEffect(
         key1 = hasLocationPermissions.value,
         key2 = hasNotificationPermissions.value,
@@ -195,18 +258,11 @@ fun PermissionPage(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // ask for notification permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val notificationPermission = arrayOf(
                 Manifest.permission.POST_NOTIFICATIONS,
             )
-
-            hasNotificationPermissions.value =
-                notificationPermission.all {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        it,
-                    ) == PackageManager.PERMISSION_GRANTED
-                }
 
             PermissionItem(
                 permission = notificationPermission,
@@ -219,19 +275,12 @@ fun PermissionPage(
             hasNotificationPermissions.value = true
         }
 
+        // ask for location permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val locationPermissions = arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
             )
-
-            hasLocationPermissions.value =
-                locationPermissions.all {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        it,
-                    ) == PackageManager.PERMISSION_GRANTED
-                }
 
             PermissionItem(
                 permission = locationPermissions,
@@ -258,6 +307,7 @@ fun AutoBoardingPage(
     val hasBackgroundLocationPermissions = remember { mutableStateOf(false) }
     val isAutoBoardingServiceRunning = BeaconService.isRunning.collectAsStateWithLifecycle().value
 
+    // when all the permissions/auto boarding is granted, call function
     LaunchedEffect(
         key1 = hasBluetoothPermissions.value,
         key2 = hasBackgroundLocationPermissions.value,
@@ -276,19 +326,12 @@ fun AutoBoardingPage(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // ask for bluetooth permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val bluetoothPermissions = arrayOf(
                 Manifest.permission.BLUETOOTH_CONNECT,
                 Manifest.permission.BLUETOOTH_SCAN,
             )
-
-            hasBluetoothPermissions.value =
-                bluetoothPermissions.all {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        it,
-                    ) == PackageManager.PERMISSION_GRANTED
-                }
 
             item {
                 PermissionItem(
@@ -303,18 +346,11 @@ fun AutoBoardingPage(
             hasBluetoothPermissions.value = true
         }
 
+        // ask for background location permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val backgroundLocationPermissions = arrayOf(
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION,
             )
-
-            hasBluetoothPermissions.value =
-                backgroundLocationPermissions.all {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        it,
-                    ) == PackageManager.PERMISSION_GRANTED
-                }
 
             item {
                 PermissionItem(
@@ -331,6 +367,7 @@ fun AutoBoardingPage(
             hasBackgroundLocationPermissions.value = true
         }
 
+        // ask to enable auto boarding
         item {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

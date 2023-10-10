@@ -15,6 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
+/**
+ * @param icon: Icon to show with the setting
+ * @param title: Title of the setting
+ * @param description: Any subtitle to show with the setting
+ * @param onClick: What happens when the setting tile is clicked
+ * @param actions: any other composable such as switches to display with the setting
+ * */
 @Composable
 fun SettingsItem(
     icon: ImageVector,
