@@ -59,6 +59,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
@@ -118,10 +119,10 @@ fun SetupScreen(
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.distinctUntilChanged().collect { page ->
             when (page) {
-                0 -> sectionHeader = "About"
-                1 -> sectionHeader = "Private policy"
-                2 -> sectionHeader = "Permissions"
-                3 -> sectionHeader = "Auto boarding"
+                0 -> sectionHeader = context.getString(R.string.about)
+                1 -> sectionHeader = context.getString(R.string.private_policy)
+                2 -> sectionHeader = context.getString(R.string.permissions)
+                3 -> sectionHeader = context.getString(R.string.auto_boarding)
             }
         }
     }
@@ -157,7 +158,7 @@ fun SetupScreen(
                 BottomAppBar(
                     actions = {
                         IconButton(onClick = { skipSetupDialog.value = true }) {
-                            Icon(Icons.Outlined.SkipNext, "Skip setup")
+                            Icon(Icons.Outlined.SkipNext, stringResource(R.string.skip_setup))
                         }
                     },
                     floatingActionButton = {
@@ -166,9 +167,9 @@ fun SetupScreen(
 
                         ) {
                             if (pagerState.currentPage == TOTAL_PAGES - 1) {
-                                Icon(Icons.Outlined.Done, "Complete setup")
+                                Icon(Icons.Outlined.Done, stringResource(R.string.complete_setup))
                             } else {
-                                Icon(Icons.Outlined.ArrowForward, "Next page")
+                                Icon(Icons.Outlined.ArrowForward, stringResource(R.string.next_page))
                             }
                         }
                     },
@@ -187,15 +188,15 @@ fun SetupScreen(
                     onAccept = { toNextPage(0) },
                     acceptedState = setupUiState.aboutAccepted,
                     updateState = viewModel::updateAboutAccepted,
-                    text = context.getString(R.string.info_intro),
-                    title = "About",
+                    text = stringResource(R.string.info_intro),
+                    title = stringResource(R.string.about),
                 )
                 1 -> TextScreen(
                     onAccept = { toNextPage(1) },
                     acceptedState = setupUiState.privacyPolicyAccepted,
                     updateState = viewModel::updatePrivacyPolicyAccepted,
-                    text = context.getString(R.string.Privacy),
-                    title = "Private policy",
+                    text = stringResource(R.string.privacy),
+                    title = stringResource(R.string.private_policy),
                 )
                 2 -> PermissionPage { toNextPage(2) }
                 3 -> AutoBoardingPage { toNextPage(3) }
@@ -223,10 +224,10 @@ fun TextScreen(
 
         if (!acceptedState) {
             Button(onClick = { updateState() }) {
-                Text(text = "Accept ${title.lowercase()}")
+                Text(text = stringResource(R.string.accept, title.lowercase()))
             }
         } else {
-            Text(text = "$title acknowledged, Thank you")
+            Text(text = stringResource(R.string.acknowledged, title))
         }
     }
 }
@@ -267,8 +268,8 @@ fun PermissionPage(
             PermissionItem(
                 permission = notificationPermission,
                 state = hasNotificationPermissions,
-                title = "Notifications",
-                description = "Notifications are for you to know whether or not any bus tracking services are running",
+                title = stringResource(R.string.notifications),
+                description = stringResource(R.string.notification_rational),
                 deniedIcon = Icons.Outlined.NotificationsOff,
             )
         } else {
@@ -285,8 +286,8 @@ fun PermissionPage(
             PermissionItem(
                 permission = locationPermissions,
                 state = hasLocationPermissions,
-                title = "Location",
-                description = "Location is needed to show your current location and to share bus locations with others",
+                title = stringResource(R.string.location),
+                description = stringResource(R.string.location_rational),
                 deniedIcon = Icons.Outlined.LocationOff,
             )
         } else {
@@ -337,8 +338,8 @@ fun AutoBoardingPage(
                 PermissionItem(
                     permission = bluetoothPermissions,
                     state = hasBluetoothPermissions,
-                    title = "Bluetooth",
-                    description = "Bluetooth is needed to find nearby beacons for auto boarding",
+                    title = stringResource(R.string.bluetooth),
+                    description = stringResource(R.string.bluetooth_rational),
                     deniedIcon = Icons.Outlined.NearbyError,
                 )
             }
@@ -356,10 +357,8 @@ fun AutoBoardingPage(
                 PermissionItem(
                     permission = backgroundLocationPermissions,
                     state = hasBackgroundLocationPermissions,
-                    title = "Background Location",
-                    description = "Background location is needed auto start auto boarding services on devices restart/app update\n\n" +
-                        "Click \"Allow all the time\" in location permission\n\n" +
-                        "Location permissions must be granted prior on the previous page",
+                    title = stringResource(R.string.background_location),
+                    description = stringResource(R.string.background_location_rational),
                     deniedIcon = Icons.Outlined.LocationDisabled,
                 )
             }
@@ -375,14 +374,13 @@ fun AutoBoardingPage(
                     .fillMaxWidth()
                     .padding(20.dp),
             ) {
-                Text(text = "Auto boarding", style = MaterialTheme.typography.headlineLarge)
+                Text(text = stringResource(R.string.auto_boarding), style = MaterialTheme.typography.headlineLarge)
 
                 Text(
                     text = if (!isAutoBoardingServiceRunning) {
-                        "Auto boarding lets you share your location to everyone else when a bus beacon is detected nearby\n\n" +
-                            "This requires the permissions above"
+                        stringResource(R.string.auto_boarding_rational)
                     } else {
-                        "Auto boarding enabled, Thank you!"
+                        stringResource(R.string.auto_boarding_enabled)
                     },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -392,7 +390,7 @@ fun AutoBoardingPage(
                     Button(onClick = {
                         context.startForegroundService(Intent(context, BeaconService::class.java))
                     }) {
-                        Text(text = "Enable auto boarding")
+                        Text(text = stringResource(R.string.enable_auto_boarding))
                     }
                 }
             }
@@ -469,13 +467,13 @@ fun PermissionItem(
             .padding(20.dp),
     ) {
         if (!state.value) {
-            Icon(deniedIcon, "Permission State")
+            Icon(deniedIcon, stringResource(R.string.permission_denied))
         }
 
         Text(text = title, style = MaterialTheme.typography.headlineLarge)
 
         Text(
-            text = if (!state.value) description else "Permission granted, Thank you!",
+            text = if (!state.value) description else stringResource(R.string.permission_granted),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
@@ -484,7 +482,7 @@ fun PermissionItem(
             Button(onClick = {
                 launcher.launch(permission)
             }) {
-                Text(text = "Grant permissions")
+                Text(text = stringResource(R.string.grant_permissions))
             }
         }
     }
@@ -502,8 +500,8 @@ fun ToSettingsAlertDialog(
 
     if (showDialog.value) {
         AlertDialog(
-            title = { Text(text = "Permissions") },
-            text = { Text(text = "Go to settings to enable permissions?") },
+            title = { Text(text = stringResource(R.string.permissions)) },
+            text = { Text(text = stringResource(R.string.to_settings_explanation)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -521,12 +519,12 @@ fun ToSettingsAlertDialog(
                         context.startActivity(intent)
                     },
                 ) {
-                    Text(text = "To settings")
+                    Text(text = stringResource(R.string.to_settings))
                 }
             },
             dismissButton = {
                 Button(onClick = { showDialog.value = false }) {
-                    Text(text = "Not now")
+                    Text(text = stringResource(R.string.not_now))
                 }
             },
             onDismissRequest = { showDialog.value = false },
@@ -541,11 +539,11 @@ fun SkipSetup(
 ) {
     if (showDialog.value) {
         AlertDialog(
-            title = { Text(text = "Skip setup") },
-            text = { Text(text = "Are you sure you want to skip the setup?") },
+            title = { Text(text = stringResource(R.string.skip_setup)) },
+            text = { Text(text = stringResource(R.string.skip_confirmation)) },
             dismissButton = {
                 Button(onClick = { showDialog.value = false }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(R.string.cancel))
                 }
             },
             confirmButton = {
@@ -553,7 +551,7 @@ fun SkipSetup(
                     navigateToMaps()
                     showDialog.value = false
                 }) {
-                    Text(text = "Skip")
+                    Text(text = stringResource(R.string.skip))
                 }
             },
             onDismissRequest = { showDialog.value = false },

@@ -21,11 +21,13 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 
@@ -54,10 +56,10 @@ fun AnnouncementsScreen(
     Scaffold(
         topBar = {
             LargeTopAppBar(
-                title = { Text(text = "Announcements") },
+                title = { Text(text = stringResource(R.string.announcements)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, "back")
+                        Icon(Icons.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -66,7 +68,8 @@ fun AnnouncementsScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding)
+            modifier = Modifier
+                .padding(padding)
                 .padding(horizontal = 10.dp),
             verticalArrangement = Arrangement.spacedBy(15.dp),
         ) {
@@ -88,7 +91,7 @@ fun AnnouncementItem(announcement: Announcement) {
         Spacer(modifier = Modifier.height(5.dp))
 
         Text(
-            text = "Effective from ${announcement.startTime} to ${announcement.endTime}",
+            text = stringResource(R.string.effective_from, announcement.startTime, announcement.endTime),
             style = MaterialTheme.typography.titleMedium,
         )
 

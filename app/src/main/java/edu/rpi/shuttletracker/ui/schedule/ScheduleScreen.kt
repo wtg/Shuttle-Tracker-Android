@@ -26,11 +26,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 
@@ -64,10 +66,10 @@ fun ScheduleScreen(
     Scaffold(
         topBar = {
             LargeTopAppBar(
-                title = { Text(text = "Schedule") },
+                title = { Text(text = stringResource(R.string.schedule)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, "back")
+                        Icon(Icons.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -100,13 +102,13 @@ fun SchedulePagerItem(schedule: Schedule) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             Column {
-                Text(text = "Monday")
-                Text(text = "Tuesday")
-                Text(text = "Wednesday")
-                Text(text = "Thursday")
-                Text(text = "Friday")
-                Text(text = "Saturday")
-                Text(text = "Sunday")
+                Text(text = stringResource(R.string.monday))
+                Text(text = stringResource(R.string.tuesday))
+                Text(text = stringResource(R.string.wednesday))
+                Text(text = stringResource(R.string.thursday))
+                Text(text = stringResource(R.string.friday))
+                Text(text = stringResource(R.string.saturday))
+                Text(text = stringResource(R.string.sunday))
             }
 
             Column {
@@ -122,6 +124,6 @@ fun SchedulePagerItem(schedule: Schedule) {
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        Text(text = "Effective from ${schedule.startTime} - ${schedule.endTime}")
+        Text(text = stringResource(R.string.effective_from, schedule.startTime, schedule.endTime))
     }
 }

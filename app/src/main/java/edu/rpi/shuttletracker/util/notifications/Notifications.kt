@@ -6,7 +6,11 @@ import androidx.core.app.NotificationChannelGroupCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_DEFAULT
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_LOW
+import edu.rpi.shuttletracker.R
 
+/**
+ * Based on the notification generator for Tachiyomi
+ * */
 object Notifications {
 
     private const val GROUP_TRACKER = "group_tracker"
@@ -15,19 +19,28 @@ object Notifications {
     const val CHANNEL_AUTO_BOARD = "auto_board_channel"
     const val ID_AUTO_BOARD = 2
 
+    private val deprecatedChannels = listOf(
+        "ShuttleTrackerRPI",
+    )
+
     fun createChannels(context: Context) {
         val notificationManager = NotificationManagerCompat.from(context)
 
+        // deletes all the channels
+        deprecatedChannels.forEach(notificationManager::deleteNotificationChannel)
+
+        // creates notification groups
         notificationManager.createNotificationChannelGroupsCompat(
             listOf(
-                buildNotificationChannelGroup(GROUP_TRACKER, "Bus Tracker"),
+                buildNotificationChannelGroup(GROUP_TRACKER, context.getString(R.string.bus_tracker)),
             ),
         )
 
+        // create notification channels
         notificationManager.createNotificationChannelsCompat(
             listOf(
-                buildNotificationChannel(GROUP_TRACKER, CHANNEL_TRACKING_BUS, IMPORTANCE_DEFAULT, "Bus Tracker"),
-                buildNotificationChannel(GROUP_TRACKER, CHANNEL_AUTO_BOARD, IMPORTANCE_LOW, "Bus auto boarder"),
+                buildNotificationChannel(GROUP_TRACKER, CHANNEL_TRACKING_BUS, IMPORTANCE_DEFAULT, context.getString(R.string.tracker)),
+                buildNotificationChannel(GROUP_TRACKER, CHANNEL_AUTO_BOARD, IMPORTANCE_LOW, context.getString(R.string.auto_boarding)),
             ),
         )
     }

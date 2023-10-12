@@ -60,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
@@ -108,6 +109,8 @@ fun MapsScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
+    val context = LocalContext.current
+
     // finds errors when requesting data to server
     CheckResponseError(
         mapsUiState.networkError,
@@ -127,9 +130,9 @@ fun MapsScreen(
                 error = this,
                 onSecondaryRequest = { LocationService.dismissError() },
                 onPrimaryRequest = { LocationService.dismissError() },
-                errorType = "Location service",
-                errorBody = "You may be too far from a stop (20m) or selected an invalid bus",
-                primaryButtonText = "I understand",
+                errorType = stringResource(R.string.location_service),
+                errorBody = stringResource(R.string.error_server_location),
+                primaryButtonText = stringResource(R.string.understand),
                 showSecondaryButton = false,
             )
         }
@@ -143,8 +146,8 @@ fun MapsScreen(
         if (errorStartingBeaconService || errorStartingLocationService) {
             coroutineScope.launch {
                 val result = snackbarHostState.showSnackbar(
-                    message = "Missing permissions to use service",
-                    actionLabel = "Fix",
+                    message = context.getString(R.string.service_missing_permissions),
+                    actionLabel = context.getString(R.string.fix),
                     duration = SnackbarDuration.Long,
                 )
                 when (result) {
@@ -334,7 +337,7 @@ fun BusMap(
 @Composable
 fun StopMarker(stop: Stop) {
     val markerState = rememberMarkerState(stop.name, stop.latLng())
-    val icon = BitmapDescriptorFactory.fromAsset("simplecircle.png")
+    val icon = BitmapDescriptorFactory.fromAsset(stringResource(R.string.simple_circle))
     Marker(
         state = markerState,
         title = stop.name,
@@ -358,20 +361,18 @@ fun BusMarker(bus: Bus, colorBlindMode: Boolean) {
         markerState.position = bus.latLng()
     }
 
-    val context = LocalContext.current
-
     // gets proper bus icon
     val busIcon = if (bus.type == "user") {
         if (colorBlindMode) {
-            context.getString(R.string.colorblind_crowdsourced_bus)
+            stringResource(R.string.colorblind_crowdsourced_bus)
         } else {
-            context.getString(R.string.crowdsourced_bus)
+            stringResource(R.string.crowdsourced_bus)
         }
     } else {
         if (colorBlindMode) {
-            context.getString(R.string.colorblind_GPS_bus)
+            stringResource(R.string.colorblind_GPS_bus)
         } else {
-            context.getString(R.string.GPS_bus)
+            stringResource(R.string.GPS_bus)
         }
     }
 
@@ -379,7 +380,7 @@ fun BusMarker(bus: Bus, colorBlindMode: Boolean) {
 
     Marker(
         state = markerState,
-        title = "Bus ${bus.id}",
+        title = stringResource(R.string.bus_number, bus.id),
         icon = icon,
         snippet = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value,
         onClick = {
@@ -430,15 +431,23 @@ fun BoardBusFab(
                             busPickerState = true
                         } else {
                             // not close enough to a stop
-                            Toast.makeText(context, "Must be 20m from a stop to board", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getText(R.string.distance_warning), Toast.LENGTH_SHORT).show()
                         }
                     }.addOnFailureListener {
-                        Toast.makeText(context, "Unable to find location", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getText(R.string.no_location_warning), Toast.LENGTH_SHORT).show()
                     }
             }
         },
-        icon = { Icon(Icons.Default.DirectionsBus, "Board Bus") },
-        text = { Text(text = if (locationServiceBusNumber != null) "Leave Bus" else "Board Bus") },
+        icon = { Icon(Icons.Default.DirectionsBus, stringResource(R.string.board_bus)) },
+        text = {
+            Text(
+                text = if (locationServiceBusNumber != null) {
+                    stringResource(R.string.leave_bus)
+                } else {
+                    stringResource(R.string.board_bus)
+                },
+            )
+        },
     )
 }
 
@@ -471,7 +480,7 @@ fun AutoBoardBusFab() {
             } else {
                 Icons.Outlined.LocationDisabled
             },
-            "Location",
+            stringResource(R.string.location),
         )
     }
 }
@@ -500,7 +509,7 @@ fun BusPicker(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Choose a Bus",
+                    text = stringResource(R.string.choose_bus),
                     style = MaterialTheme.typography.headlineLarge,
                 )
 
@@ -531,17 +540,17 @@ fun BusPicker(
                 ) {
                     Button(onClick = {
                         if (selectedBus == -1) {
-                            Toast.makeText(context, "No Bus Chosen", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, context.getText(R.string.no_bus_chosen), Toast.LENGTH_LONG).show()
                         } else {
                             onBusChosen(selectedBus)
                         }
 
                         onDismiss()
                     }) {
-                        Text(text = "Select")
+                        Text(text = stringResource(R.string.select))
                     }
                     Button(onClick = { onDismiss() }) {
-                        Text(text = "Cancel")
+                        Text(text = stringResource(R.string.cancel))
                     }
                 }
             }

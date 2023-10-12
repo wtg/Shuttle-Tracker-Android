@@ -10,7 +10,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import com.haroldadmin.cnradapter.NetworkResponse
+import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 
 /**
@@ -34,7 +36,7 @@ fun CheckResponseError(
             error = networkError,
             onSecondaryRequest = { ignoreErrorRequest() },
             onPrimaryRequest = { retryErrorRequest() },
-            errorType = "Network error",
+            errorType = stringResource(R.string.error_network),
             icon = Icons.Outlined.WifiOff,
         )
     }
@@ -44,7 +46,7 @@ fun CheckResponseError(
             error = serverError,
             onSecondaryRequest = { ignoreErrorRequest() },
             onPrimaryRequest = { retryErrorRequest() },
-            errorType = "Server error",
+            errorType = stringResource(R.string.error_server),
             icon = Icons.Outlined.Dns,
         )
     }
@@ -54,7 +56,7 @@ fun CheckResponseError(
             error = unknownError,
             onSecondaryRequest = { ignoreErrorRequest() },
             onPrimaryRequest = { retryErrorRequest() },
-            errorType = "Unknown error",
+            errorType = stringResource(R.string.error_unknown),
         )
     }
 }
@@ -72,15 +74,15 @@ fun Error(
     error: Any?,
     onSecondaryRequest: () -> Unit,
     onPrimaryRequest: () -> Unit,
-    errorType: String = "Error",
+    errorType: String = stringResource(R.string.error),
     errorBody: String = "",
     icon: ImageVector = Icons.Outlined.Error,
-    primaryButtonText: String = "Retry",
-    secondaryButtonText: String = "Ignore",
+    primaryButtonText: String = stringResource(R.string.retry),
+    secondaryButtonText: String = stringResource(R.string.ignore),
     showSecondaryButton: Boolean = true,
 ) {
     AlertDialog(
-        icon = { Icon(icon, "Error") },
+        icon = { Icon(icon, stringResource(R.string.error)) },
         title = { Text(text = errorType) },
         text = {
             Text(

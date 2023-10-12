@@ -28,11 +28,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.destinations.AboutScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.ui.util.SettingsItem
@@ -56,13 +58,15 @@ fun SettingsScreen(
 
     val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
 
+    val context = LocalContext.current
+
     // listens to beacon service if they don't have permissions or not
     LaunchedEffect(errorStartingBeaconService) {
         if (errorStartingBeaconService) {
             coroutineScope.launch {
                 val result = snackbarHostState.showSnackbar(
-                    message = "Missing permissions to use service",
-                    actionLabel = "Fix",
+                    message = context.getString(R.string.service_missing_permissions),
+                    actionLabel = context.getString(R.string.fix),
                     duration = SnackbarDuration.Long,
                 )
                 when (result) {
@@ -79,10 +83,10 @@ fun SettingsScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(text = "Settings") },
+                title = { Text(text = stringResource(R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, "back")
+                        Icon(Icons.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -103,7 +107,7 @@ fun SettingsScreen(
 
             SettingsItem(
                 Icons.Outlined.Info,
-                "About",
+                stringResource(R.string.about),
                 onClick = { navigator.navigate(AboutScreenDestination()) },
             )
         }
@@ -117,7 +121,7 @@ fun AutoBoardBusSettingItem(
 ) {
     val context = LocalContext.current
 
-    SettingsItem(icon = Icons.Outlined.BusAlert, "Auto board bus") {
+    SettingsItem(icon = Icons.Outlined.BusAlert, stringResource(R.string.auto_boarding)) {
         Switch(
             checked = autoBoardService,
             onCheckedChange = {
@@ -137,7 +141,7 @@ fun ColorBlindSettingItem(
     colorBlindMode: Boolean,
     updateColorBlindMode: (Boolean) -> Unit,
 ) {
-    SettingsItem(icon = Icons.Outlined.Visibility, "Color blind mode") {
+    SettingsItem(icon = Icons.Outlined.Visibility, stringResource(R.string.color_blind)) {
         Switch(
             checked = colorBlindMode,
             onCheckedChange = { updateColorBlindMode(it) },

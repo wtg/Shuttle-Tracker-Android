@@ -9,7 +9,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.DirectionsBus
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,13 +44,15 @@ fun AboutScreen(
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "About") },
+                title = { Text(text = stringResource(R.string.about)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, "back")
+                        Icon(Icons.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -64,24 +69,40 @@ fun AboutScreen(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.padding(horizontal = 10.dp),
             ) {
-                Text(text = stringResource(id = R.string.about_page))
+                Text(text = stringResource(R.string.about_page))
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
             SettingsItem(
                 icon = Icons.Outlined.Code,
-                title = "Check out the repository",
-                onClick = { uriHandler.openUri("https://github.com/wtg/Shuttle-Tracker-Android") },
+                title = stringResource(R.string.check_out_repository),
+                onClick = { uriHandler.openUri(context.getString(R.string.url_repository)) },
             )
 
             SettingsItem(
                 icon = Icons.Outlined.BugReport,
-                title = "Report a problem",
-                onClick = { uriHandler.openUri("https://github.com/wtg/Shuttle-Tracker-Android/issues") },
+                title = stringResource(R.string.report_problem),
+                onClick = { uriHandler.openUri(context.getString(R.string.url_repository_issues)) },
             )
 
-            SettingsItem(icon = Icons.Outlined.Info, title = "Version", BuildConfig.VERSION_NAME)
+            SettingsItem(
+                icon = Icons.Outlined.Shield,
+                title = stringResource(R.string.view_private_policy),
+                onClick = { uriHandler.openUri(context.getString(R.string.url_private_policy)) },
+            )
+
+            SettingsItem(
+                icon = Icons.Outlined.Info,
+                title = stringResource(R.string.version),
+                BuildConfig.VERSION_NAME,
+            )
+
+            SettingsItem(
+                icon = Icons.Outlined.DirectionsBus,
+                title = stringResource(R.string.shuttle_tracker_version),
+                stringResource(R.string.api_key),
+            )
         }
     }
 }
