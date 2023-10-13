@@ -7,7 +7,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BusAlert
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -18,13 +21,17 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -48,7 +55,8 @@ fun SettingsScreen(
     navigator: DestinationsNavigator,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     val settingsUiState = viewModel.settingsUiState.collectAsStateWithLifecycle().value
 
@@ -56,7 +64,8 @@ fun SettingsScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
+    val errorStartingBeaconService =
+        BeaconService.permissionError.collectAsStateWithLifecycle().value
 
     val context = LocalContext.current
 
@@ -73,7 +82,9 @@ fun SettingsScreen(
                     SnackbarResult.ActionPerformed -> {
                         navigator.navigate(SetupScreenDestination())
                     }
-                    SnackbarResult.Dismissed -> { /* IGNORED */ }
+
+                    SnackbarResult.Dismissed -> { /* IGNORED */
+                    }
                 }
             }
         }
@@ -94,7 +105,11 @@ fun SettingsScreen(
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(horizontal = 10.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(horizontal = 10.dp)
+        ) {
             AutoBoardBusSettingItem(
                 autoBoardService = settingsUiState.autoBoardService,
                 updateAutoBoardService = viewModel::updateAutoBoardService,
@@ -103,6 +118,11 @@ fun SettingsScreen(
             ColorBlindSettingItem(
                 colorBlindMode = settingsUiState.colorBlindMode,
                 updateColorBlindMode = viewModel::updateColorBlindMode,
+            )
+
+            BaseUrlSettingItem(
+                currentUrl = settingsUiState.currentUrl,
+                updateBaseUrl = viewModel::updateBaseUrl
             )
 
             SettingsItem(
@@ -146,5 +166,36 @@ fun ColorBlindSettingItem(
             checked = colorBlindMode,
             onCheckedChange = { updateColorBlindMode(it) },
         )
+    }
+}
+
+@Composable
+fun BaseUrlSettingItem(
+    currentUrl: String,
+    updateBaseUrl: (String) -> Unit,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var textFieldUrl by remember { mutableStateOf(currentUrl) }
+
+    SettingsItem(
+        icon = Icons.Outlined.Link,
+        title = "Base url",
+        description = currentUrl,
+        onClick = { showDialog = true }
+    ) {
+        if (showDialog)
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(text = "Base url") },
+                text = { TextField(value = textFieldUrl, onValueChange = { textFieldUrl = it }) },
+                confirmButton = {
+                    Button(onClick = {
+                        showDialog = false
+                        updateBaseUrl(textFieldUrl)
+                    }) {
+                        Text(text = "Save")
+                    }
+                })
+
     }
 }

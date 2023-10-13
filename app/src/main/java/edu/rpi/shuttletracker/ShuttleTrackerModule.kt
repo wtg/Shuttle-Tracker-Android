@@ -17,10 +17,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import edu.rpi.shuttletracker.data.network.ApiHelper
 import edu.rpi.shuttletracker.data.network.ApiService
+import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.FlattenTypeAdapterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -50,15 +53,22 @@ object ShuttleTrackerModule {
 
     @Singleton
     @Provides
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        userPreferencesRepository: UserPreferencesRepository
+    ): Retrofit {
         val gson = GsonBuilder()
             .registerTypeAdapterFactory(FlattenTypeAdapterFactory())
             .create()
 
+        val url = runBlocking {
+            return@runBlocking userPreferencesRepository.getBaseUrl().first()
+        }
+
         return Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(NetworkResponseAdapterFactory())
-            .baseUrl(BASE_URL)
+            .baseUrl(url)
             .client(okHttpClient)
             .build()
     }
