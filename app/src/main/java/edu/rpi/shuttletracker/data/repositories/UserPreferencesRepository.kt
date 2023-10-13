@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -18,6 +19,7 @@ class UserPreferencesRepository @Inject constructor(
         private val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
         private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
         private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
+        private val BASE_URL = stringPreferencesKey("base_url")
     }
 
     fun getNotificationsRead(): Flow<Int> = dataStore.data.map {
@@ -67,6 +69,16 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun saveAboutAccepted(aboutAccepted: Boolean) {
         dataStore.edit {
             it[ABOUT_ACCEPTED] = aboutAccepted
+        }
+    }
+
+    fun getBaseUrl(): Flow<String> = dataStore.data.map {
+        it[BASE_URL] ?: "https://staging.shuttletracker.app/"
+    }
+
+    suspend fun saveBaseUrl(url: String) {
+        dataStore.edit {
+            it[BASE_URL] = url
         }
     }
 }
