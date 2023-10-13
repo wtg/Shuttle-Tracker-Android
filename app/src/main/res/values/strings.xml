@@ -34,6 +34,7 @@
     <string name="skip">Skip</string>
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
+    <string name="stopDist">Stop Distance</string>
 
     <!-- Notifications -->
     <string name="bus_tracker">Bus tracker</string>
