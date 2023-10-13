@@ -117,6 +117,8 @@ class BeaconService : Service() {
 
         _isRunning.update { true }
 
+        var notFoundFor = System.currentTimeMillis()
+
         rangingObserver = Observer { beacons ->
 
             // gets the min distance beacon
@@ -124,12 +126,17 @@ class BeaconService : Service() {
 
             // no beacons nearby and runs till death
             if (closest == null) {
-                stopService(Intent(this, LocationService::class.java))
+                // if no beacon has been detected for 30 seconds
+                if (System.currentTimeMillis() - notFoundFor > 30000) {
+                    stopService(Intent(this, LocationService::class.java))
+                }
 
                 return@Observer
             }
 
             val closestId = closest.id2.toInt()
+            notFoundFor = System.currentTimeMillis()
+
             if (LocationService.busNum.value == closestId) { return@Observer }
 
             val serviceIntent = Intent(this, LocationService::class.java).apply {
@@ -181,7 +188,7 @@ class BeaconService : Service() {
         this,
         Notifications.CHANNEL_AUTO_BOARD,
     ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-        .setContentTitle("Auto-board service")
+        .setContentTitle("Auto boarding service")
         .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
         .build()
 }

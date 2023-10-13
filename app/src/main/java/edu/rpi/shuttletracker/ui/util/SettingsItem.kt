@@ -44,7 +44,12 @@ fun SettingsItem(
             modifier = Modifier.padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(icon, title)
+            Icon(
+                icon,
+                title,
+                modifier =
+                Modifier.padding(vertical = 10.dp),
+            )
 
             Column {
                 Text(text = title)

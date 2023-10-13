@@ -426,8 +426,8 @@ fun BoardBusFab(
                 LocationServices.getFusedLocationProviderClient(context).lastLocation
                     .addOnSuccessListener { location: Location ->
 
-                        // if they a location was found and they are 50 ft away from a stop
-                        if (checkDistanceToStop(location) <= 20) {
+                        // if they a location was found and they are 50 m away from a stop
+                        if (checkDistanceToStop(location) <= 50) {
                             busPickerState = true
                         } else {
                             // not close enough to a stop

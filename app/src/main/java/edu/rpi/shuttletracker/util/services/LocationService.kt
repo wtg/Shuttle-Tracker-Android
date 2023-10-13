@@ -213,7 +213,6 @@ class LocationService : Service() {
             Notifications.CHANNEL_TRACKING_BUS,
         ).setContentTitle("Tracking bus $busNum")
             .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
-            .setContentText("IM TRYING")
             .addAction(
                 R.drawable.baseline_location_off_24,
                 "Stop Tracking",

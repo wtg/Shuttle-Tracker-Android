@@ -84,7 +84,7 @@
     <string name="notification_rational">Notifications are for you to know whether or not any bus tracking services are running</string>
     <string name="location_rational">Location is needed to show your current location and to share bus locations with others</string>
     <string name="bluetooth_rational">Bluetooth is needed to find nearby beacons for auto boarding</string>
-    <string name="background_location_rational">Background location is needed auto start auto boarding services on devices restart/app update\n\nClick "Allow all the time" in location permission\n\nLocation permissions must be granted prior on the previous page</string>
+    <string name="background_location_rational">Background location is needed auto start auto boarding services on devices restart/app update\n\nClick \"Allow all the time\" in location permission\n\nLocation permissions must be granted prior on the previous page</string>
     <string name="auto_boarding_rational">Auto boarding lets you share your location to everyone else when a bus beacon is detected nearby\n\nThis requires the permissions above</string>
 
     <string name="to_settings_explanation">Go to settings to enable permissions?</string>
@@ -107,7 +107,7 @@
 
     <!-- Maps screen -->
     <string name="bus_number">Bus %1$d</string>
-    <string name="distance_warning">Must be 20m from a stop to board</string>
+    <string name="distance_warning">Must be 50m from a stop to board</string>
     <string name="no_location_warning">Unable to find location</string>
 
     <string name="board_bus">Board bus</string>
@@ -118,7 +118,7 @@
 
     <!-- Errors -->
     <string name="location_service">Location service</string>
-    <string name="error_server_location">You may be too far from a stop (20m) or selected an invalid bus</string>
+    <string name="error_server_location">You may be too far from a stop (50m) or selected an invalid bus</string>
     <string name="understand">I understand</string>
     <string name="service_missing_permissions">Missing permissions to use service</string>
     <string name="error_network">Network error</string>
