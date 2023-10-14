@@ -105,7 +105,6 @@ class BeaconService : Service() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             // no bluetooth & location permissions
-
             _permissionError.update { true }
             stopSelf()
             return START_STICKY
@@ -117,8 +116,15 @@ class BeaconService : Service() {
 
         _isRunning.update { true }
 
+        // tracks whether or not board bus should be activated or not
         var notFoundFor = System.currentTimeMillis()
+        var autoTracking = false
 
+        /**
+         * Detects nearby beacons
+         * when there is nothing detected for ~30 seconds then it will "stop tracking"
+         * if a beacon is detected, it will start tracking the closest one
+         * */
         rangingObserver = Observer { beacons ->
 
             // gets the min distance beacon
@@ -127,7 +133,8 @@ class BeaconService : Service() {
             // no beacons nearby and runs till death
             if (closest == null) {
                 // if no beacon has been detected for 30 seconds
-                if (System.currentTimeMillis() - notFoundFor > 30000) {
+                if (System.currentTimeMillis() - notFoundFor > 30000 && autoTracking) {
+                    autoTracking = false
                     stopService(Intent(this, LocationService::class.java))
                 }
 
@@ -138,6 +145,8 @@ class BeaconService : Service() {
             notFoundFor = System.currentTimeMillis()
 
             if (LocationService.busNum.value == closestId) { return@Observer }
+
+            autoTracking = true
 
             val serviceIntent = Intent(this, LocationService::class.java).apply {
                 putExtra(LocationService.BUNDLE_BUS_ID, closestId)

@@ -52,7 +52,7 @@ data class Bus(
 
                 // formats duration to h m s
                 emit(
-                    "~" + duration.toString()
+                    duration.toString()
                         .substring(2)
                         .replace("(\\d[HMS])(?!$)".toRegex(), "$1 ")
                         .lowercase(Locale.ROOT) + " ago",
