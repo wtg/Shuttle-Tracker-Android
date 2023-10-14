@@ -73,7 +73,7 @@
         open an \"issue\" to leave feedback for us. View our privacy policy with the button below.</string>
 
     <!-- Setup screen -->
-    <string name="acknowledged">%1$s acknowledged, Thank you</string>
+    <string name="acknowledged">%1$s acknowledged, thank you</string>
     <string name="accept">Accept %1$s</string>
 
     <string name="notifications">Notifications</string>

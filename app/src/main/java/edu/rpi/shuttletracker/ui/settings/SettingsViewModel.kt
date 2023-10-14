@@ -19,11 +19,11 @@ class SettingsViewModel @Inject constructor(
         userPreferencesRepository.getAutoBoardService(),
         userPreferencesRepository.getColorBlindMode(),
         userPreferencesRepository.getBaseUrl(),
-    ) { autoBoardService, colorBindMode, baseUrl->
+    ) { autoBoardService, colorBindMode, baseUrl ->
         return@combine SettingsUiState(
             autoBoardService = autoBoardService,
             colorBlindMode = colorBindMode,
-            currentUrl = baseUrl
+            baseUrl = baseUrl,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -47,12 +47,11 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferencesRepository.saveBaseUrl(baseUrl)
         }
-
     }
 }
 
 data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
-    val currentUrl: String = "https://staging.shuttletracker.app/"
+    val baseUrl: String = "",
 )

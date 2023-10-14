@@ -31,7 +31,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 private const val USER_PREFERENCES = "user_preferences"
-private const val BASE_URL = "https://staging.shuttletracker.app/"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -55,7 +54,7 @@ object ShuttleTrackerModule {
     @Provides
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        userPreferencesRepository: UserPreferencesRepository
+        userPreferencesRepository: UserPreferencesRepository,
     ): Retrofit {
         val gson = GsonBuilder()
             .registerTypeAdapterFactory(FlattenTypeAdapterFactory())

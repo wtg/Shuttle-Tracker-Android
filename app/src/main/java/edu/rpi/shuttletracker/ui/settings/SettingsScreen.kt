@@ -1,6 +1,8 @@
 package edu.rpi.shuttletracker.ui.settings
 
 import android.content.Intent
+import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -64,8 +66,7 @@ fun SettingsScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val errorStartingBeaconService =
-        BeaconService.permissionError.collectAsStateWithLifecycle().value
+    val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
 
     val context = LocalContext.current
 
@@ -83,8 +84,7 @@ fun SettingsScreen(
                         navigator.navigate(SetupScreenDestination())
                     }
 
-                    SnackbarResult.Dismissed -> { /* IGNORED */
-                    }
+                    SnackbarResult.Dismissed -> { /* IGNORED */ }
                 }
             }
         }
@@ -108,7 +108,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(horizontal = 10.dp)
+                .padding(horizontal = 10.dp),
         ) {
             AutoBoardBusSettingItem(
                 autoBoardService = settingsUiState.autoBoardService,
@@ -121,8 +121,8 @@ fun SettingsScreen(
             )
 
             BaseUrlSettingItem(
-                currentUrl = settingsUiState.currentUrl,
-                updateBaseUrl = viewModel::updateBaseUrl
+                currentUrl = settingsUiState.baseUrl,
+                updateBaseUrl = viewModel::updateBaseUrl,
             )
 
             SettingsItem(
@@ -177,25 +177,46 @@ fun BaseUrlSettingItem(
     var showDialog by remember { mutableStateOf(false) }
     var textFieldUrl by remember { mutableStateOf(currentUrl) }
 
+    val context = LocalContext.current
+
+    // updates to the current url whenever the dialog is shown
+    LaunchedEffect(key1 = showDialog) {
+        if (showDialog) {
+            textFieldUrl = currentUrl
+        }
+    }
+
     SettingsItem(
         icon = Icons.Outlined.Link,
         title = "Base url",
         description = currentUrl,
-        onClick = { showDialog = true }
+        onClick = { showDialog = true },
     ) {
-        if (showDialog)
+        if (showDialog) {
             AlertDialog(
                 onDismissRequest = { showDialog = false },
-                title = { Text(text = "Base url") },
+                title = { Text(text = "Change the base url") },
                 text = { TextField(value = textFieldUrl, onValueChange = { textFieldUrl = it }) },
                 confirmButton = {
                     Button(onClick = {
-                        showDialog = false
-                        updateBaseUrl(textFieldUrl)
+                        // checks for valid url
+                        if (Patterns.WEB_URL.matcher(textFieldUrl).matches()) {
+                            updateBaseUrl(textFieldUrl)
+                            Toast.makeText(context, "Restart the app to take effect", Toast.LENGTH_SHORT).show()
+                            showDialog = false
+                        } else {
+                            Toast.makeText(context, "Invalid Url", Toast.LENGTH_SHORT).show()
+                        }
                     }) {
                         Text(text = "Save")
                     }
-                })
-
+                },
+                dismissButton = {
+                    Button(onClick = { showDialog = false }) {
+                        Text(text = "Cancel")
+                    }
+                },
+            )
+        }
     }
 }
