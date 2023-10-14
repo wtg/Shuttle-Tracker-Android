@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.ui.settings
 
+import android.app.Activity
 import android.content.Intent
 import android.util.Patterns
 import android.widget.Toast
@@ -16,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -23,7 +25,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -44,10 +45,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.ui.MainActivity
 import edu.rpi.shuttletracker.ui.destinations.AboutScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 import edu.rpi.shuttletracker.util.services.BeaconService
+import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,6 +126,7 @@ fun SettingsScreen(
             BaseUrlSettingItem(
                 currentUrl = settingsUiState.baseUrl,
                 updateBaseUrl = viewModel::updateBaseUrl,
+                updateAutoBoardService = viewModel::updateAutoBoardServiceBlocking,
             )
 
             SettingsItem(
@@ -173,6 +177,7 @@ fun ColorBlindSettingItem(
 fun BaseUrlSettingItem(
     currentUrl: String,
     updateBaseUrl: (String) -> Unit,
+    updateAutoBoardService: (Boolean) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var textFieldUrl by remember { mutableStateOf(currentUrl) }
@@ -191,32 +196,60 @@ fun BaseUrlSettingItem(
         title = "Base url",
         description = currentUrl,
         onClick = { showDialog = true },
-    ) {
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text(text = "Change the base url") },
-                text = { TextField(value = textFieldUrl, onValueChange = { textFieldUrl = it }) },
-                confirmButton = {
-                    Button(onClick = {
-                        // checks for valid url
-                        if (Patterns.WEB_URL.matcher(textFieldUrl).matches()) {
-                            updateBaseUrl(textFieldUrl)
-                            Toast.makeText(context, "Restart the app to take effect", Toast.LENGTH_SHORT).show()
-                            showDialog = false
-                        } else {
-                            Toast.makeText(context, "Invalid Url", Toast.LENGTH_SHORT).show()
+    )
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Change the base url") },
+            text = {
+                Column {
+                    Text(text = "Changing the url will restart the app and stop all running services")
+                    OutlinedTextField(
+                        value = textFieldUrl,
+                        onValueChange = { textFieldUrl = it },
+                        label = { Text(text = "Url") },
+                    )
+                }
+            },
+
+            confirmButton = {
+                Button(onClick = {
+                    // checks for valid url
+                    if (Patterns.WEB_URL.matcher(textFieldUrl).matches()) {
+                        // stops all services from running
+                        context.stopService(Intent(context, BeaconService::class.java))
+                        context.stopService(Intent(context, LocationService::class.java))
+
+                        // preference to use auto boarding turned off
+                        updateAutoBoardService(false)
+
+                        // updates the preferred url
+                        updateBaseUrl(textFieldUrl)
+
+                        showDialog = false
+
+                        // restarts app
+                        val intent = Intent(context, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.startActivity(intent)
+                        if (context is Activity) {
+                            context.finish()
                         }
-                    }) {
-                        Text(text = "Save")
+                        Runtime.getRuntime().exit(0)
+                    } else {
+                        Toast.makeText(context, "Invalid Url", Toast.LENGTH_SHORT).show()
                     }
-                },
-                dismissButton = {
-                    Button(onClick = { showDialog = false }) {
-                        Text(text = "Cancel")
-                    }
-                },
-            )
-        }
+                }) {
+                    Text(text = "Save")
+                }
+            },
+
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text(text = "Cancel")
+                }
+            },
+        )
     }
 }

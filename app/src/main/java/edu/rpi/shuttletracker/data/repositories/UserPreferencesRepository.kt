@@ -1,17 +1,21 @@
 package edu.rpi.shuttletracker.data.repositories
 
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import dagger.hilt.android.qualifiers.ApplicationContext
+import edu.rpi.shuttletracker.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class UserPreferencesRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
+    @ApplicationContext private val context: Context,
 ) {
     companion object {
         private val NOTIFICATIONS_READ = intPreferencesKey("notifications_read")
@@ -56,9 +60,9 @@ class UserPreferencesRepository @Inject constructor(
         it[PRIVACY_POLICY_ACCEPTED] ?: false
     }
 
-    suspend fun savePrivacyPolicyAccepted(privacyPollicyAccepted: Boolean) {
+    suspend fun savePrivacyPolicyAccepted(privacyPolicyAccepted: Boolean) {
         dataStore.edit {
-            it[PRIVACY_POLICY_ACCEPTED] = privacyPollicyAccepted
+            it[PRIVACY_POLICY_ACCEPTED] = privacyPolicyAccepted
         }
     }
 
@@ -73,7 +77,7 @@ class UserPreferencesRepository @Inject constructor(
     }
 
     fun getBaseUrl(): Flow<String> = dataStore.data.map {
-        it[BASE_URL] ?: "https://staging.shuttletracker.app/"
+        it[BASE_URL] ?: context.getString(R.string.url_default)
     }
 
     suspend fun saveBaseUrl(url: String) {
