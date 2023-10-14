@@ -277,22 +277,18 @@ fun PermissionPage(
         }
 
         // ask for location permissions
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val locationPermissions = arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-            )
+        val locationPermissions = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
 
-            PermissionItem(
-                permission = locationPermissions,
-                state = hasLocationPermissions,
-                title = stringResource(R.string.location),
-                description = stringResource(R.string.location_rational),
-                deniedIcon = Icons.Outlined.LocationOff,
-            )
-        } else {
-            hasNotificationPermissions.value = true
-        }
+        PermissionItem(
+            permission = locationPermissions,
+            state = hasLocationPermissions,
+            title = stringResource(R.string.location),
+            description = stringResource(R.string.location_rational),
+            deniedIcon = Icons.Outlined.LocationOff,
+        )
     }
 }
 

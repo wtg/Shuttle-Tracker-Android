@@ -93,16 +93,26 @@ class BeaconService : Service() {
         // checks for bluetooth & location permissions
         if (ActivityCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
             ) != PackageManager.PERMISSION_GRANTED ||
-            ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_SCAN,
-            ) != PackageManager.PERMISSION_GRANTED ||
-            ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_CONNECT,
-            ) != PackageManager.PERMISSION_GRANTED
+            ( // has bluetooth and correct version
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && (
+                    ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.BLUETOOTH_SCAN,
+                    ) != PackageManager.PERMISSION_GRANTED ||
+                        ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.BLUETOOTH_CONNECT,
+                        ) != PackageManager.PERMISSION_GRANTED
+                    )
+                ) || ( // has background location and correct version
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                    ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                    ) != PackageManager.PERMISSION_GRANTED
+                )
         ) {
             // no bluetooth & location permissions
             _permissionError.update { true }

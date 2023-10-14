@@ -574,7 +574,7 @@ fun ActionButton(
         badge = {
             if (badgeCount > 0) {
                 // moves the badge on top of the circle
-                Badge(modifier = Modifier.offset((-10).dp, 10.dp)) {
+                Badge(modifier = Modifier.offset((-11).dp, 11.dp)) {
                     Text(text = badgeCount.toString())
                 }
             }
