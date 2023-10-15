@@ -22,6 +22,7 @@
     <string name="error">Error</string>
     <string name="retry">Retry</string>
     <string name="ignore">Ignore</string>
+    <string name="refresh">Refresh</string>
     <string name="private_policy">Private policy</string>
     <string name="permissions">Permissions</string>
     <string name="auto_boarding">Auto boarding</string>

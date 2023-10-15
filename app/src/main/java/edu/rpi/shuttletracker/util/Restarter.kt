@@ -1,11 +1,8 @@
 package edu.rpi.shuttletracker.util
 
-import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.services.BeaconService
@@ -27,16 +24,9 @@ class Restarter : BroadcastReceiver() {
     }
 
     private fun startBeaconService(context: Context) {
-        // needs location all the time to run service
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            runBlocking(Dispatchers.IO) {
-                if (userPreferencesRepository.getAutoBoardService().first()) {
-                    context.startForegroundService(Intent(context, BeaconService::class.java))
-                }
+        runBlocking(Dispatchers.IO) {
+            if (userPreferencesRepository.getAutoBoardService().first()) {
+                context.startForegroundService(Intent(context, BeaconService::class.java))
             }
         }
     }

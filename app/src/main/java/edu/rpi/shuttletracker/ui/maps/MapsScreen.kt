@@ -6,6 +6,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.widget.Toast
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,9 +30,9 @@ import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.ShareLocation
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -57,6 +60,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -166,7 +170,10 @@ fun MapsScreen(
         },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
-                AutoBoardBusFab()
+                RefreshFab {
+                    viewModel.refreshRunningBusses()
+                    viewModel.loadAll()
+                }
                 BoardBusFab(mapsUiState.allBuses, viewModel::closestDistanceToStop)
             }
         },
@@ -452,35 +459,32 @@ fun BoardBusFab(
 }
 
 /**
- * Creates the FAB to enable auto-boarding
+ * A FAB that refreshes server items on click
  * */
 @Composable
-fun AutoBoardBusFab() {
-    val context = LocalContext.current
-
-    val isBeaconServiceRunning = BeaconService.isRunning.collectAsStateWithLifecycle().value
+fun RefreshFab(
+    refresh: () -> Unit,
+) {
+    val refreshAnimation = remember { Animatable(0F) }
+    val coroutineScope = rememberCoroutineScope()
 
     SmallFloatingActionButton(
         onClick = {
-            if (!isBeaconServiceRunning) {
-                context.startForegroundService(Intent(context, BeaconService::class.java))
-            } else {
-                context.stopService(Intent(context, BeaconService::class.java))
+            refresh()
+            coroutineScope.launch {
+                refreshAnimation.animateTo(
+                    targetValue = 360F,
+                    animationSpec = tween(500, easing = LinearEasing),
+                )
+                refreshAnimation.snapTo(0F)
             }
         },
-        containerColor = if (isBeaconServiceRunning) {
-            MaterialTheme.colorScheme.tertiaryContainer
-        } else {
-            MaterialTheme.colorScheme.errorContainer
-        },
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
     ) {
         Icon(
-            if (isBeaconServiceRunning) {
-                Icons.Outlined.ShareLocation
-            } else {
-                Icons.Outlined.LocationDisabled
-            },
-            stringResource(R.string.location),
+            Icons.Outlined.Refresh,
+            stringResource(R.string.refresh),
+            modifier = Modifier.rotate(refreshAnimation.value),
         )
     }
 }

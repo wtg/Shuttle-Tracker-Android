@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -90,6 +91,16 @@ class MapsViewModel @Inject constructor(
 
         if (mapsUiState.value.notificationsRead == -1) {
             loadAnnouncementCount()
+        }
+    }
+
+    fun refreshRunningBusses() {
+        viewModelScope.launch {
+            readApiResponse(apiRepository.getRunningBuses().first()) { runningBusses ->
+                _mapsUiState.update {
+                    it.copy(runningBuses = runningBusses)
+                }
+            }
         }
     }
 
