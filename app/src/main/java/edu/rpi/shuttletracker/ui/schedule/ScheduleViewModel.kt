@@ -64,9 +64,15 @@ class ScheduleViewModel @Inject constructor(
     ) {
         when (response) {
             is NetworkResponse.Success -> success(response.body)
-            is NetworkResponse.ServerError -> _scheduleUiState.update { it.copy(serverError = response) }
-            is NetworkResponse.NetworkError -> _scheduleUiState.update { it.copy(networkError = response) }
-            is NetworkResponse.UnknownError -> _scheduleUiState.update { it.copy(unknownError = response) }
+            is NetworkResponse.ServerError -> _scheduleUiState.update {
+                it.copy(serverError = response)
+            }
+            is NetworkResponse.NetworkError -> _scheduleUiState.update {
+                it.copy(networkError = response)
+            }
+            is NetworkResponse.UnknownError -> _scheduleUiState.update {
+                it.copy(unknownError = response)
+            }
         }
     }
 }

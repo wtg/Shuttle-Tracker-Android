@@ -212,9 +212,15 @@ class MapsViewModel @Inject constructor(
     ) {
         when (response) {
             is NetworkResponse.Success -> success(response.body)
-            is NetworkResponse.ServerError -> _mapsUiState.update { it.copy(serverError = response) }
-            is NetworkResponse.NetworkError -> _mapsUiState.update { it.copy(networkError = response) }
-            is NetworkResponse.UnknownError -> _mapsUiState.update { it.copy(unknownError = response) }
+            is NetworkResponse.ServerError -> _mapsUiState.update {
+                it.copy(serverError = response)
+            }
+            is NetworkResponse.NetworkError -> _mapsUiState.update {
+                it.copy(networkError = response)
+            }
+            is NetworkResponse.UnknownError -> _mapsUiState.update {
+                it.copy(unknownError = response)
+            }
         }
     }
 }

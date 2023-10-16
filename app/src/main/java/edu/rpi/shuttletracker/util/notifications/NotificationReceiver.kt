@@ -11,7 +11,9 @@ class NotificationReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
-            ACTION_STOP_LOCATION_SERVICE -> context.stopService(Intent(context, LocationService::class.java))
+            ACTION_STOP_LOCATION_SERVICE -> context.stopService(
+                Intent(context, LocationService::class.java),
+            )
         }
     }
 

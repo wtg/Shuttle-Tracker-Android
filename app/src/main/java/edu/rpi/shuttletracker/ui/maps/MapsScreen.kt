@@ -221,7 +221,6 @@ fun MapsScreen(
  * @param mapsUIState: The UI state of the view from the view-model
  * @param padding: Padding needed for the map content padding
  * */
-
 @Composable
 fun BusMap(
     mapsUIState: MapsUIState,
@@ -438,10 +437,18 @@ fun BoardBusFab(
                             busPickerState = true
                         } else {
                             // not close enough to a stop
-                            Toast.makeText(context, context.getText(R.string.distance_warning), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                context.getText(R.string.distance_warning),
+                                Toast.LENGTH_SHORT,
+                            ).show()
                         }
                     }.addOnFailureListener {
-                        Toast.makeText(context, context.getText(R.string.no_location_warning), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            context.getText(R.string.no_location_warning),
+                            Toast.LENGTH_SHORT,
+                        ).show()
                     }
             }
         },
@@ -479,7 +486,7 @@ fun RefreshFab(
                 refreshAnimation.snapTo(0F)
             }
         },
-        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
     ) {
         Icon(
             Icons.Outlined.Refresh,
@@ -544,7 +551,11 @@ fun BusPicker(
                 ) {
                     Button(onClick = {
                         if (selectedBus == -1) {
-                            Toast.makeText(context, context.getText(R.string.no_bus_chosen), Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                context,
+                                context.getText(R.string.no_bus_chosen),
+                                Toast.LENGTH_LONG,
+                            ).show()
                         } else {
                             onBusChosen(selectedBus)
                         }

@@ -61,7 +61,9 @@ fun ScheduleScreen(
         initialPage = scheduleUiState.schedule.size,
     )
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        rememberTopAppBarState(),
+    )
 
     Scaffold(
         topBar = {

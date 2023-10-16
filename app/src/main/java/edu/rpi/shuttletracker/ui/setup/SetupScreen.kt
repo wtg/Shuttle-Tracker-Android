@@ -169,7 +169,10 @@ fun SetupScreen(
                             if (pagerState.currentPage == TOTAL_PAGES - 1) {
                                 Icon(Icons.Outlined.Done, stringResource(R.string.complete_setup))
                             } else {
-                                Icon(Icons.Outlined.ArrowForward, stringResource(R.string.next_page))
+                                Icon(
+                                    Icons.Outlined.ArrowForward,
+                                    stringResource(R.string.next_page),
+                                )
                             }
                         }
                     },
@@ -370,7 +373,10 @@ fun AutoBoardingPage(
                     .fillMaxWidth()
                     .padding(20.dp),
             ) {
-                Text(text = stringResource(R.string.auto_boarding), style = MaterialTheme.typography.headlineLarge)
+                Text(
+                    text = stringResource(R.string.auto_boarding),
+                    style = MaterialTheme.typography.headlineLarge,
+                )
 
                 Text(
                     text = if (!isAutoBoardingServiceRunning) {

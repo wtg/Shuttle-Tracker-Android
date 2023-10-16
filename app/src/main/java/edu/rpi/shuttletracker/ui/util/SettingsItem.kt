@@ -31,35 +31,28 @@ fun SettingsItem(
     actions: @Composable () -> Unit = {},
 ) {
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .clickable { onClick() }
             .fillMaxWidth()
-            .padding(10.dp),
+            .padding(vertical = 10.dp, horizontal = 20.dp),
 
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(30.dp),
-            modifier = Modifier.padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                icon,
-                title,
-                modifier =
-                Modifier.padding(vertical = 10.dp),
-            )
+        Icon(
+            icon,
+            title,
+            modifier = Modifier.padding(vertical = 10.dp),
+        )
 
-            Column {
-                Text(text = title)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title)
 
-                if (description != "") {
-                    Text(
-                        text = description,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            if (description != "") {
+                Text(
+                    text = description,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
 

@@ -5,6 +5,8 @@ import android.content.Intent
 import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -110,8 +112,7 @@ fun SettingsScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 10.dp),
+                .padding(padding),
         ) {
             AutoBoardBusSettingItem(
                 autoBoardService = settingsUiState.autoBoardService,
@@ -145,7 +146,11 @@ fun AutoBoardBusSettingItem(
 ) {
     val context = LocalContext.current
 
-    SettingsItem(icon = Icons.Outlined.BusAlert, stringResource(R.string.auto_boarding)) {
+    SettingsItem(
+        icon = Icons.Outlined.BusAlert,
+        stringResource(R.string.auto_boarding),
+        stringResource(R.string.auto_boarding_description),
+    ) {
         Switch(
             checked = autoBoardService,
             onCheckedChange = {
@@ -165,7 +170,11 @@ fun ColorBlindSettingItem(
     colorBlindMode: Boolean,
     updateColorBlindMode: (Boolean) -> Unit,
 ) {
-    SettingsItem(icon = Icons.Outlined.Visibility, stringResource(R.string.color_blind)) {
+    SettingsItem(
+        icon = Icons.Outlined.Visibility,
+        stringResource(R.string.color_blind_mode),
+        stringResource(R.string.color_blind_description),
+    ) {
         Switch(
             checked = colorBlindMode,
             onCheckedChange = { updateColorBlindMode(it) },
@@ -193,7 +202,7 @@ fun BaseUrlSettingItem(
 
     SettingsItem(
         icon = Icons.Outlined.Link,
-        title = "Base url",
+        title = stringResource(R.string.base_url),
         description = currentUrl,
         onClick = { showDialog = true },
     )
@@ -201,14 +210,19 @@ fun BaseUrlSettingItem(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text(text = "Change the base url") },
+            title = { Text(text = stringResource(R.string.base_url)) },
             text = {
                 Column {
-                    Text(text = "Changing the url will restart the app and stop all running services")
+                    Text(
+                        text = stringResource(R.string.change_url_warning),
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
                     OutlinedTextField(
                         value = textFieldUrl,
                         onValueChange = { textFieldUrl = it },
-                        label = { Text(text = "Url") },
+                        label = { Text(text = stringResource(R.string.url)) },
                     )
                 }
             },
@@ -238,16 +252,20 @@ fun BaseUrlSettingItem(
                         }
                         Runtime.getRuntime().exit(0)
                     } else {
-                        Toast.makeText(context, "Invalid Url", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.invalid_url),
+                            Toast.LENGTH_SHORT,
+                        ).show()
                     }
                 }) {
-                    Text(text = "Save")
+                    Text(text = stringResource(R.string.save))
                 }
             },
 
             dismissButton = {
                 Button(onClick = { showDialog = false }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(R.string.cancel))
                 }
             },
         )

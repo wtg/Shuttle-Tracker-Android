@@ -203,7 +203,7 @@ class LocationService : Service() {
         this,
         Notifications.CHANNEL_TRACKING_BUS,
     ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-        .setContentTitle("Launching Location Service")
+        .setContentTitle(getString(R.string.notification_location_launching))
         .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
         .build()
 
@@ -211,11 +211,11 @@ class LocationService : Service() {
         return NotificationCompat.Builder(
             this,
             Notifications.CHANNEL_TRACKING_BUS,
-        ).setContentTitle("Tracking bus $busNum")
+        ).setContentTitle(getString(R.string.notification_tracking_bus, busNum))
             .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
             .addAction(
                 R.drawable.baseline_location_off_24,
-                "Stop Tracking",
+                getString(R.string.notification_stop_tracking),
                 NotificationReceiver.stopLocationService(this),
             )
             .setContentIntent(NotificationReceiver.openMaps(this))

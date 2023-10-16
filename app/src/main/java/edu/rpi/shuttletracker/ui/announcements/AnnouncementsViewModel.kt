@@ -85,9 +85,15 @@ class AnnouncementsViewModel @Inject constructor(
     ) {
         when (response) {
             is NetworkResponse.Success -> success(response.body)
-            is NetworkResponse.ServerError -> _announcementsUiState.update { it.copy(serverError = response) }
-            is NetworkResponse.NetworkError -> _announcementsUiState.update { it.copy(networkError = response) }
-            is NetworkResponse.UnknownError -> _announcementsUiState.update { it.copy(unknownError = response) }
+            is NetworkResponse.ServerError -> _announcementsUiState.update {
+                it.copy(serverError = response)
+            }
+            is NetworkResponse.NetworkError -> _announcementsUiState.update {
+                it.copy(networkError = response)
+            }
+            is NetworkResponse.UnknownError -> _announcementsUiState.update {
+                it.copy(unknownError = response)
+            }
         }
     }
 }

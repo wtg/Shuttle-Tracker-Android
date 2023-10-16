@@ -32,15 +32,28 @@ object Notifications {
         // creates notification groups
         notificationManager.createNotificationChannelGroupsCompat(
             listOf(
-                buildNotificationChannelGroup(GROUP_TRACKER, context.getString(R.string.bus_tracker)),
+                buildNotificationChannelGroup(
+                    GROUP_TRACKER,
+                    context.getString(R.string.bus_tracker),
+                ),
             ),
         )
 
         // create notification channels
         notificationManager.createNotificationChannelsCompat(
             listOf(
-                buildNotificationChannel(GROUP_TRACKER, CHANNEL_TRACKING_BUS, IMPORTANCE_DEFAULT, context.getString(R.string.tracker)),
-                buildNotificationChannel(GROUP_TRACKER, CHANNEL_AUTO_BOARD, IMPORTANCE_LOW, context.getString(R.string.auto_boarding)),
+                buildNotificationChannel(
+                    GROUP_TRACKER,
+                    CHANNEL_TRACKING_BUS,
+                    IMPORTANCE_DEFAULT,
+                    context.getString(R.string.tracker),
+                ),
+                buildNotificationChannel(
+                    GROUP_TRACKER,
+                    CHANNEL_AUTO_BOARD,
+                    IMPORTANCE_LOW,
+                    context.getString(R.string.auto_boarding),
+                ),
             ),
         )
     }
@@ -51,7 +64,12 @@ object Notifications {
             .setName(name)
             .build()
 
-    private fun buildNotificationChannel(groupId: String, channelId: String, importance: Int, name: String) =
+    private fun buildNotificationChannel(
+        groupId: String,
+        channelId: String,
+        importance: Int,
+        name: String,
+    ) =
         NotificationChannelCompat
             .Builder(channelId, importance)
             .setGroup(groupId)

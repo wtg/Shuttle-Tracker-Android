@@ -42,7 +42,9 @@ fun AboutScreen(
 ) {
     val uriHandler = LocalUriHandler.current
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        rememberTopAppBarState(),
+    )
 
     val context = LocalContext.current
 
@@ -62,12 +64,11 @@ fun AboutScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 10.dp),
+                .padding(padding),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(horizontal = 10.dp),
+                modifier = Modifier.padding(horizontal = 20.dp),
             ) {
                 Text(text = stringResource(R.string.about_page))
             }

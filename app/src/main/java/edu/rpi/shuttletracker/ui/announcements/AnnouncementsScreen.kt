@@ -51,7 +51,9 @@ fun AnnouncementsScreen(
         },
     )
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        rememberTopAppBarState(),
+    )
 
     Scaffold(
         topBar = {
@@ -91,7 +93,11 @@ fun AnnouncementItem(announcement: Announcement) {
         Spacer(modifier = Modifier.height(5.dp))
 
         Text(
-            text = stringResource(R.string.effective_from, announcement.startTime, announcement.endTime),
+            text = stringResource(
+                R.string.effective_from,
+                announcement.startTime,
+                announcement.endTime,
+            ),
             style = MaterialTheme.typography.titleMedium,
         )
 
