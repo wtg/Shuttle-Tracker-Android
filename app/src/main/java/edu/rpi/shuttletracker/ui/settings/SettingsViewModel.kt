@@ -19,8 +19,8 @@ class SettingsViewModel @Inject constructor(
     val settingsUiState = combine(
         userPreferencesRepository.getAutoBoardService(),
         userPreferencesRepository.getColorBlindMode(),
-        userPreferencesRepository.getBaseUrl(),
         userPreferencesRepository.getMinStopDist(),
+        userPreferencesRepository.getBaseUrl(),
     ) { autoBoardService, colorBindMode, minStopDist, baseUrl ->
         return@combine SettingsUiState(
             autoBoardService = autoBoardService,
