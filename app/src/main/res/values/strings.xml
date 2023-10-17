@@ -34,7 +34,6 @@
     <string name="skip">Skip</string>
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
-    <string name="stopDist">Stop Distance</string>
     <string name="url">Url</string>
     <string name="save">Save</string>
 
@@ -139,7 +138,10 @@
     <string name="invalid_url">Invalid url</string>
     <string name="color_blind_description">More distinguishable bus icons</string>
     <string name="auto_boarding_description">Help us crowd source bus data!</string>
-    <string name="color_blind_mode">Color blind mode  </string>
+    <string name="color_blind_mode">Color blind mode</string>
+    <string name="current_meters">%1$d meters</string>
+    <string name="min_stop_dist">Minimum stop distance</string>
+
 
     <!-- Schedule -->
     <string name="effective_from">Effective from %1$s to %2$s</string>

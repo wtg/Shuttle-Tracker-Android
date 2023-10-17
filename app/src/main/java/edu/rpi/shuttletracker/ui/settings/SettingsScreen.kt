@@ -12,8 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BusAlert
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -34,7 +34,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -194,11 +193,16 @@ fun MinStopDistItem(
     minStopDist: Float,
     updateMinStopDist: (Float) -> Unit,
 ) {
-    SettingsItem(icon = Icons.Outlined.LocationOn, stringResource(R.string.stopDist)) {
+    SettingsItem(
+        icon = Icons.Outlined.LocationOn,
+        title = stringResource(R.string.min_stop_dist),
+        description = stringResource(R.string.current_meters, minStopDist.toInt()),
+        useLargeAction = true,
+    ) {
         Slider(
             value = minStopDist,
-            valueRange = 10f..100f,
-            steps = 8,
+            valueRange = 10f..50f,
+            steps = 3,
             onValueChange = { updateMinStopDist(it) },
         )
     }

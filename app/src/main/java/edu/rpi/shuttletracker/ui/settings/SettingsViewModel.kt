@@ -68,6 +68,6 @@ class SettingsViewModel @Inject constructor(
 data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
-    val minStopDist: Float = 50F,
+    val minStopDist: Float = 20f,
     val baseUrl: String = "",
 )

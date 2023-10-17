@@ -248,5 +248,5 @@ data class MapsUIState(
     val totalAnnouncements: Int = -1,
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
-    val minStopDist: Float = 50F,
+    val minStopDist: Float = 50f,
 )

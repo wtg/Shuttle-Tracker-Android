@@ -79,7 +79,7 @@ class UserPreferencesRepository @Inject constructor(
     }
 
     fun getMinStopDist(): Flow<Float> = dataStore.data.map {
-        it[MIN_STOP_DIST] ?: 50F
+        it[MIN_STOP_DIST] ?: 20f
     }
 
     suspend fun saveMinStopDist(minStopDist: Float) {

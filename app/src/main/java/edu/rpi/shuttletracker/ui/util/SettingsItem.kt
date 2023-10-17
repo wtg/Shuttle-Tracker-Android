@@ -28,6 +28,7 @@ fun SettingsItem(
     title: String,
     description: String = "",
     onClick: () -> Unit = {},
+    useLargeAction: Boolean = false,
     actions: @Composable () -> Unit = {},
 ) {
     Row(
@@ -54,8 +55,14 @@ fun SettingsItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+
+            if (useLargeAction) {
+                actions()
+            }
         }
 
-        actions()
+        if (!useLargeAction) {
+            actions()
+        }
     }
 }
