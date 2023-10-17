@@ -69,6 +69,14 @@ class MapsViewModel @Inject constructor(
                     it.copy(colorBlindMode = colorBlindMode)
                 }
             }.launchIn(viewModelScope)
+
+        userPreferencesRepository.getMinStopDist()
+            .flowOn(Dispatchers.Default)
+            .onEach { minStopDist ->
+                _mapsUiState.update {
+                    it.copy(minStopDist = minStopDist)
+                }
+            }.launchIn(viewModelScope)
     }
 
     /**
@@ -223,4 +231,5 @@ data class MapsUIState(
     val totalAnnouncements: Int = -1,
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
+    val minStopDist: Float = 50F,
 )

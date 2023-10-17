@@ -25,8 +25,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -96,7 +98,11 @@ fun SettingsScreen(
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(horizontal = 10.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(horizontal = 10.dp),
+        ) {
             AutoBoardBusSettingItem(
                 autoBoardService = settingsUiState.autoBoardService,
                 updateAutoBoardService = viewModel::updateAutoBoardService,
@@ -105,6 +111,11 @@ fun SettingsScreen(
             ColorBlindSettingItem(
                 colorBlindMode = settingsUiState.colorBlindMode,
                 updateColorBlindMode = viewModel::updateColorBlindMode,
+            )
+
+            MinStopDistItem(
+                minStopDist = settingsUiState.minStopDist,
+                updateMinStopDist = viewModel::updateMinStopDist,
             )
 
             SettingsItem(
@@ -153,9 +164,15 @@ fun ColorBlindSettingItem(
 
 @Composable
 fun MinStopDistItem(
-    stopDist: Int,
+    minStopDist: Float,
+    updateMinStopDist: (Float) -> Unit,
 ) {
     SettingsItem(icon = Icons.Outlined.LocationOn, stringResource(R.string.stopDist)) {
-        //Slider(value = 50F, onValueChange = a, valueRange =)
+        Slider(
+            value = minStopDist,
+            valueRange = 10f..100f,
+            steps = 8,
+            onValueChange = { updateMinStopDist(it) },
+        )
     }
 }

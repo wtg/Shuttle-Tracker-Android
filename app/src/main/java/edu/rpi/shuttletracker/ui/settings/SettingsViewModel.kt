@@ -18,10 +18,12 @@ class SettingsViewModel @Inject constructor(
     val settingsUiState = combine(
         userPreferencesRepository.getAutoBoardService(),
         userPreferencesRepository.getColorBlindMode(),
-    ) { autoBoardService, colorBindMode ->
+        userPreferencesRepository.getMinStopDist(),
+    ) { autoBoardService, colorBindMode, minStopDist ->
         return@combine SettingsUiState(
             autoBoardService = autoBoardService,
             colorBlindMode = colorBindMode,
+            minStopDist = minStopDist,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -40,9 +42,16 @@ class SettingsViewModel @Inject constructor(
             userPreferencesRepository.saveColorBlindMode(colorBlindMode)
         }
     }
+
+    fun updateMinStopDist(minStopDist: Float) {
+        viewModelScope.launch {
+            userPreferencesRepository.saveMinStopDist(minStopDist)
+        }
+    }
 }
 
 data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
+    val minStopDist: Float = 50F,
 )
