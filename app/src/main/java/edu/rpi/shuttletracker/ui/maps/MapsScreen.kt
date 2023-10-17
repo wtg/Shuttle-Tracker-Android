@@ -174,7 +174,11 @@ fun MapsScreen(
                     viewModel.refreshRunningBusses()
                     viewModel.loadAll()
                 }
-                BoardBusFab(mapsUiState.allBuses, viewModel::closestDistanceToStop)
+                BoardBusFab(
+                    mapsUiState.allBuses,
+                    viewModel::closestDistanceToStop,
+                    mapsUiState.minStopDist,
+                )
             }
         },
 
@@ -404,6 +408,7 @@ fun BusMarker(bus: Bus, colorBlindMode: Boolean) {
 fun BoardBusFab(
     buses: List<Int>,
     checkDistanceToStop: (location: Location) -> Float,
+    minStopDist: Float,
 ) {
     val locationServiceBusNumber = LocationService.busNum.collectAsStateWithLifecycle().value
     val context = LocalContext.current
@@ -433,13 +438,16 @@ fun BoardBusFab(
                     .addOnSuccessListener { location: Location ->
 
                         // if they a location was found and they are 50 m away from a stop
-                        if (checkDistanceToStop(location) <= 50) {
+                        if (checkDistanceToStop(location) <= minStopDist) {
                             busPickerState = true
                         } else {
                             // not close enough to a stop
                             Toast.makeText(
                                 context,
-                                context.getText(R.string.distance_warning),
+                                context.getString(
+                                    R.string.distance_warning,
+                                    minStopDist.toInt(),
+                                ),
                                 Toast.LENGTH_SHORT,
                             ).show()
                         }

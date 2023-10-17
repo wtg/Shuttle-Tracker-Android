@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,6 +24,7 @@ class UserPreferencesRepository @Inject constructor(
         private val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
         private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
         private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
+        private val MIN_STOP_DIST = floatPreferencesKey("min_stop_dist")
         private val BASE_URL = stringPreferencesKey("base_url")
     }
 
@@ -73,6 +75,16 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun saveAboutAccepted(aboutAccepted: Boolean) {
         dataStore.edit {
             it[ABOUT_ACCEPTED] = aboutAccepted
+        }
+    }
+
+    fun getMinStopDist(): Flow<Float> = dataStore.data.map {
+        it[MIN_STOP_DIST] ?: 50F
+    }
+
+    suspend fun saveMinStopDist(minStopDist: Float) {
+        dataStore.edit {
+            it[MIN_STOP_DIST] = minStopDist
         }
     }
 

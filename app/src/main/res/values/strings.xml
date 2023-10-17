@@ -34,6 +34,7 @@
     <string name="skip">Skip</string>
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
+    <string name="stopDist">Stop Distance</string>
     <string name="url">Url</string>
     <string name="save">Save</string>
 
@@ -109,7 +110,7 @@
 
     <!-- Maps screen -->
     <string name="bus_number">Bus %1$d</string>
-    <string name="distance_warning">Must be 50m from a stop to board</string>
+    <string name="distance_warning">Must be %1$dm from a stop to board</string>
     <string name="no_location_warning">Unable to find location</string>
 
     <string name="board_bus">Board bus</string>

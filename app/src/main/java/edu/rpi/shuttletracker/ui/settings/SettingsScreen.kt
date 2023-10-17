@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BusAlert
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.AlertDialog
@@ -21,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -32,6 +34,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,8 +65,7 @@ fun SettingsScreen(
     navigator: DestinationsNavigator,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-    val scrollBehavior =
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     val settingsUiState = viewModel.settingsUiState.collectAsStateWithLifecycle().value
 
@@ -130,6 +132,11 @@ fun SettingsScreen(
                 updateAutoBoardService = viewModel::updateAutoBoardServiceBlocking,
             )
 
+            MinStopDistItem(
+                minStopDist = settingsUiState.minStopDist,
+                updateMinStopDist = viewModel::updateMinStopDist,
+            )
+
             SettingsItem(
                 Icons.Outlined.Info,
                 stringResource(R.string.about),
@@ -178,6 +185,21 @@ fun ColorBlindSettingItem(
         Switch(
             checked = colorBlindMode,
             onCheckedChange = { updateColorBlindMode(it) },
+        )
+    }
+}
+
+@Composable
+fun MinStopDistItem(
+    minStopDist: Float,
+    updateMinStopDist: (Float) -> Unit,
+) {
+    SettingsItem(icon = Icons.Outlined.LocationOn, stringResource(R.string.stopDist)) {
+        Slider(
+            value = minStopDist,
+            valueRange = 10f..100f,
+            steps = 8,
+            onValueChange = { updateMinStopDist(it) },
         )
     }
 }
