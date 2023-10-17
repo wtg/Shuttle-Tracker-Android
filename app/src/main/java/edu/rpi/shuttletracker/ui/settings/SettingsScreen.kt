@@ -132,8 +132,8 @@ fun SettingsScreen(
             )
 
             MinStopDistItem(
-                minStopDist = settingsUiState.minStopDist,
-                updateMinStopDist = viewModel::updateMinStopDist,
+                maxStopDist = settingsUiState.maxStopDist,
+                updateMaxStopDist = viewModel::updateMinStopDist,
             )
 
             SettingsItem(
@@ -190,20 +190,20 @@ fun ColorBlindSettingItem(
 
 @Composable
 fun MinStopDistItem(
-    minStopDist: Float,
-    updateMinStopDist: (Float) -> Unit,
+    maxStopDist: Float,
+    updateMaxStopDist: (Float) -> Unit,
 ) {
     SettingsItem(
         icon = Icons.Outlined.LocationOn,
-        title = stringResource(R.string.min_stop_dist),
-        description = stringResource(R.string.current_meters, minStopDist.toInt()),
+        title = stringResource(R.string.max_stop_dist),
+        description = stringResource(R.string.current_meters, maxStopDist.toInt()),
         useLargeAction = true,
     ) {
         Slider(
-            value = minStopDist,
-            valueRange = 10f..50f,
-            steps = 3,
-            onValueChange = { updateMinStopDist(it) },
+            value = maxStopDist,
+            valueRange = 10f..100f,
+            steps = 8,
+            onValueChange = { updateMaxStopDist(it) },
         )
     }
 }

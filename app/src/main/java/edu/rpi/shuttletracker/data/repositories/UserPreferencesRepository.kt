@@ -24,7 +24,7 @@ class UserPreferencesRepository @Inject constructor(
         private val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
         private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
         private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
-        private val MIN_STOP_DIST = floatPreferencesKey("min_stop_dist")
+        private val MAX_STOP_DIST = floatPreferencesKey("max_stop_dist")
         private val BASE_URL = stringPreferencesKey("base_url")
     }
 
@@ -78,13 +78,13 @@ class UserPreferencesRepository @Inject constructor(
         }
     }
 
-    fun getMinStopDist(): Flow<Float> = dataStore.data.map {
-        it[MIN_STOP_DIST] ?: 20f
+    fun getMaxStopDist(): Flow<Float> = dataStore.data.map {
+        it[MAX_STOP_DIST] ?: 20f
     }
 
-    suspend fun saveMinStopDist(minStopDist: Float) {
+    suspend fun saveMaxStopDist(minStopDist: Float) {
         dataStore.edit {
-            it[MIN_STOP_DIST] = minStopDist
+            it[MAX_STOP_DIST] = minStopDist
         }
     }
 

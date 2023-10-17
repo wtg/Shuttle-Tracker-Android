@@ -140,7 +140,7 @@
     <string name="auto_boarding_description">Help us crowd source bus data!</string>
     <string name="color_blind_mode">Color blind mode</string>
     <string name="current_meters">%1$d meters</string>
-    <string name="min_stop_dist">Minimum stop distance</string>
+    <string name="max_stop_dist">Maximum stop distance</string>
 
 
     <!-- Schedule -->

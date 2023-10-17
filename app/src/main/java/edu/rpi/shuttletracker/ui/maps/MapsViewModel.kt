@@ -71,7 +71,7 @@ class MapsViewModel @Inject constructor(
                 }
             }.launchIn(viewModelScope)
 
-        userPreferencesRepository.getMinStopDist()
+        userPreferencesRepository.getMaxStopDist()
             .flowOn(Dispatchers.Default)
             .onEach { minStopDist ->
                 _mapsUiState.update {
