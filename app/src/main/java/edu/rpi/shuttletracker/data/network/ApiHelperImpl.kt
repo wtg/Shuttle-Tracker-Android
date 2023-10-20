@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.data.network
 
 import com.haroldadmin.cnradapter.NetworkResponse
+import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
@@ -38,4 +39,7 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
 
     override suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse> =
         apiService.getSchedule()
+
+    override suspend fun addAnalytics(analytics: Analytics): NetworkResponse<Unit, ErrorResponse> =
+        apiService.addAnalytics(analytics)
 }
