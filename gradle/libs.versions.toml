@@ -1,4 +1,5 @@
 [versions]
+aboutlibraries = "10.9.1"
 accompanist-systemuicontroller = "0.30.1"
 activity-compose = "1.8.0"
 android-beacon-library = "2.19.6"
@@ -7,22 +8,30 @@ core = "1.9.54"
 core-ktx = "1.12.0"
 datastore-preferences = "1.0.0"
 espresso-core = "3.5.1"
-hilt-android = "2.48.1"
+hilt = "2.48.1"
 hilt-navigation-compose = "1.0.0"
 junit = "4.13.2"
 lifecycle-runtime-ktx = "2.6.2"
 logging-interceptor = "4.11.0"
 maps-compose = "3.1.1"
-material-icons-extended = "1.5.3"
+material-icons-extended = "1.5.4"
 material3 = "1.1.2"
 network-respose = "5.0.0"
 play-services-location = "21.0.1"
 play-services-maps = "18.1.0"
 retrofit = "2.9.0"
-ui = "1.5.3"
+ui = "1.5.4"
 work-runtime-ktx = "2.8.1"
 
+compose-bom = "2023.10.01"
+
+ksp = "1.9.10-1.0.13"
+android-gradle-plugin = "8.1.2"
+kotlin = "1.9.10"
+
 [libraries]
+aboutlibraries-compose = { module = "com.mikepenz:aboutlibraries-compose", version.ref = "aboutlibraries" }
+aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist-systemuicontroller" }
 
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
@@ -34,9 +43,12 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-junit" }
+androidx-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "ui" }
 
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-runtime-ktx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle-runtime-ktx" }
+
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom"}
 
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons-extended" }
 androidx-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
@@ -47,11 +59,11 @@ androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview
 
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work-runtime-ktx" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "core" }
+destinations = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "core" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 
-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt-android" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
 ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "core" }
@@ -59,12 +71,17 @@ lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", v
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "logging-interceptor" }
 
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "maps-compose" }
-network-reponse = { module = "com.github.haroldadmin:NetworkResponseAdapter", version.ref = "network-respose" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "play-services-maps" }
 
+network-reponse = { module = "com.github.haroldadmin:NetworkResponseAdapter", version.ref = "network-respose" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 
 [plugins]
+android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
+kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.DirectionsBus
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Shield
@@ -32,6 +33,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.ui.destinations.LibrariesScreenDestination
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,6 +93,12 @@ fun AboutScreen(
                 icon = Icons.Outlined.Shield,
                 title = stringResource(R.string.view_private_policy),
                 onClick = { uriHandler.openUri(context.getString(R.string.url_private_policy)) },
+            )
+
+            SettingsItem(
+                icon = Icons.Outlined.Collections,
+                title = stringResource(R.string.libraries_used),
+                onClick = { navigator.navigate(LibrariesScreenDestination()) },
             )
 
             SettingsItem(

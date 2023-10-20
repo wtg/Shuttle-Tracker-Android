@@ -141,6 +141,7 @@
     <string name="color_blind_mode">Color blind mode</string>
     <string name="current_meters">%1$d meters</string>
     <string name="max_stop_dist">Maximum stop distance</string>
+    <string name="libraries_used">Libraries used</string>
 
 
     <!-- Schedule -->
