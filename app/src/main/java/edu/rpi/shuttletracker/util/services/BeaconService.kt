@@ -208,6 +208,6 @@ class BeaconService : Service() {
         Notifications.CHANNEL_AUTO_BOARD,
     ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
         .setContentTitle(getString(R.string.notification_auto_boarding_running))
-        .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
+        .setSmallIcon(R.drawable.ic_stat_default)
         .build()
 }

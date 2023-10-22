@@ -204,7 +204,7 @@ class LocationService : Service() {
         Notifications.CHANNEL_TRACKING_BUS,
     ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
         .setContentTitle(getString(R.string.notification_location_launching))
-        .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
+        .setSmallIcon(R.drawable.ic_stat_default)
         .build()
 
     private fun notify(busNum: Int): Notification {
@@ -212,7 +212,7 @@ class LocationService : Service() {
             this,
             Notifications.CHANNEL_TRACKING_BUS,
         ).setContentTitle(getString(R.string.notification_tracking_bus, busNum))
-            .setSmallIcon(R.mipmap.ic_launcher_adaptive_fore)
+            .setSmallIcon(R.drawable.ic_stat_default)
             .addAction(
                 R.drawable.baseline_location_off_24,
                 getString(R.string.notification_stop_tracking),
