@@ -145,7 +145,13 @@ fun SetupScreen(
      * Navigates to the next page
      * */
     fun toNextPage(current: Int = pagerState.targetPage) {
-        if (current != TOTAL_PAGES - 1) {
+        if (current == TOTAL_PAGES - 1) {
+            navigator.navigate(MapsScreenDestination()) {
+                popUpTo(SetupScreenDestination) {
+                    inclusive = true
+                }
+            }
+        } else {
             coroutineScope.launch {
                 pagerState.animateScrollToPage(pagerState.targetPage + 1)
             }
