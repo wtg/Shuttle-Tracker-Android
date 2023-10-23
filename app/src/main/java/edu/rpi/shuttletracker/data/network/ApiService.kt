@@ -12,6 +12,7 @@ import edu.rpi.shuttletracker.data.models.Stop
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
+import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface ApiService {
@@ -36,6 +37,6 @@ interface ApiService {
     @GET("schedule")
     suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse>
 
-    @PATCH("analytics")
+    @POST("logs")
     suspend fun addAnalytics(@Body analytics: Analytics): NetworkResponse<Unit, ErrorResponse>
 }

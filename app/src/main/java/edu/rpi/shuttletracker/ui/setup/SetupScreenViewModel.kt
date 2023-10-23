@@ -17,10 +17,12 @@ class SetupScreenViewModel @Inject constructor(
     val setupUiState = combine(
         userPreferencesRepository.getPrivacyPolicyAccepted(),
         userPreferencesRepository.getAboutAccepted(),
-    ) { privatePolicy, about ->
+        userPreferencesRepository.getAllowAnalytics(),
+    ) { privatePolicy, about, allowAnalytics ->
         return@combine SetupUiState(
             privacyPolicyAccepted = privatePolicy,
             aboutAccepted = about,
+            allowAnalytics = allowAnalytics,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -39,9 +41,16 @@ class SetupScreenViewModel @Inject constructor(
             userPreferencesRepository.saveAboutAccepted(true)
         }
     }
+
+    fun updateAllowAnalytics(allowAnalytics: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.saveAllowAnalytics(allowAnalytics)
+        }
+    }
 }
 
 data class SetupUiState(
     val privacyPolicyAccepted: Boolean = false,
     val aboutAccepted: Boolean = false,
+    val allowAnalytics: Boolean = true,
 )

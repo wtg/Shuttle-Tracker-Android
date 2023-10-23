@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +38,7 @@ import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -77,8 +79,6 @@ import edu.rpi.shuttletracker.util.services.BeaconService
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-const val DENIED = "denied"
-const val EXPLAINED = "explained"
 const val TOTAL_PAGES = 4
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -115,6 +115,18 @@ fun SetupScreen(
         }
     }
 
+    BeaconService.isRunning.collectAsStateWithLifecycle().value.let {
+        LaunchedEffect(it) {
+            if (it) {
+                navigator.navigate(MapsScreenDestination()) {
+                    popUpTo(SetupScreenDestination) {
+                        inclusive = true
+                    }
+                }
+            }
+        }
+    }
+
     // when pages change, change title name
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.distinctUntilChanged().collect { page ->
@@ -130,16 +142,10 @@ fun SetupScreen(
     val coroutineScope = rememberCoroutineScope()
 
     /**
-     * Navigates to the next page, but if at end it will go to maps
+     * Navigates to the next page
      * */
     fun toNextPage(current: Int = pagerState.targetPage) {
-        if (current == TOTAL_PAGES - 1) {
-            navigator.navigate(MapsScreenDestination()) {
-                popUpTo(SetupScreenDestination) {
-                    inclusive = true
-                }
-            }
-        } else {
+        if (current != TOTAL_PAGES - 1) {
             coroutineScope.launch {
                 pagerState.animateScrollToPage(pagerState.targetPage + 1)
             }
@@ -194,13 +200,24 @@ fun SetupScreen(
                     text = stringResource(R.string.info_intro),
                     title = stringResource(R.string.about),
                 )
+
                 1 -> TextScreen(
                     onAccept = { toNextPage(1) },
                     acceptedState = setupUiState.privacyPolicyAccepted,
                     updateState = viewModel::updatePrivacyPolicyAccepted,
                     text = stringResource(R.string.privacy),
                     title = stringResource(R.string.private_policy),
-                )
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = setupUiState.allowAnalytics,
+                            onCheckedChange = { checked -> viewModel.updateAllowAnalytics(checked) },
+                        )
+
+                        Text(text = "Agree to share analytics")
+                    }
+                }
+
                 2 -> PermissionPage { toNextPage(2) }
                 3 -> AutoBoardingPage { toNextPage(3) }
             }
@@ -215,6 +232,7 @@ fun TextScreen(
     updateState: () -> Unit,
     text: String,
     title: String,
+    extra: @Composable () -> Unit = {},
 ) {
     LaunchedEffect(acceptedState) {
         if (acceptedState) onAccept()
@@ -232,6 +250,8 @@ fun TextScreen(
         } else {
             Text(text = stringResource(R.string.acknowledged, title))
         }
+
+        extra()
     }
 }
 
@@ -399,6 +419,9 @@ fun AutoBoardingPage(
         }
     }
 }
+
+const val DENIED = "denied"
+const val EXPLAINED = "explained"
 
 /**
  * Item to ask and update permission states

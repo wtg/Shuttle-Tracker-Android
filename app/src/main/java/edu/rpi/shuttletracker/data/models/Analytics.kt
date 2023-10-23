@@ -1,42 +1,86 @@
 package edu.rpi.shuttletracker.data.models
 
 import com.google.gson.annotations.SerializedName
+import edu.rpi.shuttletracker.BuildConfig
+import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.Flatten
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import java.util.UUID
+import javax.inject.Inject
 
 data class Analytics(
     @SerializedName("id")
-    var id: String,
+    val id: String,
 
     @SerializedName("userID")
-    var userID: String,
+    val userID: String,
 
     @SerializedName("date")
-    var date: String,
+    val date: String,
 
     @SerializedName("clientPlatform")
-    var clientPlatform: String,
+    val clientPlatform: String,
 
     @SerializedName("clientPlatformVersion")
-    var clientPlatformVersion: String,
+    val clientPlatformVersion: String,
 
     @SerializedName("appVersion")
-    var appVersion: String,
+    val appVersion: String,
 
     @SerializedName("boardBusCount")
-    var boardBusCount: String,
-
-    @Flatten("userSettings::colorTheme")
-    var colorTheme: String,
+    val boardBusCount: Int,
 
     @Flatten("userSettings::colorBlindMode")
-    var colorBlindMode: Boolean,
+    val colorBlindMode: Boolean,
 
     @Flatten("userSettings::logging")
-    var logging: Boolean,
+    val logging: Boolean,
 
     @Flatten("userSettings::serverBaseURL")
-    var serverBaseURL: String,
+    val serverBaseURL: String,
 
-    @Flatten("eventType::colorBlindModeToggled::enabled")
-    var colorBlindModeToggled: Boolean,
+    @Flatten("eventType::boardBusActivated::manual")
+    val boardBusActivatedManual: Boolean,
+
+    @SerializedName("content")
+    val content: String = "",
 )
+
+/**
+ * This must be @Inject into a @AndroidEntryPoint to be used
+ * */
+class AnalyticsFactory @Inject constructor(
+    private val userPreferencesRepository: UserPreferencesRepository,
+) {
+    fun build(boardBusActivatedManual: Boolean): Analytics = Analytics(
+        id = UUID.randomUUID().toString(),
+        userID = runBlocking { userPreferencesRepository.getUserId() },
+        date = getCurrentFormattedDate(),
+        clientPlatform = "android",
+        clientPlatformVersion = android.os.Build.VERSION.SDK_INT.toString(),
+        appVersion = BuildConfig.VERSION_NAME,
+        boardBusCount = runBlocking { userPreferencesRepository.getBoardBusCount() },
+        colorBlindMode = runBlocking { userPreferencesRepository.getColorBlindMode().first() },
+        logging = true,
+        serverBaseURL = runBlocking { userPreferencesRepository.getBaseUrl().first() },
+        boardBusActivatedManual = boardBusActivatedManual,
+    )
+
+    companion object {
+        /**
+         *  Get the current date time in the format of ISO-8601 (e.g. 2021-11-12T22:44:55+00:00), excluding milliseconds.
+         *  @return An ISO-8601 date string.
+         */
+        private fun getCurrentFormattedDate(): String {
+            val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+            sdf.timeZone = TimeZone.getTimeZone("UTC") // use UTC as default time zone
+
+            return sdf.format(Date())
+        }
+    }
+}

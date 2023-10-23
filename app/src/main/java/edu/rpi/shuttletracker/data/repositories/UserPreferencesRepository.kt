@@ -11,7 +11,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.R
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.util.UUID
 import javax.inject.Inject
 
 class UserPreferencesRepository @Inject constructor(
@@ -19,6 +21,7 @@ class UserPreferencesRepository @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     companion object {
+        private val USER_ID = stringPreferencesKey("user_id")
         private val NOTIFICATIONS_READ = intPreferencesKey("notifications_read")
         private val AUTO_BOARD_SERVICE = booleanPreferencesKey("auto_board_service")
         private val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
@@ -26,7 +29,19 @@ class UserPreferencesRepository @Inject constructor(
         private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
         private val MAX_STOP_DIST = floatPreferencesKey("max_stop_dist")
         private val BASE_URL = stringPreferencesKey("base_url")
+        private val BOARD_BUS_COUNT = intPreferencesKey("board_bus_count")
+        private val ALLOW_ANALYTICS = booleanPreferencesKey("allow_analytics")
     }
+
+    suspend fun getUserId(): String = dataStore.data.map { preference ->
+        if (preference[USER_ID] == null) {
+            dataStore.edit {
+                it[USER_ID] = UUID.randomUUID().toString()
+            }
+        }
+
+        preference[USER_ID]
+    }.first().toString()
 
     fun getNotificationsRead(): Flow<Int> = dataStore.data.map {
         it[NOTIFICATIONS_READ] ?: 0
@@ -95,6 +110,26 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun saveBaseUrl(url: String) {
         dataStore.edit {
             it[BASE_URL] = url
+        }
+    }
+
+    suspend fun getBoardBusCount(): Int = dataStore.data.map {
+        it[BOARD_BUS_COUNT] ?: 0
+    }.first()
+
+    suspend fun incrementBoardBusCount() {
+        dataStore.edit {
+            it[BOARD_BUS_COUNT] = getBoardBusCount() + 1
+        }
+    }
+
+    fun getAllowAnalytics(): Flow<Boolean> = dataStore.data.map {
+        it[ALLOW_ANALYTICS] ?: true
+    }
+
+    suspend fun saveAllowAnalytics(allowAnalytics: Boolean) {
+        dataStore.edit {
+            it[ALLOW_ANALYTICS] = allowAnalytics
         }
     }
 }

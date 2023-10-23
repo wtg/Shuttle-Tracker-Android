@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.data.repositories
 
+import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.network.ApiHelperImpl
 import javax.inject.Inject
@@ -20,4 +21,6 @@ class ApiRepository @Inject constructor(
     suspend fun getAnnouncements() = apiHelper.getAnnouncements()
 
     suspend fun getSchedule() = apiHelper.getSchedule()
+
+    suspend fun addAnalytics(analytics: Analytics) = apiHelper.addAnalytics(analytics)
 }

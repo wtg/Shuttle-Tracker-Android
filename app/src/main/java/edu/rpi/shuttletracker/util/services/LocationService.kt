@@ -23,9 +23,11 @@ import com.google.android.gms.location.Priority
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.data.models.AnalyticsFactory
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
+import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
 import edu.rpi.shuttletracker.util.notifications.Notifications
 import kotlinx.coroutines.CoroutineScope
@@ -33,9 +35,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 /* reference https://github.com/tachiyomiorg/tachiyomi/blob/d4290f6f596dcafbe354eec51875680eb854d179/app/src/main/java/eu/kanade/tachiyomi/data/updater/AppUpdateService.kt#L33 */
@@ -45,6 +48,12 @@ class LocationService : Service() {
 
     @Inject
     lateinit var apiRepository: ApiRepository
+
+    @Inject
+    lateinit var userPreferencesRepository: UserPreferencesRepository
+
+    @Inject
+    lateinit var analyticsFactory: AnalyticsFactory
 
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var request: LocationRequest
@@ -133,7 +142,17 @@ class LocationService : Service() {
             notify(busNum)
         }
 
-        val uuid = UUID.randomUUID().toString()
+        runBlocking { userPreferencesRepository.incrementBoardBusCount() }
+
+        val analytics = analyticsFactory.build(displayError)
+
+        val uuid = analytics.userID
+
+        serviceScope.launch {
+            if (userPreferencesRepository.getAllowAnalytics().first()) {
+                apiRepository.addAnalytics(analytics)
+            }
+        }
 
         // change in location
         locationCallback = object : LocationCallback() {
