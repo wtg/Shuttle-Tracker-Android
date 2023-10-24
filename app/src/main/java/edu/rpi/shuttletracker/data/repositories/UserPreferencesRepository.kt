@@ -124,7 +124,7 @@ class UserPreferencesRepository @Inject constructor(
     }
 
     fun getAllowAnalytics(): Flow<Boolean> = dataStore.data.map {
-        it[ALLOW_ANALYTICS] ?: true
+        it[ALLOW_ANALYTICS] ?: false
     }
 
     suspend fun saveAllowAnalytics(allowAnalytics: Boolean) {

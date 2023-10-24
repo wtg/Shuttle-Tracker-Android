@@ -37,6 +37,6 @@ interface ApiService {
     @GET("schedule")
     suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse>
 
-    @POST("logs")
+    @POST("analytics/entries")
     suspend fun addAnalytics(@Body analytics: Analytics): NetworkResponse<Unit, ErrorResponse>
 }

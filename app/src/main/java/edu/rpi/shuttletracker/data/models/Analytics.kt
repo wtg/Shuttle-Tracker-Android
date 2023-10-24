@@ -46,9 +46,6 @@ data class Analytics(
 
     @Flatten("eventType::boardBusActivated::manual")
     val boardBusActivatedManual: Boolean,
-
-    @SerializedName("content")
-    val content: String = "",
 )
 
 /**
