@@ -134,7 +134,6 @@ class LocationService : Service() {
         }
 
         val uuid = UUID.randomUUID().toString()
-
         // change in location
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {

@@ -22,6 +22,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -29,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.BuildConfig
@@ -41,6 +46,7 @@ import edu.rpi.shuttletracker.ui.util.SettingsItem
 @Composable
 fun AboutScreen(
     navigator: DestinationsNavigator,
+    viewModel: AboutViewModel = hiltViewModel(),
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -101,10 +107,18 @@ fun AboutScreen(
                 onClick = { navigator.navigate(LibrariesScreenDestination()) },
             )
 
+            var timesClicked by remember { mutableIntStateOf(0) }
+
             SettingsItem(
                 icon = Icons.Outlined.Info,
                 title = stringResource(R.string.version),
                 BuildConfig.VERSION_NAME,
+                onClick = {
+                    timesClicked++
+                    if (timesClicked >= 10) {
+                        viewModel.activateDevOptions()
+                    }
+                },
             )
 
             SettingsItem(

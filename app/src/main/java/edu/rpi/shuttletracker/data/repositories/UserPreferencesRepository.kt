@@ -26,6 +26,7 @@ class UserPreferencesRepository @Inject constructor(
         private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
         private val MAX_STOP_DIST = floatPreferencesKey("max_stop_dist")
         private val BASE_URL = stringPreferencesKey("base_url")
+        private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
     }
 
     fun getNotificationsRead(): Flow<Int> = dataStore.data.map {
@@ -96,5 +97,13 @@ class UserPreferencesRepository @Inject constructor(
         dataStore.edit {
             it[BASE_URL] = url
         }
+    }
+    suspend fun activateDevOptions() {
+        dataStore.edit {
+            it[DEV_OPTIONS_ACTIVE] = true
+        }
+    }
+    fun getDevOptions(): Flow<Boolean> = dataStore.data.map {
+        it[DEV_OPTIONS_ACTIVE] ?: false
     }
 }
