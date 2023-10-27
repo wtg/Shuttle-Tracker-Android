@@ -133,11 +133,13 @@ class UserPreferencesRepository @Inject constructor(
             it[ALLOW_ANALYTICS] = allowAnalytics
         }
     }
-    suspend fun activateDevOptions() {
+
+    suspend fun activateDevOptions(devOptionEnable: Boolean) {
         dataStore.edit {
-            it[DEV_OPTIONS_ACTIVE] = true
+            it[DEV_OPTIONS_ACTIVE] = devOptionEnable
         }
     }
+
     fun getDevOptions(): Flow<Boolean> = dataStore.data.map {
         it[DEV_OPTIONS_ACTIVE] ?: false
     }

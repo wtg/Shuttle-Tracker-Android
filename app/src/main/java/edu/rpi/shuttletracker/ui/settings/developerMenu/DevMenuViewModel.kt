@@ -44,6 +44,12 @@ class DevMenuViewModel @Inject constructor(
             userPreferencesRepository.saveAutoBoardService(autoBoardService)
         }
     }
+
+    fun updateDevMenu(devOptions: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.activateDevOptions(devOptions)
+        }
+    }
 }
 
 data class DevMenuUiState(

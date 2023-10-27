@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -12,6 +13,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -62,6 +64,13 @@ fun DevMenuScreen(
             modifier = Modifier
                 .padding(padding),
         ) {
+            SettingsItem(icon = Icons.Outlined.Code, title = "Disable dev menu") {
+                Switch(checked = true, onCheckedChange = {
+                    viewModel.updateDevMenu(false)
+                    navigator.popBackStack()
+                })
+            }
+
             MinStopDistItem(
                 maxStopDist = devMenuUiState.maxStopDist,
                 updateMaxStopDist = viewModel::updateMinStopDist,
