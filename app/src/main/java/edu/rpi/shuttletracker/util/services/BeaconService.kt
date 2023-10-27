@@ -19,8 +19,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.BeaconParser
@@ -128,7 +130,6 @@ class BeaconService : Service() {
 
         // tracks whether or not board bus should be activated or not
         var notFoundFor = System.currentTimeMillis()
-        var autoTracking = false
 
         /**
          * Detects nearby beacons
@@ -142,9 +143,10 @@ class BeaconService : Service() {
 
             // no beacons nearby and runs till death
             if (closest == null) {
-                // if no beacon has been detected for 30 seconds
-                if (System.currentTimeMillis() - notFoundFor > 30000 && autoTracking) {
-                    autoTracking = false
+                // if no beacon has been detected for 30 seconds and was started auto
+                if (System.currentTimeMillis() - notFoundFor > 30000 &&
+                    runBlocking { LocationService.startedManual.first() } == false
+                ) {
                     stopService(Intent(this, LocationService::class.java))
                 }
 
@@ -156,11 +158,9 @@ class BeaconService : Service() {
 
             if (LocationService.busNum.value == closestId) { return@Observer }
 
-            autoTracking = true
-
             val serviceIntent = Intent(this, LocationService::class.java).apply {
                 putExtra(LocationService.BUNDLE_BUS_ID, closestId)
-                putExtra(LocationService.BUNDLE_DISPLAY_ERROR, false)
+                putExtra(LocationService.STARTED_MANUAL, false)
             }
 
             startService(serviceIntent)

@@ -66,6 +66,7 @@ fun DevMenuScreen(
                 maxStopDist = devMenuUiState.maxStopDist,
                 updateMaxStopDist = viewModel::updateMinStopDist,
             )
+
             BaseUrlSettingItem(
                 currentUrl = devMenuUiState.baseUrl,
                 updateBaseUrl = viewModel::updateBaseUrl,

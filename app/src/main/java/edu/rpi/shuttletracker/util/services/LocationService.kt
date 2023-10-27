@@ -20,12 +20,10 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.AnalyticsFactory
 import edu.rpi.shuttletracker.data.models.BoardBus
-import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
@@ -39,6 +37,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 /* reference https://github.com/tachiyomiorg/tachiyomi/blob/d4290f6f596dcafbe354eec51875680eb854d179/app/src/main/java/eu/kanade/tachiyomi/data/updater/AppUpdateService.kt#L33 */
@@ -64,21 +63,18 @@ class LocationService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
+
+        private val _startedManual = MutableStateFlow<Boolean?>(null)
+        val startedManual = _startedManual.asStateFlow()
+
         private val _busNum = MutableStateFlow<Int?>(null)
         val busNum = _busNum.asStateFlow()
-
-        private val _networkError = MutableStateFlow<NetworkResponse<*, ErrorResponse>?>(null)
-        val networkError = _networkError.asStateFlow()
 
         private val _permissionError = MutableStateFlow(false)
         val permissionError = _permissionError.asStateFlow()
 
         const val BUNDLE_BUS_ID = "BUS_ID"
-        const val BUNDLE_DISPLAY_ERROR = "DISPLAY_ERROR"
-
-        fun dismissError() {
-            _networkError.update { null }
-        }
+        const val STARTED_MANUAL = "STARTED_MANUAL"
     }
 
     override fun onCreate() {
@@ -119,9 +115,9 @@ class LocationService : Service() {
         val extras: Bundle = intent!!.extras!!
 
         val busNum = extras.getInt(BUNDLE_BUS_ID)
-        val displayError = extras.getBoolean(BUNDLE_DISPLAY_ERROR, true)
+        val startedManual = extras.getBoolean(STARTED_MANUAL, false)
+        val startTime = System.currentTimeMillis()
 
-        _networkError.update { null }
         _permissionError.update { false }
 
         // checks for location permissions
@@ -144,7 +140,7 @@ class LocationService : Service() {
 
         runBlocking { userPreferencesRepository.incrementBoardBusCount() }
 
-        val analytics = analyticsFactory.build(displayError)
+        val analytics = analyticsFactory.build(startedManual)
 
         val uuid = analytics.userID
 
@@ -162,7 +158,14 @@ class LocationService : Service() {
 
                 serviceScope.launch {
                     if (currentLocation != null) {
-                        updateLocation(busNum, currentLocation, displayError, uuid)
+                        updateLocation(busNum, currentLocation, uuid)
+
+                        // been on bus for 20 min
+                        if (System.currentTimeMillis() - startTime >=
+                            TimeUnit.MINUTES.toMillis(20)
+                        ) {
+                            stopSelf()
+                        }
                     }
                 }
             }
@@ -172,6 +175,7 @@ class LocationService : Service() {
         locationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
 
         _busNum.update { busNum }
+        _startedManual.update { startedManual }
 
         return START_NOT_STICKY
     }
@@ -194,29 +198,16 @@ class LocationService : Service() {
     private suspend fun updateLocation(
         busNum: Int,
         location: Location,
-        displayError: Boolean,
         uuid: String,
-    ) {
-        val response = apiRepository.addBus(
-            busNum,
-            BoardBus(
-                uuid,
-                location.latitude,
-                location.longitude,
-                "user",
-            ),
-        )
-
-        // report error and end service
-        if (
-            response is NetworkResponse.NetworkError ||
-            response is NetworkResponse.UnknownError ||
-            response is NetworkResponse.ServerError
-        ) {
-            if (displayError) _networkError.update { response }
-            stopSelf()
-        }
-    }
+    ) = apiRepository.addBus(
+        busNum,
+        BoardBus(
+            uuid,
+            location.latitude,
+            location.longitude,
+            "user",
+        ),
+    )
 
     private fun notifyLaunch() = NotificationCompat.Builder(
         this,

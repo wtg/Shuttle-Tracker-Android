@@ -94,7 +94,6 @@ import edu.rpi.shuttletracker.ui.destinations.ScheduleScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SettingsScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
-import edu.rpi.shuttletracker.ui.util.Error
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
@@ -126,21 +125,6 @@ fun MapsScreen(
             viewModel.loadAll()
         },
     )
-
-    // shows the error when there is an error from giving current position to server
-    with(LocationService.networkError.collectAsStateWithLifecycle().value) {
-        if (this != null) {
-            Error(
-                error = this,
-                onSecondaryRequest = { LocationService.dismissError() },
-                onPrimaryRequest = { LocationService.dismissError() },
-                errorType = stringResource(R.string.location_service),
-                errorBody = stringResource(R.string.error_server_location),
-                primaryButtonText = stringResource(R.string.understand),
-                showSecondaryButton = false,
-            )
-        }
-    }
 
     val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
     val errorStartingLocationService = LocationService.permissionError.collectAsStateWithLifecycle().value

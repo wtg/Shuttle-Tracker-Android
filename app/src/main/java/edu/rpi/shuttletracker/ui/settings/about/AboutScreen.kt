@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.ui.settings.about
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -107,16 +108,19 @@ fun AboutScreen(
                 onClick = { navigator.navigate(LibrariesScreenDestination()) },
             )
 
-            var timesClicked by remember { mutableIntStateOf(0) }
+            var timesClicked by remember { mutableIntStateOf(10) }
 
             SettingsItem(
                 icon = Icons.Outlined.Info,
                 title = stringResource(R.string.version),
                 BuildConfig.VERSION_NAME,
                 onClick = {
-                    timesClicked++
-                    if (timesClicked >= 10) {
+                    timesClicked--
+                    if (timesClicked == 0) {
+                        Toast.makeText(context, "Dev options activated", Toast.LENGTH_SHORT).show()
                         viewModel.activateDevOptions()
+                    } else if (timesClicked <= 3) {
+                        Toast.makeText(context, "Dev options unlocked in $timesClicked", Toast.LENGTH_SHORT).show()
                     }
                 },
             )
