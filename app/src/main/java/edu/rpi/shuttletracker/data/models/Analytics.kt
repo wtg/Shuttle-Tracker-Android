@@ -14,6 +14,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 data class Analytics(
+
     @SerializedName("id")
     val id: String,
 

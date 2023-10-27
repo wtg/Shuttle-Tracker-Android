@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BusAlert
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -22,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -51,6 +50,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.MainActivity
 import edu.rpi.shuttletracker.ui.destinations.AboutScreenDestination
+import edu.rpi.shuttletracker.ui.destinations.DevMenuScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 import edu.rpi.shuttletracker.util.services.BeaconService
@@ -125,16 +125,13 @@ fun SettingsScreen(
                 updateColorBlindMode = viewModel::updateColorBlindMode,
             )
 
-            BaseUrlSettingItem(
-                currentUrl = settingsUiState.baseUrl,
-                updateBaseUrl = viewModel::updateBaseUrl,
-                updateAutoBoardService = viewModel::updateAutoBoardServiceBlocking,
-            )
-
-            MinStopDistItem(
-                maxStopDist = settingsUiState.maxStopDist,
-                updateMaxStopDist = viewModel::updateMinStopDist,
-            )
+            if (settingsUiState.devOptionState) {
+                SettingsItem(
+                    Icons.Outlined.Code,
+                    "Developer Options",
+                    onClick = { navigator.navigate(DevMenuScreenDestination()) },
+                )
+            }
 
             SettingsItem(
                 Icons.Outlined.Info,
@@ -184,26 +181,6 @@ fun ColorBlindSettingItem(
         Switch(
             checked = colorBlindMode,
             onCheckedChange = { updateColorBlindMode(it) },
-        )
-    }
-}
-
-@Composable
-fun MinStopDistItem(
-    maxStopDist: Float,
-    updateMaxStopDist: (Float) -> Unit,
-) {
-    SettingsItem(
-        icon = Icons.Outlined.LocationOn,
-        title = stringResource(R.string.max_stop_dist),
-        description = stringResource(R.string.current_meters, maxStopDist.toInt()),
-        useLargeAction = true,
-    ) {
-        Slider(
-            value = maxStopDist,
-            valueRange = 10f..100f,
-            steps = 8,
-            onValueChange = { updateMaxStopDist(it) },
         )
     }
 }

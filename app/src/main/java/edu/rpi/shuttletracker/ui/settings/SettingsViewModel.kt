@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,14 +18,12 @@ class SettingsViewModel @Inject constructor(
     val settingsUiState = combine(
         userPreferencesRepository.getAutoBoardService(),
         userPreferencesRepository.getColorBlindMode(),
-        userPreferencesRepository.getMaxStopDist(),
-        userPreferencesRepository.getBaseUrl(),
-    ) { autoBoardService, colorBindMode, maxStopDist, baseUrl ->
+        userPreferencesRepository.getDevOptions(),
+    ) { autoBoardService, colorBindMode, devOptionState ->
         return@combine SettingsUiState(
             autoBoardService = autoBoardService,
             colorBlindMode = colorBindMode,
-            maxStopDist = maxStopDist,
-            baseUrl = baseUrl,
+            devOptionState = devOptionState,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -45,29 +42,9 @@ class SettingsViewModel @Inject constructor(
             userPreferencesRepository.saveColorBlindMode(colorBlindMode)
         }
     }
-
-    fun updateMinStopDist(minStopDist: Float) {
-        viewModelScope.launch {
-            userPreferencesRepository.saveMaxStopDist(minStopDist)
-        }
-    }
-
-    fun updateBaseUrl(baseUrl: String) {
-        runBlocking {
-            userPreferencesRepository.saveBaseUrl(baseUrl)
-        }
-    }
-
-    fun updateAutoBoardServiceBlocking(autoBoardService: Boolean) {
-        runBlocking {
-            userPreferencesRepository.saveAutoBoardService(autoBoardService)
-        }
-    }
 }
-
 data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
-    val maxStopDist: Float = 20f,
-    val baseUrl: String = "",
+    val devOptionState: Boolean = false,
 )

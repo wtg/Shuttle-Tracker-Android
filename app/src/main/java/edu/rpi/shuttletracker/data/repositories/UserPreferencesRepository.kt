@@ -31,6 +31,7 @@ class UserPreferencesRepository @Inject constructor(
         private val BASE_URL = stringPreferencesKey("base_url")
         private val BOARD_BUS_COUNT = intPreferencesKey("board_bus_count")
         private val ALLOW_ANALYTICS = booleanPreferencesKey("allow_analytics")
+        private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
     }
 
     suspend fun getUserId(): String = dataStore.data.map { preference ->
@@ -131,5 +132,13 @@ class UserPreferencesRepository @Inject constructor(
         dataStore.edit {
             it[ALLOW_ANALYTICS] = allowAnalytics
         }
+    }
+    suspend fun activateDevOptions() {
+        dataStore.edit {
+            it[DEV_OPTIONS_ACTIVE] = true
+        }
+    }
+    fun getDevOptions(): Flow<Boolean> = dataStore.data.map {
+        it[DEV_OPTIONS_ACTIVE] ?: false
     }
 }
