@@ -13,7 +13,7 @@ class AboutViewModel @Inject constructor(
 ) : ViewModel() {
     fun activateDevOptions() {
         viewModelScope.launch {
-            userPreferencesRepository.activateDevOptions()
+            userPreferencesRepository.activateDevOptions(true)
         }
     }
 }

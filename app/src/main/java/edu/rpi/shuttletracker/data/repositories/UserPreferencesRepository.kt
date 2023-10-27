@@ -98,9 +98,9 @@ class UserPreferencesRepository @Inject constructor(
             it[BASE_URL] = url
         }
     }
-    suspend fun activateDevOptions() {
+    suspend fun activateDevOptions(devOptionEnable: Boolean) {
         dataStore.edit {
-            it[DEV_OPTIONS_ACTIVE] = true
+            it[DEV_OPTIONS_ACTIVE] = devOptionEnable
         }
     }
     fun getDevOptions(): Flow<Boolean> = dataStore.data.map {
