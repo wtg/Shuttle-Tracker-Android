@@ -115,7 +115,7 @@ class LocationService : Service() {
         val extras: Bundle = intent!!.extras!!
 
         val busNum = extras.getInt(BUNDLE_BUS_ID)
-        val startedManual = extras.getBoolean(STARTED_MANUAL, false)
+        val startedManual = extras.getBoolean(STARTED_MANUAL, true)
         val startTime = System.currentTimeMillis()
 
         _permissionError.update { false }
