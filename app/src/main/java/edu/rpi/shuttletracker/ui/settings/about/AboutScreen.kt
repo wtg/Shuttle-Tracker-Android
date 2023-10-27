@@ -119,7 +119,7 @@ fun AboutScreen(
                     if (timesClicked == 0) {
                         Toast.makeText(context, "Dev options activated", Toast.LENGTH_SHORT).show()
                         viewModel.activateDevOptions()
-                    } else if (timesClicked <= 3) {
+                    } else if (timesClicked in 1..3) {
                         Toast.makeText(context, "Dev options unlocked in $timesClicked", Toast.LENGTH_SHORT).show()
                     }
                 },
