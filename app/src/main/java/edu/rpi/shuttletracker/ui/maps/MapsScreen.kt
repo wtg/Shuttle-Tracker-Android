@@ -261,42 +261,8 @@ fun BusMap(
         // removes the zoom control which was covered by the FAB
         uiSettings = MapUiSettings(
             zoomControlsEnabled = false,
+            myLocationButtonEnabled = false,
         ),
-
-        myLocationButton = {
-            // makes sure its in the top left
-            Box(
-                modifier = Modifier.fillMaxSize()
-                    .padding(padding)
-                    .padding(horizontal = 10.dp),
-
-                contentAlignment = Alignment.TopEnd,
-            ) {
-                ActionButton(
-                    icon = if (mapLocationEnabled) {
-                        Icons.Outlined.MyLocation
-                    } else {
-                        Icons.Outlined.LocationDisabled
-                    },
-                ) {
-                    // finds current position and moves to there
-                    LocationServices.getFusedLocationProviderClient(context).lastLocation
-                        .addOnSuccessListener { location: Location ->
-                            coroutineScope.launch {
-                                cameraPositionState.animate(
-                                    update = CameraUpdateFactory.newLatLng(
-                                        LatLng(
-                                            location.latitude,
-                                            location.longitude,
-                                        ),
-                                    ),
-                                    durationMs = 1000,
-                                )
-                            }
-                        }
-                }
-            }
-        },
     ) {
         // creates the stops
         mapsUIState.stops.forEach {
@@ -321,6 +287,46 @@ fun BusMap(
                     ).toArgb(),
                 ),
             )
+        }
+    }
+
+    // Icon to recenter the user on the map to their location
+    // makes sure its in the top left
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)
+            .padding(horizontal = 10.dp),
+
+        contentAlignment = Alignment.TopEnd,
+    ) {
+        ActionButton(
+            icon = if (mapLocationEnabled) {
+                Icons.Outlined.MyLocation
+            } else {
+                Icons.Outlined.LocationDisabled
+            },
+        ) {
+            // finds current position and moves to there
+            LocationServices.getFusedLocationProviderClient(context).lastLocation
+                .addOnSuccessListener { location: Location ->
+                    coroutineScope.launch {
+                        cameraPositionState.animate(
+                            update = CameraUpdateFactory.newCameraPosition(
+                                CameraPosition.builder()
+                                    .target(
+                                        LatLng(
+                                            location.latitude,
+                                            location.longitude,
+                                        ),
+                                    ).tilt(0f)
+                                    .zoom(cameraPositionState.position.zoom)
+                                    .build(),
+                            ),
+                            durationMs = 1000,
+                        )
+                    }
+                }
         }
     }
 }
