@@ -140,7 +140,7 @@ class LocationService : Service() {
 
         runBlocking { userPreferencesRepository.incrementBoardBusCount() }
 
-        val analytics = analyticsFactory.build(startedManual)
+        val analytics = runBlocking { analyticsFactory.build(startedManual) }
 
         val uuid = analytics.userID
 

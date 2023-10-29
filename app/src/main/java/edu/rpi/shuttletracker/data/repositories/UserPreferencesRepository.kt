@@ -41,7 +41,7 @@ class UserPreferencesRepository @Inject constructor(
             }
         }
 
-        preference[USER_ID]
+        preference[USER_ID] ?: UUID.randomUUID().toString()
     }.first().toString()
 
     fun getNotificationsRead(): Flow<Int> = dataStore.data.map {
