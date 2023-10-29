@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
 import edu.rpi.shuttletracker.util.notifications.Notifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -209,5 +210,6 @@ class BeaconService : Service() {
     ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
         .setContentTitle(getString(R.string.notification_auto_boarding_running))
         .setSmallIcon(R.drawable.ic_stat_default)
+        .setContentIntent(NotificationReceiver.openMaps(this))
         .build()
 }

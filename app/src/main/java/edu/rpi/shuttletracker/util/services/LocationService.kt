@@ -215,6 +215,7 @@ class LocationService : Service() {
     ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
         .setContentTitle(getString(R.string.notification_location_launching))
         .setSmallIcon(R.drawable.ic_stat_default)
+        .setContentIntent(NotificationReceiver.openMaps(this))
         .build()
 
     private fun notify(busNum: Int): Notification {

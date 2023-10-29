@@ -19,11 +19,14 @@ import edu.rpi.shuttletracker.data.network.ApiHelper
 import edu.rpi.shuttletracker.data.network.ApiService
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.FlattenTypeAdapterFactory
+import edu.rpi.shuttletracker.util.hasNetwork
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import okhttp3.Cache
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -38,16 +41,46 @@ object ShuttleTrackerModule {
 
     @Singleton
     @Provides
-    fun provideOkHttpClient() = if (BuildConfig.DEBUG) {
-        val loggingInterceptor = HttpLoggingInterceptor()
-        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-        OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .build()
-    } else {
-        OkHttpClient
-            .Builder()
-            .build()
+    fun provideCacheInterceptor(
+        @ApplicationContext context: Context,
+    ): Interceptor = Interceptor { chain ->
+        var request = chain.request()
+
+        if (!context.hasNetwork()) {
+            // 2 week cache for offline
+            request = request.newBuilder()
+                .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 14)
+                .removeHeader("Pragma")
+                .build()
+        }
+        chain.proceed(request)
+    }
+
+    @Singleton
+    @Provides
+    fun provideOkHttpClient(
+        @ApplicationContext context: Context,
+        cacheInterceptor: Interceptor,
+    ): OkHttpClient {
+        // 5 mb of cache
+        val cacheSize = (5 * 1024 * 1024).toLong()
+        val myCache = Cache(context.cacheDir, cacheSize)
+
+        return if (BuildConfig.DEBUG) {
+            val loggingInterceptor = HttpLoggingInterceptor()
+
+            loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+            OkHttpClient.Builder()
+                .cache(myCache)
+                .addInterceptor(cacheInterceptor)
+                .addInterceptor(loggingInterceptor)
+                .build()
+        } else {
+            OkHttpClient.Builder()
+                .cache(myCache)
+                .addInterceptor(cacheInterceptor)
+                .build()
+        }
     }
 
     @Singleton
