@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
  * */
 @Composable
 fun SettingsItem(
-    icon: ImageVector,
+    icon: ImageVector? = null,
     title: String,
     description: String = "",
     onClick: () -> Unit = {},
@@ -40,11 +40,13 @@ fun SettingsItem(
         horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            icon,
-            title,
-            modifier = Modifier.padding(vertical = 10.dp),
-        )
+        if (icon != null) {
+            Icon(
+                icon,
+                title,
+                modifier = Modifier.padding(vertical = 10.dp),
+            )
+        }
 
         Column(modifier = Modifier.weight(1f)) {
             Text(text = title)

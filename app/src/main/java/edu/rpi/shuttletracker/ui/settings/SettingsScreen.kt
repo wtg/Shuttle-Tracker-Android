@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.BusAlert
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.Timeline
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -50,6 +51,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.MainActivity
 import edu.rpi.shuttletracker.ui.destinations.AboutScreenDestination
+import edu.rpi.shuttletracker.ui.destinations.AnalyticsScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.DevMenuScreenDestination
 import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.ui.util.SettingsItem
@@ -132,6 +134,12 @@ fun SettingsScreen(
                     onClick = { navigator.navigate(DevMenuScreenDestination()) },
                 )
             }
+
+            SettingsItem(
+                Icons.Outlined.Timeline,
+                "Analytics",
+                onClick = { navigator.navigate(AnalyticsScreenDestination()) },
+            )
 
             SettingsItem(
                 Icons.Outlined.Info,

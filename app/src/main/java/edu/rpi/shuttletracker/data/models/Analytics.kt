@@ -60,11 +60,11 @@ class AnalyticsFactory @Inject constructor(
         userID = runBlocking { userPreferencesRepository.getUserId() },
         date = getCurrentFormattedDate(),
         clientPlatform = "android",
-        clientPlatformVersion = android.os.Build.VERSION.SDK_INT.toString(),
+        clientPlatformVersion = android.os.Build.VERSION.RELEASE.toString(),
         appVersion = BuildConfig.VERSION_NAME,
         boardBusCount = runBlocking { userPreferencesRepository.getBoardBusCount() },
         colorBlindMode = runBlocking { userPreferencesRepository.getColorBlindMode().first() },
-        logging = true,
+        logging = false,
         serverBaseURL = runBlocking { userPreferencesRepository.getBaseUrl().first() },
         boardBusActivatedManual = boardBusActivatedManual,
     )
