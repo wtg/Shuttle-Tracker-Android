@@ -10,10 +10,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.DirectionsBus
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -103,25 +103,31 @@ fun AboutScreen(
             )
 
             SettingsItem(
-                icon = Icons.Outlined.Collections,
+                icon = Icons.Outlined.Subject,
                 title = stringResource(R.string.libraries_used),
                 onClick = { navigator.navigate(LibrariesScreenDestination()) },
             )
 
             var timesClicked by remember { mutableIntStateOf(10) }
-
+            var toast: Toast? = null
             SettingsItem(
                 icon = Icons.Outlined.Info,
                 title = stringResource(R.string.version),
                 BuildConfig.VERSION_NAME,
                 onClick = {
+                    if (timesClicked > 0) {
+                        toast?.cancel()
+                    }
+
                     timesClicked--
                     if (timesClicked == 0) {
-                        Toast.makeText(context, "Dev options activated", Toast.LENGTH_SHORT).show()
+                        toast = Toast.makeText(context, "Dev options activated", Toast.LENGTH_SHORT)
                         viewModel.activateDevOptions()
                     } else if (timesClicked in 1..3) {
-                        Toast.makeText(context, "Dev options unlocked in $timesClicked", Toast.LENGTH_SHORT).show()
+                        toast = Toast.makeText(context, "Dev options unlocked in $timesClicked", Toast.LENGTH_SHORT)
                     }
+
+                    toast?.show()
                 },
             )
 

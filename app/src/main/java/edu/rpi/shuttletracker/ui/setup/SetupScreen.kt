@@ -51,6 +51,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -240,7 +241,7 @@ fun TextScreen(
     title: String,
     extra: @Composable () -> Unit = {},
 ) {
-    LaunchedEffect(acceptedState) {
+    SideEffect {
         if (acceptedState) onAccept()
     }
 
@@ -272,10 +273,7 @@ fun PermissionPage(
     val hasNotificationPermissions = remember { mutableStateOf(false) }
 
     // when all the permissions are granted, call function
-    LaunchedEffect(
-        key1 = hasLocationPermissions.value,
-        key2 = hasNotificationPermissions.value,
-    ) {
+    SideEffect {
         if (hasLocationPermissions.value &&
             hasNotificationPermissions.value
         ) {
@@ -334,11 +332,7 @@ fun AutoBoardingPage(
     val isAutoBoardingServiceRunning = BeaconService.isRunning.collectAsStateWithLifecycle().value
 
     // when all the permissions/auto boarding is granted, call function
-    LaunchedEffect(
-        key1 = hasBluetoothPermissions.value,
-        key2 = hasBackgroundLocationPermissions.value,
-        key3 = isAutoBoardingServiceRunning,
-    ) {
+    SideEffect {
         if (hasBluetoothPermissions.value &&
             hasBackgroundLocationPermissions.value &&
             isAutoBoardingServiceRunning

@@ -52,6 +52,8 @@ fun LibrariesScreen(
             colors = LibraryDefaults.libraryColors(
                 backgroundColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.onBackground,
+                badgeBackgroundColor = MaterialTheme.colorScheme.primary,
+                dialogConfirmButtonColor = MaterialTheme.colorScheme.primary,
             ),
         )
     }
