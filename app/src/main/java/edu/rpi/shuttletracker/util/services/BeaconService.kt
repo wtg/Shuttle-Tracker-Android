@@ -208,7 +208,7 @@ class BeaconService : Service() {
         this,
         Notifications.CHANNEL_AUTO_BOARD,
     ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-        .setContentTitle(getString(R.string.notification_auto_boarding_running))
+        .setContentTitle(getString(R.string.notification_automatic_board_bus_running))
         .setSmallIcon(R.drawable.ic_stat_default)
         .setContentIntent(NotificationReceiver.openMaps(this))
         .build()

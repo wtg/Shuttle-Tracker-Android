@@ -98,7 +98,7 @@ fun AboutScreen(
 
             SettingsItem(
                 icon = Icons.Outlined.Shield,
-                title = stringResource(R.string.view_private_policy),
+                title = stringResource(R.string.view_privacy_policy),
                 onClick = { uriHandler.openUri(context.getString(R.string.url_private_policy)) },
             )
 

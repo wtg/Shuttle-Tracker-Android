@@ -64,7 +64,7 @@ fun DevMenuScreen(
             modifier = Modifier
                 .padding(padding),
         ) {
-            SettingsItem(icon = Icons.Outlined.Code, title = "Disable dev menu") {
+            SettingsItem(icon = Icons.Outlined.Code, title = "Developer Options") {
                 Switch(checked = true, onCheckedChange = {
                     viewModel.updateDevMenu(false)
                     navigator.popBackStack()

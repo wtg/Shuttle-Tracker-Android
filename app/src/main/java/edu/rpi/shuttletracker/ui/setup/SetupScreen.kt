@@ -133,9 +133,9 @@ fun SetupScreen(
         snapshotFlow { pagerState.currentPage }.distinctUntilChanged().collect { page ->
             when (page) {
                 0 -> sectionHeader = context.getString(R.string.about)
-                1 -> sectionHeader = context.getString(R.string.private_policy)
+                1 -> sectionHeader = context.getString(R.string.privacy_policy)
                 2 -> sectionHeader = context.getString(R.string.permissions)
-                3 -> sectionHeader = context.getString(R.string.auto_boarding)
+                3 -> sectionHeader = context.getString(R.string.automatic_board_bus)
             }
         }
     }
@@ -213,7 +213,7 @@ fun SetupScreen(
                     acceptedState = setupUiState.privacyPolicyAccepted,
                     updateState = viewModel::updatePrivacyPolicyAccepted,
                     text = stringResource(R.string.privacy),
-                    title = stringResource(R.string.private_policy),
+                    title = stringResource(R.string.privacy_policy),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
@@ -394,15 +394,15 @@ fun AutoBoardingPage(
                     .padding(20.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.auto_boarding),
+                    text = stringResource(R.string.automatic_board_bus),
                     style = MaterialTheme.typography.headlineLarge,
                 )
 
                 Text(
                     text = if (!isAutoBoardingServiceRunning) {
-                        stringResource(R.string.auto_boarding_rational)
+                        stringResource(R.string.automatic_board_bus_rational)
                     } else {
-                        stringResource(R.string.auto_boarding_enabled)
+                        stringResource(R.string.automatic_board_bus_enabled)
                     },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -412,7 +412,7 @@ fun AutoBoardingPage(
                     Button(onClick = {
                         context.startForegroundService(Intent(context, BeaconService::class.java))
                     }) {
-                        Text(text = stringResource(R.string.enable_auto_boarding))
+                        Text(text = stringResource(R.string.enable_automatic_board_bus))
                     }
                 }
             }

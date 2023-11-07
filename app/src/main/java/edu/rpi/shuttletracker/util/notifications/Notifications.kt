@@ -52,7 +52,7 @@ object Notifications {
                     GROUP_TRACKER,
                     CHANNEL_AUTO_BOARD,
                     IMPORTANCE_LOW,
-                    context.getString(R.string.auto_boarding),
+                    context.getString(R.string.automatic_board_bus),
                 ),
             ),
         )

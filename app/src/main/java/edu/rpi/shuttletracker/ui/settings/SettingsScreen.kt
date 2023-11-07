@@ -159,7 +159,7 @@ fun AutoBoardBusSettingItem(
 
     SettingsItem(
         icon = Icons.Outlined.BusAlert,
-        stringResource(R.string.auto_boarding),
+        stringResource(R.string.automatic_board_bus),
         stringResource(R.string.auto_boarding_description),
     ) {
         Switch(
