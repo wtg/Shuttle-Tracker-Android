@@ -117,14 +117,14 @@ class MapsViewModel @Inject constructor(
      * @return returns the distance to closest stop in METERS
      * */
     fun closestDistanceToStop(location: Location): Float =
-        _mapsUiState.value.stops.minOf {
+        _mapsUiState.value.stops.minOfOrNull {
             location.distanceTo(
                 Location("stop").apply {
                     longitude = it.longitude
                     latitude = it.latitude
                 },
             )
-        }
+        } ?: Float.MAX_VALUE
 
     /**
      * sets all the errors to none

@@ -309,7 +309,9 @@ fun BusMap(
         ) {
             // finds current position and moves to there
             LocationServices.getFusedLocationProviderClient(context).lastLocation
-                .addOnSuccessListener { location: Location ->
+                .addOnSuccessListener { location: Location? ->
+                    if (location == null) return@addOnSuccessListener
+
                     coroutineScope.launch {
                         cameraPositionState.animate(
                             update = CameraUpdateFactory.newCameraPosition(
@@ -425,7 +427,8 @@ fun BoardBusFab(
                 context.stopService(Intent(context, LocationService::class.java))
             } else {
                 LocationServices.getFusedLocationProviderClient(context).lastLocation
-                    .addOnSuccessListener { location: Location ->
+                    .addOnSuccessListener { location: Location? ->
+                        if (location == null) return@addOnSuccessListener
 
                         // if they a location was found and they are 50 m away from a stop
                         if (checkDistanceToStop(location) <= minStopDist) {
@@ -441,7 +444,8 @@ fun BoardBusFab(
                                 Toast.LENGTH_SHORT,
                             ).show()
                         }
-                    }.addOnFailureListener {
+                    }
+                    .addOnFailureListener {
                         Toast.makeText(
                             context,
                             context.getText(R.string.no_location_warning),

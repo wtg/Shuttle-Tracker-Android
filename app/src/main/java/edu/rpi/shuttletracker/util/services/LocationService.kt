@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -142,7 +143,7 @@ class LocationService : Service() {
 
         val analytics = runBlocking { analyticsFactory.build(startedManual) }
 
-        val uuid = analytics.userID
+        val uuid = UUID.randomUUID().toString()
 
         serviceScope.launch {
             if (userPreferencesRepository.getAllowAnalytics().first()) {

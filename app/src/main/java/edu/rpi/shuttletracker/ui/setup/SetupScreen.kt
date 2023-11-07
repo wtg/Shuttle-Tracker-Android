@@ -245,20 +245,22 @@ fun TextScreen(
         if (acceptedState) onAccept()
     }
 
-    Column(modifier = Modifier.padding(20.dp)) {
-        Text(text = text)
+    LazyColumn(modifier = Modifier.padding(20.dp)) {
+        item { Text(text = text) }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        item { Spacer(modifier = Modifier.height(10.dp)) }
 
-        if (!acceptedState) {
-            Button(onClick = { updateState() }) {
-                Text(text = stringResource(R.string.accept, title.lowercase()))
+        item {
+            if (!acceptedState) {
+                Button(onClick = { updateState() }) {
+                    Text(text = stringResource(R.string.accept, title.lowercase()))
+                }
+            } else {
+                Text(text = stringResource(R.string.acknowledged, title))
             }
-        } else {
-            Text(text = stringResource(R.string.acknowledged, title))
         }
 
-        extra()
+        item { extra() }
     }
 }
 
