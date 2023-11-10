@@ -246,6 +246,8 @@ fun TextScreen(
     }
 
     LazyColumn(modifier = Modifier.padding(20.dp)) {
+        item { extra() }
+
         item { Text(text = text) }
 
         item { Spacer(modifier = Modifier.height(10.dp)) }
@@ -259,8 +261,6 @@ fun TextScreen(
                 Text(text = stringResource(R.string.acknowledged, title))
             }
         }
-
-        item { extra() }
     }
 }
 

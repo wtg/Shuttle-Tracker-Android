@@ -73,7 +73,8 @@
         we never track your location unless you manually activate Board Bus or physically board a bus.
         The results of these scans never leave your device, and we only start collecting location
         data if a scan indicates that you’re physically on a bus.
-        \n
+        \n\n
+
         Analytics
         \n
         If you opt in to analytics, then Shuttle Tracker will send anonymous usage data to our server.
@@ -155,6 +156,17 @@
     <string name="color_blind_mode">Colorblind mode</string>
     <string name="current_meters">%1$d meters</string>
     <string name="libraries_used">Libraries used</string>
+    <string name="dev_options_activated">Dev options activated</string>
+    <string name="dev_options_state">Dev options unlocked in %1$d</string>
+    <string name="dev_options">Developer Options</string>
+
+    <!-- Analytics -->
+    <string name="analytics">Analytics</string>
+    <string name="user_id">User id</string>
+    <string name="android_version">Android version</string>
+    <string name="boarded_buses">Boarded buses</string>
+    <string name="debug_mode">Debug mode</string>
+
 
     <!-- Dev menu -->
     <string name="max_stop_dist">Maximum stop distance</string>

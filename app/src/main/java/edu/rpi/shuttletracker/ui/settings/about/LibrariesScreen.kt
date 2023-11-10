@@ -36,7 +36,7 @@ fun LibrariesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(R.string.about)) },
+                title = { Text(text = stringResource(R.string.libraries_used)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(Icons.Outlined.ArrowBack, stringResource(R.string.back))

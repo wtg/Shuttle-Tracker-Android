@@ -130,14 +130,14 @@ fun SettingsScreen(
             if (settingsUiState.devOptionState) {
                 SettingsItem(
                     Icons.Outlined.Code,
-                    "Developer Options",
+                    stringResource(R.string.dev_options),
                     onClick = { navigator.navigate(DevMenuScreenDestination()) },
                 )
             }
 
             SettingsItem(
                 Icons.Outlined.Timeline,
-                "Analytics",
+                stringResource(R.string.analytics),
                 onClick = { navigator.navigate(AnalyticsScreenDestination()) },
             )
 

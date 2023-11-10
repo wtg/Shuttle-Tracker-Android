@@ -36,7 +36,7 @@ fun AnalyticsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Analytics") },
+                title = { Text(text = stringResource(R.string.analytics)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(Icons.Outlined.ArrowBack, stringResource(R.string.back))
@@ -50,22 +50,22 @@ fun AnalyticsScreen(
 
         Column(modifier = Modifier.padding(padding)) {
             SettingsItem(
-                title = "User id",
+                title = stringResource(R.string.user_id),
                 description = analytics.userID,
             )
 
             SettingsItem(
-                title = "Android version",
+                title = stringResource(R.string.android_version),
                 description = analytics.clientPlatformVersion,
             )
 
             SettingsItem(
-                title = "Boarded buses",
+                title = stringResource(R.string.board_bus),
                 description = analytics.boardBusCount.toString(),
             )
 
             SettingsItem(
-                title = "Debug mode",
+                title = stringResource(R.string.debug_mode),
                 description = BuildConfig.DEBUG.toString(),
             )
         }
