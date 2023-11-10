@@ -41,7 +41,7 @@ fun DevMenuScreen(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
-    val devMenuUiState = viewModel.DevMenuUiState.collectAsStateWithLifecycle().value
+    val devMenuUiState = viewModel.devMenuUiState.collectAsStateWithLifecycle().value
 
     val snackbarHostState = remember { SnackbarHostState() }
 

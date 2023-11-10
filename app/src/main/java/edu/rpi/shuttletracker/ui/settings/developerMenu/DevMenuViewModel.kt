@@ -16,7 +16,7 @@ class DevMenuViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
 
-    val DevMenuUiState = combine(
+    val devMenuUiState = combine(
         userPreferencesRepository.getMaxStopDist(),
         userPreferencesRepository.getBaseUrl(),
     ) { maxStopDist, baseUrl ->
