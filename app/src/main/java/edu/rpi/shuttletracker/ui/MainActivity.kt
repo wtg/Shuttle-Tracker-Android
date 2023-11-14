@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.ui
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
@@ -18,6 +19,7 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.isFlexibleUpdateAllowed
 import com.google.android.play.core.ktx.isImmediateUpdateAllowed
+import com.google.android.play.core.ktx.startUpdateFlowForResult
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
@@ -44,7 +46,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun checkForAppUpdate() {
+    fun checkForAppUpdate() {
         val activityLauncher =
             registerForActivityResult(
                 ActivityResultContracts
@@ -65,7 +67,6 @@ class MainActivity : ComponentActivity() {
             if (state.installStatus() == InstallStatus.DOWNLOADED) {
                 // After the update is downloaded, show a notification
                 // and request user confirmation to restart the app.
-                // popupSnackbarForCompleteUpdate()
             }
 
             // Log state or install the update.
@@ -78,16 +79,17 @@ class MainActivity : ComponentActivity() {
                 AppUpdateType.IMMEDIATE -> appUpdateInfo.isImmediateUpdateAllowed
                 else -> false
             }
+            appUpdateManager.registerListener(listener)
 
             // Flexible update
             if (updateAvailable && updateAllowed) {
                 // Before starting an update, register a listener for updates.
-                appUpdateManager.registerListener(listener)
                 appUpdateManager.startUpdateFlowForResult(
                     appUpdateInfo,
                     activityLauncher,
                     AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build(),
                 )
+                Toast.makeText(this, "Restart to complete update.", Toast.LENGTH_SHORT).show()
                 // When status updates are no longer needed, unregister the listener.
                 appUpdateManager.unregisterListener(listener)
             }
@@ -105,5 +107,30 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val activityLauncher =
+            registerForActivityResult(
+                ActivityResultContracts
+                    .StartIntentSenderForResult(),
+            ) { result: ActivityResult ->
+            }
+        appUpdateManager
+            .appUpdateInfo
+            .addOnSuccessListener { appUpdateInfo ->
+                if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                    Toast.makeText(this, "Restart app to complete update.", Toast.LENGTH_SHORT).show()
+                } else if (appUpdateInfo.updateAvailability()
+                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
+                ) {
+                    appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        activityLauncher,
+                        AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build(),
+                    )
+                }
+            }
     }
 }
