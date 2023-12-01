@@ -17,17 +17,19 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.google.android.play.core.ktx.isFlexibleUpdateAllowed
-import com.google.android.play.core.ktx.isImmediateUpdateAllowed
-import com.google.android.play.core.ktx.startUpdateFlowForResult
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
+    val activityLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult(),
+        ) { result: ActivityResult ->
+        }
 
-    private val appUpdateManager = AppUpdateManagerFactory.create(this)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -47,14 +49,6 @@ class MainActivity : ComponentActivity() {
     }
 
     fun checkForAppUpdate() {
-        val activityLauncher =
-            registerForActivityResult(
-                ActivityResultContracts
-                    .StartIntentSenderForResult(),
-            ) { result: ActivityResult ->
-                // handle callback
-            }
-
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
         // Create a listener to track request state updates.
         val listener = InstallStateUpdatedListener { state ->
@@ -73,10 +67,10 @@ class MainActivity : ComponentActivity() {
         }
         // Start an update
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-            val updateAvailable = appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+            val updateAvailable = true // appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
             val updateAllowed = when (appUpdateInfo.updatePriority()) {
-                AppUpdateType.FLEXIBLE -> appUpdateInfo.isFlexibleUpdateAllowed
-                AppUpdateType.IMMEDIATE -> appUpdateInfo.isImmediateUpdateAllowed
+                AppUpdateType.FLEXIBLE -> true // appUpdateInfo.isFlexibleUpdateAllowed
+                AppUpdateType.IMMEDIATE -> true // appUpdateInfo.isImmediateUpdateAllowed
                 else -> false
             }
             appUpdateManager.registerListener(listener)
@@ -111,12 +105,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val activityLauncher =
-            registerForActivityResult(
-                ActivityResultContracts
-                    .StartIntentSenderForResult(),
-            ) { result: ActivityResult ->
-            }
+
         appUpdateManager
             .appUpdateInfo
             .addOnSuccessListener { appUpdateInfo ->
