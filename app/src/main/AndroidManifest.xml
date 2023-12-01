@@ -47,6 +47,12 @@
         <service android:name=".util.services.BeaconService"
             android:foregroundServiceType="location"
             android:exported="false"/>
+        <service android:name=".util.services.FirebaseService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <receiver
             android:name=".util.notifications.NotificationReceiver"

@@ -23,4 +23,6 @@ class ApiRepository @Inject constructor(
     suspend fun getSchedule() = apiHelper.getSchedule()
 
     suspend fun addAnalytics(analytics: Analytics) = apiHelper.addAnalytics(analytics)
+
+    suspend fun sendRegistrationToken(token: String) = apiHelper.sendRegistrationToken(token)
 }

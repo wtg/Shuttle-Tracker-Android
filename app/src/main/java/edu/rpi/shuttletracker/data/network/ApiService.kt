@@ -39,4 +39,7 @@ interface ApiService {
 
     @POST("analytics/entries")
     suspend fun addAnalytics(@Body analytics: Analytics): NetworkResponse<Unit, ErrorResponse>
+
+    @POST("notifications/fcmdevices")
+    suspend fun sendRegistrationToken(@Body token: String): NetworkResponse<Unit, ErrorResponse>
 }

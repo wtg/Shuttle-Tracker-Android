@@ -27,4 +27,6 @@ interface ApiHelper {
     suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse>
 
     suspend fun addAnalytics(analytics: Analytics): NetworkResponse<Unit, ErrorResponse>
+
+    suspend fun sendRegistrationToken(token: String): NetworkResponse<Unit, ErrorResponse>
 }

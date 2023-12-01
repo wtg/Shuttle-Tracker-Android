@@ -42,4 +42,7 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
 
     override suspend fun addAnalytics(analytics: Analytics): NetworkResponse<Unit, ErrorResponse> =
         apiService.addAnalytics(analytics)
+
+    override suspend fun sendRegistrationToken(token: String): NetworkResponse<Unit, ErrorResponse> =
+        apiService.sendRegistrationToken(token)
 }

@@ -5,6 +5,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("com.mikepenz.aboutlibraries.plugin")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -73,6 +74,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.core.ktx)
     implementation(libs.androidx.work.runtime.ktx)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -123,4 +125,9 @@ dependencies {
     // about libraries
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose)
+
+    // firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.messaging)
 }

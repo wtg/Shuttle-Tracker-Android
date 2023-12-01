@@ -19,6 +19,10 @@ object Notifications {
     const val CHANNEL_AUTO_BOARD = "auto_board_channel"
     const val ID_AUTO_BOARD = 2
 
+    private const val GROUP_ANNOUNCEMENTS = "group_announcements"
+    const val CHANNEL_ANNOUNCEMENT = "announcement_channel"
+    const val ID_ANNOUNCEMENT = 11
+
     private val deprecatedChannels = listOf(
         "ShuttleTrackerRPI",
     )
@@ -35,6 +39,10 @@ object Notifications {
                 buildNotificationChannelGroup(
                     GROUP_TRACKER,
                     context.getString(R.string.bus_tracker),
+                ),
+                buildNotificationChannelGroup(
+                    GROUP_ANNOUNCEMENTS,
+                    "Announcements",
                 ),
             ),
         )
@@ -53,6 +61,12 @@ object Notifications {
                     CHANNEL_AUTO_BOARD,
                     IMPORTANCE_LOW,
                     context.getString(R.string.automatic_board_bus),
+                ),
+                buildNotificationChannel(
+                    GROUP_ANNOUNCEMENTS,
+                    CHANNEL_ANNOUNCEMENT,
+                    IMPORTANCE_DEFAULT,
+                    "Announcement",
                 ),
             ),
         )
