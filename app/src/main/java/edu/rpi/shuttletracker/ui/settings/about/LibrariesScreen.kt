@@ -26,12 +26,11 @@ import edu.rpi.shuttletracker.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
-fun LibrariesScreen(
-    navigator: DestinationsNavigator,
-) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-        rememberTopAppBarState(),
-    )
+fun LibrariesScreen(navigator: DestinationsNavigator) {
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            rememberTopAppBarState(),
+        )
 
     Scaffold(
         topBar = {
@@ -49,12 +48,13 @@ fun LibrariesScreen(
     ) {
         LibrariesContainer(
             modifier = Modifier.fillMaxSize().padding(it),
-            colors = LibraryDefaults.libraryColors(
-                backgroundColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onBackground,
-                badgeBackgroundColor = MaterialTheme.colorScheme.primary,
-                dialogConfirmButtonColor = MaterialTheme.colorScheme.primary,
-            ),
+            colors =
+                LibraryDefaults.libraryColors(
+                    backgroundColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                    badgeBackgroundColor = MaterialTheme.colorScheme.primary,
+                    dialogConfirmButtonColor = MaterialTheme.colorScheme.primary,
+                ),
         )
     }
 }

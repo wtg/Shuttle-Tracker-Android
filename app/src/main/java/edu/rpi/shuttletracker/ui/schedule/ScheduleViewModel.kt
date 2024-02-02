@@ -14,68 +14,73 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ScheduleViewModel @Inject constructor(
-    private val apiRepository: ApiRepository,
-) : ViewModel() {
-    // represents the ui state of the view
-    private val _scheduleUiState = MutableStateFlow(ScheduleUIState())
-    val scheduleUiState: StateFlow<ScheduleUIState> = _scheduleUiState
+class ScheduleViewModel
+    @Inject
+    constructor(
+        private val apiRepository: ApiRepository,
+    ) : ViewModel() {
+        // represents the ui state of the view
+        private val _scheduleUiState = MutableStateFlow(ScheduleUIState())
+        val scheduleUiState: StateFlow<ScheduleUIState> = _scheduleUiState
 
-    init {
-        loadAll()
-    }
-
-    fun loadAll() {
-        if (scheduleUiState.value.schedule.isEmpty()) {
-            getSchedule()
+        init {
+            loadAll()
         }
-    }
 
-    /**
-     * sets all the errors to none
-     * */
-    fun clearErrors() {
-        loadAll()
-        _scheduleUiState.update {
-            it.copy(
-                unknownError = null,
-                networkError = null,
-                serverError = null,
-            )
+        fun loadAll() {
+            if (scheduleUiState.value.schedule.isEmpty()) {
+                getSchedule()
+            }
         }
-    }
 
-    private fun getSchedule() {
-        viewModelScope.launch {
-            readApiResponse(apiRepository.getSchedule()) { response ->
-                _scheduleUiState.update {
-                    it.copy(schedule = response.reversed())
+        /**
+         * sets all the errors to none
+         * */
+        fun clearErrors() {
+            loadAll()
+            _scheduleUiState.update {
+                it.copy(
+                    unknownError = null,
+                    networkError = null,
+                    serverError = null,
+                )
+            }
+        }
+
+        private fun getSchedule() {
+            viewModelScope.launch {
+                readApiResponse(apiRepository.getSchedule()) { response ->
+                    _scheduleUiState.update {
+                        it.copy(schedule = response.reversed())
+                    }
                 }
             }
         }
-    }
 
-    /**
-     * Reads the network response and maps it to correct place
-     * */
-    private fun <T> readApiResponse(
-        response: NetworkResponse<T, ErrorResponse>,
-        success: (body: T) -> Unit,
-    ) {
-        when (response) {
-            is NetworkResponse.Success -> success(response.body)
-            is NetworkResponse.ServerError -> _scheduleUiState.update {
-                it.copy(serverError = response)
-            }
-            is NetworkResponse.NetworkError -> _scheduleUiState.update {
-                it.copy(networkError = response)
-            }
-            is NetworkResponse.UnknownError -> _scheduleUiState.update {
-                it.copy(unknownError = response)
+        /**
+         * Reads the network response and maps it to correct place
+         * */
+        private fun <T> readApiResponse(
+            response: NetworkResponse<T, ErrorResponse>,
+            success: (body: T) -> Unit,
+        ) {
+            when (response) {
+                is NetworkResponse.Success -> success(response.body)
+                is NetworkResponse.ServerError ->
+                    _scheduleUiState.update {
+                        it.copy(serverError = response)
+                    }
+                is NetworkResponse.NetworkError ->
+                    _scheduleUiState.update {
+                        it.copy(networkError = response)
+                    }
+                is NetworkResponse.UnknownError ->
+                    _scheduleUiState.update {
+                        it.copy(unknownError = response)
+                    }
             }
         }
     }
-}
 
 data class ScheduleUIState(
     val schedule: List<Schedule> = listOf(),

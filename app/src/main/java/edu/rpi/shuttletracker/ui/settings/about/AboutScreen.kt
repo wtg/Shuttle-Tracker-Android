@@ -51,9 +51,10 @@ fun AboutScreen(
 ) {
     val uriHandler = LocalUriHandler.current
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-        rememberTopAppBarState(),
-    )
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            rememberTopAppBarState(),
+        )
 
     val context = LocalContext.current
 
@@ -72,8 +73,9 @@ fun AboutScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
         Column(
-            modifier = Modifier
-                .padding(padding),
+            modifier =
+                Modifier
+                    .padding(padding),
         ) {
             Box(
                 contentAlignment = Alignment.Center,

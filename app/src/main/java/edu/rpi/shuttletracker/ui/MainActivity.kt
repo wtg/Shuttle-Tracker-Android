@@ -13,7 +13,6 @@ import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

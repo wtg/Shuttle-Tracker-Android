@@ -11,38 +11,41 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
-    private val userPreferencesRepository: UserPreferencesRepository,
-) : ViewModel() {
+class SettingsViewModel
+    @Inject
+    constructor(
+        private val userPreferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        val settingsUiState =
+            combine(
+                userPreferencesRepository.getAutoBoardService(),
+                userPreferencesRepository.getColorBlindMode(),
+                userPreferencesRepository.getDevOptions(),
+            ) { autoBoardService, colorBindMode, devOptionState ->
+                return@combine SettingsUiState(
+                    autoBoardService = autoBoardService,
+                    colorBlindMode = colorBindMode,
+                    devOptionState = devOptionState,
+                )
+            }.stateIn(
+                scope = viewModelScope,
+                SharingStarted.WhileSubscribed(),
+                SettingsUiState(),
+            )
 
-    val settingsUiState = combine(
-        userPreferencesRepository.getAutoBoardService(),
-        userPreferencesRepository.getColorBlindMode(),
-        userPreferencesRepository.getDevOptions(),
-    ) { autoBoardService, colorBindMode, devOptionState ->
-        return@combine SettingsUiState(
-            autoBoardService = autoBoardService,
-            colorBlindMode = colorBindMode,
-            devOptionState = devOptionState,
-        )
-    }.stateIn(
-        scope = viewModelScope,
-        SharingStarted.WhileSubscribed(),
-        SettingsUiState(),
-    )
+        fun updateAutoBoardService(autoBoardService: Boolean) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveAutoBoardService(autoBoardService)
+            }
+        }
 
-    fun updateAutoBoardService(autoBoardService: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.saveAutoBoardService(autoBoardService)
+        fun updateColorBlindMode(colorBlindMode: Boolean) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveColorBlindMode(colorBlindMode)
+            }
         }
     }
 
-    fun updateColorBlindMode(colorBlindMode: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.saveColorBlindMode(colorBlindMode)
-        }
-    }
-}
 data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,

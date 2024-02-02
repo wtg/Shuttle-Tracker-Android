@@ -1,3 +1,5 @@
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,6 +8,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.mikepenz.aboutlibraries.plugin")
     id("com.google.gms.google-services")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 android {
@@ -58,6 +61,14 @@ android {
         }
     }
     namespace = "edu.rpi.shuttletracker"
+
+    ktlint {
+        android = true
+        enableExperimentalRules = true
+        reporters {
+            reporter(ReporterType.CHECKSTYLE)
+        }
+    }
 }
 
 kapt {

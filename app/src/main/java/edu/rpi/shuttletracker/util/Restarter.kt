@@ -13,10 +13,13 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class Restarter : BroadcastReceiver() {
-
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
-    override fun onReceive(context: Context, intent: Intent) {
+
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         when (intent.action) {
             Intent.ACTION_MY_PACKAGE_REPLACED -> startBeaconService(context)
             Intent.ACTION_BOOT_COMPLETED -> startBeaconService(context)

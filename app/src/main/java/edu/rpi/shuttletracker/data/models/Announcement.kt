@@ -9,22 +9,20 @@ import java.time.temporal.ChronoUnit
 data class Announcement(
     @SerializedName("subject")
     val subject: String,
-
     @SerializedName("body")
     val body: String,
-
     @SerializedName("start")
     private val rawStartTime: String,
-
     @SerializedName("end")
     private val rawEndTime: String,
 ) {
     private fun getReadableTime(date: String): String {
         val outputFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
-        val busDate = ZonedDateTime.parse(date)
-            .truncatedTo(ChronoUnit.SECONDS)
-            .toLocalDate()
+        val busDate =
+            ZonedDateTime.parse(date)
+                .truncatedTo(ChronoUnit.SECONDS)
+                .toLocalDate()
 
         return busDate.format(outputFormatter)
     }

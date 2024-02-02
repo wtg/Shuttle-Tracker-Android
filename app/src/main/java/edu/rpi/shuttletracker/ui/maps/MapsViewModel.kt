@@ -27,211 +27,216 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MapsViewModel @Inject constructor(
-    private val apiRepository: ApiRepository,
-    userPreferencesRepository: UserPreferencesRepository,
-) : ViewModel() {
+class MapsViewModel
+    @Inject
+    constructor(
+        private val apiRepository: ApiRepository,
+        userPreferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        // represents the ui state of the view
+        private val _mapsUiState = MutableStateFlow(MapsUIState())
+        val mapsUiState: StateFlow<MapsUIState> = _mapsUiState
 
-    // represents the ui state of the view
-    private val _mapsUiState = MutableStateFlow(MapsUIState())
-    val mapsUiState: StateFlow<MapsUIState> = _mapsUiState
+        // shared flow of the running busses, this is to be subscribed to in UI
+        lateinit var runningBusesState: SharedFlow<Unit>
+            private set
 
-    // shared flow of the running busses, this is to be subscribed to in UI
-    lateinit var runningBusesState: SharedFlow<Unit>
-        private set
+        init {
+            loadAll()
+            loadRunningBuses()
 
-    init {
-        loadAll()
-        loadRunningBuses()
+            // sets auto board service state
+            userPreferencesRepository.getAutoBoardService()
+                .flowOn(Dispatchers.Default)
+                .onEach { autoBoardService ->
+                    _mapsUiState.update {
+                        it.copy(autoBoardService = autoBoardService)
+                    }
+                }.launchIn(viewModelScope)
 
-        // sets auto board service state
-        userPreferencesRepository.getAutoBoardService()
-            .flowOn(Dispatchers.Default)
-            .onEach { autoBoardService ->
-                _mapsUiState.update {
-                    it.copy(autoBoardService = autoBoardService)
-                }
-            }.launchIn(viewModelScope)
+            // sets the notification read count
+            userPreferencesRepository.getNotificationsRead()
+                .flowOn(Dispatchers.Default)
+                .onEach { count ->
+                    _mapsUiState.update {
+                        it.copy(notificationsRead = count)
+                    }
+                }.launchIn(viewModelScope)
 
-        // sets the notification read count
-        userPreferencesRepository.getNotificationsRead()
-            .flowOn(Dispatchers.Default)
-            .onEach { count ->
-                _mapsUiState.update {
-                    it.copy(notificationsRead = count)
-                }
-            }.launchIn(viewModelScope)
+            // gets user preference for colorblind mode
+            userPreferencesRepository.getColorBlindMode()
+                .flowOn(Dispatchers.Default)
+                .onEach { colorBlindMode ->
+                    _mapsUiState.update {
+                        it.copy(colorBlindMode = colorBlindMode)
+                    }
+                }.launchIn(viewModelScope)
 
-        // gets user preference for colorblind mode
-        userPreferencesRepository.getColorBlindMode()
-            .flowOn(Dispatchers.Default)
-            .onEach { colorBlindMode ->
-                _mapsUiState.update {
-                    it.copy(colorBlindMode = colorBlindMode)
-                }
-            }.launchIn(viewModelScope)
-
-        userPreferencesRepository.getMaxStopDist()
-            .flowOn(Dispatchers.Default)
-            .onEach { minStopDist ->
-                _mapsUiState.update {
-                    it.copy(minStopDist = minStopDist)
-                }
-            }.launchIn(viewModelScope)
-    }
-
-    /**
-     * loads any vars in ui state that hasn't been loaded
-     * THIS IGNORES THE RUNNING BUSES AS THIS SHOULD BE SUBSCRIBED TO FROM UI
-     * */
-    fun loadAll() {
-        if (mapsUiState.value.stops.isEmpty()) {
-            loadStops()
+            userPreferencesRepository.getMaxStopDist()
+                .flowOn(Dispatchers.Default)
+                .onEach { minStopDist ->
+                    _mapsUiState.update {
+                        it.copy(minStopDist = minStopDist)
+                    }
+                }.launchIn(viewModelScope)
         }
 
-        if (mapsUiState.value.routes.isEmpty()) {
-            loadRoutes()
-        }
+        /**
+         * loads any vars in ui state that hasn't been loaded
+         * THIS IGNORES THE RUNNING BUSES AS THIS SHOULD BE SUBSCRIBED TO FROM UI
+         * */
+        fun loadAll() {
+            if (mapsUiState.value.stops.isEmpty()) {
+                loadStops()
+            }
 
-        if (mapsUiState.value.allBuses.isEmpty()) {
-            loadAllBuses()
-        }
+            if (mapsUiState.value.routes.isEmpty()) {
+                loadRoutes()
+            }
 
-        if (mapsUiState.value.notificationsRead == -1) {
-            loadAnnouncementCount()
-        }
-    }
+            if (mapsUiState.value.allBuses.isEmpty()) {
+                loadAllBuses()
+            }
 
-    fun refreshRunningBusses() {
-        viewModelScope.launch {
-            readApiResponse(apiRepository.getRunningBuses().first()) { runningBusses ->
-                _mapsUiState.update {
-                    it.copy(runningBuses = runningBusses)
-                }
+            if (mapsUiState.value.notificationsRead == -1) {
+                loadAnnouncementCount()
             }
         }
-    }
 
-    /**
-     * @param location: users current location
-     * @return returns the distance to closest stop in METERS
-     * */
-    fun closestDistanceToStop(location: Location): Float =
-        _mapsUiState.value.stops.minOfOrNull {
-            location.distanceTo(
-                Location("stop").apply {
-                    longitude = it.longitude
-                    latitude = it.latitude
-                },
-            )
-        } ?: Float.MAX_VALUE
-
-    /**
-     * sets all the errors to none
-     * */
-    fun clearErrors() {
-        loadAll()
-        _mapsUiState.update {
-            it.copy(
-                unknownError = null,
-                networkError = null,
-                serverError = null,
-            )
-        }
-    }
-
-    private fun loadAnnouncementCount() {
-        viewModelScope.launch {
-            readApiResponse(apiRepository.getAnnouncements()) { announcements ->
-                _mapsUiState.update {
-                    it.copy(totalAnnouncements = announcements.size)
-                }
-            }
-        }
-    }
-
-    /**
-     * Creates a shared flow to update the ui state when subscribed
-     * THIS MUST BE SUBSCRIBED TO IN UI
-     * */
-    private fun loadRunningBuses() {
-        viewModelScope.launch {
-            runningBusesState = apiRepository.getRunningBuses()
-                .map { response ->
-                    readApiResponse(response) { buses ->
-                        _mapsUiState.update {
-                            it.copy(runningBuses = buses)
-                        }
+        fun refreshRunningBusses() {
+            viewModelScope.launch {
+                readApiResponse(apiRepository.getRunningBuses().first()) { runningBusses ->
+                    _mapsUiState.update {
+                        it.copy(runningBuses = runningBusses)
                     }
                 }
-                .shareIn(
-                    viewModelScope,
-                    SharingStarted.WhileSubscribed(5000),
-                    1,
+            }
+        }
+
+        /**
+         * @param location: users current location
+         * @return returns the distance to closest stop in METERS
+         * */
+        fun closestDistanceToStop(location: Location): Float =
+            _mapsUiState.value.stops.minOfOrNull {
+                location.distanceTo(
+                    Location("stop").apply {
+                        longitude = it.longitude
+                        latitude = it.latitude
+                    },
                 )
-        }
-    }
+            } ?: Float.MAX_VALUE
 
-    /**
-     * Loads all possible buses and maps the API response
-     * */
-    private fun loadAllBuses() {
-        viewModelScope.launch {
-            readApiResponse(apiRepository.getAllBuses()) { buses ->
-                _mapsUiState.update {
-                    it.copy(allBuses = buses.sorted())
+        /**
+         * sets all the errors to none
+         * */
+        fun clearErrors() {
+            loadAll()
+            _mapsUiState.update {
+                it.copy(
+                    unknownError = null,
+                    networkError = null,
+                    serverError = null,
+                )
+            }
+        }
+
+        private fun loadAnnouncementCount() {
+            viewModelScope.launch {
+                readApiResponse(apiRepository.getAnnouncements()) { announcements ->
+                    _mapsUiState.update {
+                        it.copy(totalAnnouncements = announcements.size)
+                    }
                 }
             }
         }
-    }
 
-    /**
-     * Loads all possible stops and maps the API response
-     * */
-    private fun loadStops() {
-        viewModelScope.launch {
-            readApiResponse(apiRepository.getStops()) { stops ->
-                _mapsUiState.update {
-                    it.copy(stops = stops)
+        /**
+         * Creates a shared flow to update the ui state when subscribed
+         * THIS MUST BE SUBSCRIBED TO IN UI
+         * */
+        private fun loadRunningBuses() {
+            viewModelScope.launch {
+                runningBusesState =
+                    apiRepository.getRunningBuses()
+                        .map { response ->
+                            readApiResponse(response) { buses ->
+                                _mapsUiState.update {
+                                    it.copy(runningBuses = buses)
+                                }
+                            }
+                        }
+                        .shareIn(
+                            viewModelScope,
+                            SharingStarted.WhileSubscribed(5000),
+                            1,
+                        )
+            }
+        }
+
+        /**
+         * Loads all possible buses and maps the API response
+         * */
+        private fun loadAllBuses() {
+            viewModelScope.launch {
+                readApiResponse(apiRepository.getAllBuses()) { buses ->
+                    _mapsUiState.update {
+                        it.copy(allBuses = buses.sorted())
+                    }
                 }
             }
         }
-    }
 
-    /**
-     * Loads all possible routes and maps the API response
-     * */
-    private fun loadRoutes() {
-        viewModelScope.launch {
-            readApiResponse(apiRepository.getRoutes()) { routes ->
-                _mapsUiState.update {
-                    it.copy(routes = routes)
+        /**
+         * Loads all possible stops and maps the API response
+         * */
+        private fun loadStops() {
+            viewModelScope.launch {
+                readApiResponse(apiRepository.getStops()) { stops ->
+                    _mapsUiState.update {
+                        it.copy(stops = stops)
+                    }
                 }
             }
         }
-    }
 
-    /**
-     * Reads the network response and maps it to correct place
-     * */
-    private fun <T> readApiResponse(
-        response: NetworkResponse<T, ErrorResponse>,
-        success: (body: T) -> Unit,
-    ) {
-        when (response) {
-            is NetworkResponse.Success -> success(response.body)
-            is NetworkResponse.ServerError -> _mapsUiState.update {
-                it.copy(serverError = response)
+        /**
+         * Loads all possible routes and maps the API response
+         * */
+        private fun loadRoutes() {
+            viewModelScope.launch {
+                readApiResponse(apiRepository.getRoutes()) { routes ->
+                    _mapsUiState.update {
+                        it.copy(routes = routes)
+                    }
+                }
             }
-            is NetworkResponse.NetworkError -> _mapsUiState.update {
-                it.copy(networkError = response)
-            }
-            is NetworkResponse.UnknownError -> _mapsUiState.update {
-                it.copy(unknownError = response)
+        }
+
+        /**
+         * Reads the network response and maps it to correct place
+         * */
+        private fun <T> readApiResponse(
+            response: NetworkResponse<T, ErrorResponse>,
+            success: (body: T) -> Unit,
+        ) {
+            when (response) {
+                is NetworkResponse.Success -> success(response.body)
+                is NetworkResponse.ServerError ->
+                    _mapsUiState.update {
+                        it.copy(serverError = response)
+                    }
+                is NetworkResponse.NetworkError ->
+                    _mapsUiState.update {
+                        it.copy(networkError = response)
+                    }
+                is NetworkResponse.UnknownError ->
+                    _mapsUiState.update {
+                        it.copy(unknownError = response)
+                    }
             }
         }
     }
-}
 
 /**
  * Representation of the screen

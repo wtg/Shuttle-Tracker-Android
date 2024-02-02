@@ -66,7 +66,10 @@ fun SettingsScreen(
     navigator: DestinationsNavigator,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            rememberTopAppBarState(),
+        )
 
     val settingsUiState = viewModel.settingsUiState.collectAsStateWithLifecycle().value
 
@@ -82,11 +85,12 @@ fun SettingsScreen(
     LaunchedEffect(errorStartingBeaconService) {
         if (errorStartingBeaconService) {
             coroutineScope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.service_missing_permissions),
-                    actionLabel = context.getString(R.string.fix),
-                    duration = SnackbarDuration.Long,
-                )
+                val result =
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(R.string.service_missing_permissions),
+                        actionLabel = context.getString(R.string.fix),
+                        duration = SnackbarDuration.Long,
+                    )
                 when (result) {
                     SnackbarResult.ActionPerformed -> {
                         navigator.navigate(SetupScreenDestination())
@@ -114,8 +118,9 @@ fun SettingsScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
         Column(
-            modifier = Modifier
-                .padding(padding),
+            modifier =
+                Modifier
+                    .padding(padding),
         ) {
             AutoBoardBusSettingItem(
                 autoBoardService = settingsUiState.autoBoardService,
@@ -237,7 +242,6 @@ fun BaseUrlSettingItem(
                     )
                 }
             },
-
             confirmButton = {
                 Button(onClick = {
                     // checks for valid url
@@ -273,7 +277,6 @@ fun BaseUrlSettingItem(
                     Text(text = stringResource(R.string.save))
                 }
             },
-
             dismissButton = {
                 Button(onClick = { showDialog = false }) {
                     Text(text = stringResource(R.string.cancel))

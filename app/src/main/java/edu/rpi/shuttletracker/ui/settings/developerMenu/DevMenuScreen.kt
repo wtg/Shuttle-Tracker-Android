@@ -41,7 +41,7 @@ fun DevMenuScreen(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
-    val devMenuUiState = viewModel.DevMenuUiState.collectAsStateWithLifecycle().value
+    val devMenuUiState = viewModel.devMenuUiState.collectAsStateWithLifecycle().value
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -61,8 +61,7 @@ fun DevMenuScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
         Column(
-            modifier = Modifier
-                .padding(padding),
+            modifier = Modifier.padding(padding),
         ) {
             SettingsItem(icon = Icons.Outlined.Code, title = "Developer Options") {
                 Switch(checked = true, onCheckedChange = {

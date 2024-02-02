@@ -4,9 +4,7 @@ import com.google.android.gms.maps.model.LatLng
 
 data class Route(
     val colorName: String,
-
     val coordinates: List<Coordinate>,
-
 ) {
     fun latLng(): List<LatLng> =
         coordinates.map {

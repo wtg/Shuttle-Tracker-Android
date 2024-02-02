@@ -8,12 +8,15 @@ import edu.rpi.shuttletracker.ui.MainActivity
 import edu.rpi.shuttletracker.util.services.LocationService
 
 class NotificationReceiver : BroadcastReceiver() {
-
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         when (intent.action) {
-            ACTION_STOP_LOCATION_SERVICE -> context.stopService(
-                Intent(context, LocationService::class.java),
-            )
+            ACTION_STOP_LOCATION_SERVICE ->
+                context.stopService(
+                    Intent(context, LocationService::class.java),
+                )
         }
     }
 
@@ -24,9 +27,10 @@ class NotificationReceiver : BroadcastReceiver() {
          * Creates a pending intent to stop location tracking service
          * */
         internal fun stopLocationService(context: Context): PendingIntent {
-            val intent = Intent(context, NotificationReceiver::class.java).apply {
-                action = ACTION_STOP_LOCATION_SERVICE
-            }
+            val intent =
+                Intent(context, NotificationReceiver::class.java).apply {
+                    action = ACTION_STOP_LOCATION_SERVICE
+                }
 
             return PendingIntent.getBroadcast(
                 context,
@@ -40,9 +44,10 @@ class NotificationReceiver : BroadcastReceiver() {
          * Creates a pending intent to open an activity
          * */
         internal fun openMaps(context: Context): PendingIntent {
-            val intent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-            }
+            val intent =
+                Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                }
 
             return PendingIntent.getActivity(
                 context,

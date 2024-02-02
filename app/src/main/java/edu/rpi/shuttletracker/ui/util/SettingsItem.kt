@@ -32,11 +32,11 @@ fun SettingsItem(
     actions: @Composable () -> Unit = {},
 ) {
     Row(
-        modifier = Modifier
-            .clickable { onClick() }
-            .fillMaxWidth()
-            .padding(vertical = 10.dp, horizontal = 20.dp),
-
+        modifier =
+            Modifier
+                .clickable { onClick() }
+                .fillMaxWidth()
+                .padding(vertical = 10.dp, horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

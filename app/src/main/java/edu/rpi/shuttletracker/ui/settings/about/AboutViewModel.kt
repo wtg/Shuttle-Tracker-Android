@@ -8,12 +8,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AboutViewModel @Inject constructor(
-    private val userPreferencesRepository: UserPreferencesRepository,
-) : ViewModel() {
-    fun activateDevOptions() {
-        viewModelScope.launch {
-            userPreferencesRepository.activateDevOptions(true)
+class AboutViewModel
+    @Inject
+    constructor(
+        private val userPreferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        fun activateDevOptions() {
+            viewModelScope.launch {
+                userPreferencesRepository.activateDevOptions(true)
+            }
         }
     }
-}

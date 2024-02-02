@@ -86,17 +86,17 @@ fun Error(
         title = { Text(text = errorType) },
         text = {
             Text(
-                text = (
-                    if (errorBody != "") {
-                        errorBody + "\n\n"
-                    } else {
-                        ""
-                    }
+                text =
+                    (
+                        if (errorBody != "") {
+                            errorBody + "\n\n"
+                        } else {
+                            ""
+                        }
                     ) + error?.toString(),
             )
         },
         onDismissRequest = { onSecondaryRequest() },
-
         dismissButton = {
             if (showSecondaryButton) {
                 Button(onClick = { onSecondaryRequest() }) {

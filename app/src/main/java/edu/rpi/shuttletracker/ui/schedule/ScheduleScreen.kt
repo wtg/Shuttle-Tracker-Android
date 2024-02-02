@@ -56,14 +56,16 @@ fun ScheduleScreen(
         },
     )
 
-    val pagerState = rememberPagerState(
-        pageCount = { scheduleUiState.schedule.size },
-        initialPage = scheduleUiState.schedule.size,
-    )
+    val pagerState =
+        rememberPagerState(
+            pageCount = { scheduleUiState.schedule.size },
+            initialPage = scheduleUiState.schedule.size,
+        )
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-        rememberTopAppBarState(),
-    )
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            rememberTopAppBarState(),
+        )
 
     Scaffold(
         topBar = {

@@ -12,7 +12,6 @@ import edu.rpi.shuttletracker.R
  * Based on the notification generator for Tachiyomi
  * */
 object Notifications {
-
     private const val GROUP_TRACKER = "group_tracker"
     const val CHANNEL_TRACKING_BUS = "tracking_bus_channel"
     const val ID_TRACKING_BUS = 1
@@ -23,9 +22,10 @@ object Notifications {
     const val CHANNEL_ANNOUNCEMENT = "announcement_channel"
     const val ID_ANNOUNCEMENT = 11
 
-    private val deprecatedChannels = listOf(
-        "ShuttleTrackerRPI",
-    )
+    private val deprecatedChannels =
+        listOf(
+            "ShuttleTrackerRPI",
+        )
 
     fun createChannels(context: Context) {
         val notificationManager = NotificationManagerCompat.from(context)
@@ -72,21 +72,22 @@ object Notifications {
         )
     }
 
-    private fun buildNotificationChannelGroup(groupId: String, name: String) =
-        NotificationChannelGroupCompat
-            .Builder(groupId)
-            .setName(name)
-            .build()
+    private fun buildNotificationChannelGroup(
+        groupId: String,
+        name: String,
+    ) = NotificationChannelGroupCompat
+        .Builder(groupId)
+        .setName(name)
+        .build()
 
     private fun buildNotificationChannel(
         groupId: String,
         channelId: String,
         importance: Int,
         name: String,
-    ) =
-        NotificationChannelCompat
-            .Builder(channelId, importance)
-            .setGroup(groupId)
-            .setName(name)
-            .build()
+    ) = NotificationChannelCompat
+        .Builder(channelId, importance)
+        .setGroup(groupId)
+        .setName(name)
+        .build()
 }

@@ -11,43 +11,46 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SetupScreenViewModel @Inject constructor(
-    private val userPreferencesRepository: UserPreferencesRepository,
-) : ViewModel() {
-    val setupUiState = combine(
-        userPreferencesRepository.getPrivacyPolicyAccepted(),
-        userPreferencesRepository.getAboutAccepted(),
-        userPreferencesRepository.getAllowAnalytics(),
-    ) { privatePolicy, about, allowAnalytics ->
-        return@combine SetupUiState(
-            privacyPolicyAccepted = privatePolicy,
-            aboutAccepted = about,
-            allowAnalytics = allowAnalytics,
-        )
-    }.stateIn(
-        scope = viewModelScope,
-        SharingStarted.WhileSubscribed(),
-        SetupUiState(),
-    )
+class SetupScreenViewModel
+    @Inject
+    constructor(
+        private val userPreferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        val setupUiState =
+            combine(
+                userPreferencesRepository.getPrivacyPolicyAccepted(),
+                userPreferencesRepository.getAboutAccepted(),
+                userPreferencesRepository.getAllowAnalytics(),
+            ) { privatePolicy, about, allowAnalytics ->
+                return@combine SetupUiState(
+                    privacyPolicyAccepted = privatePolicy,
+                    aboutAccepted = about,
+                    allowAnalytics = allowAnalytics,
+                )
+            }.stateIn(
+                scope = viewModelScope,
+                SharingStarted.WhileSubscribed(),
+                SetupUiState(),
+            )
 
-    fun updatePrivacyPolicyAccepted() {
-        viewModelScope.launch {
-            userPreferencesRepository.savePrivacyPolicyAccepted(true)
+        fun updatePrivacyPolicyAccepted() {
+            viewModelScope.launch {
+                userPreferencesRepository.savePrivacyPolicyAccepted(true)
+            }
+        }
+
+        fun updateAboutAccepted() {
+            viewModelScope.launch {
+                userPreferencesRepository.saveAboutAccepted(true)
+            }
+        }
+
+        fun updateAllowAnalytics(allowAnalytics: Boolean) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveAllowAnalytics(allowAnalytics)
+            }
         }
     }
-
-    fun updateAboutAccepted() {
-        viewModelScope.launch {
-            userPreferencesRepository.saveAboutAccepted(true)
-        }
-    }
-
-    fun updateAllowAnalytics(allowAnalytics: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.saveAllowAnalytics(allowAnalytics)
-        }
-    }
-}
 
 data class SetupUiState(
     val privacyPolicyAccepted: Boolean = false,

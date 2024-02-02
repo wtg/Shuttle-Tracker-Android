@@ -30,7 +30,10 @@ fun AnalyticsScreen(
     navigator: DestinationsNavigator,
     viewModel: AnalyticsViewModel = hiltViewModel(),
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            rememberTopAppBarState(),
+        )
     val analytics = viewModel.getAnalytics()
 
     Scaffold(

@@ -133,11 +133,12 @@ fun MapsScreen(
     LaunchedEffect(errorStartingBeaconService, errorStartingLocationService) {
         if (errorStartingBeaconService || errorStartingLocationService) {
             coroutineScope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.service_missing_permissions),
-                    actionLabel = context.getString(R.string.fix),
-                    duration = SnackbarDuration.Long,
-                )
+                val result =
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(R.string.service_missing_permissions),
+                        actionLabel = context.getString(R.string.fix),
+                        duration = SnackbarDuration.Long,
+                    )
                 when (result) {
                     SnackbarResult.ActionPerformed -> {
                         navigator.navigate(SetupScreenDestination())
@@ -165,20 +166,21 @@ fun MapsScreen(
                 )
             }
         },
-
     ) { padding ->
 
         BusMap(mapsUIState = mapsUiState, padding = padding)
 
         Box(
-            modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 10.dp)
-                .fillMaxSize(),
+            modifier =
+                Modifier
+                    .padding(padding)
+                    .padding(horizontal = 10.dp)
+                    .fillMaxSize(),
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 // navigates to announcements
@@ -228,41 +230,44 @@ fun BusMap(
     }
 
     // keeps track of where the camera currently is
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            LatLng(42.73068146020498, -73.67619731950525),
-            14.3f,
-        )
-    }
+    val cameraPositionState =
+        rememberCameraPositionState {
+            position =
+                CameraPosition.fromLatLngZoom(
+                    LatLng(42.73068146020498, -73.67619731950525),
+                    14.3f,
+                )
+        }
 
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
-
         // makes sure the items drawn (current location and compass) are clickable
         contentPadding = padding,
         cameraPositionState = cameraPositionState,
-
         // auto dark theme
-        properties = MapProperties(
-            latLngBoundsForCameraTarget = LatLngBounds(
-                LatLng(42.72095724005504, -73.70196321825452),
-                LatLng(42.741173465236876, -73.6543446409232),
+        properties =
+            MapProperties(
+                latLngBoundsForCameraTarget =
+                    LatLngBounds(
+                        LatLng(42.72095724005504, -73.70196321825452),
+                        LatLng(42.741173465236876, -73.6543446409232),
+                    ),
+                isBuildingEnabled = true,
+                minZoomPreference = 13f,
+                isMyLocationEnabled = mapLocationEnabled,
+                mapStyleOptions =
+                    if (isSystemInDarkTheme()) {
+                        MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
+                    } else {
+                        MapStyleOptions("[]")
+                    },
             ),
-            isBuildingEnabled = true,
-            minZoomPreference = 13f,
-            isMyLocationEnabled = mapLocationEnabled,
-            mapStyleOptions = if (isSystemInDarkTheme()) {
-                MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
-            } else {
-                MapStyleOptions("[]")
-            },
-        ),
-
         // removes the zoom control which was covered by the FAB
-        uiSettings = MapUiSettings(
-            zoomControlsEnabled = false,
-            myLocationButtonEnabled = false,
-        ),
+        uiSettings =
+            MapUiSettings(
+                zoomControlsEnabled = false,
+                myLocationButtonEnabled = false,
+            ),
     ) {
         // creates the stops
         mapsUIState.stops.forEach {
@@ -281,11 +286,12 @@ fun BusMap(
         mapsUIState.routes.forEach {
             Polyline(
                 points = it.latLng(),
-                color = Color(
-                    android.graphics.Color.valueOf(
-                        android.graphics.Color.parseColor(it.colorName),
-                    ).toArgb(),
-                ),
+                color =
+                    Color(
+                        android.graphics.Color.valueOf(
+                            android.graphics.Color.parseColor(it.colorName),
+                        ).toArgb(),
+                    ),
             )
         }
     }
@@ -293,19 +299,20 @@ fun BusMap(
     // Icon to recenter the user on the map to their location
     // makes sure its in the top left
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
-            .padding(horizontal = 10.dp),
-
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 10.dp),
         contentAlignment = Alignment.TopEnd,
     ) {
         ActionButton(
-            icon = if (mapLocationEnabled) {
-                Icons.Outlined.MyLocation
-            } else {
-                Icons.Outlined.LocationDisabled
-            },
+            icon =
+                if (mapLocationEnabled) {
+                    Icons.Outlined.MyLocation
+                } else {
+                    Icons.Outlined.LocationDisabled
+                },
         ) {
             // finds current position and moves to there
             LocationServices.getFusedLocationProviderClient(context).lastLocation
@@ -314,17 +321,18 @@ fun BusMap(
 
                     coroutineScope.launch {
                         cameraPositionState.animate(
-                            update = CameraUpdateFactory.newCameraPosition(
-                                CameraPosition.builder()
-                                    .target(
-                                        LatLng(
-                                            location.latitude,
-                                            location.longitude,
-                                        ),
-                                    ).tilt(0f)
-                                    .zoom(cameraPositionState.position.zoom)
-                                    .build(),
-                            ),
+                            update =
+                                CameraUpdateFactory.newCameraPosition(
+                                    CameraPosition.builder()
+                                        .target(
+                                            LatLng(
+                                                location.latitude,
+                                                location.longitude,
+                                            ),
+                                        ).tilt(0f)
+                                        .zoom(cameraPositionState.position.zoom)
+                                        .build(),
+                                ),
                             durationMs = 1000,
                         )
                     }
@@ -355,7 +363,10 @@ fun StopMarker(stop: Stop) {
  * Creates a marker for a bus
  * */
 @Composable
-fun BusMarker(bus: Bus, colorBlindMode: Boolean) {
+fun BusMarker(
+    bus: Bus,
+    colorBlindMode: Boolean,
+) {
     val markerState = rememberMarkerState(position = bus.latLng())
 
     // every time bus changes, update the position of the marker
@@ -364,19 +375,20 @@ fun BusMarker(bus: Bus, colorBlindMode: Boolean) {
     }
 
     // gets proper bus icon
-    val busIcon = if (bus.type == "user") {
-        if (colorBlindMode) {
-            stringResource(R.string.colorblind_crowdsourced_bus)
+    val busIcon =
+        if (bus.type == "user") {
+            if (colorBlindMode) {
+                stringResource(R.string.colorblind_crowdsourced_bus)
+            } else {
+                stringResource(R.string.crowdsourced_bus)
+            }
         } else {
-            stringResource(R.string.crowdsourced_bus)
+            if (colorBlindMode) {
+                stringResource(R.string.colorblind_GPS_bus)
+            } else {
+                stringResource(R.string.GPS_bus)
+            }
         }
-    } else {
-        if (colorBlindMode) {
-            stringResource(R.string.colorblind_GPS_bus)
-        } else {
-            stringResource(R.string.GPS_bus)
-        }
-    }
 
     val icon = BitmapDescriptorFactory.fromAsset(busIcon)
 
@@ -412,9 +424,10 @@ fun BoardBusFab(
         BusPicker(
             buses = buses,
             onBusChosen = {
-                val intent = Intent(context, LocationService::class.java).apply {
-                    putExtra(LocationService.BUNDLE_BUS_ID, it)
-                }
+                val intent =
+                    Intent(context, LocationService::class.java).apply {
+                        putExtra(LocationService.BUNDLE_BUS_ID, it)
+                    }
                 context.startForegroundService(intent)
             },
             onDismiss = { busPickerState = false },
@@ -457,11 +470,12 @@ fun BoardBusFab(
         icon = { Icon(Icons.Default.DirectionsBus, stringResource(R.string.board_bus)) },
         text = {
             Text(
-                text = if (locationServiceBusNumber != null) {
-                    stringResource(R.string.leave_bus)
-                } else {
-                    stringResource(R.string.board_bus)
-                },
+                text =
+                    if (locationServiceBusNumber != null) {
+                        stringResource(R.string.leave_bus)
+                    } else {
+                        stringResource(R.string.board_bus)
+                    },
             )
         },
     )
@@ -471,9 +485,7 @@ fun BoardBusFab(
  * A FAB that refreshes server items on click
  * */
 @Composable
-fun RefreshFab(
-    refresh: () -> Unit,
-) {
+fun RefreshFab(refresh: () -> Unit) {
     val refreshAnimation = remember { Animatable(0F) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -513,8 +525,9 @@ fun BusPicker(
 
     Dialog(onDismissRequest = { onDismiss() }) {
         Card(
-            modifier = Modifier
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(
@@ -527,11 +540,11 @@ fun BusPicker(
                 )
 
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(500.dp)
-                        .padding(10.dp),
-
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(500.dp)
+                            .padding(10.dp),
                 ) {
                     items(items = buses, itemContent = {
                         Row(
@@ -599,14 +612,16 @@ fun ActionButton(
     ) {
         Button(
             onClick = { action() },
-            modifier = Modifier
-                .size(50.dp),
+            modifier =
+                Modifier
+                    .size(50.dp),
             shape = CircleShape,
             contentPadding = PaddingValues(0.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onBackground,
-            ),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
         ) {
             Icon(icon, icon.name)

@@ -51,9 +51,10 @@ fun AnnouncementsScreen(
         },
     )
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-        rememberTopAppBarState(),
-    )
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            rememberTopAppBarState(),
+        )
 
     Scaffold(
         topBar = {
@@ -70,9 +71,10 @@ fun AnnouncementsScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 10.dp),
+            modifier =
+                Modifier
+                    .padding(padding)
+                    .padding(horizontal = 10.dp),
             verticalArrangement = Arrangement.spacedBy(15.dp),
         ) {
             itemsIndexed(announcementsUIState.announcements) { _, item ->
@@ -93,11 +95,12 @@ fun AnnouncementItem(announcement: Announcement) {
         Spacer(modifier = Modifier.height(5.dp))
 
         Text(
-            text = stringResource(
-                R.string.effective_from,
-                announcement.startTime,
-                announcement.endTime,
-            ),
+            text =
+                stringResource(
+                    R.string.effective_from,
+                    announcement.startTime,
+                    announcement.endTime,
+                ),
             style = MaterialTheme.typography.titleMedium,
         )
 

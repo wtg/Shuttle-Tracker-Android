@@ -177,7 +177,6 @@ fun SetupScreen(
                     floatingActionButton = {
                         FloatingActionButton(
                             onClick = { toNextPage() },
-
                         ) {
                             if (pagerState.currentPage == TOTAL_PAGES - 1) {
                                 Icon(Icons.Outlined.Done, stringResource(R.string.complete_setup))
@@ -195,35 +194,42 @@ fun SetupScreen(
     ) { padding ->
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
         ) {
             when (it) {
-                0 -> TextScreen(
-                    onAccept = { toNextPage(0) },
-                    acceptedState = setupUiState.aboutAccepted,
-                    updateState = viewModel::updateAboutAccepted,
-                    text = stringResource(R.string.info_intro),
-                    title = stringResource(R.string.about),
-                )
+                0 ->
+                    TextScreen(
+                        onAccept = { toNextPage(0) },
+                        acceptedState = setupUiState.aboutAccepted,
+                        updateState = viewModel::updateAboutAccepted,
+                        text = stringResource(R.string.info_intro),
+                        title = stringResource(R.string.about),
+                    )
 
-                1 -> TextScreen(
-                    onAccept = { toNextPage(1) },
-                    acceptedState = setupUiState.privacyPolicyAccepted,
-                    updateState = viewModel::updatePrivacyPolicyAccepted,
-                    text = stringResource(R.string.privacy),
-                    title = stringResource(R.string.privacy_policy),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = setupUiState.allowAnalytics,
-                            onCheckedChange = { checked -> viewModel.updateAllowAnalytics(checked) },
-                        )
+                1 ->
+                    TextScreen(
+                        onAccept = { toNextPage(1) },
+                        acceptedState = setupUiState.privacyPolicyAccepted,
+                        updateState = viewModel::updatePrivacyPolicyAccepted,
+                        text = stringResource(R.string.privacy),
+                        title = stringResource(R.string.privacy_policy),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = setupUiState.allowAnalytics,
+                                onCheckedChange = { checked ->
+                                    viewModel.updateAllowAnalytics(
+                                        checked,
+                                    )
+                                },
+                            )
 
-                        Text(text = "Agree to share analytics")
+                            Text(text = "Agree to share analytics")
+                        }
                     }
-                }
 
                 2 -> PermissionPage { toNextPage(2) }
                 3 -> AutoBoardingPage { toNextPage(3) }
@@ -268,9 +274,7 @@ fun TextScreen(
  * Page asking for general permissions
  * */
 @Composable
-fun PermissionPage(
-    allPermissionsGranted: () -> Unit,
-) {
+fun PermissionPage(allPermissionsGranted: () -> Unit) {
     val hasLocationPermissions = remember { mutableStateOf(false) }
     val hasNotificationPermissions = remember { mutableStateOf(false) }
 
@@ -290,9 +294,10 @@ fun PermissionPage(
     ) {
         // ask for notification permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val notificationPermission = arrayOf(
-                Manifest.permission.POST_NOTIFICATIONS,
-            )
+            val notificationPermission =
+                arrayOf(
+                    Manifest.permission.POST_NOTIFICATIONS,
+                )
 
             PermissionItem(
                 permission = notificationPermission,
@@ -306,10 +311,11 @@ fun PermissionPage(
         }
 
         // ask for location permissions
-        val locationPermissions = arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        )
+        val locationPermissions =
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            )
 
         PermissionItem(
             permission = locationPermissions,
@@ -325,9 +331,7 @@ fun PermissionPage(
  * Page asking for auto boarder permissions
  * */
 @Composable
-fun AutoBoardingPage(
-    allPermissionsGranted: () -> Unit,
-) {
+fun AutoBoardingPage(allPermissionsGranted: () -> Unit) {
     val context = LocalContext.current
     val hasBluetoothPermissions = remember { mutableStateOf(false) }
     val hasBackgroundLocationPermissions = remember { mutableStateOf(false) }
@@ -350,10 +354,11 @@ fun AutoBoardingPage(
     ) {
         // ask for bluetooth permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val bluetoothPermissions = arrayOf(
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.BLUETOOTH_SCAN,
-            )
+            val bluetoothPermissions =
+                arrayOf(
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                )
 
             item {
                 PermissionItem(
@@ -370,9 +375,10 @@ fun AutoBoardingPage(
 
         // ask for background location permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val backgroundLocationPermissions = arrayOf(
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-            )
+            val backgroundLocationPermissions =
+                arrayOf(
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                )
 
             item {
                 PermissionItem(
@@ -391,9 +397,10 @@ fun AutoBoardingPage(
         item {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
             ) {
                 Text(
                     text = stringResource(R.string.automatic_board_bus),
@@ -401,11 +408,12 @@ fun AutoBoardingPage(
                 )
 
                 Text(
-                    text = if (!isAutoBoardingServiceRunning) {
-                        stringResource(R.string.automatic_board_bus_rational)
-                    } else {
-                        stringResource(R.string.automatic_board_bus_enabled)
-                    },
+                    text =
+                        if (!isAutoBoardingServiceRunning) {
+                            stringResource(R.string.automatic_board_bus_rational)
+                        } else {
+                            stringResource(R.string.automatic_board_bus_enabled)
+                        },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
@@ -438,12 +446,13 @@ fun PermissionItem(
 ) {
     val context = LocalContext.current
 
-    state.value = permission.all {
-        ContextCompat.checkSelfPermission(
-            context,
-            it,
-        ) == PackageManager.PERMISSION_GRANTED
-    }
+    state.value =
+        permission.all {
+            ContextCompat.checkSelfPermission(
+                context,
+                it,
+            ) == PackageManager.PERMISSION_GRANTED
+        }
 
     val showDialog = remember { mutableStateOf(false) }
 
@@ -451,47 +460,55 @@ fun PermissionItem(
         ToSettingsAlertDialog(showDialog)
     }
 
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-    ) { isGranted ->
-        val deniedList: List<String> = isGranted.filter {
-            !it.value
-        }.map {
-            it.key
-        }
+    val launcher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions(),
+        ) { isGranted ->
+            val deniedList: List<String> =
+                isGranted.filter {
+                    !it.value
+                }.map {
+                    it.key
+                }
 
-        when {
-            deniedList.isNotEmpty() -> {
-                val map = deniedList.groupBy { permission ->
-                    if (shouldShowRequestPermissionRationale(context as Activity, permission)) {
-                        DENIED
-                    } else {
-                        EXPLAINED
+            when {
+                deniedList.isNotEmpty() -> {
+                    val map =
+                        deniedList.groupBy { permission ->
+                            if (shouldShowRequestPermissionRationale(
+                                    context as Activity,
+                                    permission,
+                                )
+                            ) {
+                                DENIED
+                            } else {
+                                EXPLAINED
+                            }
+                        }
+
+                    // request denied, request again
+                    map[DENIED]?.let {
+                        // IGNORED
+                    }
+
+                    // request denied, send to settings
+                    map[EXPLAINED]?.let {
+                        showDialog.value = true
                     }
                 }
-
-                // request denied, request again
-                map[DENIED]?.let {
-                    /* IGNORED */
+                else -> {
+                    // All request are permitted
+                    state.value = true
                 }
-
-                // request denied, send to settings
-                map[EXPLAINED]?.let {
-                    showDialog.value = true
-                }
-            }
-            else -> {
-                // All request are permitted
-                state.value = true
             }
         }
-    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
     ) {
         if (!state.value) {
             Icon(deniedIcon, stringResource(R.string.permission_denied))
@@ -520,9 +537,7 @@ fun PermissionItem(
  * and has to be redirected to settings
  * */
 @Composable
-fun ToSettingsAlertDialog(
-    showDialog: MutableState<Boolean>,
-) {
+fun ToSettingsAlertDialog(showDialog: MutableState<Boolean>) {
     val context = LocalContext.current
 
     if (showDialog.value) {

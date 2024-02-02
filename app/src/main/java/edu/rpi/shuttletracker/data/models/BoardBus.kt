@@ -8,22 +8,16 @@ import java.util.Locale
 import java.util.TimeZone
 
 data class BoardBus(
-
     @SerializedName("id")
     val uuid: String,
-
     @Flatten("coordinate::latitude")
     val latitude: Double,
-
     @Flatten("coordinate::longitude")
     val longitude: Double,
-
     @SerializedName("type")
     val type: String,
-
     @SerializedName("date")
     val date: String = getCurrentFormattedDate(),
-
 ) {
     companion object {
         /**

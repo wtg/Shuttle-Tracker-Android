@@ -34,7 +34,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class BeaconService : Service() {
-
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
 
@@ -58,12 +57,13 @@ class BeaconService : Service() {
         super.onCreate()
 
         beaconManager = BeaconManager.getInstanceForApplication(this)
-        region = Region(
-            "all-beacons-region",
-            Identifier.fromUuid(UUID.fromString("3bb7876d-403d-cb84-5e4c-907adc953f9c")),
-            null,
-            null,
-        )
+        region =
+            Region(
+                "all-beacons-region",
+                Identifier.fromUuid(UUID.fromString("3bb7876d-403d-cb84-5e4c-907adc953f9c")),
+                null,
+                null,
+            )
 
         beaconManager.beaconParsers.apply {
             add(BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"))
@@ -88,7 +88,11 @@ class BeaconService : Service() {
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         super.onStartCommand(intent, flags, startId)
 
         _permissionError.update { false }
@@ -108,14 +112,14 @@ class BeaconService : Service() {
                             this,
                             Manifest.permission.BLUETOOTH_CONNECT,
                         ) != PackageManager.PERMISSION_GRANTED
-                    )
-                ) || ( // has background location and correct version
+                )
+            ) || ( // has background location and correct version
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
                     ActivityCompat.checkSelfPermission(
                         this,
                         Manifest.permission.ACCESS_BACKGROUND_LOCATION,
                     ) != PackageManager.PERMISSION_GRANTED
-                )
+            )
         ) {
             // no bluetooth & location permissions
             _permissionError.update { true }
@@ -137,35 +141,39 @@ class BeaconService : Service() {
          * when there is nothing detected for ~30 seconds then it will "stop tracking"
          * if a beacon is detected, it will start tracking the closest one
          * */
-        rangingObserver = Observer { beacons ->
+        rangingObserver =
+            Observer { beacons ->
 
-            // gets the min distance beacon
-            val closest = beacons.minByOrNull { it.distance }
+                // gets the min distance beacon
+                val closest = beacons.minByOrNull { it.distance }
 
-            // no beacons nearby and runs till death
-            if (closest == null) {
-                // if no beacon has been detected for 30 seconds and was started auto
-                if (System.currentTimeMillis() - notFoundFor > 30000 &&
-                    runBlocking { LocationService.startedManual.first() } == false
-                ) {
-                    stopService(Intent(this, LocationService::class.java))
+                // no beacons nearby and runs till death
+                if (closest == null) {
+                    // if no beacon has been detected for 30 seconds and was started auto
+                    if (System.currentTimeMillis() - notFoundFor > 30000 &&
+                        runBlocking { LocationService.startedManual.first() } == false
+                    ) {
+                        stopService(Intent(this, LocationService::class.java))
+                    }
+
+                    return@Observer
                 }
 
-                return@Observer
+                val closestId = closest.id2.toInt()
+                notFoundFor = System.currentTimeMillis()
+
+                if (LocationService.busNum.value == closestId) {
+                    return@Observer
+                }
+
+                val serviceIntent =
+                    Intent(this, LocationService::class.java).apply {
+                        putExtra(LocationService.BUNDLE_BUS_ID, closestId)
+                        putExtra(LocationService.STARTED_MANUAL, false)
+                    }
+
+                startService(serviceIntent)
             }
-
-            val closestId = closest.id2.toInt()
-            notFoundFor = System.currentTimeMillis()
-
-            if (LocationService.busNum.value == closestId) { return@Observer }
-
-            val serviceIntent = Intent(this, LocationService::class.java).apply {
-                putExtra(LocationService.BUNDLE_BUS_ID, closestId)
-                putExtra(LocationService.STARTED_MANUAL, false)
-            }
-
-            startService(serviceIntent)
-        }
 
         beaconManager.apply {
             // lets scanning occur in background for service
@@ -201,15 +209,17 @@ class BeaconService : Service() {
             // stops looking for beacons
             beaconManager.getRegionViewModel(region).rangedBeacons.removeObserver(rangingObserver)
             beaconManager.stopRangingBeacons(region)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
-    private fun notifyLaunch() = NotificationCompat.Builder(
-        this,
-        Notifications.CHANNEL_AUTO_BOARD,
-    ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-        .setContentTitle(getString(R.string.notification_automatic_board_bus_running))
-        .setSmallIcon(R.drawable.ic_stat_default)
-        .setContentIntent(NotificationReceiver.openMaps(this))
-        .build()
+    private fun notifyLaunch() =
+        NotificationCompat.Builder(
+            this,
+            Notifications.CHANNEL_AUTO_BOARD,
+        ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .setContentTitle(getString(R.string.notification_automatic_board_bus_running))
+            .setSmallIcon(R.drawable.ic_stat_default)
+            .setContentIntent(NotificationReceiver.openMaps(this))
+            .build()
 }

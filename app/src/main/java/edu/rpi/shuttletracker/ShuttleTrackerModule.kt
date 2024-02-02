@@ -38,23 +38,24 @@ private const val USER_PREFERENCES = "user_preferences"
 @Module
 @InstallIn(SingletonComponent::class)
 object ShuttleTrackerModule {
-
     @Singleton
     @Provides
     fun provideCacheInterceptor(
         @ApplicationContext context: Context,
-    ): Interceptor = Interceptor { chain ->
-        var request = chain.request()
+    ): Interceptor =
+        Interceptor { chain ->
+            var request = chain.request()
 
-        if (!context.hasNetwork()) {
-            // 2 week cache for offline
-            request = request.newBuilder()
-                .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 14)
-                .removeHeader("Pragma")
-                .build()
+            if (!context.hasNetwork()) {
+                // 2 week cache for offline
+                request =
+                    request.newBuilder()
+                        .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 14)
+                        .removeHeader("Pragma")
+                        .build()
+            }
+            chain.proceed(request)
         }
-        chain.proceed(request)
-    }
 
     @Singleton
     @Provides
@@ -89,13 +90,15 @@ object ShuttleTrackerModule {
         okHttpClient: OkHttpClient,
         userPreferencesRepository: UserPreferencesRepository,
     ): Retrofit {
-        val gson = GsonBuilder()
-            .registerTypeAdapterFactory(FlattenTypeAdapterFactory())
-            .create()
+        val gson =
+            GsonBuilder()
+                .registerTypeAdapterFactory(FlattenTypeAdapterFactory())
+                .create()
 
-        val url = runBlocking {
-            return@runBlocking userPreferencesRepository.getBaseUrl().first()
-        }
+        val url =
+            runBlocking {
+                return@runBlocking userPreferencesRepository.getBaseUrl().first()
+            }
 
         return Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create(gson))
@@ -115,11 +118,14 @@ object ShuttleTrackerModule {
 
     @Singleton
     @Provides
-    fun providePreferencesDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
+    fun providePreferencesDataStore(
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> =
         PreferenceDataStoreFactory.create(
-            corruptionHandler = ReplaceFileCorruptionHandler(
-                produceNewData = { emptyPreferences() },
-            ),
+            corruptionHandler =
+                ReplaceFileCorruptionHandler(
+                    produceNewData = { emptyPreferences() },
+                ),
             migrations = listOf(SharedPreferencesMigration(context, USER_PREFERENCES)),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
             produceFile = { context.preferencesDataStoreFile(USER_PREFERENCES) },

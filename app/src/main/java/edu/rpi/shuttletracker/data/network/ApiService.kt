@@ -26,7 +26,10 @@ interface ApiService {
     suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse>
 
     @PATCH("buses/{busNum}")
-    suspend fun addBus(@Path("busNum") busNum: Int, @Body bus: BoardBus): NetworkResponse<Unit, ErrorResponse>
+    suspend fun addBus(
+        @Path("busNum") busNum: Int,
+        @Body bus: BoardBus,
+    ): NetworkResponse<Unit, ErrorResponse>
 
     @GET("buses/all")
     suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse>
@@ -38,8 +41,12 @@ interface ApiService {
     suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse>
 
     @POST("analytics/entries")
-    suspend fun addAnalytics(@Body analytics: Analytics): NetworkResponse<Unit, ErrorResponse>
+    suspend fun addAnalytics(
+        @Body analytics: Analytics,
+    ): NetworkResponse<Unit, ErrorResponse>
 
     @POST("notifications/fcmdevices")
-    suspend fun sendRegistrationToken(@Body token: String): NetworkResponse<Unit, ErrorResponse>
+    suspend fun sendRegistrationToken(
+        @Body token: String,
+    ): NetworkResponse<Unit, ErrorResponse>
 }

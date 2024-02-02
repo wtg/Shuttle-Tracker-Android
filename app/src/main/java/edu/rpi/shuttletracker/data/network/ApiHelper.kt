@@ -18,7 +18,10 @@ interface ApiHelper {
 
     suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse>
 
-    suspend fun addBus(busNum: Int, bus: BoardBus): NetworkResponse<Unit, ErrorResponse>
+    suspend fun addBus(
+        busNum: Int,
+        bus: BoardBus,
+    ): NetworkResponse<Unit, ErrorResponse>
 
     suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse>
 

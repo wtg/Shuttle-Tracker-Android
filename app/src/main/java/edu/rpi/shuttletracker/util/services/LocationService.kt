@@ -41,11 +41,10 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-/* reference https://github.com/tachiyomiorg/tachiyomi/blob/d4290f6f596dcafbe354eec51875680eb854d179/app/src/main/java/eu/kanade/tachiyomi/data/updater/AppUpdateService.kt#L33 */
+// reference https://github.com/tachiyomiorg/tachiyomi/blob/d4290f6f596dcafbe354eec51875680eb854d179/app/src/main/java/eu/kanade/tachiyomi/data/updater/AppUpdateService.kt#L33
 
 @AndroidEntryPoint
 class LocationService : Service() {
-
     @Inject
     lateinit var apiRepository: ApiRepository
 
@@ -64,7 +63,6 @@ class LocationService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
-
         private val _startedManual = MutableStateFlow<Boolean?>(null)
         val startedManual = _startedManual.asStateFlow()
 
@@ -82,12 +80,13 @@ class LocationService : Service() {
         super.onCreate()
 
         // gets location changes every 5 secs
-        request = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            5000,
-        ).apply {
-            setWaitForAccurateLocation(true)
-        }.build()
+        request =
+            LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                5000,
+            ).apply {
+                setWaitForAccurateLocation(true)
+            }.build()
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -110,7 +109,11 @@ class LocationService : Service() {
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         super.onStartCommand(intent, flags, startId)
 
         val extras: Bundle = intent!!.extras!!
@@ -152,25 +155,26 @@ class LocationService : Service() {
         }
 
         // change in location
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                super.onLocationResult(locationResult)
-                val currentLocation = locationResult.lastLocation
+        locationCallback =
+            object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    super.onLocationResult(locationResult)
+                    val currentLocation = locationResult.lastLocation
 
-                serviceScope.launch {
-                    if (currentLocation != null) {
-                        updateLocation(busNum, currentLocation, uuid)
+                    serviceScope.launch {
+                        if (currentLocation != null) {
+                            updateLocation(busNum, currentLocation, uuid)
 
-                        // been on bus for 20 min
-                        if (System.currentTimeMillis() - startTime >=
-                            TimeUnit.MINUTES.toMillis(20)
-                        ) {
-                            stopSelf()
+                            // been on bus for 20 min
+                            if (System.currentTimeMillis() - startTime >=
+                                TimeUnit.MINUTES.toMillis(20)
+                            ) {
+                                stopSelf()
+                            }
                         }
                     }
                 }
             }
-        }
 
         // starts getting location changes
         locationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
@@ -190,7 +194,8 @@ class LocationService : Service() {
         try {
             // unsubscribes from location updates
             locationClient.removeLocationUpdates(locationCallback)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -210,14 +215,15 @@ class LocationService : Service() {
         ),
     )
 
-    private fun notifyLaunch() = NotificationCompat.Builder(
-        this,
-        Notifications.CHANNEL_TRACKING_BUS,
-    ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-        .setContentTitle(getString(R.string.notification_location_launching))
-        .setSmallIcon(R.drawable.ic_stat_default)
-        .setContentIntent(NotificationReceiver.openMaps(this))
-        .build()
+    private fun notifyLaunch() =
+        NotificationCompat.Builder(
+            this,
+            Notifications.CHANNEL_TRACKING_BUS,
+        ).setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .setContentTitle(getString(R.string.notification_location_launching))
+            .setSmallIcon(R.drawable.ic_stat_default)
+            .setContentIntent(NotificationReceiver.openMaps(this))
+            .build()
 
     private fun notify(busNum: Int): Notification {
         return NotificationCompat.Builder(

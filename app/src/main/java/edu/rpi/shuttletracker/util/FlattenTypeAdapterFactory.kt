@@ -23,14 +23,21 @@ annotation class Flatten(val path: String)
  * Got from https://stackoverflow.com/a/70074686
  */
 open class FlattenTypeAdapterFactory : TypeAdapterFactory {
-    override fun <T> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T> {
+    override fun <T> create(
+        gson: Gson,
+        type: TypeToken<T>,
+    ): TypeAdapter<T> {
         val delegateAdapter = gson.getDelegateAdapter(this, type)
         val defaultAdapter =
             gson.getAdapter(JsonElement::class.java)
         val cache: List<FlattenCacheItem> =
             buildCache(type.rawType, gson)
         return object : TypeAdapter<T>() {
-            private fun setElement(root: JsonObject, path: Array<String?>, data: JsonElement) {
+            private fun setElement(
+                root: JsonObject,
+                path: Array<String?>,
+                data: JsonElement,
+            ) {
                 var element: JsonElement? = root
                 for (i in 0 until path.size - 1) {
                     // If the path element looks like a number..
@@ -41,12 +48,12 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
                     }
 
                     // Get the next object in the chain if it exists already
-                    var `object`: JsonElement? = null
+                    var jsonElement: JsonElement? = null
                     if (element is JsonObject) {
-                        `object` = element[path[i]]
+                        jsonElement = element[path[i]]
                     } else if (element is JsonArray && index != null) {
                         if (index >= 0 && index < element.size()) {
-                            `object` = element[index]
+                            jsonElement = element[index]
                         }
                     } else {
                         // Failure. We can't walk any further - we don't know
@@ -55,15 +62,16 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
                     }
 
                     // Object didn't exist in the output already. Create it.
-                    if (`object` == null || `object` == JsonNull.INSTANCE) {
+                    if (jsonElement == null || jsonElement == JsonNull.INSTANCE) {
                         // The next element in the chain is an array
-                        `object` = if (path[i + 1]!!.matches("^\\d+$".toRegex())) {
-                            JsonArray()
-                        } else {
-                            JsonObject()
-                        }
+                        jsonElement =
+                            if (path[i + 1]!!.matches("^\\d+$".toRegex())) {
+                                JsonArray()
+                            } else {
+                                JsonObject()
+                            }
                         if (element is JsonObject) {
-                            element.add(path[i], `object`)
+                            element.add(path[i], jsonElement)
                         } else if (index != null) {
                             element as JsonArray
                             val array = element
@@ -72,10 +80,10 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
                             while (array.size() <= index) {
                                 array.add(JsonNull.INSTANCE)
                             }
-                            array[index] = `object`
+                            array[index] = jsonElement
                         }
                     }
-                    element = `object`
+                    element = jsonElement
                 }
                 if (element is JsonObject) {
                     element.add(path[path.size - 1], data)
@@ -85,16 +93,19 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
             }
 
             @Throws(IOException::class)
-            override fun write(out: JsonWriter, value: T) {
+            override fun write(
+                out: JsonWriter,
+                value: T,
+            ) {
                 var res = delegateAdapter.toJsonTree(value)
                 if (res.isJsonObject) {
-                    val `object` = res.asJsonObject
+                    val jsonObject = res.asJsonObject
                     for (cacheItem in cache) {
-                        val data = `object`[cacheItem.name]
-                        `object`.remove(cacheItem.name)
-                        setElement(`object`, cacheItem.path, data)
+                        val data = jsonObject[cacheItem.name]
+                        jsonObject.remove(cacheItem.name)
+                        setElement(jsonObject, cacheItem.path, data)
                     }
-                    res = `object`
+                    res = jsonObject
                 }
                 gson.toJson(res, out)
             }
@@ -112,13 +123,14 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
                             if (element!!.isJsonObject) {
                                 element = element!!.asJsonObject[s]
                             } else if (element!!.isJsonArray) {
-                                element = try {
-                                    element!!.asJsonArray[Integer.valueOf(s)]
-                                } catch (e: NumberFormatException) {
-                                    null
-                                } catch (e: IndexOutOfBoundsException) {
-                                    null
-                                }
+                                element =
+                                    try {
+                                        element!!.asJsonArray[Integer.valueOf(s)]
+                                    } catch (e: NumberFormatException) {
+                                        null
+                                    } catch (e: IndexOutOfBoundsException) {
+                                        null
+                                    }
                             } else {
                                 element = null
                                 break
@@ -137,12 +149,16 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
         }.nullSafe()
     }
 
-    private fun buildCache(root: Class<*>, gson: Gson): ArrayList<FlattenCacheItem> {
+    private fun buildCache(
+        root: Class<*>,
+        gson: Gson,
+    ): ArrayList<FlattenCacheItem> {
         val cache = ArrayList<FlattenCacheItem>()
-        val fields = getAnnotatedFields(
-            root,
-            Flatten::class.java,
-        )
+        val fields =
+            getAnnotatedFields(
+                root,
+                Flatten::class.java,
+            )
         if (fields.isEmpty()) {
             return cache
         }
@@ -154,10 +170,11 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
             flatten = field.getAnnotation(Flatten::class.java)!!
             path = flatten.path
             val name = fieldNamingStrategy.translateName(field)
-            cacheItem = FlattenCacheItem(
-                path.split("::".toRegex()).toTypedArray(),
-                name,
-            )
+            cacheItem =
+                FlattenCacheItem(
+                    path.split("::".toRegex()).toTypedArray(),
+                    name,
+                )
             // check path
             for (i in 0 until cacheItem.path.size - 1) {
                 if (cacheItem.path[i] == null || cacheItem.path[i]!!.length == 0) {

@@ -6,10 +6,10 @@ import edu.rpi.shuttletracker.data.models.AnalyticsFactory
 import javax.inject.Inject
 
 @HiltViewModel
-class AnalyticsViewModel @Inject constructor(
-    private val analyticsFactory: AnalyticsFactory,
-) : ViewModel() {
-
-    fun getAnalytics() =
-        analyticsFactory.build(true)
-}
+class AnalyticsViewModel
+    @Inject
+    constructor(
+        private val analyticsFactory: AnalyticsFactory,
+    ) : ViewModel() {
+        fun getAnalytics() = analyticsFactory.build(true)
+    }
