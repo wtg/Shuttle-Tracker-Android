@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -73,7 +74,7 @@ fun ScheduleScreen(
                 title = { Text(text = stringResource(R.string.schedule)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,

@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Done
@@ -182,7 +183,7 @@ fun SetupScreen(
                                 Icon(Icons.Outlined.Done, stringResource(R.string.complete_setup))
                             } else {
                                 Icon(
-                                    Icons.Outlined.ArrowForward,
+                                    Icons.AutoMirrored.Outlined.ArrowForward,
                                     stringResource(R.string.next_page),
                                 )
                             }

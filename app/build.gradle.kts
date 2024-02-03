@@ -3,12 +3,12 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("com.mikepenz.aboutlibraries.plugin")
     id("com.google.gms.google-services")
     id("org.jlleitschuh.gradle.ktlint")
+    id("kotlin-kapt")
 }
 
 android {

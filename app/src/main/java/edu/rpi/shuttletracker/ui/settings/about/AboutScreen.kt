@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.DirectionsBus
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -64,7 +65,7 @@ fun AboutScreen(
                 title = { Text(text = stringResource(R.string.about)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -105,7 +106,7 @@ fun AboutScreen(
             )
 
             SettingsItem(
-                icon = Icons.Outlined.Subject,
+                icon = Icons.Outlined.Description,
                 title = stringResource(R.string.libraries_used),
                 onClick = { navigator.navigate(LibrariesScreenDestination()) },
             )

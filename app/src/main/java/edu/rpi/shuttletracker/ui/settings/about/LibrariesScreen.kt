@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.ui.settings.about
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,7 +39,7 @@ fun LibrariesScreen(navigator: DestinationsNavigator) {
                 title = { Text(text = stringResource(R.string.libraries_used)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
