@@ -38,7 +38,8 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
                 path: Array<String?>,
                 data: JsonElement,
             ) {
-                var element: JsonElement? = root
+                var element: JsonElement = root
+
                 for (i in 0 until path.size - 1) {
                     // If the path element looks like a number..
                     var index: Int? = null
@@ -103,10 +104,17 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
                     for (cacheItem in cache) {
                         val data = jsonObject[cacheItem.name]
                         jsonObject.remove(cacheItem.name)
+
+                        /** Ignores null values
+                         * mostly used for analytics as some values don't want to be passed
+                         * */
+                        if (data.isJsonNull) continue
+
                         setElement(jsonObject, cacheItem.path, data)
                     }
                     res = jsonObject
                 }
+
                 gson.toJson(res, out)
             }
 
@@ -125,7 +133,7 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
                             } else if (element!!.isJsonArray) {
                                 element =
                                     try {
-                                        element!!.asJsonArray[Integer.valueOf(s)]
+                                        element!!.asJsonArray[Integer.valueOf(s!!)]
                                     } catch (e: NumberFormatException) {
                                         null
                                     } catch (e: IndexOutOfBoundsException) {
@@ -177,12 +185,12 @@ open class FlattenTypeAdapterFactory : TypeAdapterFactory {
                 )
             // check path
             for (i in 0 until cacheItem.path.size - 1) {
-                if (cacheItem.path[i] == null || cacheItem.path[i]!!.length == 0) {
+                if (cacheItem.path[i] == null || cacheItem.path[i]!!.isEmpty()) {
                     throw RuntimeException("Intermediate path items cannot be empty, found $path")
                 }
             }
             val i = cacheItem.path.size - 1
-            if (cacheItem.path[i] == null || cacheItem.path[i]!!.length == 0) {
+            if (cacheItem.path[i] == null || cacheItem.path[i]!!.isEmpty()) {
                 cacheItem.path[i] = cacheItem.name
             }
             cache.add(cacheItem)

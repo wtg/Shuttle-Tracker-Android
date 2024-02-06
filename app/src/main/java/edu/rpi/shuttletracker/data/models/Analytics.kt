@@ -34,8 +34,31 @@ data class Analytics(
     val logging: Boolean,
     @Flatten("userSettings::serverBaseURL")
     val serverBaseURL: String,
-    @Flatten("eventType::boardBusActivated::manual")
-    val boardBusActivatedManual: Boolean,
+    @SerializedName("eventType")
+    val event: Event,
+)
+
+/**
+ * https://github.com/wtg/Shuttle-Tracker-Server/wiki/Analytics#android
+ * */
+data class Event(
+    @Flatten("colorBlindToggled::enabled")
+    val colorBlindToggled: Boolean? = null,
+    @Flatten("boardBusActivated::manual")
+    val boardBusActivatedManual: Boolean? = null,
+    @Flatten("boardBusDeactivated::manual")
+    val boardBusDeactivatedManual: Boolean? = null,
+    @Flatten("announcementViewed::id")
+    val announcementViewed: String? = null,
+    // THIS IS NOT PLANNED ON BEING USED
+    @Flatten("debugModeToggled::enabled")
+    val debugModeTogged: Boolean? = null,
+    @Flatten("serverBaseURLChanged::url")
+    val serverBaseURL: String? = null,
+    @Flatten("locationAuthorizationStatusDidChange::authorizationStatus")
+    val locationAuthorizationStatusChanged: Int? = null,
+    @Flatten("locationAccuracyAuthorizationDidChange::accuracyAuthorization")
+    val locationAccuracyAuthorizationDidChange: Int? = null,
 )
 
 /**
@@ -58,7 +81,7 @@ class AnalyticsFactory
                 colorBlindMode = runBlocking { userPreferencesRepository.getColorBlindMode().first() },
                 logging = false,
                 serverBaseURL = runBlocking { userPreferencesRepository.getBaseUrl().first() },
-                boardBusActivatedManual = boardBusActivatedManual,
+                event = Event(boardBusActivatedManual = boardBusActivatedManual),
             )
 
         companion object {
