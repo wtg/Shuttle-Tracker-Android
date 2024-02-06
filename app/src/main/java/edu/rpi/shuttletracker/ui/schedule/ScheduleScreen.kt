@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,6 +36,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
+import java.util.Calendar
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Destination
@@ -95,6 +97,9 @@ fun ScheduleScreen(
 
 @Composable
 fun SchedulePagerItem(schedule: Schedule) {
+    val calendar = Calendar.getInstance()
+    val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize(),
@@ -106,23 +111,65 @@ fun SchedulePagerItem(schedule: Schedule) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             Column {
-                Text(text = stringResource(R.string.monday))
-                Text(text = stringResource(R.string.tuesday))
-                Text(text = stringResource(R.string.wednesday))
-                Text(text = stringResource(R.string.thursday))
-                Text(text = stringResource(R.string.friday))
-                Text(text = stringResource(R.string.saturday))
-                Text(text = stringResource(R.string.sunday))
+                Text(
+                    text = stringResource(R.string.monday),
+                    fontWeight = if (dayOfWeek == Calendar.MONDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = stringResource(R.string.tuesday),
+                    fontWeight = if (dayOfWeek == Calendar.TUESDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = stringResource(R.string.wednesday),
+                    fontWeight = if (dayOfWeek == Calendar.WEDNESDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = stringResource(R.string.thursday),
+                    fontWeight = if (dayOfWeek == Calendar.THURSDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = stringResource(R.string.friday),
+                    fontWeight = if (dayOfWeek == Calendar.FRIDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = stringResource(R.string.saturday),
+                    fontWeight = if (dayOfWeek == Calendar.SATURDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = stringResource(R.string.sunday),
+                    fontWeight = if (dayOfWeek == Calendar.SUNDAY) FontWeight.Bold else null,
+                )
             }
 
             Column {
-                Text(text = schedule.monday.toString())
-                Text(text = schedule.tuesday.toString())
-                Text(text = schedule.wednesday.toString())
-                Text(text = schedule.thursday.toString())
-                Text(text = schedule.friday.toString())
-                Text(text = schedule.saturday.toString())
-                Text(text = schedule.sunday.toString())
+                Text(
+                    text = schedule.monday.toString(),
+                    fontWeight = if (dayOfWeek == Calendar.MONDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = schedule.tuesday.toString(),
+                    fontWeight = if (dayOfWeek == Calendar.TUESDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = schedule.wednesday.toString(),
+                    fontWeight = if (dayOfWeek == Calendar.WEDNESDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = schedule.thursday.toString(),
+                    fontWeight = if (dayOfWeek == Calendar.THURSDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = schedule.friday.toString(),
+                    fontWeight = if (dayOfWeek == Calendar.FRIDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = schedule.saturday.toString(),
+                    fontWeight = if (dayOfWeek == Calendar.SATURDAY) FontWeight.Bold else null,
+                )
+                Text(
+                    text = schedule.sunday.toString(),
+                    fontWeight = if (dayOfWeek == Calendar.SUNDAY) FontWeight.Bold else null,
+                )
             }
         }
 

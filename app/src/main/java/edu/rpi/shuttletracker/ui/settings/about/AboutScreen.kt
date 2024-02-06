@@ -123,10 +123,19 @@ fun AboutScreen(
 
                     timesClicked--
                     if (timesClicked == 0) {
-                        toast = Toast.makeText(context, context.getString(R.string.dev_options_activated), Toast.LENGTH_SHORT)
+                        toast =
+                            Toast.makeText(
+                                context, context.getString(R.string.dev_options_activated),
+                                Toast.LENGTH_SHORT,
+                            )
                         viewModel.activateDevOptions()
                     } else if (timesClicked in 1..3) {
-                        toast = Toast.makeText(context, context.getString(R.string.dev_options_state, timesClicked), Toast.LENGTH_SHORT)
+                        toast =
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.dev_options_state, timesClicked),
+                                Toast.LENGTH_SHORT,
+                            )
                     }
 
                     toast?.show()

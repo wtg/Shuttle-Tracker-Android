@@ -36,7 +36,8 @@ class ApiHelperImpl
 
         override suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse> = apiService.getAllBuses()
 
-        override suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse> = apiService.getAnnouncements()
+        override suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse> =
+            apiService.getAnnouncements()
 
         override suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse> = apiService.getSchedule()
 

@@ -16,6 +16,11 @@ import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
 
+/**
+ * To create a new preference (setting item)
+ * add a new static key with the name of the key in snake case
+ * Then create a setter and getter for the value, giving it a default value in the getter
+ * */
 class UserPreferencesRepository
     @Inject
     constructor(
