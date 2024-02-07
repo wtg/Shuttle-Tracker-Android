@@ -35,19 +35,21 @@ data class Analytics(
     @Flatten("userSettings::serverBaseURL")
     val serverBaseURL: String,
     @SerializedName("eventType")
-    val event: Event,
+    val event: Event?,
 )
 
 /**
  * https://github.com/wtg/Shuttle-Tracker-Server/wiki/Analytics#android
  * */
 data class Event(
-    @Flatten("colorBlindToggled::enabled")
-    val colorBlindToggled: Boolean? = null,
+    @Flatten("colorBlindModeToggled::enabled")
+    val colorBlindModeToggled: Boolean? = null,
     @Flatten("boardBusActivated::manual")
     val boardBusActivatedManual: Boolean? = null,
+    // IMPLEMENTED BESIDES CANCEL ON MAIN SCREEN
     @Flatten("boardBusDeactivated::manual")
     val boardBusDeactivatedManual: Boolean? = null,
+    // NOT IMPLEMENTED YET
     @Flatten("announcementViewed::id")
     val announcementViewed: String? = null,
     // THIS IS NOT PLANNED ON BEING USED
@@ -55,11 +57,35 @@ data class Event(
     val debugModeTogged: Boolean? = null,
     @Flatten("serverBaseURLChanged::url")
     val serverBaseURL: String? = null,
+    // THIS IS NOT PLANNED ON BEING USED
     @Flatten("locationAuthorizationStatusDidChange::authorizationStatus")
     val locationAuthorizationStatusChanged: Int? = null,
+    // THIS IS NOT PLANNED ON BEING USED
     @Flatten("locationAccuracyAuthorizationDidChange::accuracyAuthorization")
     val locationAccuracyAuthorizationDidChange: Int? = null,
+    @Flatten("coldLaunch")
+    val coldLaunch: EmptyEvent? = null,
+    // NOT IMPLEMENTED YET
+    @Flatten("boardBusTapped")
+    val boardBusTapped: EmptyEvent? = null,
+    // NOT IMPLEMENTED YET
+    @Flatten("leaveBusTapped")
+    val leaveBusTapped: EmptyEvent? = null,
+    // NOT IMPLEMENTED YET
+    @Flatten("busSelectionCanceled")
+    val busSelectionCanceled: EmptyEvent? = null,
+    @Flatten("announcementsListOpened")
+    val announcementsListOpened: EmptyEvent? = null,
+    // THIS IS NOT PLANNED ON BEING USED
+    @Flatten("permissionsSheetOpened")
+    val permissionsSheetOpened: EmptyEvent? = null,
 )
+
+/**
+ * Just an empty object to pass an empty {} json
+ * Since null gets removed
+ * */
+object EmptyEvent
 
 /**
  * This must be @Inject into a @AndroidEntryPoint to be used
@@ -69,7 +95,7 @@ class AnalyticsFactory
     constructor(
         private val userPreferencesRepository: UserPreferencesRepository,
     ) {
-        fun build(boardBusActivatedManual: Boolean): Analytics =
+        fun build(event: Event? = null): Analytics =
             Analytics(
                 id = UUID.randomUUID().toString(),
                 userID = runBlocking { userPreferencesRepository.getUserId() },
@@ -81,7 +107,7 @@ class AnalyticsFactory
                 colorBlindMode = runBlocking { userPreferencesRepository.getColorBlindMode().first() },
                 logging = false,
                 serverBaseURL = runBlocking { userPreferencesRepository.getBaseUrl().first() },
-                event = Event(boardBusActivatedManual = boardBusActivatedManual),
+                event = event,
             )
 
         companion object {

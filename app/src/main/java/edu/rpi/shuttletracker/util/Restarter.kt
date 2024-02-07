@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.util
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.services.BeaconService
@@ -14,7 +15,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class Restarter : BroadcastReceiver() {
     @Inject
-    lateinit var userPreferencesRepository: UserPreferencesRepository
+    lateinit var userPreferencesRepository: Lazy<UserPreferencesRepository>
 
     override fun onReceive(
         context: Context,
@@ -28,7 +29,7 @@ class Restarter : BroadcastReceiver() {
 
     private fun startBeaconService(context: Context) {
         runBlocking(Dispatchers.IO) {
-            if (userPreferencesRepository.getAutoBoardService().first()) {
+            if (userPreferencesRepository.get().getAutoBoardService().first()) {
                 context.startForegroundService(Intent(context, BeaconService::class.java))
             }
         }

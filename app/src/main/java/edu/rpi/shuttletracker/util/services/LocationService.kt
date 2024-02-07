@@ -24,6 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.AnalyticsFactory
 import edu.rpi.shuttletracker.data.models.BoardBus
+import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
@@ -33,7 +34,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -144,14 +144,10 @@ class LocationService : Service() {
 
         runBlocking { userPreferencesRepository.incrementBoardBusCount() }
 
-        val analytics = runBlocking { analyticsFactory.build(startedManual) }
-
         val uuid = UUID.randomUUID().toString()
 
         serviceScope.launch {
-            if (userPreferencesRepository.getAllowAnalytics().first()) {
-                apiRepository.addAnalytics(analytics)
-            }
+            apiRepository.sendAnalytics(Event(boardBusActivatedManual = startedManual))
         }
 
         // change in location
@@ -169,6 +165,7 @@ class LocationService : Service() {
                             if (System.currentTimeMillis() - startTime >=
                                 TimeUnit.MINUTES.toMillis(20)
                             ) {
+                                apiRepository.sendAnalytics(Event(boardBusActivatedManual = false))
                                 stopSelf()
                             }
                         }

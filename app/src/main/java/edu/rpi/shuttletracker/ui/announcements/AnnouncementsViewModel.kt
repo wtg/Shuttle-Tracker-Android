@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.Announcement
+import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.ErrorResponse
+import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +29,7 @@ class AnnouncementsViewModel
 
         init {
             loadAll()
+            viewModelScope.launch { apiRepository.sendAnalytics(Event(announcementsListOpened = EmptyEvent)) }
         }
 
         fun loadAll() {

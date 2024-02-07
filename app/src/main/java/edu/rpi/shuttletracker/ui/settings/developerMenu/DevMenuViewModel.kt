@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,13 +38,13 @@ class DevMenuViewModel
         }
 
         fun updateBaseUrl(baseUrl: String) {
-            runBlocking {
+            viewModelScope.launch {
                 userPreferencesRepository.saveBaseUrl(baseUrl)
             }
         }
 
         fun updateAutoBoardServiceBlocking(autoBoardService: Boolean) {
-            runBlocking {
+            viewModelScope.launch {
                 userPreferencesRepository.saveAutoBoardService(autoBoardService)
             }
         }

@@ -11,5 +11,5 @@ class AnalyticsViewModel
     constructor(
         private val analyticsFactory: AnalyticsFactory,
     ) : ViewModel() {
-        fun getAnalytics() = analyticsFactory.build(true)
+        fun getAnalytics() = analyticsFactory.build()
     }

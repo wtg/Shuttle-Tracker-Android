@@ -1,14 +1,21 @@
 package edu.rpi.shuttletracker.data.repositories
 
-import edu.rpi.shuttletracker.data.models.Analytics
+import com.haroldadmin.cnradapter.NetworkResponse
+import dagger.Lazy
+import edu.rpi.shuttletracker.data.models.AnalyticsFactory
 import edu.rpi.shuttletracker.data.models.BoardBus
+import edu.rpi.shuttletracker.data.models.ErrorResponse
+import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.network.ApiHelperImpl
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class ApiRepository
     @Inject
     constructor(
         private val apiHelper: ApiHelperImpl,
+        private val userPreferencesRepository: Lazy<UserPreferencesRepository>,
+        private val analyticsFactory: AnalyticsFactory,
     ) {
         suspend fun getRunningBuses() = apiHelper.getRunningBuses()
 
@@ -27,7 +34,12 @@ class ApiRepository
 
         suspend fun getSchedule() = apiHelper.getSchedule()
 
-        suspend fun addAnalytics(analytics: Analytics) = apiHelper.addAnalytics(analytics)
+        suspend fun sendAnalytics(event: Event): NetworkResponse<Unit, ErrorResponse>? {
+            if (!userPreferencesRepository.get().getAllowAnalytics().first()) return null
+
+            val analytics = analyticsFactory.build(event)
+            return apiHelper.addAnalytics(analytics)
+        }
 
         suspend fun sendRegistrationToken(token: String) = apiHelper.sendRegistrationToken(token)
     }
