@@ -132,8 +132,6 @@ class UserPreferencesRepository
             dataStore.edit {
                 it[BASE_URL] = url
             }
-
-            apiRepository.get().sendAnalytics(Event(serverBaseURL = url))
         }
 
         suspend fun getBoardBusCount(): Int =

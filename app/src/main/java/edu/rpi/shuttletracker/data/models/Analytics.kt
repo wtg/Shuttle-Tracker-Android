@@ -49,7 +49,7 @@ data class Event(
     // IMPLEMENTED BESIDES CANCEL ON MAIN SCREEN
     @Flatten("boardBusDeactivated::manual")
     val boardBusDeactivatedManual: Boolean? = null,
-    // NOT IMPLEMENTED YET
+    // THIS IS NOT PLANNED ON BEING USED
     @Flatten("announcementViewed::id")
     val announcementViewed: String? = null,
     // THIS IS NOT PLANNED ON BEING USED
@@ -65,13 +65,10 @@ data class Event(
     val locationAccuracyAuthorizationDidChange: Int? = null,
     @Flatten("coldLaunch")
     val coldLaunch: EmptyEvent? = null,
-    // NOT IMPLEMENTED YET
     @Flatten("boardBusTapped")
     val boardBusTapped: EmptyEvent? = null,
-    // NOT IMPLEMENTED YET
     @Flatten("leaveBusTapped")
     val leaveBusTapped: EmptyEvent? = null,
-    // NOT IMPLEMENTED YET
     @Flatten("busSelectionCanceled")
     val busSelectionCanceled: EmptyEvent? = null,
     @Flatten("announcementsListOpened")

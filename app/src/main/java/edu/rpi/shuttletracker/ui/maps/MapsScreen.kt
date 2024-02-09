@@ -143,7 +143,9 @@ fun MapsScreen(
                     SnackbarResult.ActionPerformed -> {
                         navigator.navigate(SetupScreenDestination())
                     }
-                    SnackbarResult.Dismissed -> { /* IGNORED */ }
+
+                    SnackbarResult.Dismissed -> { // IGNORED
+                    }
                 }
             }
         }
@@ -163,6 +165,9 @@ fun MapsScreen(
                     mapsUiState.allBuses,
                     viewModel::closestDistanceToStop,
                     mapsUiState.minStopDist,
+                    viewModel::leaveBusPressed,
+                    viewModel::boardBusPressed,
+                    viewModel::busSelectionCanceled,
                 )
             }
         },
@@ -413,6 +418,9 @@ fun BoardBusFab(
     buses: List<Int>,
     checkDistanceToStop: (location: Location) -> Float,
     minStopDist: Float,
+    leaveBusPressed: () -> Unit,
+    boardBusPressed: () -> Unit,
+    busSectionCanceled: () -> Unit,
 ) {
     val locationServiceBusNumber = LocationService.busNum.collectAsStateWithLifecycle().value
     val context = LocalContext.current
@@ -429,8 +437,12 @@ fun BoardBusFab(
                         putExtra(LocationService.BUNDLE_BUS_ID, it)
                     }
                 context.startForegroundService(intent)
+                boardBusPressed()
             },
-            onDismiss = { busPickerState = false },
+            onDismiss = {
+                busPickerState = false
+                busSectionCanceled()
+            },
         )
     }
 
@@ -438,6 +450,7 @@ fun BoardBusFab(
         onClick = {
             if (locationServiceBusNumber != null) {
                 context.stopService(Intent(context, LocationService::class.java))
+                leaveBusPressed()
             } else {
                 LocationServices.getFusedLocationProviderClient(context).lastLocation
                     .addOnSuccessListener { location: Location? ->

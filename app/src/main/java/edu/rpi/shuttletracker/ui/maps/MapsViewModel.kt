@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.Bus
+import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.ErrorResponse
+import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
@@ -226,14 +228,35 @@ class MapsViewModel
                     _mapsUiState.update {
                         it.copy(serverError = response)
                     }
+
                 is NetworkResponse.NetworkError ->
                     _mapsUiState.update {
                         it.copy(networkError = response)
                     }
+
                 is NetworkResponse.UnknownError ->
                     _mapsUiState.update {
                         it.copy(unknownError = response)
                     }
+            }
+        }
+
+        fun leaveBusPressed() {
+            viewModelScope.launch {
+                apiRepository.sendAnalytics(Event(boardBusDeactivatedManual = true))
+                apiRepository.sendAnalytics(Event(leaveBusTapped = EmptyEvent))
+            }
+        }
+
+        fun boardBusPressed() {
+            viewModelScope.launch {
+                apiRepository.sendAnalytics(Event(boardBusTapped = EmptyEvent))
+            }
+        }
+
+        fun busSelectionCanceled() {
+            viewModelScope.launch {
+                apiRepository.sendAnalytics(Event(busSelectionCanceled = EmptyEvent))
             }
         }
     }

@@ -3,11 +3,14 @@ package edu.rpi.shuttletracker.ui.settings.developerMenu
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.rpi.shuttletracker.data.models.Event
+import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -15,6 +18,7 @@ class DevMenuViewModel
     @Inject
     constructor(
         private val userPreferencesRepository: UserPreferencesRepository,
+        private val apiRepository: ApiRepository,
     ) : ViewModel() {
         val devMenuUiState =
             combine(
@@ -37,14 +41,24 @@ class DevMenuViewModel
             }
         }
 
+        /**
+         * MAKE SURE THIS IS BLOCKING OR ELSE STUFF BREAKS
+         * */
         fun updateBaseUrl(baseUrl: String) {
             viewModelScope.launch {
+                apiRepository.sendAnalytics(Event(serverBaseURL = baseUrl))
+            }
+
+            runBlocking {
                 userPreferencesRepository.saveBaseUrl(baseUrl)
             }
         }
 
+        /**
+         * MAKE SURE THIS IS BLOCKING OR ELSE STUFF BREAKS
+         * */
         fun updateAutoBoardServiceBlocking(autoBoardService: Boolean) {
-            viewModelScope.launch {
+            runBlocking {
                 userPreferencesRepository.saveAutoBoardService(autoBoardService)
             }
         }
