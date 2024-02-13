@@ -160,6 +160,8 @@ class BeaconService : Service() {
                 }
 
                 val closestId = closest.id2.toInt()
+                // TODO THis should be tested with an actual negative beacon
+                val minor = closest.id3.toInt()
                 notFoundFor = System.currentTimeMillis()
 
                 if (LocationService.busNum.value == closestId) {
@@ -168,7 +170,10 @@ class BeaconService : Service() {
 
                 val serviceIntent =
                     Intent(this, LocationService::class.java).apply {
-                        putExtra(LocationService.BUNDLE_BUS_ID, closestId)
+                        // TODO THIS SHOULD be tested with an actual negative beacon
+                        val busId = if (closestId == 0) minor * -1 else closestId
+
+                        putExtra(LocationService.BUNDLE_BUS_ID, busId)
                         putExtra(LocationService.STARTED_MANUAL, false)
                     }
 

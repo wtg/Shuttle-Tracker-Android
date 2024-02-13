@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.util.services
 import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,6 +20,7 @@ import javax.inject.Inject
 class FirebaseService : FirebaseMessagingService() {
     @Inject
     lateinit var apiRepository: ApiRepository
+
     private val job = SupervisorJob()
 
     override fun onNewToken(token: String) {
@@ -58,5 +60,9 @@ class FirebaseService : FirebaseMessagingService() {
     override fun onDestroy() {
         job.cancel()
         super.onDestroy()
+    }
+
+    companion object {
+        fun retrieveToken() = FirebaseMessaging.getInstance().token
     }
 }
