@@ -98,6 +98,7 @@ import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
 fun MapsScreen(
@@ -113,6 +114,12 @@ fun MapsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val context = LocalContext.current
+
+    var bottomSheetLoaded by remember { mutableStateOf<Stop?>(null) }
+    DeparturesBottomSheet(
+        stop = bottomSheetLoaded,
+        changeStopLoaded = { bottomSheetLoaded = it },
+    )
 
     // finds errors when requesting data to server
     CheckResponseError(
@@ -173,7 +180,9 @@ fun MapsScreen(
         },
     ) { padding ->
 
-        BusMap(mapsUIState = mapsUiState, padding = padding)
+        BusMap(mapsUIState = mapsUiState, padding = padding, bottomSheetOnChange = {
+            bottomSheetLoaded = it
+        })
 
         Box(
             modifier =
@@ -220,6 +229,7 @@ fun MapsScreen(
 fun BusMap(
     mapsUIState: MapsUIState,
     padding: PaddingValues,
+    bottomSheetOnChange: (Stop?) -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -276,7 +286,7 @@ fun BusMap(
     ) {
         // creates the stops
         mapsUIState.stops.forEach {
-            StopMarker(stop = it)
+            StopMarker(stop = it, selectedStopChanged = bottomSheetOnChange)
         }
 
         // creates the bus markers
@@ -350,7 +360,10 @@ fun BusMap(
  * Creates a marker for a stop
  * */
 @Composable
-fun StopMarker(stop: Stop) {
+fun StopMarker(
+    stop: Stop,
+    selectedStopChanged: (Stop?) -> Unit,
+) {
     val markerState = rememberMarkerState(stop.name, stop.latLng())
     val icon = BitmapDescriptorFactory.fromAsset(stringResource(R.string.simple_circle))
     Marker(
@@ -359,6 +372,7 @@ fun StopMarker(stop: Stop) {
         icon = icon,
         onClick = {
             it.showInfoWindow()
+            selectedStopChanged(stop)
             true
         },
     )

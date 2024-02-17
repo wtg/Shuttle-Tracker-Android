@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,11 +23,8 @@ class MainActivity : ComponentActivity() {
     lateinit var apiRepository: ApiRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
             apiRepository.sendAnalytics(Event(coldLaunch = EmptyEvent))
