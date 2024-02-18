@@ -4,35 +4,38 @@ accompanist-systemuicontroller = "0.34.0"
 activity-compose = "1.8.2"
 android-beacon-library = "2.20.4"
 androidx-junit = "1.1.5"
-core = "1.10.0"
+core = "1.10.1"
 core-ktx = "1.12.0"
 datastore-preferences = "1.0.0"
 espresso-core = "3.5.1"
 
 
-firebase-analytics = "21.5.0"
-firebase-bom = "32.7.1"
-firebase-messaging = "23.4.0"
-google-service = "4.4.0"
+firebase-analytics = "21.5.1"
+firebase-bom = "32.7.2"
+firebase-messaging = "23.4.1"
+google-service = "4.4.1"
 
 
-google-services = "4.4.0"
+google-services = "4.4.1"
 hilt = "2.50"
 hilt-navigation-compose = "1.1.0"
 junit = "4.13.2"
 lifecycle-runtime-ktx = "2.7.0"
 logging-interceptor = "4.12.0"
 maps-compose = "4.3.2"
-material-icons-extended = "1.6.0"
-material3 = "1.1.2"
+material-icons-extended = "1.6.1"
+material3 = "1.2.0"
 network-respose = "5.0.0"
 play-services-location = "21.1.0"
 play-services-maps = "18.2.0"
 retrofit = "2.9.0"
-ui = "1.6.0"
+
+room-runtime = "2.6.1"
+
+ui = "1.6.1"
 work-runtime-ktx = "2.9.0"
 
-compose-bom = "2024.01.00"
+compose-bom = "2024.02.00"
 
 ksp = "1.9.22-1.0.17"
 android-gradle-plugin = "8.2.2"
@@ -64,6 +67,9 @@ androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = 
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons-extended" }
 androidx-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room-runtime" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room-runtime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
 androidx-ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "ui" }
 androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "ui" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "ui" }

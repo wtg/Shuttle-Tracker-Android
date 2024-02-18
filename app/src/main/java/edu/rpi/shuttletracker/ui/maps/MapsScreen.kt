@@ -98,7 +98,6 @@ import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
 fun MapsScreen(
@@ -118,7 +117,11 @@ fun MapsScreen(
     var bottomSheetLoaded by remember { mutableStateOf<Stop?>(null) }
     DeparturesBottomSheet(
         stop = bottomSheetLoaded,
+        departures = mapsUiState.stopDepartures,
         changeStopLoaded = { bottomSheetLoaded = it },
+        addDeparture = viewModel::addNewDeparture,
+        updateStopDestination = viewModel::selectBusDeparture,
+        deleteDeparture = viewModel::deleteDeparture,
     )
 
     // finds errors when requesting data to server

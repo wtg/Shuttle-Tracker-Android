@@ -6,18 +6,21 @@ import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.Bus
+import edu.rpi.shuttletracker.data.models.Departure
 import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
+import edu.rpi.shuttletracker.data.repositories.DeparturesRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -34,6 +37,7 @@ class MapsViewModel
     constructor(
         private val apiRepository: ApiRepository,
         userPreferencesRepository: UserPreferencesRepository,
+        private val departuresRepository: DeparturesRepository,
     ) : ViewModel() {
         // represents the ui state of the view
         private val _mapsUiState = MutableStateFlow(MapsUIState())
@@ -81,6 +85,9 @@ class MapsViewModel
                         it.copy(minStopDist = minStopDist)
                     }
                 }.launchIn(viewModelScope)
+
+            viewModelScope.launch {
+            }
         }
 
         /**
@@ -259,6 +266,37 @@ class MapsViewModel
                 apiRepository.sendAnalytics(Event(busSelectionCanceled = EmptyEvent))
             }
         }
+
+        /**
+         * Starts collecting changes from the database so when you add a new departure,
+         * it will be updated in the UI
+         * */
+        fun selectBusDeparture(stopName: String) {
+            viewModelScope.launch {
+                combine(
+                    _mapsUiState,
+                    departuresRepository.getDepartures(stopName),
+                ) { state, departures ->
+                    state.copy(stopDepartures = departures)
+                }.collect {
+                    _mapsUiState.value = it
+                }
+            }
+        }
+
+        fun addNewDeparture(departure: Departure) {
+            if (departure.days.isNotEmpty()) {
+                viewModelScope.launch {
+                    departuresRepository.insertDeparture(departure)
+                }
+            }
+        }
+
+        fun deleteDeparture(departure: Departure) {
+            viewModelScope.launch {
+                departuresRepository.deleteDeparture(departure)
+            }
+        }
     }
 
 /**
@@ -277,4 +315,5 @@ data class MapsUIState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val minStopDist: Float = 50f,
+    val stopDepartures: List<Departure> = listOf(),
 )

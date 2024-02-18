@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import androidx.room.Room
 import com.google.gson.GsonBuilder
 import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
 import dagger.Module
@@ -15,6 +16,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import edu.rpi.shuttletracker.data.database.ShuttleTrackerDatabase
 import edu.rpi.shuttletracker.data.network.ApiHelper
 import edu.rpi.shuttletracker.data.network.ApiService
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
@@ -130,4 +132,18 @@ object ShuttleTrackerModule {
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
             produceFile = { context.preferencesDataStoreFile(USER_PREFERENCES) },
         )
+
+    @Singleton
+    @Provides
+    fun databaseProvider(
+        @ApplicationContext app: Context,
+    ) = Room.databaseBuilder(
+        app,
+        ShuttleTrackerDatabase::class.java,
+        "st_db",
+    ).build()
+
+    @Singleton
+    @Provides
+    fun departureProvider(db: ShuttleTrackerDatabase) = db.departureDao()
 }

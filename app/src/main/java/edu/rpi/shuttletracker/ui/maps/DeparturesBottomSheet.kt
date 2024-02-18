@@ -10,17 +10,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
@@ -40,6 +42,10 @@ import edu.rpi.shuttletracker.data.models.Stop
 import java.time.LocalDateTime
 import java.util.Calendar
 
+/**
+ * gives you a pair of:
+ * Long name : Short name
+ * */
 private val daysOfWeek =
     listOf(
         "Sunday" to "U",
@@ -55,15 +61,26 @@ private val daysOfWeek =
 @Composable
 fun DeparturesBottomSheet(
     stop: Stop?,
+    departures: List<Departure>,
     changeStopLoaded: (Stop?) -> Unit,
+    addDeparture: (Departure) -> Unit,
+    updateStopDestination: (String) -> Unit,
+    deleteDeparture: (Departure) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState()
 
     if (stop != null) {
+        val departureToAdd by remember { mutableStateOf(getDefaultDeparture(stop)) }
+        updateStopDestination(stop.name)
+
         ModalBottomSheet(
             onDismissRequest = { changeStopLoaded(null) },
             sheetState = sheetState,
         ) {
+            /**
+             * Contains the stop title name
+             * and the departures that are scheduled
+             * */
             LazyColumn(
                 modifier =
                     Modifier
@@ -80,24 +97,39 @@ fun DeparturesBottomSheet(
                     )
                 }
 
-                item { Divider() }
+                item { HorizontalDivider() }
 
-                // TimePicker(state = timeState)
-                item {
-                    Text(text = "Departures")
+                /**
+                 * contains a message on what a departure is if there are no departures for that stop
+                 * or else it will show the list of departures
+                 * */
+                if (departures.isEmpty()) {
+                    item {
+                        Text(
+                            text =
+                                "Departures let you schedule notifications to let you know" +
+                                    " what buses are approaching a stop. " +
+                                    "Press the \"+\" to schedule one!",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                } else {
+                    item { Text(text = "Departures:") }
 
-                    Text(
-                        text =
-                            "Departures let you schedule notifications to let you know" +
-                                " what buses are approaching a stop. " +
-                                "Press the \"+\" to schedule one!",
-                        style = MaterialTheme.typography.labelSmall,
-                    )
+                    items(
+                        departures,
+                        key = { it.id },
+                    ) {
+                        TimeDateText(departure = it, addDeparture, deleteDeparture)
+                    }
                 }
-
-                item { Divider() }
             }
 
+            HorizontalDivider(modifier = Modifier.padding(top = 5.dp))
+
+            /**
+             * Selection to let you add a new departure
+             * */
             Row(
                 modifier =
                     Modifier
@@ -108,12 +140,12 @@ fun DeparturesBottomSheet(
                 Column {
                     Text(text = "New departure:", style = MaterialTheme.typography.labelSmall)
 
-                    TimeDateText(stop)
+                    TimeDateText(departureToAdd)
                 }
 
                 Button(
                     modifier = Modifier.align(Alignment.Bottom),
-                    onClick = { /*TODO*/ },
+                    onClick = { addDeparture(departureToAdd) },
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Add,
@@ -126,8 +158,18 @@ fun DeparturesBottomSheet(
     }
 }
 
+/**
+ * Shows the departure information with time and dates
+ * @param departure The departure you are modifying
+ * @param departureModified What to do when the departure information is modified and saved
+ * This defaults to doing nothing.
+ * */
 @Composable
-fun TimeDateText(departure: Departure) {
+fun TimeDateText(
+    departure: Departure,
+    departureModified: (Departure) -> Unit = {},
+    departureDeleted: (Departure) -> Unit = {},
+) {
     var timeChosen by remember { mutableStateOf(departure.getReadableTime()) }
 
     LaunchedEffect(departure.time) {
@@ -166,17 +208,25 @@ fun TimeDateText(departure: Departure) {
                         if (selected) return@mapIndexedNotNull index + 1
                         null
                     }
+
+                departureModified(departure)
+            },
+            onDelete = {
+                departureDeleted(it)
+                showTimePickerDialog = false
             },
         )
     }
 }
 
-@Composable
-fun TimeDateText(stop: Stop) {
+/**
+ * @param stop The stop you want the departure to be based on, used for the name
+ * @return Give you a departure with current time and day
+ * */
+fun getDefaultDeparture(stop: Stop): Departure {
     val calendar: Calendar = Calendar.getInstance()
     val day: Int = calendar.get(Calendar.DAY_OF_WEEK)
-    val departure = Departure(stop.name, listOf(day))
-    TimeDateText(departure = departure)
+    return Departure(stop.name, listOf(day))
 }
 
 /**
@@ -190,6 +240,7 @@ fun TimeDateDialog(
     departure: Departure,
     onDismiss: (Boolean) -> Unit,
     onSave: (Int, Int, List<Boolean>) -> Unit,
+    onDelete: (Departure) -> Unit,
 ) {
     val daysSelected = remember { mutableStateListOf(false, false, false, false, false, false, false) }
 
@@ -213,6 +264,11 @@ fun TimeDateDialog(
                 onDismiss(false)
             }) {
                 Text(text = "Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onDelete(departure) }) {
+                Text(text = "Delete")
             }
         },
         title = { Text(text = "Set a departure time") },
