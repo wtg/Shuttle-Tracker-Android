@@ -6,6 +6,7 @@ import androidx.core.app.NotificationChannelGroupCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_DEFAULT
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_LOW
+import androidx.core.app.NotificationManagerCompat.IMPORTANCE_HIGH
 import edu.rpi.shuttletracker.R
 
 
@@ -70,13 +71,13 @@ object Notifications {
                     CHANNEL_ANNOUNCEMENT,
                     IMPORTANCE_DEFAULT,
                     "Announcement",
-                ),
-//                buildNotificationChannel(
-//                    GROUP_TRACKER ,
-//                    CHANNEL_LEAVE_BUS,
-//                    NotificationChannelCompat,
-//                    "Leave bus",
-//                ),
+               ),
+                buildNotificationChannel(
+                    GROUP_TRACKER ,
+                    CHANNEL_LEAVE_BUS,
+                    IMPORTANCE_HIGH,
+                    "Leave bus",
+              ),
             ),
         )
     }
