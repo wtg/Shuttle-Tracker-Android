@@ -1,5 +1,11 @@
 package edu.rpi.shuttletracker.ui.maps
 
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.data.models.Departure
@@ -170,6 +177,7 @@ fun TimeDateText(
     departureModified: (Departure) -> Unit = {},
     departureDeleted: (Departure) -> Unit = {},
 ) {
+    val context = LocalContext.current
     var timeChosen by remember { mutableStateOf(departure.getReadableTime()) }
 
     LaunchedEffect(departure.time) {
@@ -208,6 +216,13 @@ fun TimeDateText(
                         if (selected) return@mapIndexedNotNull index + 1
                         null
                     }
+
+                val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmMgr.canScheduleExactAlarms()) {
+                    Toast.makeText(context, "Enable alarms for Shuttle Tracker", Toast.LENGTH_LONG).show()
+                    context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+                    return@TimeDateDialog
+                }
 
                 departureModified(departure)
             },

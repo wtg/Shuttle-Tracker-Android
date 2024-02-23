@@ -21,8 +21,16 @@ interface DepartureDao {
     )
     fun getDepartures(name: String): Flow<List<Departure>>
 
+    @Query(
+        """
+            SELECT * FROM departures
+            WHERE id == :id
+        """,
+    )
+    suspend fun getDeparture(id: Int): Departure?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertDeparture(departure: Departure)
+    suspend fun insertDeparture(departure: Departure): Long
 
     @Delete
     suspend fun deleteDeparture(departure: Departure)

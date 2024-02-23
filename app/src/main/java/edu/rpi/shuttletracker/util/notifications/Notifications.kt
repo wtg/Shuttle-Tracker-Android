@@ -22,6 +22,10 @@ object Notifications {
     const val CHANNEL_ANNOUNCEMENT = "announcement_channel"
     const val ID_ANNOUNCEMENT = 11
 
+    private const val GROUP_DEPARTURES = "group_departures"
+    const val CHANNEL_FIRING_DEPARTURES = "departure_alarm_channel"
+    const val ID_FIRING_DEPARTURE = 10000
+
     private val deprecatedChannels =
         listOf(
             "ShuttleTrackerRPI",
@@ -43,6 +47,10 @@ object Notifications {
                 buildNotificationChannelGroup(
                     GROUP_ANNOUNCEMENTS,
                     "Announcements",
+                ),
+                buildNotificationChannelGroup(
+                    GROUP_DEPARTURES,
+                    "Departures",
                 ),
             ),
         )
@@ -67,6 +75,12 @@ object Notifications {
                     CHANNEL_ANNOUNCEMENT,
                     IMPORTANCE_DEFAULT,
                     "Announcement",
+                ),
+                buildNotificationChannel(
+                    GROUP_DEPARTURES,
+                    CHANNEL_FIRING_DEPARTURES,
+                    IMPORTANCE_DEFAULT,
+                    "Firing departures",
                 ),
             ),
         )

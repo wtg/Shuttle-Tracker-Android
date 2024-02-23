@@ -1,12 +1,17 @@
 package edu.rpi.shuttletracker.data.models
 
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import edu.rpi.shuttletracker.util.alarms.AlarmReceiver
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.util.Calendar
 
 @Entity(tableName = "departures")
 data class Departure(
@@ -28,10 +33,46 @@ data class Departure(
         return busDate.format(outputFormatter)
     }
 
+    private fun getMinute(): Int = LocalDateTime.parse(time).minute
+
+    private fun getHour(): Int = LocalDateTime.parse(time).hour
+
     fun setTime(
         hour: Int,
         minute: Int,
     ) {
         time = LocalDateTime.now().with(LocalTime.of(hour, minute)).toString()
     }
+
+    fun getAlarmIntent(context: Context): List<PendingIntent> =
+        days.map { day ->
+            val requestCode = id * 7 + (day - 1)
+            Intent(context, AlarmReceiver::class.java).apply {
+                putExtra("stop", stop)
+                putExtra("id", requestCode)
+            }.let { intent ->
+                // request code: spaced by 7 and day - 1 puts it in the specific spot
+                PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE)
+            }
+        }
+
+    fun getMillis(): List<Long> =
+        days.map { day ->
+            val calendar =
+                Calendar.getInstance().apply {
+                    timeInMillis = System.currentTimeMillis()
+
+                    set(Calendar.MILLISECOND, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MINUTE, getMinute())
+                    set(Calendar.HOUR_OF_DAY, getHour())
+                    set(Calendar.DAY_OF_WEEK, day)
+
+                    if (timeInMillis < System.currentTimeMillis()) {
+                        timeInMillis += 24 * 60 * 60 * 1000 * 7 // Next week
+                    }
+                }
+
+            return@map calendar.timeInMillis
+        }
 }
