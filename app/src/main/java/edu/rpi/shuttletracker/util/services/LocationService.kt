@@ -1,7 +1,9 @@
 package edu.rpi.shuttletracker.util.services
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -136,6 +138,7 @@ class LocationService : Service() {
             return START_NOT_STICKY
         }
 
+        // Notification
         with(NotificationManagerCompat.from(this)) {
             notify(Notifications.ID_TRACKING_BUS, notify(busNum))
 
@@ -153,6 +156,7 @@ class LocationService : Service() {
         // change in location
         locationCallback =
             object : LocationCallback() {
+                @SuppressLint("MissingPermission")
                 override fun onLocationResult(locationResult: LocationResult) {
                     super.onLocationResult(locationResult)
                     val currentLocation = locationResult.lastLocation
@@ -161,10 +165,17 @@ class LocationService : Service() {
                         if (currentLocation != null) {
                             updateLocation(busNum, currentLocation, uuid)
 
-                            // been on bus for 20 min
+                            // been on bus for 10 min
                             if (System.currentTimeMillis() - startTime >=
+                                TimeUnit.MINUTES.toMillis(10)
+                            ) {
+                                val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                                notificationManager.notify(Notifications.ID_LEAVE_BUS, notifyLeaveBus(busNum))
+                                notify(busNum)
+                            } else if (System.currentTimeMillis() - startTime >=
                                 TimeUnit.MINUTES.toMillis(20)
                             ) {
+                                // been on bus for 20 min
                                 apiRepository.sendAnalytics(Event(boardBusActivatedManual = false))
                                 stopSelf()
                             }
@@ -193,6 +204,8 @@ class LocationService : Service() {
             locationClient.removeLocationUpdates(locationCallback)
         } catch (_: Exception) {
         }
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(Notifications.ID_LEAVE_BUS)
     }
 
     /**
@@ -234,6 +247,21 @@ class LocationService : Service() {
                 NotificationReceiver.stopLocationService(this),
             )
             .setContentIntent(NotificationReceiver.openMaps(this))
+            .build()
+    }
+
+    private fun notifyLeaveBus(busNum: Int): Notification {
+        return NotificationCompat.Builder(
+            this,
+            Notifications.CHANNEL_LEAVE_BUS,
+        ).setContentTitle(String.format("Hey, you're still on bus %d", busNum))
+            .setSmallIcon(R.drawable.ic_stat_default)
+            .addAction(
+                R.drawable.baseline_location_off_24,
+                getString(R.string.notification_stop_tracking),
+                NotificationReceiver.stopLocationService(this),
+            )
+            .setAutoCancel(true)
             .build()
     }
 }
