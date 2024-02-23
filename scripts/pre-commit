@@ -1,0 +1,21 @@
+#!/bin/bash
+echo "*********************************************************"
+echo "Running git pre-commit hook. Running Static analysis... "
+echo "*********************************************************"
+
+./gradlew ktlintCheck
+
+status=$?
+
+if [ "$status" = 0 ] ; then
+    echo "Static analysis found no problems."
+    exit 0
+else
+    echo "*********************************************************"
+    echo 1>&2 "Static analysis found violations."
+    echo "Run ./gradlew ktlintFormat to fix formatting related issues..."
+    echo "Or open gradle on right -> formatting -> ktlintFormat"
+    echo "If ktlintFormat can't fix, you must manually fix it"
+    echo "*********************************************************"
+    exit 1
+fi

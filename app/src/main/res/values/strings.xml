@@ -1,76 +1,192 @@
 <resources>
-    <string name="app_name">Shuttle Tracker</string>
-    <string name="title_activity_maps">Shuttle Tracker</string>
-    <string name="GPS_bus">redbus.png</string>
-    <string name="crowdsourced_bus">greenbus.png</string>
-    <string name="colorblind_GPS_bus">cbredbus.png</string>
-    <string name="colorblind_crowdsourced_bus">cbgreenbus.png</string>
+    <string name="app_name" translatable="false">Shuttle Tracker</string>
+
+    <!--API Version-->
+    <string name="api_key" translatable="false">3</string>
+
+    <!-- icons -->
+    <string name="GPS_bus" translatable="false">redbus.png</string>
+    <string name="crowdsourced_bus" translatable="false">greenbus.png</string>
+    <string name="colorblind_GPS_bus" translatable="false">cbredbus.png</string>
+    <string name="colorblind_crowdsourced_bus" translatable="false">cbgreenbus.png</string>
+    <string name="simple_circle" translatable="false">simplecircle.png</string>
+
+    <!-- URLS -->
+    <string name="url_default">https://staging.shuttletracker.app/</string>
+    <string name="url_private_policy">https://web.shuttletracker.app/privacy-policy</string>
+    <string name="url_repository">https://github.com/wtg/Shuttle-Tracker-Android</string>
+    <string name="url_repository_issues">https://github.com/wtg/Shuttle-Tracker-Android/issues</string>
+
+    <!-- General -->
+    <string name="about">About</string>
+    <string name="error">Error</string>
+    <string name="retry">Retry</string>
+    <string name="ignore">Ignore</string>
+    <string name="refresh">Refresh</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="permissions">Permissions</string>
+    <string name="automatic_board_bus">Automatic Board Bus</string>
+    <string name="announcements">Announcements</string>
+    <string name="schedule">Schedule</string>
+    <string name="settings">Settings</string>
+    <string name="select">Select</string>
+    <string name="fix">Fix</string>
+    <string name="skip">Skip</string>
+    <string name="cancel">Cancel</string>
+    <string name="back">Back</string>
+    <string name="url">URL</string>
+    <string name="save">Save</string>
+
+    <!-- Notifications -->
+    <string name="bus_tracker">Shuttle Tracker</string>
+    <string name="tracker">Tracker</string>
+
+    <!-- Explanations-->
     <string name="info_intro">
         Shuttle Tracker shows you the real-time locations of the RPI campus shuttles,
-        powered by crowd-sourced location data.
-    </string>
-    <string name="info_instructions">
-        Instructions
-        \nThe map is automatically refreshed every 5 seconds.
+        powered by crowd-sourced location data.\n\n
+
+        The map is automatically refreshed every 5 seconds.
         Green buses have high-quality location data,
         and red buses have low-quality location data. In colorblind mode, the green buses
         are replaced by buses with an aqua target/scope icon, and the red buses are replaced by
         a purple dial icon. When boarding a bus, tap \"Board Bus\", and when getting off,
-        tap \"Leave Bus\". You must be within 20 meters of a stop to board a bus.
-
-        \n\nPrivacy
-        \nShuttle Tracker sends your location data to our server only when you tap \"Board Bus\"
-        and stops sending these data when you tap \"Leave Bus\".
-        Your location data are associated with an anonymous,
-        random identifier that rotates every time you start a new shuttle trip.
-        These data aren\'t associated with your name,
-        Google account, RCS ID, or any other identifying information.
-        We continuously purge location data that are more than 30 seconds old from our server.
-        We may retain resolved location data that are calculated
-        using a combination of system and user-reported data indefinitely,
-        but these resolved data don\'t correspond with any
-        specific user-reported coordinates.\n\n\n\n
+        tap \"Leave Bus\". You must be within 20 meters of a stop by default to board a bus.
     </string>
+
+    <string name="privacy">
+        Location
+        \n
+        Shuttle Tracker sends your location data to our server only when Board Bus is activated and
+        stops sending these data when Board Bus is deactivated. You can activate Board Bus manually
+        by tapping “Board Bus” or automatically by positioning your device within Bluetooth range of
+        a Shuttle Tracker Node device on a bus if you opted in to the Shuttle Tracker Network. You
+        can deactivate Board Bus manually by tapping “Leave Bus” or automatically by positioning
+        your device out of Bluetooth range of a Shuttle Tracker Node device on a bus if you opted in
+        to the Shuttle Tracker Network. Your location data are associated with an anonymous, random
+        identifier that rotates every time you start a new shuttle trip. These data aren’t associated
+        with your name, Apple ID, RCS ID, RIN, or any other information that might identify you or
+        your device. We continuously purge location data that are more than 30 seconds old from our
+        server. We may retain resolved location data that are calculated using a combination of
+        system- and user-reported data indefinitely, but these resolved data don’t correspond with
+        any specific user-reported coordinates. Even if you opt in to the Shuttle Tracker Network,
+        we never track your location unless you manually activate Board Bus or physically board a bus.
+        The results of these scans never leave your device, and we only start collecting location
+        data if a scan indicates that you’re physically on a bus.
+        \n\n
+
+        Analytics
+        \n
+        If you opt in to analytics, then Shuttle Tracker will send anonymous usage data to our server.
+        These data include your app settings, feature usage frequency, and other similar metrics.
+        No analytics data are ever collected unless you explicitly opt in. You can see a record of
+        recently uploaded analytics reports or opt-in status in Settings > Analytics.
+    </string>
+
     <string name="about_page">Shuttle tracker is developed by the Rensselaer Center for Open Source
         by your fellow RPI students. As an open source application, anyone can help develop the RPI Shuttle Tracker
         regardless of experience! Any contributions are welcome, as well as feedback for our current team.
         If you would like to view our source code, click the button below and open our GitHub page, and you can
         open an \"issue\" to leave feedback for us. View our privacy policy with the button below.</string>
-    <string name="min_stop_dist">10</string>
-    <string name="max_stop_dist">100</string>
-    <string name="default_stop_dist">50</string>
-    <string name="day_schedule">Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday</string>
-    <string name="schedule_default_text">No schedule available</string>
-    <string name="announcements_default_text">No current announcements.</string>
-    <string name="github_button_text">Click to access our GitHub Repository!</string>
-    <string name="repo_url">https://github.com/wtg/Shuttle-Tracker-Android</string>
-    <string name="default_server_url">https://shuttletracker.app</string>
-    <string name="announcements_url">/announcements</string>
-    <string name="schedule_url">/schedule</string>
-    <string name="version_url">/version</string>
-    <string name="buses_url">/buses</string>
-    <string name="bus_numbers_url">/buses/all</string>
-    <string name="stops_url">/stops</string>
-    <string name="routes_url">/routes</string>
-    <string name="logs_url">/logs</string>
-    <string name="privacy_url">https://web.shuttletracker.app/privacy-policy</string>
-    <string name="board_bus_button_text">Board Bus</string>
-    <string name="leave_bus_button_text">Leave Bus</string>
-    <string name="channel_name">ShuttleTrackerRPI</string>
-    <string name="channel_description">ShuttleTrackerRPI</string>
-    <string name="alertTitle">Location Permissions</string>
-    <string name="supporting_text">Please select \"Allow all the time\" in the following prompt.</string>
-    <string name="supporting_text_settings">Please select \"Permissions\" then \"Location\" then \"Allow all the time\" in the following prompt!</string>
-    <string name="more_details">Why?</string>
-    <string name="more_details_location"><![CDATA[Shuttle Tracker collects location data to enable crowdsourcing shuttle locations, showing the user\'s location on the map, tracking shuttles through board bus, and automatic board/leave bus in the background even when the app is closed or not in use. This feature is required to crowdsource bus location.]]></string>
-    <string name="bluetooth_permissions_title">Bluetooth Permissions</string>
-    <string name="bluetooth_supporting_text">Please select \"Allow\" in the following prompt.</string>
-    <string name="more_details_bluetooth">Bluetooth is required to crowd source bus locations with automatic board and leave bus whenever the device detects a shuttle tracker iBeacon in its vicinity. It will only detect and connect to shuttle tracker\'s beacons.</string>
-    <string name="restart_title">Restart This App</string>
-    <string name="restart_supporting_text">Please restart Shuttle Tracker to save the changes to your settings.</string>
-    <string name="cancel">Cancel</string>
-    <string name="accept">OK</string>
-    <string name="privacy_button_text">Link to Privacy Policy</string>
 
-    <integer name="api_key">3</integer> <!--APIVersion-->
+    <!-- Setup screen -->
+    <string name="acknowledged">%1$s prompt acknowledged.</string>
+    <string name="accept">Accept %1$s</string>
+
+    <string name="notifications">Notifications</string>
+    <string name="location">Location</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="background_location">Background Location</string>
+
+    <string name="notification_rational">Notifications allow you to know whether or not any shuttle tracking services are running</string>
+    <string name="location_rational">Location is required to show your current location and to crowdsource shuttle locations</string>
+    <string name="bluetooth_rational">Bluetooth is required to detect nearby beacons for Automatic Board Bus</string>
+    <string name="background_location_rational">Background location is required to automatically start Automatic Board Bus services on device restart/app update\n\nClick \"Allow all the time\" in location permission\n\nLocation permissions must be granted prior on the previous page</string>
+    <string name="automatic_board_bus_rational">Automatic Board Bus lets you share your location to everyone else when a bus beacon is detected nearby\n\nThis requires the permissions above</string>
+
+    <string name="to_settings_explanation">Go to settings to enable permissions</string>
+    <string name="to_settings">To settings</string>
+    <string name="not_now">Not now</string>
+    
+    <string name="permission_denied">Permission denied.</string>
+    <string name="permission_granted">Permission granted.</string>
+    <string name="grant_permissions">Grant permissions</string>
+
+    <string name="enable_automatic_board_bus">Enable Automatic Board Bus</string>
+    <string name="automatic_board_bus_enabled">Automatic Board Bus enabled, thank you!</string>
+
+    <string name="complete_setup">Complete setup</string>
+    <string name="next_page">Next page</string>
+    <string name="skip_setup">Skip setup</string>
+
+    <string name="skip_confirmation">Are you sure you want to skip the setup?</string>
+
+
+    <!-- Maps screen -->
+    <string name="bus_number">Bus %1$d</string>
+    <string name="distance_warning">Must be %1$dm from a stop to board</string>
+    <string name="no_location_warning">Unable to determine your location</string>
+
+    <string name="board_bus">Board Bus</string>
+    <string name="leave_bus">Leave Bus</string>
+
+    <string name="choose_bus">Choose a bus</string>
+    <string name="no_bus_chosen">No bus chosen</string>
+
+    <!-- Errors -->
+    <string name="location_service">Location service</string>
+    <string name="error_server_location">Your location may not be on a valid shuttle route</string>
+    <string name="understand">I understand</string>
+    <string name="service_missing_permissions">Missing permissions required for service</string>
+    <string name="error_network">Network error</string>
+    <string name="error_server">Server error</string>
+    <string name="error_unknown">Unknown error</string>
+
+    <!-- Settings -->
+    <string name="version">Version</string>
+    <string name="view_privacy_policy">View Privacy Policy</string>
+    <string name="shuttle_tracker_version">Shuttle Tracker version</string>
+    <string name="check_out_repository">Check out the repository</string>
+    <string name="report_problem">Report a problem</string>
+    <string name="base_url">Base URL</string>
+    <string name="change_url_warning">Changing the URL will restart the app and stop all running services</string>
+    <string name="invalid_url">Invalid URL</string>
+    <string name="color_blind_description">More accessible bus icons</string>
+    <string name="auto_boarding_description">Help us crowd-source bus data!</string>
+    <string name="color_blind_mode">Colorblind mode</string>
+    <string name="current_meters">%1$d meters</string>
+    <string name="libraries_used">Libraries used</string>
+    <string name="dev_options_activated">Dev options activated</string>
+    <string name="dev_options_state">Dev options unlocked in %1$d</string>
+    <string name="dev_options">Developer Options</string>
+
+    <!-- Analytics -->
+    <string name="analytics">Analytics</string>
+    <string name="user_id">User id</string>
+    <string name="android_version">Android version</string>
+    <string name="boarded_buses">Boarded buses</string>
+    <string name="debug_mode">Debug mode</string>
+
+
+    <!-- Dev menu -->
+    <string name="max_stop_dist">Maximum stop distance</string>
+
+
+
+    <!-- Schedule -->
+    <string name="effective_from">Effective from %1$s to %2$s</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="sunday">Sunday</string>
+
+    <!-- services -->
+    <string name="notification_automatic_board_bus_running">Automatic Board Bus service is running</string>
+    <string name="notification_location_launching">Launching location service</string>
+    <string name="notification_tracking_bus">Tracking bus %1$d</string>
+    <string name="notification_stop_tracking">Stop tracking</string>
+
 </resources>
