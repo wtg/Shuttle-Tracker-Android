@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -278,8 +279,14 @@ class MapsViewModel
                     departuresRepository.getDepartures(stopName),
                 ) { state, departures ->
                     state.copy(stopDepartures = departures)
-                }.collect {
-                    _mapsUiState.value = it
+                }.stateIn(
+                    viewModelScope,
+                    SharingStarted.Lazily,
+                    null,
+                ).collect {
+                    if (it != null) {
+                        _mapsUiState.value = it
+                    }
                 }
             }
         }
