@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <capability android:name="actions.intent.OPEN_APP_FEATURE">
+        <intent
+            android:action="actions.intent.OPEN_APP_FEATURE"
+            android:targetPackage="edu.rpi.shuttletracker.data.models"
+            android:targetClass= "edu.rpi.shuttletracker.data.models.Bus">
+            <parameter
+                android:name="feature"
+                android:key="featureParam"/>
+        </intent>
+    </capability>
+</shortcuts>
