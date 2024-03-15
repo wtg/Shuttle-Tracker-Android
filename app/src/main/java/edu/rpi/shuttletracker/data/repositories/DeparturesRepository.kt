@@ -5,6 +5,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.data.database.daos.DepartureDao
 import edu.rpi.shuttletracker.data.models.Departure
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.transform
 import javax.inject.Inject
 
 class DeparturesRepository
@@ -14,6 +15,13 @@ class DeparturesRepository
         @ApplicationContext private val context: Context,
     ) {
         fun getAllDepartures(): Flow<List<Departure>> = departureDao.getAllDepartures()
+
+        fun getAllDeparturesGrouped(): Flow<List<List<Departure>>> =
+            departureDao.getAllDeparturesGrouped()
+                .transform { departures ->
+
+                    emit(departures.groupBy { it.stop }.values.toList())
+                }
 
         fun getDepartures(name: String): Flow<List<Departure>> = departureDao.getDepartures(name)
 

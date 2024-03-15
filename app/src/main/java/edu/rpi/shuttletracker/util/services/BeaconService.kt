@@ -146,7 +146,6 @@ class BeaconService : Service() {
 
                 // gets the min distance beacon
                 val closest = beacons.minByOrNull { it.distance }
-
                 // no beacons nearby and runs till death
                 if (closest == null) {
                     // if no beacon has been detected for 30 seconds and was started auto

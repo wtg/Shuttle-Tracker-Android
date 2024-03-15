@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -26,7 +25,6 @@ class AlarmReceiver : BroadcastReceiver() {
         context: Context,
         intent: Intent,
     ) {
-        Log.d("fat", "onReceive: ALARM!!!!!!!!")
         departureFired(
             context,
             intent.getStringExtra("stop") ?: "",
@@ -43,7 +41,7 @@ class AlarmReceiver : BroadcastReceiver() {
             NotificationCompat.Builder(
                 context,
                 Notifications.CHANNEL_FIRING_DEPARTURES,
-            ).setContentTitle(name + "ALARM!!!!! $id")
+            ).setContentTitle("$name Placeholder for $id")
                 .setSmallIcon(R.drawable.ic_stat_default)
                 .setContentIntent(NotificationReceiver.openMaps(context))
 

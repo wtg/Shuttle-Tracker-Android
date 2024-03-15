@@ -16,6 +16,14 @@ interface DepartureDao {
     @Query(
         """
         SELECT * FROM departures 
+        ORDER BY stop_name
+        """,
+    )
+    fun getAllDeparturesGrouped(): Flow<List<Departure>>
+
+    @Query(
+        """
+        SELECT * FROM departures 
         WHERE stop_name == :name
         """,
     )
