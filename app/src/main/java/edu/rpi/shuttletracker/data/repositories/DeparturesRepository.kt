@@ -39,4 +39,6 @@ class DeparturesRepository
             departure.cancelAlarms(context)
             departureDao.deleteDeparture(departure)
         }
+
+        suspend fun nukeDepartures() = departureDao.nukeDepartures()
     }

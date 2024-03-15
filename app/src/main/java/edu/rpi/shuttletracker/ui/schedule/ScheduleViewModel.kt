@@ -110,6 +110,12 @@ class ScheduleViewModel
                 departuresRepository.deleteDeparture(departure)
             }
         }
+
+        fun deleteAllDepartures() {
+            viewModelScope.launch {
+                departuresRepository.nukeDepartures()
+            }
+        }
     }
 
 data class ScheduleUIState(

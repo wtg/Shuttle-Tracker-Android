@@ -42,4 +42,7 @@ interface DepartureDao {
 
     @Delete
     suspend fun deleteDeparture(departure: Departure)
+
+    @Query("DELETE FROM departures")
+    suspend fun nukeDepartures()
 }
