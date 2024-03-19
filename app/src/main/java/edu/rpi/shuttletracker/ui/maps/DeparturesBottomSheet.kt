@@ -240,7 +240,7 @@ fun TimeDateText(
 fun getDefaultDeparture(stop: Stop): Departure {
     val calendar: Calendar = Calendar.getInstance()
     val day: Int = calendar.get(Calendar.DAY_OF_WEEK)
-    return Departure(stop.name, listOf(day))
+    return Departure(stop.name, stop.latitude, stop.longitude, listOf(day))
 }
 
 /**

@@ -42,4 +42,9 @@ class ApiRepository
         }
 
         suspend fun sendRegistrationToken(token: String) = apiHelper.sendRegistrationToken(token)
+
+        suspend fun getApproachingBuses(
+            latitude: Double,
+            longitude: Double,
+        ) = apiHelper.getApproachingBuses(latitude, longitude)
     }

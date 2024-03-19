@@ -18,6 +18,10 @@ import java.util.Calendar
 data class Departure(
     @ColumnInfo(name = "stop_name")
     val stop: String,
+    @ColumnInfo(name = "latitude")
+    val latitude: Double,
+    @ColumnInfo(name = "longitude")
+    val longitude: Double,
     // based on Calendar class, 1 is saturday, 7 is sunday
     @ColumnInfo(name = "days_active")
     var days: List<Int>,
@@ -26,6 +30,13 @@ data class Departure(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 ) {
+    companion object {
+        const val INTENT_STOP_NAME = "stop_name"
+        const val INTENT_LATITUDE = "latitude"
+        const val INTENT_LONGITUDE = "longitude"
+        const val INTENT_ID = "id"
+    }
+
     fun getReadableTime(): String {
         val outputFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
 
@@ -49,8 +60,10 @@ data class Departure(
         days.map { day ->
             val requestCode = id * 7 + (day - 1)
             Intent(context, AlarmReceiver::class.java).apply {
-                putExtra("stop", stop)
-                putExtra("id", requestCode)
+                putExtra(INTENT_STOP_NAME, stop)
+                putExtra(INTENT_LATITUDE, latitude)
+                putExtra(INTENT_LONGITUDE, longitude)
+                putExtra(INTENT_ID, id)
             }.let { intent ->
                 // request code: spaced by 7 and day - 1 puts it in the specific spot
                 PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE)

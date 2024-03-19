@@ -9,27 +9,26 @@ import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.ui.MainActivity
 import edu.rpi.shuttletracker.util.services.LocationService
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 @AndroidEntryPoint
 class NotificationReceiver : BroadcastReceiver() {
     @Inject
     lateinit var apiRepository: ApiRepository
 
-    @OptIn(DelicateCoroutinesApi::class)
     override fun onReceive(
         context: Context,
         intent: Intent,
     ) {
         when (intent.action) {
             ACTION_STOP_LOCATION_SERVICE -> {
-                goAsync(GlobalScope, Dispatchers.Default) {
+                goAsync {
                     apiRepository.sendAnalytics(Event(boardBusDeactivatedManual = true))
                 }
 
@@ -83,13 +82,16 @@ class NotificationReceiver : BroadcastReceiver() {
  * Allows us to call suspend functions in broadcast receiver
  * */
 fun BroadcastReceiver.goAsync(
-    coroutineScope: CoroutineScope,
-    dispatcher: CoroutineDispatcher,
-    block: suspend () -> Unit,
+    context: CoroutineContext = EmptyCoroutineContext,
+    block: suspend CoroutineScope.() -> Unit,
 ) {
     val pendingResult = goAsync()
-    coroutineScope.launch(dispatcher) {
-        block()
-        pendingResult.finish()
+    @OptIn(DelicateCoroutinesApi::class)
+    GlobalScope.launch(context) {
+        try {
+            block()
+        } finally {
+            pendingResult.finish()
+        }
     }
 }
