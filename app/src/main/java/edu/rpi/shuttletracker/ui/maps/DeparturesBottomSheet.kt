@@ -41,8 +41,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Departure
 import edu.rpi.shuttletracker.data.models.Stop
 import java.time.LocalDateTime
@@ -113,14 +115,12 @@ fun DeparturesBottomSheet(
                     item {
                         Text(
                             text =
-                                "Departures let you schedule notifications to let you know" +
-                                    " what buses are approaching a stop. " +
-                                    "Press the \"+\" to schedule one!",
+                                stringResource(id = R.string.departure_about),
                             style = MaterialTheme.typography.labelSmall,
                         )
                     }
                 } else {
-                    item { Text(text = "Departures:") }
+                    item { Text(text = stringResource(id = R.string.departures) + ":") }
 
                     items(
                         departures,
@@ -144,7 +144,7 @@ fun DeparturesBottomSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column {
-                    Text(text = "New departure:", style = MaterialTheme.typography.labelSmall)
+                    Text(text = stringResource(R.string.departure_new), style = MaterialTheme.typography.labelSmall)
 
                     TimeDateText(departureToAdd)
                 }
@@ -218,7 +218,7 @@ fun TimeDateText(
 
                 val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmMgr.canScheduleExactAlarms()) {
-                    Toast.makeText(context, "Enable alarms for Shuttle Tracker", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.enable_alarms), Toast.LENGTH_LONG).show()
                     context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
                     return@TimeDateDialog
                 }
@@ -277,15 +277,15 @@ fun TimeDateDialog(
                 onSave(timePickerState.hour, timePickerState.minute, daysSelected)
                 onDismiss(false)
             }) {
-                Text(text = "Save")
+                Text(text = stringResource(id = R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = { onDelete(departure) }) {
-                Text(text = "Delete")
+                Text(text = stringResource(id = R.string.delete))
             }
         },
-        title = { Text(text = "Set a departure time") },
+        title = { Text(text = stringResource(id = R.string.departure_set_time)) },
         text = {
             Column {
                 TimePicker(state = timePickerState)

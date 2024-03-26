@@ -56,7 +56,7 @@ class AlarmReceiver : BroadcastReceiver() {
             NotificationCompat.Builder(
                 context,
                 Notifications.CHANNEL_FIRING_DEPARTURES,
-            ).setContentTitle("Fetching buses approaching $name...")
+            ).setContentTitle(context.getString(R.string.departure_fetching, name))
                 .setSmallIcon(R.drawable.ic_stat_default)
                 .setContentIntent(NotificationReceiver.openMaps(context))
 
@@ -70,24 +70,25 @@ class AlarmReceiver : BroadcastReceiver() {
             notification.apply {
                 if (buses is NetworkResponse.Success) {
                     if (buses.body.isEmpty()) {
-                        setContentTitle("There are no tracked busses approaching $name")
+                        setContentTitle(context.getString(R.string.no_tracked, name))
                         return@apply
                     }
 
-                    setContentTitle("Buses approaching $name")
-                    setContentText("${buses.body.size} buses are approaching")
+                    setContentTitle(context.getString(R.string.buses_approaching, name))
+                    setContentText(context.getString(R.string.number_buses_approaching, buses.body.size))
                     setStyle(
                         NotificationCompat
                             .BigTextStyle()
                             .bigText(
-                                """
-                                    ${buses.body.size} buses are approaching $name
-                                    ${buses.body.joinToString("\n")}
-                                    """,
+                                context.getString(
+                                    R.string.number_buses_approaching_listed,
+                                    buses.body.size,
+                                    buses.body.joinToString("\n"),
+                                ),
                             ),
                     )
                 } else {
-                    setContentTitle("Unable to get approaching buses")
+                    setContentTitle(context.getString(R.string.error_getting))
                 }
             }
 

@@ -138,7 +138,7 @@ fun ScheduleScreen(
                     TextButton(
                         onClick = { showDeleteDepartureWarning = true },
                     ) {
-                        Text(text = "Delete all")
+                        Text(text = stringResource(id = R.string.delete_all))
                         Icon(imageVector = Icons.Outlined.Delete, contentDescription = "delete all")
                     }
                 }
@@ -155,24 +155,28 @@ fun DeleteAllDeparturesDialog(
 ) {
     if (show) {
         AlertDialog(
-            icon = { Icon(imageVector = Icons.Outlined.Warning, contentDescription = "Delete departures") },
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.Warning,
+                    contentDescription = stringResource(id = R.string.departure_delete),
+                )
+            },
             onDismissRequest = { onDismiss() },
             confirmButton = {
                 Button(onClick = { onSuccess() }) {
-                    Text(text = "Delete All")
+                    Text(text = stringResource(id = R.string.delete_all))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { onDismiss() }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(id = R.string.cancel))
                 }
             },
-            title = { Text(text = "Delete all departures?") },
+            title = { Text(text = stringResource(id = R.string.departure_delete_warning)) },
             text = {
                 Text(
                     text =
-                        "Are you sure you want to delete all departures? " +
-                            "You can't undo this",
+                        stringResource(id = R.string.departure_delete_warning_serious),
                 )
             },
         )
