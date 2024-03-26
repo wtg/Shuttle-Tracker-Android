@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.data.models
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -17,6 +18,10 @@ import java.util.Calendar
 data class Departure(
     @ColumnInfo(name = "stop_name")
     val stop: String,
+    @ColumnInfo(name = "latitude")
+    val latitude: Double,
+    @ColumnInfo(name = "longitude")
+    val longitude: Double,
     // based on Calendar class, 1 is saturday, 7 is sunday
     @ColumnInfo(name = "days_active")
     var days: List<Int>,
@@ -25,6 +30,13 @@ data class Departure(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 ) {
+    companion object {
+        const val INTENT_STOP_NAME = "stop_name"
+        const val INTENT_LATITUDE = "latitude"
+        const val INTENT_LONGITUDE = "longitude"
+        const val INTENT_ID = "id"
+    }
+
     fun getReadableTime(): String {
         val outputFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
 
@@ -44,19 +56,21 @@ data class Departure(
         time = LocalDateTime.now().with(LocalTime.of(hour, minute)).toString()
     }
 
-    fun getAlarmIntent(context: Context): List<PendingIntent> =
+    private fun getAlarmIntent(context: Context): List<PendingIntent> =
         days.map { day ->
             val requestCode = id * 7 + (day - 1)
             Intent(context, AlarmReceiver::class.java).apply {
-                putExtra("stop", stop)
-                putExtra("id", requestCode)
+                putExtra(INTENT_STOP_NAME, stop)
+                putExtra(INTENT_LATITUDE, latitude)
+                putExtra(INTENT_LONGITUDE, longitude)
+                putExtra(INTENT_ID, id)
             }.let { intent ->
                 // request code: spaced by 7 and day - 1 puts it in the specific spot
                 PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE)
             }
         }
 
-    fun getMillis(): List<Long> =
+    private fun getMillis(): List<Long> =
         days.map { day ->
             val calendar =
                 Calendar.getInstance().apply {
@@ -75,4 +89,28 @@ data class Departure(
 
             return@map calendar.timeInMillis
         }
+
+    fun cancelAlarms(context: Context) {
+        val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        // removes all the alarms for the id
+        for (intent in getAlarmIntent(context)) {
+            alarmMgr.cancel(intent)
+        }
+    }
+
+    fun initiateAlarms(context: Context) {
+        val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        getAlarmIntent(context).zip(
+            getMillis(),
+        ) { intent, millis ->
+            alarmMgr.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                millis,
+                AlarmManager.INTERVAL_DAY * 7,
+                intent,
+            )
+        }
+    }
 }

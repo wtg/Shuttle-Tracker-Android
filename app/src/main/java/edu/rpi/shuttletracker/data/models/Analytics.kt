@@ -82,7 +82,7 @@ data class Event(
  * Just an empty object to pass an empty {} json
  * Since null gets removed
  * */
-object EmptyEvent
+data object EmptyEvent
 
 /**
  * This must be @Inject into a @AndroidEntryPoint to be used

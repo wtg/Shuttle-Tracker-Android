@@ -36,17 +36,35 @@
     <string name="back">Back</string>
     <string name="url">URL</string>
     <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="delete_all">Delete all</string>
 
     <!-- Notifications -->
     <string name="bus_tracker">Shuttle Tracker</string>
     <string name="tracker">Tracker</string>
 
+    <!-- Departures -->
+    <string name="error_getting">Unable to get approaching buses</string>
+    <string name="no_tracked">There are no tracked busses approaching %1$s</string>
+    <string name="buses_approaching">Buses approaching %1$s</string>
+    <string name="number_buses_approaching">%1$d buses are approaching</string>
+    <string name="number_buses_approaching_listed">%1$d buses are approaching\n\n%2$s</string>
+    <string name="departure_fetching">Fetching buses approaching n%1$s…</string>
+    <string name="departure_new">New departure</string>
+    <string name="departure_about">Departures let you schedule notifications to let you know what
+        buses are approaching a stop. Press the \"+\" to schedule one!</string>
+    <string name="departures">Departures</string>
+    <string name="enable_alarms">Enable alarms for Shuttle Tracker</string>
+    <string name="departure_set_time">Set a departure time</string>
+    <string name="departure_delete">Delete departures</string>
+    <string name="departure_delete_warning">Delete all departures?</string>
+    <string name="departure_delete_warning_serious">Are you sure you want to delete all departures? You can\'t undo this</string>
+
+
     <!-- Explanations-->
     <string name="info_intro">
         Shuttle Tracker shows you the real-time locations of the RPI campus shuttles,
-        powered by crowd-sourced location data.\n\n
-
-        The map is automatically refreshed every 5 seconds.
+        powered by crowd-sourced location data.\n\nThe map is automatically refreshed every 5 seconds.
         Green buses have high-quality location data,
         and red buses have low-quality location data. In colorblind mode, the green buses
         are replaced by buses with an aqua target/scope icon, and the red buses are replaced by
@@ -55,9 +73,7 @@
     </string>
 
     <string name="privacy">
-        Location
-        \n
-        Shuttle Tracker sends your location data to our server only when Board Bus is activated and
+        Location\nShuttle Tracker sends your location data to our server only when Board Bus is activated and
         stops sending these data when Board Bus is deactivated. You can activate Board Bus manually
         by tapping “Board Bus” or automatically by positioning your device within Bluetooth range of
         a Shuttle Tracker Node device on a bus if you opted in to the Shuttle Tracker Network. You
@@ -72,12 +88,8 @@
         any specific user-reported coordinates. Even if you opt in to the Shuttle Tracker Network,
         we never track your location unless you manually activate Board Bus or physically board a bus.
         The results of these scans never leave your device, and we only start collecting location
-        data if a scan indicates that you’re physically on a bus.
-        \n\n
-
-        Analytics
-        \n
-        If you opt in to analytics, then Shuttle Tracker will send anonymous usage data to our server.
+        data if a scan indicates that you’re physically on a bus.\n\n
+        Analytics\nIf you opt in to analytics, then Shuttle Tracker will send anonymous usage data to our server.
         These data include your app settings, feature usage frequency, and other similar metrics.
         No analytics data are ever collected unless you explicitly opt in. You can see a record of
         recently uploaded analytics reports or opt-in status in Settings > Analytics.

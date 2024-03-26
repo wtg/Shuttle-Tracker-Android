@@ -16,6 +16,14 @@ interface DepartureDao {
     @Query(
         """
         SELECT * FROM departures 
+        ORDER BY stop_name
+        """,
+    )
+    fun getAllDeparturesGrouped(): Flow<List<Departure>>
+
+    @Query(
+        """
+        SELECT * FROM departures 
         WHERE stop_name == :name
         """,
     )
@@ -34,4 +42,7 @@ interface DepartureDao {
 
     @Delete
     suspend fun deleteDeparture(departure: Departure)
+
+    @Query("DELETE FROM departures")
+    suspend fun nukeDepartures()
 }

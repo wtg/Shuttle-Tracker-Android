@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,8 +41,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Departure
 import edu.rpi.shuttletracker.data.models.Stop
 import java.time.LocalDateTime
@@ -64,7 +65,7 @@ private val daysOfWeek =
         "Saturday" to "S",
     )
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeparturesBottomSheet(
     stop: Stop?,
@@ -114,14 +115,12 @@ fun DeparturesBottomSheet(
                     item {
                         Text(
                             text =
-                                "Departures let you schedule notifications to let you know" +
-                                    " what buses are approaching a stop. " +
-                                    "Press the \"+\" to schedule one!",
+                                stringResource(id = R.string.departure_about),
                             style = MaterialTheme.typography.labelSmall,
                         )
                     }
                 } else {
-                    item { Text(text = "Departures:") }
+                    item { Text(text = stringResource(id = R.string.departures) + ":") }
 
                     items(
                         departures,
@@ -145,7 +144,7 @@ fun DeparturesBottomSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column {
-                    Text(text = "New departure:", style = MaterialTheme.typography.labelSmall)
+                    Text(text = stringResource(R.string.departure_new), style = MaterialTheme.typography.labelSmall)
 
                     TimeDateText(departureToAdd)
                 }
@@ -219,7 +218,7 @@ fun TimeDateText(
 
                 val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmMgr.canScheduleExactAlarms()) {
-                    Toast.makeText(context, "Enable alarms for Shuttle Tracker", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.enable_alarms), Toast.LENGTH_LONG).show()
                     context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
                     return@TimeDateDialog
                 }
@@ -241,7 +240,7 @@ fun TimeDateText(
 fun getDefaultDeparture(stop: Stop): Departure {
     val calendar: Calendar = Calendar.getInstance()
     val day: Int = calendar.get(Calendar.DAY_OF_WEEK)
-    return Departure(stop.name, listOf(day))
+    return Departure(stop.name, stop.latitude, stop.longitude, listOf(day))
 }
 
 /**
@@ -278,15 +277,15 @@ fun TimeDateDialog(
                 onSave(timePickerState.hour, timePickerState.minute, daysSelected)
                 onDismiss(false)
             }) {
-                Text(text = "Save")
+                Text(text = stringResource(id = R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = { onDelete(departure) }) {
-                Text(text = "Delete")
+                Text(text = stringResource(id = R.string.delete))
             }
         },
-        title = { Text(text = "Set a departure time") },
+        title = { Text(text = stringResource(id = R.string.departure_set_time)) },
         text = {
             Column {
                 TimePicker(state = timePickerState)

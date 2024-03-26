@@ -1,11 +1,11 @@
 package edu.rpi.shuttletracker.data.repositories
 
-import android.app.AlarmManager
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.data.database.daos.DepartureDao
 import edu.rpi.shuttletracker.data.models.Departure
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.transform
 import javax.inject.Inject
 
 class DeparturesRepository
@@ -16,39 +16,29 @@ class DeparturesRepository
     ) {
         fun getAllDepartures(): Flow<List<Departure>> = departureDao.getAllDepartures()
 
+        fun getAllDeparturesGrouped(): Flow<List<List<Departure>>> =
+            departureDao.getAllDeparturesGrouped()
+                .transform { departures ->
+
+                    emit(departures.groupBy { it.stop }.values.toList())
+                }
+
         fun getDepartures(name: String): Flow<List<Departure>> = departureDao.getDepartures(name)
 
         suspend fun insertDeparture(departure: Departure) {
-            val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
             // removes all the alarms for the id
-            for (intent in departureDao.getDeparture(departure.id)?.getAlarmIntent(context) ?: listOf()) {
-                alarmMgr.cancel(intent)
-            }
+            departureDao.getDeparture(departure.id)?.cancelAlarms(context)
 
             // ensures we don't modify the old departure
             val newDeparture = departure.copy(id = departureDao.insertDeparture(departure).toInt())
 
-            newDeparture.getAlarmIntent(context).zip(
-                departure.getMillis(),
-            ) { intent, millis ->
-                alarmMgr.setRepeating(
-                    AlarmManager.RTC_WAKEUP,
-                    millis,
-                    AlarmManager.INTERVAL_DAY * 7,
-                    intent,
-                )
-            }
+            newDeparture.initiateAlarms(context)
         }
 
         suspend fun deleteDeparture(departure: Departure) {
-            val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-            // removes all the alarms for the id
-            for (intent in departure.getAlarmIntent(context)) {
-                alarmMgr.cancel(intent)
-            }
-
+            departure.cancelAlarms(context)
             departureDao.deleteDeparture(departure)
         }
+
+        suspend fun nukeDepartures() = departureDao.nukeDepartures()
     }
