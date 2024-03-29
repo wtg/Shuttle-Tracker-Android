@@ -2,11 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
@@ -16,23 +17,23 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
 
     <application
-        android:enableOnBackInvokedCallback="true"
         android:name=".ShuttleTrackerApplication"
         android:allowBackup="true"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        tools:targetApi="34"
-        android:theme="@style/Theme.ShuttleTracker">
+        android:theme="@style/Theme.ShuttleTracker"
+        tools:targetApi="34">
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.ShuttleTracker"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.ShuttleTracker">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -43,14 +44,17 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <service android:name=".util.services.LocationService"
-            android:foregroundServiceType="location"
-            android:exported="false" />
+        <service
+            android:name=".util.services.LocationService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
-        <service android:name=".util.services.BeaconService"
-            android:foregroundServiceType="location"
-            android:exported="false"/>
-        <service android:name=".util.services.FirebaseService"
+        <service
+            android:name=".util.services.BeaconService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+        <service
+            android:name=".util.services.FirebaseService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -72,9 +76,15 @@
 
         <receiver
             android:name=".util.alarms.AlarmReceiver"
-            android:exported="false">
-        </receiver>
+            android:exported="false" />
+
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove"/>
 
 
     </application>
+
 </manifest>
