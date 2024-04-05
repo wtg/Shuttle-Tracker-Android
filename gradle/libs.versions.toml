@@ -1,5 +1,5 @@
 [versions]
-aboutlibraries = "11.1.0"
+aboutlibraries = "11.1.1"
 accompanist-systemuicontroller = "0.34.0"
 activity-compose = "1.8.2"
 android-beacon-library = "2.20.4"
@@ -17,7 +17,7 @@ google-service = "4.4.1"
 
 
 google-services = "4.4.1"
-hilt = "2.51"
+hilt = "2.51.1"
 hilt-navigation-compose = "1.2.0"
 junit = "4.13.2"
 lifecycle-runtime-ktx = "2.7.0"
@@ -28,7 +28,7 @@ material3 = "1.2.1"
 network-respose = "5.0.0"
 play-services-location = "21.2.0"
 play-services-maps = "18.2.0"
-retrofit = "2.10.0"
+retrofit = "2.11.0"
 
 room-runtime = "2.6.1"
 
@@ -55,7 +55,9 @@ android-beacon-library = { module = "org.altbeacon:android-beacon-library", vers
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore-preferences" }
 
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt-navigation-compose" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
+androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt-navigation-compose" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-junit" }
 androidx-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "ui" }
 
