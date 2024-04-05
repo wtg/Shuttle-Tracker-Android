@@ -14,7 +14,7 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class Restarter : BroadcastReceiver() {
+class STRestarter : BroadcastReceiver() {
     @Inject
     lateinit var userPreferencesRepository: Lazy<UserPreferencesRepository>
 

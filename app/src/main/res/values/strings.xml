@@ -42,6 +42,7 @@
     <!-- Notifications -->
     <string name="bus_tracker">Shuttle Tracker</string>
     <string name="tracker">Tracker</string>
+    <string name="mark_as_read">Mark as read</string>
 
     <!-- Departures -->
     <string name="error_getting">Unable to get approaching buses</string>

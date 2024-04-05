@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.util.notifications
 
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,6 +8,7 @@ import android.content.Intent
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
+import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.MainActivity
 import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +24,9 @@ class NotificationReceiver : BroadcastReceiver() {
     @Inject
     lateinit var apiRepository: ApiRepository
 
+    @Inject
+    lateinit var userPreferencesRepository: UserPreferencesRepository
+
     override fun onReceive(
         context: Context,
         intent: Intent,
@@ -36,11 +41,24 @@ class NotificationReceiver : BroadcastReceiver() {
                     Intent(context, LocationService::class.java),
                 )
             }
+
+            ACTION_MARK_NOTIFICATIONS_READ -> {
+                val notificationManager: NotificationManager =
+                    context.getSystemService(
+                        Context.NOTIFICATION_SERVICE,
+                    ) as NotificationManager
+
+                notificationManager.cancel(Notifications.ID_ANNOUNCEMENT)
+                goAsync {
+                    userPreferencesRepository.saveNotificationsRead(intent.getIntExtra("count", 0))
+                }
+            }
         }
     }
 
     companion object {
         const val ACTION_STOP_LOCATION_SERVICE = "STOP_SERVICE"
+        const val ACTION_MARK_NOTIFICATIONS_READ = "MARK_NOTIFICATIONS_READ"
 
         /**
          * Creates a pending intent to stop location tracking service
@@ -69,6 +87,24 @@ class NotificationReceiver : BroadcastReceiver() {
                 }
 
             return PendingIntent.getActivity(
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        }
+
+        internal fun markNotificationsRead(
+            context: Context,
+            count: Int,
+        ): PendingIntent {
+            val intent =
+                Intent(context, NotificationReceiver::class.java).apply {
+                    action = ACTION_MARK_NOTIFICATIONS_READ
+                    putExtra("count", count)
+                }
+
+            return PendingIntent.getBroadcast(
                 context,
                 0,
                 intent,
