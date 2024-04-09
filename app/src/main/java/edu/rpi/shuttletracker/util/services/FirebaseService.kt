@@ -51,7 +51,7 @@ class FirebaseService : FirebaseMessagingService() {
             ).setContentTitle("FCM")
                 .setContentText(body)
                 .setSmallIcon(R.drawable.ic_stat_default)
-                .setContentIntent(NotificationReceiver.openMaps(this))
+                .setContentIntent(NotificationReceiver.openAnnouncements(this))
                 .build()
 
         notificationManager.notify(Notifications.ID_ANNOUNCEMENT, notificationBody)
