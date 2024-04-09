@@ -1,8 +1,8 @@
 [versions]
-aboutlibraries = "11.1.1"
+aboutlibraries = "11.1.3"
 accompanist-systemuicontroller = "0.34.0"
 activity-compose = "1.8.2"
-android-beacon-library = "2.20.4"
+android-beacon-library = "2.20.5"
 androidx-junit = "1.1.5"
 core = "1.10.2"
 core-ktx = "1.12.0"
@@ -23,7 +23,7 @@ junit = "4.13.2"
 lifecycle-runtime-ktx = "2.7.0"
 logging-interceptor = "4.12.0"
 maps-compose = "4.3.3"
-material-icons-extended = "1.6.4"
+material-icons-extended = "1.6.5"
 material3 = "1.2.1"
 network-respose = "5.0.0"
 play-services-location = "21.2.0"
@@ -32,10 +32,10 @@ retrofit = "2.11.0"
 
 room-runtime = "2.6.1"
 
-ui = "1.6.4"
+ui = "1.6.5"
 work-runtime-ktx = "2.9.0"
 
-compose-bom = "2024.03.00"
+compose-bom = "2024.04.00"
 
 ksp = "1.9.22-1.0.17"
 android-gradle-plugin = "8.3.1"

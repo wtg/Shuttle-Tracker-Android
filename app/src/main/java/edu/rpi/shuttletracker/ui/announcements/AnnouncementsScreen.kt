@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
@@ -32,7 +33,13 @@ import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination
+@Destination(
+    deepLinks = [
+        DeepLink(
+            uriPattern = "https://shuttletracker.app/analytics/",
+        ),
+    ],
+)
 @Composable
 fun AnnouncementsScreen(
     navigator: DestinationsNavigator,
