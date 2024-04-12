@@ -165,8 +165,8 @@ fun SetupScreen(
             Column {
                 // shows how far you are in setup screen
                 LinearProgressIndicator(
+                    progress = { (pagerState.currentPage) / (TOTAL_PAGES - 1).toFloat() },
                     modifier = Modifier.fillMaxWidth(),
-                    progress = (pagerState.currentPage) / (TOTAL_PAGES - 1).toFloat(),
                 )
                 BottomAppBar(
                     actions = {

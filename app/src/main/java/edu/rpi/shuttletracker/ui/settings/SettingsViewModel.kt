@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.ui.settings
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,6 +47,7 @@ class SettingsViewModel
         }
     }
 
+@Immutable
 data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,

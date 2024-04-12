@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.ui.announcements
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
@@ -105,6 +106,7 @@ class AnnouncementsViewModel
         }
     }
 
+@Immutable
 data class AnnouncementsUIState(
     val announcements: List<Announcement> = listOf(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,

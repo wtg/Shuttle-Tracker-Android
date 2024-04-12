@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.ui.setup
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -52,6 +53,7 @@ class SetupScreenViewModel
         }
     }
 
+@Immutable
 data class SetupUiState(
     val privacyPolicyAccepted: Boolean = false,
     val aboutAccepted: Boolean = false,

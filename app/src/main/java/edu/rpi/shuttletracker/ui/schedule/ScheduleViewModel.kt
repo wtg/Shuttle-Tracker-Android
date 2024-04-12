@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.ui.schedule
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
@@ -118,6 +119,7 @@ class ScheduleViewModel
         }
     }
 
+@Immutable
 data class ScheduleUIState(
     val schedule: List<Schedule> = listOf(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,

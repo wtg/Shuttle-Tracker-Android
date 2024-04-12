@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.ui.settings.developerMenu
 
 import android.content.Context
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -80,6 +81,7 @@ class DevMenuViewModel
         }
     }
 
+@Immutable
 data class DevMenuUiState(
     val maxStopDist: Float = 20F,
     val baseUrl: String = "",
