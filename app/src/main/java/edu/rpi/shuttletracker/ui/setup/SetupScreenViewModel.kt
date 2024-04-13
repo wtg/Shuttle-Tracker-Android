@@ -46,9 +46,9 @@ class SetupScreenViewModel
             }
         }
 
-        fun updateAllowAnalytics(allowAnalytics: Boolean) {
+        fun updateAllowAnalytics() {
             viewModelScope.launch {
-                userPreferencesRepository.saveAllowAnalytics(allowAnalytics)
+                userPreferencesRepository.saveAllowAnalytics(true)
             }
         }
     }
@@ -57,5 +57,5 @@ class SetupScreenViewModel
 data class SetupUiState(
     val privacyPolicyAccepted: Boolean = false,
     val aboutAccepted: Boolean = false,
-    val allowAnalytics: Boolean = true,
+    val allowAnalytics: Boolean = false,
 )

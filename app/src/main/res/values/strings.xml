@@ -74,7 +74,7 @@
     </string>
 
     <string name="privacy">
-        Location\nShuttle Tracker sends your location data to our server only when Board Bus is activated and
+        Shuttle Tracker sends your location data to our server only when Board Bus is activated and
         stops sending these data when Board Bus is deactivated. You can activate Board Bus manually
         by tapping “Board Bus” or automatically by positioning your device within Bluetooth range of
         a Shuttle Tracker Node device on a bus if you opted in to the Shuttle Tracker Network. You
@@ -89,11 +89,14 @@
         any specific user-reported coordinates. Even if you opt in to the Shuttle Tracker Network,
         we never track your location unless you manually activate Board Bus or physically board a bus.
         The results of these scans never leave your device, and we only start collecting location
-        data if a scan indicates that you’re physically on a bus.\n\n
-        Analytics\nIf you opt in to analytics, then Shuttle Tracker will send anonymous usage data to our server.
-        These data include your app settings, feature usage frequency, and other similar metrics.
-        No analytics data are ever collected unless you explicitly opt in. You can see a record of
-        recently uploaded analytics reports or opt-in status in Settings > Analytics.
+        data if a scan indicates that you’re physically on a bus.
+    </string>
+
+    <string name="analytics_policy">
+    If you opt in to analytics, then Shuttle Tracker will send anonymous usage data to our server.
+    These data include your app settings, feature usage frequency, and other similar metrics.
+    No analytics data are ever collected unless you explicitly opt in. You can see a record of
+    recently uploaded analytics reports or opt-in status in Settings > Analytics.
     </string>
 
     <string name="about_page">Shuttle tracker is developed by the Rensselaer Center for Open Source

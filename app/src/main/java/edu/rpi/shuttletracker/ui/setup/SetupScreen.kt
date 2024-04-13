@@ -1,88 +1,99 @@
 package edu.rpi.shuttletracker.ui.setup
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
-import android.content.Intent.CATEGORY_DEFAULT
-import android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.content.Intent.FLAG_ACTIVITY_NO_HISTORY
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
-import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForward
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Done
-import androidx.compose.material.icons.outlined.LocationDisabled
-import androidx.compose.material.icons.outlined.LocationOff
-import androidx.compose.material.icons.outlined.NearbyError
-import androidx.compose.material.icons.outlined.NotificationsOff
-import androidx.compose.material.icons.outlined.SkipNext
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.popUpTo
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.destinations.MapsScreenDestination
-import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.util.services.BeaconService
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 
-const val TOTAL_PAGES = 4
+sealed class SetupPages(
+    val title: String,
+    val nextText: String,
+    val content: @Composable () -> Unit,
+    val onComplete: () -> Unit = {},
+) {
+    data class About(
+        val acceptAbout: () -> Unit,
+    ) : SetupPages(
+            "About",
+            "I accept",
+            { AboutPage() },
+            {
+                acceptAbout()
+            },
+        )
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+    data class PrivacyPolicy(
+        val acceptPrivatePolicy: () -> Unit,
+    ) : SetupPages(
+            "Privacy Policy",
+            "I accept",
+            { PrivacyPolicyPage() },
+            {
+                acceptPrivatePolicy()
+            },
+        )
+
+    data class Analytics(
+        val allowAnalytics: () -> Unit,
+        val analyticsEnabled: Boolean,
+    ) : SetupPages(
+            "Analytics",
+            "Next",
+            { AnalyticsPage(allowAnalytics, analyticsEnabled) },
+        )
+
+    data object Permissions : SetupPages(
+        "Permissions",
+        "Finish",
+        { PermissionsPage() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @RootNavGraph(start = true)
 @Destination
 @Composable
@@ -90,513 +101,223 @@ fun SetupScreen(
     navigator: DestinationsNavigator,
     viewModel: SetupScreenViewModel = hiltViewModel(),
 ) {
-    val pagerState = rememberPagerState(pageCount = { TOTAL_PAGES })
-
-    var sectionHeader by remember { mutableStateOf("") }
-
-    val skipSetupDialog = remember { mutableStateOf(false) }
-
     val setupUiState = viewModel.setupUiState.collectAsStateWithLifecycle().value
 
-    val context = LocalContext.current
+    var currentPage by remember { mutableIntStateOf(0) }
 
-    // a dialog will show if they want to skip the setup
-    BackHandler {
-        skipSetupDialog.value = true
+    BackHandler(currentPage > 0) {
+        --currentPage
     }
 
-    // dialog shown when skipping setup
-    if (skipSetupDialog.value) {
-        SkipSetup(showDialog = skipSetupDialog) {
-            navigator.navigate(MapsScreenDestination()) {
-                popUpTo(SetupScreenDestination) {
-                    inclusive = true
-                }
-            }
+    val pages =
+        listOf(
+            SetupPages.About(viewModel::updateAboutAccepted),
+            SetupPages.PrivacyPolicy(viewModel::updatePrivacyPolicyAccepted),
+            SetupPages.Analytics(viewModel::updateAllowAnalytics, setupUiState.allowAnalytics),
+            SetupPages.Permissions,
+        )
+
+    LaunchedEffect(key1 = currentPage) {
+        if (currentPage == pages.size) {
+            navigator.navigate(MapsScreenDestination)
         }
     }
-
-    BeaconService.isRunning.collectAsStateWithLifecycle().value.let {
-        LaunchedEffect(it) {
-            if (it) {
-                navigator.navigate(MapsScreenDestination()) {
-                    popUpTo(SetupScreenDestination) {
-                        inclusive = true
-                    }
-                }
-            }
-        }
-    }
-
-    // when pages change, change title name
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.distinctUntilChanged().collect { page ->
-            when (page) {
-                0 -> sectionHeader = context.getString(R.string.about)
-                1 -> sectionHeader = context.getString(R.string.privacy_policy)
-                2 -> sectionHeader = context.getString(R.string.permissions)
-                3 -> sectionHeader = context.getString(R.string.automatic_board_bus)
-            }
-        }
-    }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    /**
-     * Navigates to the next page
-     * */
-    fun toNextPage(current: Int = pagerState.targetPage) {
-        if (current == TOTAL_PAGES - 1) {
-            navigator.navigate(MapsScreenDestination()) {
-                popUpTo(SetupScreenDestination) {
-                    inclusive = true
-                }
-            }
-        } else {
-            coroutineScope.launch {
-                pagerState.animateScrollToPage(pagerState.targetPage + 1)
-            }
-        }
-    }
-
-    Scaffold(
-        topBar = { TopAppBar(title = { Text(text = sectionHeader) }) },
-        bottomBar = {
-            Column {
-                // shows how far you are in setup screen
-                LinearProgressIndicator(
-                    progress = { (pagerState.currentPage) / (TOTAL_PAGES - 1).toFloat() },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                BottomAppBar(
-                    actions = {
-                        IconButton(onClick = { skipSetupDialog.value = true }) {
-                            Icon(Icons.Outlined.SkipNext, stringResource(R.string.skip_setup))
-                        }
-                    },
-                    floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = { toNextPage() },
+    if (currentPage < pages.size) {
+        Scaffold(topBar = {
+            TopAppBar(
+                title = { Text(text = pages[currentPage].title) },
+            )
+        }) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(it),
+            ) {
+                LazyColumn(
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .padding(10.dp),
+                ) {
+                    item {
+                        Card(
+                            colors =
+                                CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                ),
                         ) {
-                            if (pagerState.currentPage == TOTAL_PAGES - 1) {
-                                Icon(Icons.Outlined.Done, stringResource(R.string.complete_setup))
-                            } else {
-                                Icon(
-                                    Icons.AutoMirrored.Outlined.ArrowForward,
-                                    stringResource(R.string.next_page),
-                                )
+                            Box(modifier = Modifier.padding(10.dp)) {
+                                pages[currentPage].content()
                             }
                         }
-                    },
-                )
-            }
-        },
-    ) { padding ->
-        HorizontalPager(
-            state = pagerState,
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-        ) {
-            when (it) {
-                0 ->
-                    TextScreen(
-                        onAccept = { toNextPage(0) },
-                        acceptedState = setupUiState.aboutAccepted,
-                        updateState = viewModel::updateAboutAccepted,
-                        text = stringResource(R.string.info_intro),
-                        title = stringResource(R.string.about),
-                    )
-
-                1 ->
-                    TextScreen(
-                        onAccept = { toNextPage(1) },
-                        acceptedState = setupUiState.privacyPolicyAccepted,
-                        updateState = viewModel::updatePrivacyPolicyAccepted,
-                        text = stringResource(R.string.privacy),
-                        title = stringResource(R.string.privacy_policy),
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = setupUiState.allowAnalytics,
-                                onCheckedChange = { checked ->
-                                    viewModel.updateAllowAnalytics(
-                                        checked,
-                                    )
-                                },
-                            )
-
-                            Text(text = "Agree to share analytics")
-                        }
                     }
-
-                2 -> PermissionPage { toNextPage(2) }
-                3 -> AutoBoardingPage { toNextPage(3) }
-            }
-        }
-    }
-}
-
-@Composable
-fun TextScreen(
-    onAccept: () -> Unit,
-    acceptedState: Boolean,
-    updateState: () -> Unit,
-    text: String,
-    title: String,
-    extra: @Composable () -> Unit = {},
-) {
-    SideEffect {
-        if (acceptedState) onAccept()
-    }
-
-    LazyColumn(modifier = Modifier.padding(20.dp)) {
-        item { extra() }
-
-        item { Text(text = text) }
-
-        item { Spacer(modifier = Modifier.height(10.dp)) }
-
-        item {
-            if (!acceptedState) {
-                Button(onClick = { updateState() }) {
-                    Text(text = stringResource(R.string.accept, title.lowercase()))
                 }
-            } else {
-                Text(text = stringResource(R.string.acknowledged, title))
+
+                Column(
+                    modifier = Modifier.padding(5.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    HorizontalDivider(modifier = Modifier.fillMaxWidth())
+                    Button(modifier = Modifier.fillMaxWidth(), onClick = {
+                        pages[currentPage++].onComplete()
+                    }) {
+                        Text(text = pages[currentPage].nextText)
+                    }
+                }
             }
         }
     }
 }
 
-/**
- * Page asking for general permissions
- * */
 @Composable
-fun PermissionPage(allPermissionsGranted: () -> Unit) {
-    val hasLocationPermissions = remember { mutableStateOf(false) }
-    val hasNotificationPermissions = remember { mutableStateOf(false) }
+fun AboutPage() {
+    Box(modifier = Modifier.fillMaxSize()) { Text(text = stringResource(R.string.about_page)) }
+}
 
-    // when all the permissions are granted, call function
-    SideEffect {
-        if (hasLocationPermissions.value &&
-            hasNotificationPermissions.value
-        ) {
-            allPermissionsGranted()
-        }
-    }
+@Composable
+fun PrivacyPolicyPage() {
+    Box(modifier = Modifier.fillMaxSize()) { Text(text = stringResource(R.string.privacy)) }
+}
 
+@Composable
+fun AnalyticsPage(
+    allowAnalytics: () -> Unit,
+    analyticsEnabled: Boolean,
+) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // ask for notification permissions
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val notificationPermission =
-                arrayOf(
-                    Manifest.permission.POST_NOTIFICATIONS,
-                )
+        Text(text = stringResource(R.string.analytics_policy))
 
-            PermissionItem(
-                permission = notificationPermission,
-                state = hasNotificationPermissions,
-                title = stringResource(R.string.notifications),
-                description = stringResource(R.string.notification_rational),
-                deniedIcon = Icons.Outlined.NotificationsOff,
-            )
+        Spacer(modifier = Modifier.padding(30.dp))
+
+        if (!analyticsEnabled) {
+            Button(onClick = { allowAnalytics() }) {
+                Text(text = "Enable analytics")
+            }
         } else {
-            hasNotificationPermissions.value = true
+            Text(text = "Analytics is enabled")
+        }
+    }
+}
+
+@Composable
+@Preview
+fun PermissionsPage() {
+    val autoBoardingRunning = BeaconService.isRunning.collectAsStateWithLifecycle().value
+    val context = LocalContext.current
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            PermissionBox(permission = Permission.Notification)
         }
 
-        // ask for location permissions
-        val locationPermissions =
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-            )
+        PermissionBox(permission = Permission.Location)
 
-        PermissionItem(
-            permission = locationPermissions,
-            state = hasLocationPermissions,
-            title = stringResource(R.string.location),
-            description = stringResource(R.string.location_rational),
-            deniedIcon = Icons.Outlined.LocationOff,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            PermissionBox(permission = Permission.BackgroundLocation)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PermissionBox(permission = Permission.Bluetooth)
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(10.dp))
+
+        Button(onClick = {
+            context.startForegroundService(Intent(context, BeaconService::class.java))
+        }, enabled = !autoBoardingRunning) {
+            Text(text = if (!autoBoardingRunning) "Enable auto-boarding" else "Auto-boarding enabled")
+        }
+
+        Text(
+            text = "Requires background location and bluetooth permissions",
+            style = MaterialTheme.typography.labelSmall,
         )
     }
 }
 
-/**
- * Page asking for auto boarder permissions
- * */
-@Composable
-fun AutoBoardingPage(allPermissionsGranted: () -> Unit) {
-    val context = LocalContext.current
-    val hasBluetoothPermissions = remember { mutableStateOf(false) }
-    val hasBackgroundLocationPermissions = remember { mutableStateOf(false) }
-    val isAutoBoardingServiceRunning = BeaconService.isRunning.collectAsStateWithLifecycle().value
+sealed class Permission(
+    val name: String,
+    val description: String,
+    val permissions: Array<String>,
+) {
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    data object Notification : Permission(
+        "Notifications",
+        "Receive announcements and more.",
+        arrayOf(
+            Manifest.permission.POST_NOTIFICATIONS,
+        ),
+    )
 
-    // when all the permissions/auto boarding is granted, call function
-    SideEffect {
-        if (hasBluetoothPermissions.value &&
-            hasBackgroundLocationPermissions.value &&
-            isAutoBoardingServiceRunning
-        ) {
-            allPermissionsGranted()
-        }
-    }
+    data object Location : Permission(
+        "Location",
+        "See where you are and crowd source bus data.",
+        arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        ),
+    )
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        // ask for bluetooth permissions
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val bluetoothPermissions =
-                arrayOf(
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.BLUETOOTH_SCAN,
-                )
+    @RequiresApi(Build.VERSION_CODES.Q)
+    data object BackgroundLocation : Permission(
+        "Background Location",
+        "Crowd source bus data with the app closed.",
+        arrayOf(
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+        ),
+    )
 
-            item {
-                PermissionItem(
-                    permission = bluetoothPermissions,
-                    state = hasBluetoothPermissions,
-                    title = stringResource(R.string.bluetooth),
-                    description = stringResource(R.string.bluetooth_rational),
-                    deniedIcon = Icons.Outlined.NearbyError,
-                )
-            }
-        } else {
-            hasBluetoothPermissions.value = true
-        }
-
-        // ask for background location permissions
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val backgroundLocationPermissions =
-                arrayOf(
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                )
-
-            item {
-                PermissionItem(
-                    permission = backgroundLocationPermissions,
-                    state = hasBackgroundLocationPermissions,
-                    title = stringResource(R.string.background_location),
-                    description = stringResource(R.string.background_location_rational),
-                    deniedIcon = Icons.Outlined.LocationDisabled,
-                )
-            }
-        } else {
-            hasBackgroundLocationPermissions.value = true
-        }
-
-        // ask to enable auto boarding
-        item {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.automatic_board_bus),
-                    style = MaterialTheme.typography.headlineLarge,
-                )
-
-                Text(
-                    text =
-                        if (!isAutoBoardingServiceRunning) {
-                            stringResource(R.string.automatic_board_bus_rational)
-                        } else {
-                            stringResource(R.string.automatic_board_bus_enabled)
-                        },
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
-
-                if (!isAutoBoardingServiceRunning) {
-                    Button(onClick = {
-                        context.startForegroundService(Intent(context, BeaconService::class.java))
-                    }) {
-                        Text(text = stringResource(R.string.enable_automatic_board_bus))
-                    }
-                }
-            }
-        }
-    }
+    @RequiresApi(Build.VERSION_CODES.S)
+    data object Bluetooth : Permission(
+        "Bluetooth",
+        "Detect nearby buses for auto-boarding.",
+        arrayOf(
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.BLUETOOTH_SCAN,
+        ),
+    )
 }
 
-const val DENIED = "denied"
-const val EXPLAINED = "explained"
-
-/**
- * Item to ask and update permission states
- * */
 @Composable
-fun PermissionItem(
-    permission: Array<String>,
-    state: MutableState<Boolean>,
-    title: String,
-    description: String,
-    deniedIcon: ImageVector = Icons.Outlined.Close,
-) {
+fun PermissionBox(permission: Permission) {
     val context = LocalContext.current
-
-    state.value =
-        permission.all {
-            ContextCompat.checkSelfPermission(
-                context,
-                it,
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-
-    val showDialog = remember { mutableStateOf(false) }
-
-    if (showDialog.value) {
-        ToSettingsAlertDialog(showDialog)
+    var allGranted by remember {
+        mutableStateOf(
+            permission.permissions.all {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    it,
+                ) == PackageManager.PERMISSION_GRANTED
+            },
+        )
     }
 
     val launcher =
         rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions(),
-        ) { isGranted ->
-            val deniedList: List<String> =
-                isGranted.filter {
-                    !it.value
-                }.map {
-                    it.key
+            contract = ActivityResultContracts.RequestMultiplePermissions(),
+        ) { permissions ->
+            allGranted =
+                permissions.values.reduce { acc, permissionGranted ->
+                    acc && permissionGranted
                 }
-
-            when {
-                deniedList.isNotEmpty() -> {
-                    val map =
-                        deniedList.groupBy { permission ->
-                            if (shouldShowRequestPermissionRationale(
-                                    context as Activity,
-                                    permission,
-                                )
-                            ) {
-                                DENIED
-                            } else {
-                                EXPLAINED
-                            }
-                        }
-
-                    // request denied, request again
-                    map[DENIED]?.let {
-                        // IGNORED
-                    }
-
-                    // request denied, send to settings
-                    map[EXPLAINED]?.let {
-                        showDialog.value = true
-                    }
-                }
-                else -> {
-                    // All request are permitted
-                    state.value = true
-                }
-            }
         }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+    Row(
+        modifier = Modifier.padding(15.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (!state.value) {
-            Icon(deniedIcon, stringResource(R.string.permission_denied))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = permission.name, color = MaterialTheme.colorScheme.onSecondaryContainer)
+            Text(text = permission.description, style = MaterialTheme.typography.labelSmall)
         }
 
-        Text(text = title, style = MaterialTheme.typography.headlineLarge)
+        Spacer(modifier = Modifier.padding(20.dp))
 
-        Text(
-            text = if (!state.value) description else stringResource(R.string.permission_granted),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-
-        if (!state.value) {
-            Button(onClick = {
-                launcher.launch(permission)
-            }) {
-                Text(text = stringResource(R.string.grant_permissions))
-            }
+        Button(onClick = { launcher.launch(permission.permissions) }, enabled = !allGranted) {
+            Text(text = if (!allGranted) "Grant" else "Granted")
         }
-    }
-}
-
-/**
- * Alert dialog that is shown when user denies permissions
- * and has to be redirected to settings
- * */
-@Composable
-fun ToSettingsAlertDialog(showDialog: MutableState<Boolean>) {
-    val context = LocalContext.current
-
-    if (showDialog.value) {
-        AlertDialog(
-            title = { Text(text = stringResource(R.string.permissions)) },
-            text = { Text(text = stringResource(R.string.to_settings_explanation)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showDialog.value = false
-
-                        val intent = Intent(ACTION_APPLICATION_DETAILS_SETTINGS)
-                        with(intent) {
-                            data = Uri.fromParts("package", context.packageName, null)
-                            addCategory(CATEGORY_DEFAULT)
-                            addFlags(FLAG_ACTIVITY_NEW_TASK)
-                            addFlags(FLAG_ACTIVITY_NO_HISTORY)
-                            addFlags(FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-                        }
-
-                        context.startActivity(intent)
-                    },
-                ) {
-                    Text(text = stringResource(R.string.to_settings))
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDialog.value = false }) {
-                    Text(text = stringResource(R.string.not_now))
-                }
-            },
-            onDismissRequest = { showDialog.value = false },
-        )
-    }
-}
-
-@Composable
-fun SkipSetup(
-    showDialog: MutableState<Boolean>,
-    navigateToMaps: () -> Unit,
-) {
-    if (showDialog.value) {
-        AlertDialog(
-            title = { Text(text = stringResource(R.string.skip_setup)) },
-            text = { Text(text = stringResource(R.string.skip_confirmation)) },
-            dismissButton = {
-                Button(onClick = { showDialog.value = false }) {
-                    Text(text = stringResource(R.string.cancel))
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    navigateToMaps()
-                    showDialog.value = false
-                }) {
-                    Text(text = stringResource(R.string.skip))
-                }
-            },
-            onDismissRequest = { showDialog.value = false },
-        )
     }
 }
