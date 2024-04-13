@@ -1,13 +1,9 @@
 package edu.rpi.shuttletracker.ui.setup
 
-import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,22 +13,9 @@ class SetupScreenViewModel
     constructor(
         private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
-        val setupUiState =
-            combine(
-                userPreferencesRepository.getPrivacyPolicyAccepted(),
-                userPreferencesRepository.getAboutAccepted(),
-                userPreferencesRepository.getAllowAnalytics(),
-            ) { privatePolicy, about, allowAnalytics ->
-                return@combine SetupUiState(
-                    privacyPolicyAccepted = privatePolicy,
-                    aboutAccepted = about,
-                    allowAnalytics = allowAnalytics,
-                )
-            }.stateIn(
-                scope = viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                SetupUiState(),
-            )
+        suspend fun getStartPage() = userPreferencesRepository.getSetupStartIndex()
+
+        fun getAnalyticsEnabled() = userPreferencesRepository.getAllowAnalytics()
 
         fun updatePrivacyPolicyAccepted() {
             viewModelScope.launch {
@@ -52,10 +35,3 @@ class SetupScreenViewModel
             }
         }
     }
-
-@Immutable
-data class SetupUiState(
-    val privacyPolicyAccepted: Boolean = false,
-    val aboutAccepted: Boolean = false,
-    val allowAnalytics: Boolean = false,
-)

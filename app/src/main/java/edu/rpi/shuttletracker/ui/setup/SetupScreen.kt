@@ -1,13 +1,13 @@
 package edu.rpi.shuttletracker.ui.setup
 
-import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,67 +43,32 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.popUpTo
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.destinations.MapsScreenDestination
+import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.util.services.BeaconService
-
-sealed class SetupPages(
-    val title: String,
-    val nextText: String,
-    val content: @Composable () -> Unit,
-    val onComplete: () -> Unit = {},
-) {
-    data class About(
-        val acceptAbout: () -> Unit,
-    ) : SetupPages(
-            "About",
-            "I accept",
-            { AboutPage() },
-            {
-                acceptAbout()
-            },
-        )
-
-    data class PrivacyPolicy(
-        val acceptPrivatePolicy: () -> Unit,
-    ) : SetupPages(
-            "Privacy Policy",
-            "I accept",
-            { PrivacyPolicyPage() },
-            {
-                acceptPrivatePolicy()
-            },
-        )
-
-    data class Analytics(
-        val allowAnalytics: () -> Unit,
-        val analyticsEnabled: Boolean,
-    ) : SetupPages(
-            "Analytics",
-            "Next",
-            { AnalyticsPage(allowAnalytics, analyticsEnabled) },
-        )
-
-    data object Permissions : SetupPages(
-        "Permissions",
-        "Finish",
-        { PermissionsPage() },
-    )
-}
+import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RootNavGraph(start = true)
 @Destination
 @Composable
 fun SetupScreen(
     navigator: DestinationsNavigator,
     viewModel: SetupScreenViewModel = hiltViewModel(),
+    manualStart: Boolean = false,
 ) {
-    val setupUiState = viewModel.setupUiState.collectAsStateWithLifecycle().value
+    val startPage = if (manualStart) 0 else runBlocking { viewModel.getStartPage() }
+    if (startPage == TOTAL_PAGES) {
+        navigator.navigate(MapsScreenDestination) {
+            popUpTo(SetupScreenDestination) {
+                inclusive = true
+            }
+        }
+    }
 
-    var currentPage by remember { mutableIntStateOf(0) }
+    var currentPage by remember { mutableIntStateOf(startPage) }
 
     BackHandler(currentPage > 0) {
         --currentPage
@@ -113,13 +78,22 @@ fun SetupScreen(
         listOf(
             SetupPages.About(viewModel::updateAboutAccepted),
             SetupPages.PrivacyPolicy(viewModel::updatePrivacyPolicyAccepted),
-            SetupPages.Analytics(viewModel::updateAllowAnalytics, setupUiState.allowAnalytics),
+            SetupPages.Analytics(
+                viewModel::updateAllowAnalytics,
+                viewModel.getAnalyticsEnabled().collectAsStateWithLifecycle(
+                    initialValue = false,
+                ).value,
+            ),
             SetupPages.Permissions,
         )
 
     LaunchedEffect(key1 = currentPage) {
         if (currentPage == pages.size) {
-            navigator.navigate(MapsScreenDestination)
+            navigator.navigate(MapsScreenDestination) {
+                popUpTo(SetupScreenDestination) {
+                    inclusive = true
+                }
+            }
         }
     }
     if (currentPage < pages.size) {
@@ -146,9 +120,12 @@ fun SetupScreen(
                                 CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 ),
+                            modifier = Modifier.animateContentSize(),
                         ) {
-                            Box(modifier = Modifier.padding(10.dp)) {
-                                pages[currentPage].content()
+                            Crossfade(targetState = currentPage, label = "fade") { page ->
+                                Box(modifier = Modifier.padding(10.dp)) {
+                                    pages[page].content()
+                                }
                             }
                         }
                     }
@@ -160,7 +137,8 @@ fun SetupScreen(
                 ) {
                     HorizontalDivider(modifier = Modifier.fillMaxWidth())
                     Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                        pages[currentPage++].onComplete()
+                        pages[currentPage].onComplete()
+                        ++currentPage
                     }) {
                         Text(text = pages[currentPage].nextText)
                     }
@@ -238,49 +216,10 @@ fun PermissionsPage() {
     }
 }
 
-sealed class Permission(
-    val name: String,
-    val description: String,
-    val permissions: Array<String>,
-) {
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    data object Notification : Permission(
-        "Notifications",
-        "Receive announcements and more.",
-        arrayOf(
-            Manifest.permission.POST_NOTIFICATIONS,
-        ),
-    )
-
-    data object Location : Permission(
-        "Location",
-        "See where you are and crowd source bus data.",
-        arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        ),
-    )
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    data object BackgroundLocation : Permission(
-        "Background Location",
-        "Crowd source bus data with the app closed.",
-        arrayOf(
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-        ),
-    )
-
-    @RequiresApi(Build.VERSION_CODES.S)
-    data object Bluetooth : Permission(
-        "Bluetooth",
-        "Detect nearby buses for auto-boarding.",
-        arrayOf(
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN,
-        ),
-    )
-}
-
+/**
+ * Used to check whether or not the user has permissions for permissions
+ * And if not, will prompt the user to enable them
+ * */
 @Composable
 fun PermissionBox(permission: Permission) {
     val context = LocalContext.current

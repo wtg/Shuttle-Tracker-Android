@@ -12,6 +12,8 @@ import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Event
+import edu.rpi.shuttletracker.ui.setup.TOTAL_PAGES
+import edu.rpi.shuttletracker.util.services.BeaconService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -166,4 +168,11 @@ class UserPreferencesRepository
             dataStore.data.map {
                 it[DEV_OPTIONS_ACTIVE] ?: false
             }
+
+        suspend fun getSetupStartIndex(): Int {
+            if (!getAboutAccepted().first()) return 0
+            if (!getPrivacyPolicyAccepted().first()) return 1
+            if (!BeaconService.isRunning.first()) return 3
+            return TOTAL_PAGES
+        }
     }
