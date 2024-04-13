@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BusAlert
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material.icons.outlined.Timeline
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -129,6 +130,12 @@ fun SettingsScreen(
                 Icons.Outlined.Timeline,
                 stringResource(R.string.analytics),
                 onClick = { navigator.navigate(AnalyticsScreenDestination()) },
+            )
+
+            SettingsItem(
+                Icons.Outlined.RestartAlt,
+                "Redo Setup",
+                onClick = { navigator.navigate(SetupScreenDestination(true)) },
             )
 
             SettingsItem(

@@ -38,7 +38,7 @@ work-runtime-ktx = "2.9.0"
 compose-bom = "2024.04.00"
 
 ksp = "1.9.22-1.0.17"
-android-gradle-plugin = "8.3.1"
+android-gradle-plugin = "8.3.2"
 kotlin = "1.9.22"
 
 ktlint = "12.1.0"
@@ -74,6 +74,7 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room-run
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
 androidx-ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "ui" }
 androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "ui" }
+androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "ui" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "ui" }
 
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work-runtime-ktx" }

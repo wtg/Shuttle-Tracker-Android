@@ -94,6 +94,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit4)
     debugImplementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.androidx.ui.test.manifest)
+    debugImplementation(libs.androidx.ui.tooling)
 
     // beacon
     implementation(libs.android.beacon.library)

@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.ui.maps
 
 import android.location.Location
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
@@ -309,6 +310,7 @@ class MapsViewModel
 /**
  * Representation of the screen
  * */
+@Immutable
 data class MapsUIState(
     val runningBuses: List<Bus> = listOf(),
     val allBuses: List<Int> = listOf(),
