@@ -82,7 +82,7 @@ class AnnouncementWorker
                         context.getString(R.string.mark_as_read),
                         NotificationReceiver.markNotificationsRead(context, notificationCount),
                     )
-                    .setContentIntent(NotificationReceiver.openMaps(context))
+                    .setContentIntent(NotificationReceiver.openAnnouncements(context))
                     .setAutoCancel(true)
                     .build()
 

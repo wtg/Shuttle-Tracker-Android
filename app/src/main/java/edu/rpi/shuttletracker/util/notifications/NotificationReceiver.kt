@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
@@ -84,6 +85,21 @@ class NotificationReceiver : BroadcastReceiver() {
             val intent =
                 Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                }
+
+            return PendingIntent.getActivity(
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        }
+
+        internal fun openAnnouncements(context: Context): PendingIntent {
+            val intent =
+                Intent(context, MainActivity::class.java).apply {
+                    data = "https://shuttletracker.app/analytics/".toUri()
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
 
             return PendingIntent.getActivity(
