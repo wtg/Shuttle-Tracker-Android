@@ -153,4 +153,8 @@ dependencies {
 
     // work
     implementation(libs.androidx.work.runtime.ktx)
+
+    // glance
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
 }

@@ -13,6 +13,7 @@ espresso-core = "3.5.1"
 firebase-analytics = "21.6.1"
 firebase-bom = "32.8.0"
 firebase-messaging = "23.4.1"
+glance-appwidget = "1.0.0"
 google-service = "4.4.1"
 
 
@@ -55,6 +56,8 @@ android-beacon-library = { module = "org.altbeacon:android-beacon-library", vers
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore-preferences" }
 
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
+androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance-appwidget" }
+androidx-glance-material3 = { module = "androidx.glance:glance-material3", version.ref = "glance-appwidget" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt-navigation-compose" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
 androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt-navigation-compose" }
