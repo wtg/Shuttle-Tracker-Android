@@ -54,17 +54,6 @@ fun ScheduleScreen(
     val scheduleUiState = viewModel.scheduleUiState.collectAsStateWithLifecycle().value
 
 
-    CheckResponseError(
-        scheduleUiState.networkError,
-        scheduleUiState.serverError,
-        scheduleUiState.unknownError,
-        ignoreErrorRequest = { viewModel.clearErrors() },
-        retryErrorRequest = {
-            viewModel.clearErrors()
-            viewModel.loadAll()
-        },
-    )
-
     val pagerState =
         rememberPagerState(
             pageCount = { scheduleUiState.schedule.size },
@@ -72,6 +61,18 @@ fun ScheduleScreen(
         )
 
     Scaffold(
+        snackbarHost = {
+            CheckResponseError(
+                scheduleUiState.networkError,
+                scheduleUiState.serverError,
+                scheduleUiState.unknownError,
+                ignoreErrorRequest = { viewModel.clearErrors() },
+                retryErrorRequest = {
+                    viewModel.clearErrors()
+                    viewModel.loadAll()
+                },
+            )
+        },
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(R.string.schedule)) },

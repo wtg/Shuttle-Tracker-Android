@@ -47,16 +47,6 @@ fun AnnouncementsScreen(
 ) {
     val announcementsUIState = viewModel.announcementsUiState.collectAsStateWithLifecycle().value
 
-    CheckResponseError(
-        announcementsUIState.networkError,
-        announcementsUIState.serverError,
-        announcementsUIState.unknownError,
-        ignoreErrorRequest = { viewModel.clearErrors() },
-        retryErrorRequest = {
-            viewModel.clearErrors()
-            viewModel.loadAll()
-        },
-    )
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -64,6 +54,18 @@ fun AnnouncementsScreen(
         )
 
     Scaffold(
+        snackbarHost = {
+            CheckResponseError(
+                announcementsUIState.networkError,
+                announcementsUIState.serverError,
+                announcementsUIState.unknownError,
+                ignoreErrorRequest = { viewModel.clearErrors() },
+                retryErrorRequest = {
+                    viewModel.clearErrors()
+                    viewModel.loadAll()
+                },
+            )
+        },
         topBar = {
             LargeTopAppBar(
                 title = { Text(text = stringResource(R.string.announcements)) },

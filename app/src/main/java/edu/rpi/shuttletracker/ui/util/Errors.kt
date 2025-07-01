@@ -7,13 +7,23 @@ import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.ErrorResponse
+import kotlinx.coroutines.launch
 
 /**
  * @param networkError: a network error, null if none
@@ -38,6 +48,7 @@ fun CheckResponseError(
             onPrimaryRequest = { retryErrorRequest() },
             errorType = stringResource(R.string.error_network),
             icon = Icons.Outlined.WifiOff,
+            errorBody = networkError.error.toString()
         )
     }
 
@@ -75,39 +86,34 @@ fun Error(
     onSecondaryRequest: () -> Unit,
     onPrimaryRequest: () -> Unit,
     errorType: String = stringResource(R.string.error),
-    errorBody: String = "",
+    errorBody: String = error?.toString() ?: "",
     icon: ImageVector = Icons.Outlined.Error,
     primaryButtonText: String = stringResource(R.string.retry),
     secondaryButtonText: String = stringResource(R.string.ignore),
     showSecondaryButton: Boolean = true,
 ) {
-    AlertDialog(
-        icon = { Icon(icon, stringResource(R.string.error)) },
-        title = { Text(text = errorType) },
-        text = {
-            Text(
-                text =
-                    (
-                        if (errorBody != "") {
-                            errorBody + "\n\n"
-                        } else {
-                            ""
-                        }
-                    ) + error?.toString(),
-            )
-        },
-        onDismissRequest = { onSecondaryRequest() },
-        dismissButton = {
-            if (showSecondaryButton) {
-                Button(onClick = { onSecondaryRequest() }) {
-                    Text(text = secondaryButtonText)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    SnackbarHost(hostState = snackbarHostState)
+    LaunchedEffect(error) {
+        if (error != null) {
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    "$errorType: $errorBody",
+                    actionLabel = primaryButtonText
+                )
+
+                when (result) {
+                    SnackbarResult.ActionPerformed -> {
+                        onPrimaryRequest()
+                    }
+
+                    SnackbarResult.Dismissed -> {
+                        /* ignored */
+                    }
                 }
             }
-        },
-        confirmButton = {
-            Button(onClick = { onPrimaryRequest() }) {
-                Text(text = primaryButtonText)
-            }
-        },
-    )
+        }
+    }
 }

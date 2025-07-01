@@ -118,17 +118,6 @@ fun MapsScreen(
 
     var bottomSheetLoaded by remember { mutableStateOf<Stop?>(null) }
 
-    // finds errors when requesting data to server
-    CheckResponseError(
-        mapsUiState.networkError,
-        mapsUiState.serverError,
-        mapsUiState.unknownError,
-        ignoreErrorRequest = { viewModel.clearErrors() },
-        retryErrorRequest = {
-            viewModel.clearErrors()
-            viewModel.loadAll()
-        },
-    )
 
     val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
     val errorStartingLocationService = LocationService.permissionError.collectAsStateWithLifecycle().value
@@ -157,6 +146,18 @@ fun MapsScreen(
 
     Scaffold(
         snackbarHost = {
+            // finds errors when requesting data to server
+            CheckResponseError(
+                mapsUiState.networkError,
+                mapsUiState.serverError,
+                mapsUiState.unknownError,
+                ignoreErrorRequest = { viewModel.clearErrors() },
+                retryErrorRequest = {
+                    viewModel.clearErrors()
+                    viewModel.loadAll()
+                },
+            )
+
             SnackbarHost(hostState = snackbarHostState)
         },
         floatingActionButton = {
