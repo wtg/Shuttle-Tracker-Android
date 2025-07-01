@@ -64,7 +64,6 @@ fun DevMenuScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val context = LocalContext.current
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -102,13 +101,6 @@ fun DevMenuScreen(
                 updateAutoBoardService = viewModel::updateAutoBoardServiceBlocking,
             )
 
-            SettingsItem(
-                icon = Icons.Outlined.Alarm,
-                title = "Restart Departures",
-                onClick = {
-                    viewModel.restartAllDepartures(context)
-                },
-            )
         }
     }
 }

@@ -5,7 +5,6 @@ import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
-import edu.rpi.shuttletracker.data.models.DepartureBus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
@@ -15,7 +14,6 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
-import retrofit2.http.Query
 
 interface ApiService {
     @GET("buses")
@@ -52,9 +50,4 @@ interface ApiService {
         @Body token: String,
     ): NetworkResponse<Unit, ErrorResponse>
 
-    @GET("buses")
-    suspend fun getApproachingBuses(
-        @Query("latitude") latitude: Double,
-        @Query("longitude") longitude: Double,
-    ): NetworkResponse<List<DepartureBus>, ErrorResponse>
 }

@@ -1,17 +1,14 @@
 package edu.rpi.shuttletracker.ui.settings.developerMenu
 
-import android.content.Context
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
-import edu.rpi.shuttletracker.data.repositories.DeparturesRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -23,7 +20,6 @@ class DevMenuViewModel
     constructor(
         private val userPreferencesRepository: UserPreferencesRepository,
         private val apiRepository: ApiRepository,
-        private val departuresRepository: DeparturesRepository,
     ) : ViewModel() {
         val devMenuUiState =
             combine(
@@ -74,11 +70,6 @@ class DevMenuViewModel
             }
         }
 
-        fun restartAllDepartures(context: Context) {
-            viewModelScope.launch {
-                departuresRepository.getAllDepartures().first().forEach { it.initiateAlarms(context) }
-            }
-        }
     }
 
 @Immutable

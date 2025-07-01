@@ -117,14 +117,6 @@ fun MapsScreen(
     val context = LocalContext.current
 
     var bottomSheetLoaded by remember { mutableStateOf<Stop?>(null) }
-    DeparturesBottomSheet(
-        stop = bottomSheetLoaded,
-        departures = mapsUiState.stopDepartures,
-        changeStopLoaded = { bottomSheetLoaded = it },
-        addDeparture = viewModel::addNewDeparture,
-        updateStopDestination = viewModel::selectBusDeparture,
-        deleteDeparture = viewModel::deleteDeparture,
-    )
 
     // finds errors when requesting data to server
     CheckResponseError(

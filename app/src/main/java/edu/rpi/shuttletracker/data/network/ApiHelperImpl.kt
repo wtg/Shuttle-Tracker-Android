@@ -5,7 +5,6 @@ import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
-import edu.rpi.shuttletracker.data.models.DepartureBus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
@@ -50,8 +49,4 @@ class ApiHelperImpl
         override suspend fun sendRegistrationToken(token: String): NetworkResponse<Unit, ErrorResponse> =
             apiService.sendRegistrationToken(token)
 
-        override suspend fun getApproachingBuses(
-            latitude: Double,
-            longitude: Double,
-        ): NetworkResponse<List<DepartureBus>, ErrorResponse> = apiService.getApproachingBuses(latitude, longitude)
     }

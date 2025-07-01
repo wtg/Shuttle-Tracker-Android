@@ -5,11 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.rpi.shuttletracker.data.models.Departure
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
-import edu.rpi.shuttletracker.data.repositories.DeparturesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -19,105 +17,76 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ScheduleViewModel
-    @Inject
-    constructor(
-        private val apiRepository: ApiRepository,
-        private val departuresRepository: DeparturesRepository,
-    ) : ViewModel() {
-        // represents the ui state of the view
-        private val _scheduleUiState = MutableStateFlow(ScheduleUIState())
-        val scheduleUiState: StateFlow<ScheduleUIState> = _scheduleUiState
+@Inject
+constructor(
+    private val apiRepository: ApiRepository,
+) : ViewModel() {
+    // represents the ui state of the view
+    private val _scheduleUiState = MutableStateFlow(ScheduleUIState())
+    val scheduleUiState: StateFlow<ScheduleUIState> = _scheduleUiState
 
-        init {
-            loadAll()
+    init {
+        loadAll()
+    }
+
+    fun loadAll() {
+        if (scheduleUiState.value.schedule.isEmpty()) {
+            getSchedule()
         }
 
-        fun loadAll() {
-            if (scheduleUiState.value.schedule.isEmpty()) {
-                getSchedule()
-            }
+    }
 
-            viewModelScope.launch {
-                _scheduleUiState.combine(
-                    departuresRepository.getAllDeparturesGrouped(),
-                ) { schedule, departures ->
-                    schedule.copy(departures = departures)
-                }.collect {
-                    _scheduleUiState.value = it
+    /**
+     * sets all the errors to none
+     * */
+    fun clearErrors() {
+        loadAll()
+        _scheduleUiState.update {
+            it.copy(
+                unknownError = null,
+                networkError = null,
+                serverError = null,
+            )
+        }
+    }
+
+    private fun getSchedule() {
+        viewModelScope.launch {
+            readApiResponse(apiRepository.getSchedule()) { response ->
+                _scheduleUiState.update {
+                    it.copy(schedule = response.reversed())
                 }
-            }
-        }
-
-        /**
-         * sets all the errors to none
-         * */
-        fun clearErrors() {
-            loadAll()
-            _scheduleUiState.update {
-                it.copy(
-                    unknownError = null,
-                    networkError = null,
-                    serverError = null,
-                )
-            }
-        }
-
-        private fun getSchedule() {
-            viewModelScope.launch {
-                readApiResponse(apiRepository.getSchedule()) { response ->
-                    _scheduleUiState.update {
-                        it.copy(schedule = response.reversed())
-                    }
-                }
-            }
-        }
-
-        /**
-         * Reads the network response and maps it to correct place
-         * */
-        private fun <T> readApiResponse(
-            response: NetworkResponse<T, ErrorResponse>,
-            success: (body: T) -> Unit,
-        ) {
-            when (response) {
-                is NetworkResponse.Success -> success(response.body)
-                is NetworkResponse.ServerError ->
-                    _scheduleUiState.update {
-                        it.copy(serverError = response)
-                    }
-
-                is NetworkResponse.NetworkError ->
-                    _scheduleUiState.update {
-                        it.copy(networkError = response)
-                    }
-
-                is NetworkResponse.UnknownError ->
-                    _scheduleUiState.update {
-                        it.copy(unknownError = response)
-                    }
-            }
-        }
-
-        fun addNewDeparture(departure: Departure) {
-            if (departure.days.isNotEmpty()) {
-                viewModelScope.launch {
-                    departuresRepository.insertDeparture(departure)
-                }
-            }
-        }
-
-        fun deleteDeparture(departure: Departure) {
-            viewModelScope.launch {
-                departuresRepository.deleteDeparture(departure)
-            }
-        }
-
-        fun deleteAllDepartures() {
-            viewModelScope.launch {
-                departuresRepository.nukeDepartures()
             }
         }
     }
+
+    /**
+     * Reads the network response and maps it to correct place
+     * */
+    private fun <T> readApiResponse(
+        response: NetworkResponse<T, ErrorResponse>,
+        success: (body: T) -> Unit,
+    ) {
+        when (response) {
+            is NetworkResponse.Success -> success(response.body)
+            is NetworkResponse.ServerError ->
+                _scheduleUiState.update {
+                    it.copy(serverError = response)
+                }
+
+            is NetworkResponse.NetworkError ->
+                _scheduleUiState.update {
+                    it.copy(networkError = response)
+                }
+
+            is NetworkResponse.UnknownError ->
+                _scheduleUiState.update {
+                    it.copy(unknownError = response)
+                }
+        }
+    }
+
+}
 
 @Immutable
 data class ScheduleUIState(
@@ -125,5 +94,4 @@ data class ScheduleUIState(
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
     val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
-    val departures: List<List<Departure>> = listOf(),
 )

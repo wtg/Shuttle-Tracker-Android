@@ -5,7 +5,6 @@ import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
-import edu.rpi.shuttletracker.data.models.DepartureBus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
@@ -34,8 +33,4 @@ interface ApiHelper {
 
     suspend fun sendRegistrationToken(token: String): NetworkResponse<Unit, ErrorResponse>
 
-    suspend fun getApproachingBuses(
-        latitude: Double,
-        longitude: Double,
-    ): NetworkResponse<List<DepartureBus>, ErrorResponse>
 }

@@ -40,7 +40,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.ui.maps.TimeDateText
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.ui.util.CollapsableList
 import java.util.Calendar
@@ -54,16 +53,6 @@ fun ScheduleScreen(
 ) {
     val scheduleUiState = viewModel.scheduleUiState.collectAsStateWithLifecycle().value
 
-    var showDeleteDepartureWarning by remember { mutableStateOf(false) }
-
-    DeleteAllDeparturesDialog(
-        show = showDeleteDepartureWarning,
-        onDismiss = { showDeleteDepartureWarning = false },
-        onSuccess = {
-            showDeleteDepartureWarning = false
-            viewModel.deleteAllDepartures()
-        },
-    )
 
     CheckResponseError(
         scheduleUiState.networkError,
@@ -110,78 +99,11 @@ fun ScheduleScreen(
                 if (page < scheduleUiState.schedule.size) {
                     SchedulePagerItem(schedule = scheduleUiState.schedule[page])
                 }
-
-                CollapsableList(
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                    key = { it.id },
-                    header = {
-                        Text(
-                            text = it.firstOrNull()?.stop ?: "",
-                            style = MaterialTheme.typography.headlineSmall,
-                        )
-                    },
-                    body = {
-                        TimeDateText(
-                            departure = it,
-                            viewModel::addNewDeparture,
-                            viewModel::deleteDeparture,
-                        )
-                    },
-                    allContent = scheduleUiState.departures,
-                )
-
-                if (scheduleUiState.departures.isNotEmpty()) {
-                    TextButton(
-                        onClick = { showDeleteDepartureWarning = true },
-                    ) {
-                        Text(text = stringResource(id = R.string.delete_all))
-                        Icon(imageVector = Icons.Outlined.Delete, contentDescription = "delete all")
-                    }
-                }
             }
         }
     }
 }
 
-@Composable
-fun DeleteAllDeparturesDialog(
-    show: Boolean,
-    onDismiss: () -> Unit,
-    onSuccess: () -> Unit,
-) {
-    if (show) {
-        AlertDialog(
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Warning,
-                    contentDescription = stringResource(id = R.string.departure_delete),
-                )
-            },
-            onDismissRequest = { onDismiss() },
-            confirmButton = {
-                Button(onClick = { onSuccess() }) {
-                    Text(text = stringResource(id = R.string.delete_all))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { onDismiss() }) {
-                    Text(text = stringResource(id = R.string.cancel))
-                }
-            },
-            title = { Text(text = stringResource(id = R.string.departure_delete_warning)) },
-            text = {
-                Text(
-                    text =
-                        stringResource(id = R.string.departure_delete_warning_serious),
-                )
-            },
-        )
-    }
-}
 
 @Composable
 fun SchedulePagerItem(schedule: Schedule) {
