@@ -1,26 +1,29 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.dagger.hilt.android")
-    id("com.google.devtools.ksp")
     id("com.mikepenz.aboutlibraries.plugin")
     id("com.google.gms.google-services")
     id("org.jlleitschuh.gradle.ktlint")
-    id("kotlin-kapt")
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.ksp)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
+    }
 }
 
 android {
-    compileSdk = 34
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
     }
 
     buildFeatures {
@@ -29,7 +32,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     packaging {
@@ -41,7 +44,7 @@ android {
     defaultConfig {
         applicationId = "edu.rpi.shuttletracker"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 10
         versionName = "2.0"
 
@@ -59,6 +62,10 @@ android {
                 "proguard-rules.pro",
             )
         }
+
+        debug {
+            versionNameSuffix = ".debug"
+        }
     }
     namespace = "edu.rpi.shuttletracker"
 
@@ -69,10 +76,6 @@ android {
             reporter(ReporterType.CHECKSTYLE)
         }
     }
-}
-
-kapt {
-    correctErrorTypes = true
 }
 
 dependencies {
@@ -101,10 +104,10 @@ dependencies {
 
     // hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.hilt.work)
-    kapt(libs.androidx.hilt.compiler)
+    ksp(libs.androidx.hilt.compiler)
 
     // retrofit
     implementation(libs.retrofit)
@@ -140,6 +143,7 @@ dependencies {
     // about libraries
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose)
+    implementation(libs.aboutlibraries.compose.m3)
 
     // firebase
     implementation(platform(libs.firebase.bom))

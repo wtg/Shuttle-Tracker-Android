@@ -17,7 +17,6 @@ class STRestarter : BroadcastReceiver() {
     @Inject
     lateinit var userPreferencesRepository: Lazy<UserPreferencesRepository>
 
-
     override fun onReceive(
         context: Context,
         intent: Intent,

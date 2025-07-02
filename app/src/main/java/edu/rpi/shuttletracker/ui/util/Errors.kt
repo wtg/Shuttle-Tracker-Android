@@ -1,9 +1,5 @@
 package edu.rpi.shuttletracker.ui.util
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Dns
-import androidx.compose.material.icons.outlined.Error
-import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -11,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.R
@@ -39,7 +34,7 @@ fun CheckResponseError(
             error = networkError,
             onPrimaryRequest = { retryErrorRequest() },
             errorType = stringResource(R.string.error_network),
-            errorBody = networkError.error.toString()
+            errorBody = networkError.error.toString(),
         )
     }
 
@@ -81,10 +76,11 @@ fun Error(
     LaunchedEffect(error) {
         if (error != null) {
             scope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    "$errorType: $errorBody",
-                    actionLabel = primaryButtonText
-                )
+                val result =
+                    snackbarHostState.showSnackbar(
+                        "$errorType: $errorBody",
+                        actionLabel = primaryButtonText,
+                    )
 
                 when (result) {
                     SnackbarResult.ActionPerformed -> {
@@ -92,7 +88,7 @@ fun Error(
                     }
 
                     SnackbarResult.Dismissed -> {
-                        /* ignored */
+                        // ignored
                     }
                 }
             }

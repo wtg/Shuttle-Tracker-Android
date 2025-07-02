@@ -25,15 +25,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.annotation.parameters.DeepLink
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination(
+@Destination<RootGraph>(
     deepLinks = [
         DeepLink(
             uriPattern = "https://shuttletracker.app/analytics/",
@@ -46,7 +47,6 @@ fun AnnouncementsScreen(
     viewModel: AnnouncementsViewModel = hiltViewModel(),
 ) {
     val announcementsUIState = viewModel.announcementsUiState.collectAsStateWithLifecycle().value
-
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(

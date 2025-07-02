@@ -10,13 +10,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.generated.NavGraphs
+import com.ramcosta.composedestinations.generated.destinations.MapsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
-import edu.rpi.shuttletracker.ui.destinations.MapsScreenDestination
-import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.ui.setup.TOTAL_PAGES
 import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
 import kotlinx.coroutines.launch
@@ -47,11 +48,11 @@ class MainActivity : ComponentActivity() {
                 ) {
                     DestinationsNavHost(
                         navGraph = NavGraphs.root,
-                        startRoute =
+                        start =
                             if (runBlocking { userPreferencesRepository.getSetupStartIndex() == TOTAL_PAGES }) {
-                                MapsScreenDestination
+                                MapsScreenDestination()
                             } else {
-                                SetupScreenDestination
+                                SetupScreenDestination()
                             },
                     )
                 }

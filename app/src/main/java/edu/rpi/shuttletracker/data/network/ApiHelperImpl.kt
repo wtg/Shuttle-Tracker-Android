@@ -48,5 +48,4 @@ class ApiHelperImpl
 
         override suspend fun sendRegistrationToken(token: String): NetworkResponse<Unit, ErrorResponse> =
             apiService.sendRegistrationToken(token)
-
     }

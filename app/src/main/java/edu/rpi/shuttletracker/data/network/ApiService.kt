@@ -49,5 +49,4 @@ interface ApiService {
     suspend fun sendRegistrationToken(
         @Body token: String,
     ): NetworkResponse<Unit, ErrorResponse>
-
 }

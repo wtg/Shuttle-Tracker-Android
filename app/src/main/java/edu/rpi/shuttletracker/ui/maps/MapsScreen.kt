@@ -85,22 +85,22 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootNavGraph
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.AnnouncementsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.ui.destinations.AnnouncementsScreenDestination
-import edu.rpi.shuttletracker.ui.destinations.ScheduleScreenDestination
-import edu.rpi.shuttletracker.ui.destinations.SettingsScreenDestination
-import edu.rpi.shuttletracker.ui.destinations.SetupScreenDestination
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
+import androidx.core.graphics.toColorInt
 
-@RootNavGraph(start = true)
-@Destination
+@Destination<RootGraph>(start = true)
 @Composable
 fun MapsScreen(
     navigator: DestinationsNavigator,
@@ -117,7 +117,6 @@ fun MapsScreen(
     val context = LocalContext.current
 
     var bottomSheetLoaded by remember { mutableStateOf<Stop?>(null) }
-
 
     val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
     val errorStartingLocationService = LocationService.permissionError.collectAsStateWithLifecycle().value
@@ -302,7 +301,7 @@ fun BusMap(
                 color =
                     Color(
                         android.graphics.Color.valueOf(
-                            android.graphics.Color.parseColor(it.colorName),
+                            it.colorName.toColorInt(),
                         ).toArgb(),
                     ),
             )

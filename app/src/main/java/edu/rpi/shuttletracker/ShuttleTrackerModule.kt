@@ -130,6 +130,4 @@ object ShuttleTrackerModule {
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
             produceFile = { context.preferencesDataStoreFile(USER_PREFERENCES) },
         )
-
-
 }

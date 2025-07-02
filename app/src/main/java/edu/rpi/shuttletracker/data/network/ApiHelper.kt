@@ -32,5 +32,4 @@ interface ApiHelper {
     suspend fun addAnalytics(analytics: Analytics): NetworkResponse<Unit, ErrorResponse>
 
     suspend fun sendRegistrationToken(token: String): NetworkResponse<Unit, ErrorResponse>
-
 }

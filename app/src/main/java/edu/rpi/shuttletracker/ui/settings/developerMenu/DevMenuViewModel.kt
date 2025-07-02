@@ -69,7 +69,6 @@ class DevMenuViewModel
                 userPreferencesRepository.activateDevOptions(devOptions)
             }
         }
-
     }
 
 @Immutable
