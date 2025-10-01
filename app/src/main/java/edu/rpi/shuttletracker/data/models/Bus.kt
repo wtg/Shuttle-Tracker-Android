@@ -14,18 +14,6 @@ import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 data class Bus(
-//    @Flatten("location::coordinate::latitude")
-//    val latitude: Double,
-//    @Flatten("location::coordinate::longitude")
-//    val longitude: Double,
-//    @SerializedName("id")
-//    val id: Int,
-//    @Flatten("location::type")
-//    val type: String,
-//    @Flatten("location::date")
-//    val date: String,
-//    @Flatten("location::id")
-//    val uuid: String,
     @SerializedName("name") val id: String,
     val latitude: Double,
     val longitude: Double,
@@ -38,10 +26,7 @@ data class Bus(
      * Turns the date stored into a time of a generalized time ago from current
      * updates once per second if subscribed to
      * */
-
     fun getTimeAgo(): Flow<String> {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
-
         // Parse naive timestamp and assume UTC (change ZoneOffset.UTC if you want a different zone)
         val busInstant =
             LocalDateTime.parse(date, DateTimeFormatter.ISO_LOCAL_DATE_TIME)

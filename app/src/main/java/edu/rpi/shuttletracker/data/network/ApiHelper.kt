@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.Flow
 interface ApiHelper {
     suspend fun getRunningBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>>
 
+    suspend fun getAllBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>>
+
     suspend fun getStops(): NetworkResponse<List<Stop>, ErrorResponse>
 
     suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse>
@@ -22,8 +24,6 @@ interface ApiHelper {
         busNum: Int,
         bus: BoardBus,
     ): NetworkResponse<Unit, ErrorResponse>
-
-    suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse>
 
     suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse>
 

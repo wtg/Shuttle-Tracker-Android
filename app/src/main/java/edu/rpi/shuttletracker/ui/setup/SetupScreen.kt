@@ -84,7 +84,7 @@ fun SetupScreen(
                     initialValue = false,
                 ).value,
             ),
-            SetupPages.Permissions,
+//            SetupPages.Permissions,
         )
 
     LaunchedEffect(key1 = currentPage) {

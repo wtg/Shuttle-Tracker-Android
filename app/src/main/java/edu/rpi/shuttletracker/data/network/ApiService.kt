@@ -19,7 +19,10 @@ interface ApiService {
     @GET("locations")
     suspend fun getRunningBuses(): NetworkResponse<Map<String, Bus>, ErrorResponse>
 
-    @GET("stops")
+    @GET("locations")
+    suspend fun getAllBuses(): NetworkResponse<Map<String, Bus>, ErrorResponse>
+
+    @GET("routes")
     suspend fun getStops(): NetworkResponse<List<Stop>, ErrorResponse>
 
     @GET("routes")
@@ -30,9 +33,6 @@ interface ApiService {
         @Path("busNum") busNum: Int,
         @Body bus: BoardBus,
     ): NetworkResponse<Unit, ErrorResponse>
-
-    @GET("buses/all")
-    suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse>
 
     @GET("announcements")
     suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse>

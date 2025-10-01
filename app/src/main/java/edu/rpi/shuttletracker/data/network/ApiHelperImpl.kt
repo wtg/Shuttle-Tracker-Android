@@ -25,6 +25,14 @@ class ApiHelperImpl
                 }
             }
 
+        override suspend fun getAllBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>> =
+            flow {
+                while (true) {
+                    emit(apiService.getAllBuses())
+                    delay(5000)
+                }
+            }
+
         override suspend fun getStops(): NetworkResponse<List<Stop>, ErrorResponse> = apiService.getStops()
 
         override suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse> = apiService.getRoutes()
@@ -33,8 +41,6 @@ class ApiHelperImpl
             busNum: Int,
             bus: BoardBus,
         ): NetworkResponse<Unit, ErrorResponse> = apiService.addBus(busNum, bus)
-
-        override suspend fun getAllBuses(): NetworkResponse<List<Int>, ErrorResponse> = apiService.getAllBuses()
 
         override suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse> =
             apiService.getAnnouncements()

@@ -29,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
@@ -87,7 +86,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AnnouncementsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
@@ -165,14 +163,14 @@ fun MapsScreen(
                     viewModel.refreshRunningBusses()
                     viewModel.loadAll()
                 }
-                BoardBusFab(
-                    mapsUiState.allBuses,
-                    viewModel::closestDistanceToStop,
-                    mapsUiState.minStopDist,
-                    viewModel::leaveBusPressed,
-                    viewModel::boardBusPressed,
-                    viewModel::busSelectionCanceled,
-                )
+//                BoardBusFab(
+//                    mapsUiState.allBuses,
+//                    viewModel::closestDistanceToStop,
+//                    mapsUiState.minStopDist,
+//                    viewModel::leaveBusPressed,
+//                    viewModel::boardBusPressed,
+//                    viewModel::busSelectionCanceled,
+//                )
             }
         },
     ) { padding ->
@@ -195,12 +193,12 @@ fun MapsScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 // navigates to announcements
-                ActionButton(
-                    icon = Icons.Outlined.Notifications,
-                    badgeCount = mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
-                ) {
-                    navigator.navigate(AnnouncementsScreenDestination())
-                }
+//                ActionButton(
+//                    icon = Icons.Outlined.Notifications,
+//                    badgeCount = mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
+//                ) {
+//                    navigator.navigate(AnnouncementsScreenDestination())
+//                }
 
                 // navigates to the schedule
                 ActionButton(icon = Icons.Outlined.Schedule) {
