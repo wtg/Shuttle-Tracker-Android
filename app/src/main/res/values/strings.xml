@@ -12,7 +12,7 @@
     <string name="simple_circle" translatable="false">simplecircle.png</string>
 
     <!-- URLS -->
-    <string name="url_default">https://staging.shuttletracker.app/</string>
+    <string name="url_default">https://shuttles.rpi.edu/api/</string>
     <string name="url_private_policy">https://web.shuttletracker.app/privacy-policy</string>
     <string name="url_repository">https://github.com/wtg/Shuttle-Tracker-Android</string>
     <string name="url_repository_issues">https://github.com/wtg/Shuttle-Tracker-Android/issues</string>
@@ -139,7 +139,7 @@
 
 
     <!-- Maps screen -->
-    <string name="bus_number">Bus %1$d</string>
+    <string name="bus_number">Bus %1$s</string>
     <string name="distance_warning">Must be %1$dm from a stop to board</string>
     <string name="no_location_warning">Unable to determine your location</string>
 

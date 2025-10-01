@@ -68,6 +68,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
+import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.location.LocationServices
@@ -98,7 +99,6 @@ import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
-import androidx.core.graphics.toColorInt
 
 @Destination<RootGraph>(start = true)
 @Composable

@@ -17,7 +17,7 @@ import javax.inject.Inject
 class ApiHelperImpl
     @Inject
     constructor(private val apiService: ApiService) : ApiHelper {
-        override suspend fun getRunningBuses(): Flow<NetworkResponse<List<Bus>, ErrorResponse>> =
+        override suspend fun getRunningBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>> =
             flow {
                 while (true) {
                     emit(apiService.getRunningBuses())
