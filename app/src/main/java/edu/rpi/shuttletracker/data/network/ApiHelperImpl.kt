@@ -1,10 +1,12 @@
 package edu.rpi.shuttletracker.data.network
 
+import com.google.gson.JsonObject
 import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
+import edu.rpi.shuttletracker.data.models.Coordinate
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
@@ -33,9 +35,89 @@ class ApiHelperImpl
                 }
             }
 
-        override suspend fun getStops(): NetworkResponse<List<Stop>, ErrorResponse> = apiService.getStops()
+        override suspend fun getStops(): NetworkResponse<List<Stop>, ErrorResponse> {
+            return when (val resp = apiService.getRoutesRaw()) {
+                is NetworkResponse.Success -> {
+                    val stops = parseStopsFromSchema(resp.body)
+                    NetworkResponse.Success(stops, resp.response)
+                }
+                is NetworkResponse.ServerError -> NetworkResponse.ServerError(resp.body, resp.response)
+                is NetworkResponse.NetworkError -> NetworkResponse.NetworkError(resp.error)
+                is NetworkResponse.UnknownError -> NetworkResponse.UnknownError(resp.error, resp.response)
+            }
+        }
 
-        override suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse> = apiService.getRoutes()
+        /** Converts the route-indexed JSON into a flat List<Stop> (excludes GHOST_*). */
+        private fun parseStopsFromSchema(root: JsonObject): List<Stop> {
+            val allStops = mutableListOf<Stop>()
+
+            for ((_, routeJson) in root.entrySet()) {
+                val routeObj = routeJson.asJsonObject
+                val stopIds = routeObj.getAsJsonArray("STOPS") ?: continue
+
+                for (stopIdElement in stopIds) {
+                    val stopId = stopIdElement.asString
+                    val stopObj = routeObj.getAsJsonObject(stopId) ?: continue
+                    val coords = stopObj.getAsJsonArray("COORDINATES") ?: continue
+                    if (coords.size() < 2) continue
+
+                    val latitude = coords[0].asDouble
+                    val longitude = coords[1].asDouble
+                    val name = stopObj.get("NAME")?.asString ?: stopId
+
+                    allStops.add(Stop(latitude, longitude, name))
+                }
+            }
+
+            return allStops
+        }
+
+        override suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse> {
+            return when (val resp = apiService.getRoutesRaw()) {
+                is NetworkResponse.Success -> {
+                    val stops = parseRoutesFromSchema(resp.body)
+                    NetworkResponse.Success(stops, resp.response)
+                }
+                is NetworkResponse.ServerError -> NetworkResponse.ServerError(resp.body, resp.response)
+                is NetworkResponse.NetworkError -> NetworkResponse.NetworkError(resp.error)
+                is NetworkResponse.UnknownError -> NetworkResponse.UnknownError(resp.error, resp.response)
+            }
+        }
+
+        private fun parseRoutesFromSchema(root: JsonObject): List<Route> {
+            val excludedRoutes = setOf("ENTRY1", "EXIT1", "EXIT2")
+            val allRoutes = mutableListOf<Route>()
+
+            for ((routeName, routeElem) in root.entrySet()) {
+                if (routeName in excludedRoutes) continue
+
+                val routeObj = routeElem.asJsonObject
+
+                val color = routeObj.get("COLOR")?.asString ?: continue
+                val routesArray = routeObj.getAsJsonArray("ROUTES") ?: continue
+
+                val coordinates = mutableListOf<Coordinate>()
+
+                // Iterate through each polyline in the ROUTES array
+                for (polylineElem in routesArray) {
+                    val polyline = polylineElem.asJsonArray
+
+                    // Iterate through each coordinate pair in the polyline
+                    for (coordElem in polyline) {
+                        val coords = coordElem.asJsonArray
+                        if (coords.size() >= 2) {
+                            val latitude = coords[0].asDouble
+                            val longitude = coords[1].asDouble
+                            coordinates.add(Coordinate(latitude, longitude))
+                        }
+                    }
+                }
+                allRoutes.add(
+                    Route(colorName = color, coordinates = coordinates),
+                )
+            }
+            return allRoutes
+        }
 
         override suspend fun addBus(
             busNum: Int,

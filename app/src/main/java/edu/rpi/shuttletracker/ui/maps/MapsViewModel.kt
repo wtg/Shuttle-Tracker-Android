@@ -92,13 +92,13 @@ class MapsViewModel
          * THIS IGNORES THE RUNNING BUSES AS THIS SHOULD BE SUBSCRIBED TO FROM UI
          * */
         fun loadAll() {
-//            if (mapsUiState.value.stops.isEmpty()) {
-//                loadStops()
-//            }
-//
-//            if (mapsUiState.value.routes.isEmpty()) {
-//                loadRoutes()
-//            }
+            if (mapsUiState.value.stops.isEmpty()) {
+                loadStops()
+            }
+
+            if (mapsUiState.value.routes.isEmpty()) {
+                loadRoutes()
+            }
 
 //            if (mapsUiState.value.allBuses.isEmpty()) {
 //                loadAllBuses()

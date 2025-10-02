@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.ui.setup
 
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.BackHandler
@@ -197,22 +196,22 @@ fun PermissionsPage() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             PermissionBox(permission = Permission.BackgroundLocation)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PermissionBox(permission = Permission.Bluetooth)
-        }
-
-        HorizontalDivider(modifier = Modifier.padding(10.dp))
-
-        Button(onClick = {
-            context.startForegroundService(Intent(context, BeaconService::class.java))
-        }, enabled = !autoBoardingRunning) {
-            Text(text = if (!autoBoardingRunning) "Enable auto-boarding" else "Auto-boarding enabled")
-        }
-
-        Text(
-            text = "Requires background location and bluetooth permissions",
-            style = MaterialTheme.typography.labelSmall,
-        )
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//            PermissionBox(permission = Permission.Bluetooth)
+//        }
+//
+//        HorizontalDivider(modifier = Modifier.padding(10.dp))
+//
+//        Button(onClick = {
+//            context.startForegroundService(Intent(context, BeaconService::class.java))
+//        }, enabled = !autoBoardingRunning) {
+//            Text(text = if (!autoBoardingRunning) "Enable auto-boarding" else "Auto-boarding enabled")
+//        }
+//
+//        Text(
+//            text = "Requires background location and bluetooth permissions",
+//            style = MaterialTheme.typography.labelSmall,
+//        )
     }
 }
 
