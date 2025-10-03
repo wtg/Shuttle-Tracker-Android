@@ -17,6 +17,7 @@ data class Bus(
     @SerializedName("name") val id: String,
     val latitude: Double,
     val longitude: Double,
+    @SerializedName("speed_mph") val speedMph: Double,
     // Assuming type means address_name
     @SerializedName("address_name") val type: String,
     @SerializedName("timestamp") val date: String,

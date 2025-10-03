@@ -9,7 +9,6 @@ import androidx.compose.material.icons.outlined.BusAlert
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RestartAlt
-import androidx.compose.material.icons.outlined.Timeline
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,7 +36,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.AnalyticsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.DevMenuScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -109,10 +107,10 @@ fun SettingsScreen(
                 Modifier
                     .padding(padding),
         ) {
-            AutoBoardBusSettingItem(
-                autoBoardService = settingsUiState.autoBoardService,
-                updateAutoBoardService = viewModel::updateAutoBoardService,
-            )
+//            AutoBoardBusSettingItem(
+//                autoBoardService = settingsUiState.autoBoardService,
+//                updateAutoBoardService = viewModel::updateAutoBoardService,
+//            )
 
             ColorBlindSettingItem(
                 colorBlindMode = settingsUiState.colorBlindMode,
@@ -127,11 +125,11 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsItem(
-                Icons.Outlined.Timeline,
-                stringResource(R.string.analytics),
-                onClick = { navigator.navigate(AnalyticsScreenDestination()) },
-            )
+//            SettingsItem(
+//                Icons.Outlined.Timeline,
+//                stringResource(R.string.analytics),
+//                onClick = { navigator.navigate(AnalyticsScreenDestination()) },
+//            )
 
             SettingsItem(
                 Icons.Outlined.RestartAlt,

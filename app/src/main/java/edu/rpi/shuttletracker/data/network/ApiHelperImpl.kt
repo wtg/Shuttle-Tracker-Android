@@ -47,7 +47,6 @@ class ApiHelperImpl
             }
         }
 
-        /** Converts the route-indexed JSON into a flat List<Stop> (excludes GHOST_*). */
         private fun parseStopsFromSchema(root: JsonObject): List<Stop> {
             val allStops = mutableListOf<Stop>()
 
@@ -98,11 +97,9 @@ class ApiHelperImpl
 
                 val coordinates = mutableListOf<Coordinate>()
 
-                // Iterate through each polyline in the ROUTES array
                 for (polylineElem in routesArray) {
                     val polyline = polylineElem.asJsonArray
 
-                    // Iterate through each coordinate pair in the polyline
                     for (coordElem in polyline) {
                         val coords = coordElem.asJsonArray
                         if (coords.size() >= 2) {

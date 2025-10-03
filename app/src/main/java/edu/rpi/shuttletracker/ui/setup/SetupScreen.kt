@@ -77,12 +77,12 @@ fun SetupScreen(
         listOf(
             SetupPages.About(viewModel::updateAboutAccepted),
             SetupPages.PrivacyPolicy(viewModel::updatePrivacyPolicyAccepted),
-            SetupPages.Analytics(
-                viewModel::updateAllowAnalytics,
-                viewModel.getAnalyticsEnabled().collectAsStateWithLifecycle(
-                    initialValue = false,
-                ).value,
-            ),
+//            SetupPages.Analytics(
+//                viewModel::updateAllowAnalytics,
+//                viewModel.getAnalyticsEnabled().collectAsStateWithLifecycle(
+//                    initialValue = false,
+//                ).value,
+//            ),
 //            SetupPages.Permissions,
         )
 

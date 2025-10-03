@@ -140,6 +140,7 @@
 
     <!-- Maps screen -->
     <string name="bus_number">Bus %1$s</string>
+    <string name="bus_speed">%1$s mph</string>
     <string name="distance_warning">Must be %1$dm from a stop to board</string>
     <string name="no_location_warning">Unable to determine your location</string>
 
