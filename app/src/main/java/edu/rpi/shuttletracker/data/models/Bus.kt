@@ -2,60 +2,62 @@ package edu.rpi.shuttletracker.data.models
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.annotations.SerializedName
-import edu.rpi.shuttletracker.util.Flatten
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 data class Bus(
-    @Flatten("location::coordinate::latitude")
+    @SerializedName("name") val id: String,
     val latitude: Double,
-    @Flatten("location::coordinate::longitude")
     val longitude: Double,
-    @SerializedName("id")
-    val id: Int,
-    @Flatten("location::type")
-    val type: String,
-    @Flatten("location::date")
-    val date: String,
-    @Flatten("location::id")
-    val uuid: String,
+    @SerializedName("speed_mph") val speedMph: Double,
+    // Assuming type means address_name
+    @SerializedName("address_name") val type: String,
+    @SerializedName("timestamp") val date: String,
+    @SerializedName("address_id") val uuid: String,
 ) {
     /**
      * Turns the date stored into a time of a generalized time ago from current
      * updates once per second if subscribed to
      * */
     fun getTimeAgo(): Flow<String> {
-        // get bus time and rounds to nearest second
-        val busDate =
-            ZonedDateTime.parse(date)
-                .truncatedTo(ChronoUnit.SECONDS)
+        // Parse naive timestamp and assume UTC (change ZoneOffset.UTC if you want a different zone)
+        val busInstant =
+            LocalDateTime.parse(date, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                .atZone(ZoneOffset.UTC)
+                .toInstant()
 
         return flow {
             while (true) {
-                // gets current time and rounds to nearest second
-                val currentDate: LocalDateTime =
-                    LocalDateTime.now(ZoneOffset.UTC)
-                        .truncatedTo(ChronoUnit.SECONDS)
+                val now = Instant.now().truncatedTo(ChronoUnit.SECONDS)
+                val duration = Duration.between(busInstant, now)
 
-                val duration: Duration = Duration.between(busDate.toLocalDateTime(), currentDate)
-
-                // formats duration to h m s
-                emit(
-                    duration.toString()
-                        .substring(2)
-                        .replace("(\\d[HMS])(?!$)".toRegex(), "$1 ")
-                        .lowercase(Locale.ROOT) + " ago",
-                )
+                emit(formatDuration(duration) + " ago")
                 delay(1000)
             }
         }
+    }
+
+    // Pretty "xh ym zs" formatter (avoids relying on Duration.toString())
+    private fun formatDuration(d: Duration): String {
+        var secs = d.seconds
+        val h = secs / 3600
+        secs %= 3600
+        val m = secs / 60
+        secs %= 60
+        val s = secs
+        return buildString {
+            if (h > 0) append("${h}h ")
+            if (m > 0 || h > 0) append("${m}m ")
+            append("${s}s")
+        }.trim().lowercase(Locale.ROOT)
     }
 
     fun latLng() = LatLng(latitude, longitude)

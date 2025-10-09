@@ -48,23 +48,23 @@ class MapsViewModel
             loadAll()
             loadRunningBuses()
 
-            // sets auto board service state
-            userPreferencesRepository.getAutoBoardService()
-                .flowOn(Dispatchers.Default)
-                .onEach { autoBoardService ->
-                    _mapsUiState.update {
-                        it.copy(autoBoardService = autoBoardService)
-                    }
-                }.launchIn(viewModelScope)
-
-            // sets the notification read count
-            userPreferencesRepository.getNotificationsRead()
-                .flowOn(Dispatchers.Default)
-                .onEach { count ->
-                    _mapsUiState.update {
-                        it.copy(notificationsRead = count)
-                    }
-                }.launchIn(viewModelScope)
+//            // sets auto board service state
+//            userPreferencesRepository.getAutoBoardService()
+//                .flowOn(Dispatchers.Default)
+//                .onEach { autoBoardService ->
+//                    _mapsUiState.update {
+//                        it.copy(autoBoardService = autoBoardService)
+//                    }
+//                }.launchIn(viewModelScope)
+//
+//            // sets the notification read count
+//            userPreferencesRepository.getNotificationsRead()
+//                .flowOn(Dispatchers.Default)
+//                .onEach { count ->
+//                    _mapsUiState.update {
+//                        it.copy(notificationsRead = count)
+//                    }
+//                }.launchIn(viewModelScope)
 
             // gets user preference for colorblind mode
             userPreferencesRepository.getColorBlindMode()
@@ -100,20 +100,20 @@ class MapsViewModel
                 loadRoutes()
             }
 
-            if (mapsUiState.value.allBuses.isEmpty()) {
-                loadAllBuses()
-            }
+//            if (mapsUiState.value.allBuses.isEmpty()) {
+//                loadAllBuses()
+//            }
 
-            if (mapsUiState.value.notificationsRead == -1) {
-                loadAnnouncementCount()
-            }
+//            if (mapsUiState.value.notificationsRead == -1) {
+//                loadAnnouncementCount()
+//            }
         }
 
         fun refreshRunningBusses() {
             viewModelScope.launch {
                 readApiResponse(apiRepository.getRunningBuses().first()) { runningBusses ->
                     _mapsUiState.update {
-                        it.copy(runningBuses = runningBusses)
+                        it.copy(runningBuses = runningBusses.values.toList())
                     }
                 }
             }
@@ -168,7 +168,7 @@ class MapsViewModel
                         .map { response ->
                             readApiResponse(response) { buses ->
                                 _mapsUiState.update {
-                                    it.copy(runningBuses = buses)
+                                    it.copy(runningBuses = buses.values.toList())
                                 }
                             }
                         }
@@ -185,11 +185,13 @@ class MapsViewModel
          * */
         private fun loadAllBuses() {
             viewModelScope.launch {
-                readApiResponse(apiRepository.getAllBuses()) { buses ->
-                    _mapsUiState.update {
-                        it.copy(allBuses = buses.sorted())
+                apiRepository.getAllBuses()
+                    .collect { response ->
+                        readApiResponse(response) { busesMap ->
+                            val ids = busesMap.values.map { it.id }.sorted()
+                            _mapsUiState.update { it.copy(allBuses = ids) }
+                        }
                     }
-                }
             }
         }
 
@@ -271,7 +273,7 @@ class MapsViewModel
 @Immutable
 data class MapsUIState(
     val runningBuses: List<Bus> = listOf(),
-    val allBuses: List<Int> = listOf(),
+    val allBuses: List<String> = listOf(),
     val stops: List<Stop> = listOf(),
     val routes: List<Route> = listOf(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,

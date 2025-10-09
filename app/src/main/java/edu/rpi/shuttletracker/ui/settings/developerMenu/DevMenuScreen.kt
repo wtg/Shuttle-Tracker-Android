@@ -89,10 +89,10 @@ fun DevMenuScreen(
                 })
             }
 
-            MinStopDistItem(
-                maxStopDist = devMenuUiState.maxStopDist,
-                updateMaxStopDist = viewModel::updateMinStopDist,
-            )
+//            MinStopDistItem(
+//                maxStopDist = devMenuUiState.maxStopDist,
+//                updateMaxStopDist = viewModel::updateMinStopDist,
+//            )
 
             BaseUrlSettingItem(
                 currentUrl = devMenuUiState.baseUrl,

@@ -29,9 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -68,6 +66,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
+import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.location.LocationServices
@@ -77,17 +76,16 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AnnouncementsScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -98,7 +96,6 @@ import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
-import androidx.core.graphics.toColorInt
 
 @Destination<RootGraph>(start = true)
 @Composable
@@ -159,22 +156,22 @@ fun MapsScreen(
 
             SnackbarHost(hostState = snackbarHostState)
         },
-        floatingActionButton = {
-            Column(horizontalAlignment = Alignment.End) {
-                RefreshFab {
-                    viewModel.refreshRunningBusses()
-                    viewModel.loadAll()
-                }
-                BoardBusFab(
-                    mapsUiState.allBuses,
-                    viewModel::closestDistanceToStop,
-                    mapsUiState.minStopDist,
-                    viewModel::leaveBusPressed,
-                    viewModel::boardBusPressed,
-                    viewModel::busSelectionCanceled,
-                )
-            }
-        },
+//        floatingActionButton = {
+//            Column(horizontalAlignment = Alignment.End) {
+//                RefreshFab {
+//                    viewModel.refreshRunningBusses()
+//                    viewModel.loadAll()
+//                }
+//                BoardBusFab(
+//                    mapsUiState.allBuses,
+//                    viewModel::closestDistanceToStop,
+//                    mapsUiState.minStopDist,
+//                    viewModel::leaveBusPressed,
+//                    viewModel::boardBusPressed,
+//                    viewModel::busSelectionCanceled,
+//                )
+//            }
+//        },
     ) { padding ->
 
         BusMap(mapsUIState = mapsUiState, padding = padding, bottomSheetOnChange = {
@@ -195,17 +192,17 @@ fun MapsScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 // navigates to announcements
-                ActionButton(
-                    icon = Icons.Outlined.Notifications,
-                    badgeCount = mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
-                ) {
-                    navigator.navigate(AnnouncementsScreenDestination())
-                }
+//                ActionButton(
+//                    icon = Icons.Outlined.Notifications,
+//                    badgeCount = mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
+//                ) {
+//                    navigator.navigate(AnnouncementsScreenDestination())
+//                }
 
                 // navigates to the schedule
-                ActionButton(icon = Icons.Outlined.Schedule) {
-                    navigator.navigate(ScheduleScreenDestination())
-                }
+//                ActionButton(icon = Icons.Outlined.Schedule) {
+//                    navigator.navigate(ScheduleScreenDestination())
+//                }
 
                 // navigates to settings
                 ActionButton(icon = Icons.Outlined.Settings) {
@@ -251,6 +248,8 @@ fun BusMap(
                 )
         }
 
+    var selectedStop by remember { mutableStateOf<Stop?>(null) }
+
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         // makes sure the items drawn (current location and compass) are clickable
@@ -277,13 +276,20 @@ fun BusMap(
         // removes the zoom control which was covered by the FAB
         uiSettings =
             MapUiSettings(
-                zoomControlsEnabled = false,
+                zoomControlsEnabled = true,
                 myLocationButtonEnabled = false,
             ),
     ) {
         // creates the stops
         mapsUIState.stops.forEach {
-            StopMarker(stop = it, selectedStopChanged = bottomSheetOnChange)
+            StopCircle(
+                stop = it,
+                selected = it.name == selectedStop?.name,
+                onSelected = { s ->
+                    selectedStop = s
+                    bottomSheetOnChange(s)
+                },
+            )
         }
 
         // creates the bus markers
@@ -357,19 +363,23 @@ fun BusMap(
  * Creates a marker for a stop
  * */
 @Composable
-fun StopMarker(
+private fun StopCircle(
     stop: Stop,
-    selectedStopChanged: (Stop?) -> Unit,
+    selected: Boolean,
+    onSelected: (Stop?) -> Unit,
 ) {
-    val markerState = rememberMarkerState(stop.name, stop.latLng())
-    val icon = BitmapDescriptorFactory.fromAsset(stringResource(R.string.simple_circle))
-    Marker(
-        state = markerState,
-        title = stop.name,
-        icon = icon,
+    val context = LocalContext.current
+    Circle(
+        center = stop.latLng(),
+        radius = 15.0,
+        strokeColor = if (selected) Color(0xFF6699FF) else Color.Black,
+        strokeWidth = 8f,
+        zIndex = 1f,
+        fillColor = Color.Transparent,
+        clickable = true,
         onClick = {
-            it.showInfoWindow()
-            selectedStopChanged(stop)
+            onSelected(stop)
+            Toast.makeText(context, stop.name, Toast.LENGTH_LONG).show()
             true
         },
     )
@@ -383,12 +393,14 @@ fun BusMarker(
     bus: Bus,
     colorBlindMode: Boolean,
 ) {
-    val markerState = rememberMarkerState(position = bus.latLng())
+    val markerState = rememberUpdatedMarkerState(position = bus.latLng())
 
     // every time bus changes, update the position of the marker
     LaunchedEffect(bus) {
         markerState.position = bus.latLng()
     }
+
+    val speedText = remember(bus.speedMph) { bus.speedMph }
 
     // gets proper bus icon
     val busIcon =
@@ -408,11 +420,22 @@ fun BusMarker(
 
     val icon = BitmapDescriptorFactory.fromAsset(busIcon)
 
+    // gets bus speed and last time it updated
+    val timeBusUpdate = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
+    val snippetText =
+        buildString {
+            append(stringResource(R.string.bus_speed, speedText))
+            if (timeBusUpdate.isNotBlank()) {
+                append(" • ")
+                append(timeBusUpdate)
+            }
+        }
+
     Marker(
         state = markerState,
         title = stringResource(R.string.bus_number, bus.id),
         icon = icon,
-        snippet = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value,
+        snippet = snippetText,
         onClick = {
             it.showInfoWindow()
             true
@@ -476,7 +499,7 @@ fun BoardBusFab(
                                 context,
                                 context.getString(
                                     R.string.distance_warning,
-                                    minStopDist.toInt(),
+//                                    minStopDist.toInt(),
                                 ),
                                 Toast.LENGTH_SHORT,
                             ).show()

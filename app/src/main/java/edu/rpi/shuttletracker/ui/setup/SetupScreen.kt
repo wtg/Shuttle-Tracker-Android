@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.ui.setup
 
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.BackHandler
@@ -78,12 +77,12 @@ fun SetupScreen(
         listOf(
             SetupPages.About(viewModel::updateAboutAccepted),
             SetupPages.PrivacyPolicy(viewModel::updatePrivacyPolicyAccepted),
-            SetupPages.Analytics(
-                viewModel::updateAllowAnalytics,
-                viewModel.getAnalyticsEnabled().collectAsStateWithLifecycle(
-                    initialValue = false,
-                ).value,
-            ),
+//            SetupPages.Analytics(
+//                viewModel::updateAllowAnalytics,
+//                viewModel.getAnalyticsEnabled().collectAsStateWithLifecycle(
+//                    initialValue = false,
+//                ).value,
+//            ),
             SetupPages.Permissions,
         )
 
@@ -155,7 +154,7 @@ fun AboutPage() {
 
 @Composable
 fun PrivacyPolicyPage() {
-    Box(modifier = Modifier.fillMaxSize()) { Text(text = stringResource(R.string.privacy)) }
+    Box(modifier = Modifier.fillMaxSize()) { Text(text = stringResource(R.string.privacy_page)) }
 }
 
 @Composable
@@ -194,25 +193,25 @@ fun PermissionsPage() {
 
         PermissionBox(permission = Permission.Location)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            PermissionBox(permission = Permission.BackgroundLocation)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PermissionBox(permission = Permission.Bluetooth)
-        }
-
-        HorizontalDivider(modifier = Modifier.padding(10.dp))
-
-        Button(onClick = {
-            context.startForegroundService(Intent(context, BeaconService::class.java))
-        }, enabled = !autoBoardingRunning) {
-            Text(text = if (!autoBoardingRunning) "Enable auto-boarding" else "Auto-boarding enabled")
-        }
-
-        Text(
-            text = "Requires background location and bluetooth permissions",
-            style = MaterialTheme.typography.labelSmall,
-        )
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            PermissionBox(permission = Permission.BackgroundLocation)
+//        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//            PermissionBox(permission = Permission.Bluetooth)
+//        }
+//
+//        HorizontalDivider(modifier = Modifier.padding(10.dp))
+//
+//        Button(onClick = {
+//            context.startForegroundService(Intent(context, BeaconService::class.java))
+//        }, enabled = !autoBoardingRunning) {
+//            Text(text = if (!autoBoardingRunning) "Enable auto-boarding" else "Auto-boarding enabled")
+//        }
+//
+//        Text(
+//            text = "Requires background location and bluetooth permissions",
+//            style = MaterialTheme.typography.labelSmall,
+//        )
     }
 }
 
