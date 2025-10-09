@@ -83,7 +83,7 @@ fun SetupScreen(
 //                    initialValue = false,
 //                ).value,
 //            ),
-//            SetupPages.Permissions,
+            SetupPages.Permissions,
         )
 
     LaunchedEffect(key1 = currentPage) {
@@ -154,7 +154,7 @@ fun AboutPage() {
 
 @Composable
 fun PrivacyPolicyPage() {
-    Box(modifier = Modifier.fillMaxSize()) { Text(text = stringResource(R.string.privacy)) }
+    Box(modifier = Modifier.fillMaxSize()) { Text(text = stringResource(R.string.privacy_page)) }
 }
 
 @Composable
@@ -193,9 +193,9 @@ fun PermissionsPage() {
 
         PermissionBox(permission = Permission.Location)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            PermissionBox(permission = Permission.BackgroundLocation)
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            PermissionBox(permission = Permission.BackgroundLocation)
+//        }
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 //            PermissionBox(permission = Permission.Bluetooth)
 //        }

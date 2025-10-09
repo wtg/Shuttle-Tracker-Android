@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -87,7 +86,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -202,9 +200,9 @@ fun MapsScreen(
 //                }
 
                 // navigates to the schedule
-                ActionButton(icon = Icons.Outlined.Schedule) {
-                    navigator.navigate(ScheduleScreenDestination())
-                }
+//                ActionButton(icon = Icons.Outlined.Schedule) {
+//                    navigator.navigate(ScheduleScreenDestination())
+//                }
 
                 // navigates to settings
                 ActionButton(icon = Icons.Outlined.Settings) {

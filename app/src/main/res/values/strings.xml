@@ -6,6 +6,7 @@
 
     <!-- icons -->
     <string name="GPS_bus" translatable="false">redbus.png</string>
+    <string name="shubble" translatable="false">shubble.png</string>
     <string name="crowdsourced_bus" translatable="false">greenbus.png</string>
     <string name="colorblind_GPS_bus" translatable="false">cbredbus.png</string>
     <string name="colorblind_crowdsourced_bus" translatable="false">cbgreenbus.png</string>
@@ -13,7 +14,7 @@
 
     <!-- URLS -->
     <string name="url_default">https://shuttles.rpi.edu/api/</string>
-    <string name="url_private_policy">https://web.shuttletracker.app/privacy-policy</string>
+    <string name="url_private_policy">https://shuttles.rpi.edu/privacy-policy.txt</string>
     <string name="url_repository">https://github.com/wtg/Shuttle-Tracker-Android</string>
     <string name="url_repository_issues">https://github.com/wtg/Shuttle-Tracker-Android/issues</string>
 
@@ -73,24 +74,8 @@
         tap \"Leave Bus\". You must be within 20 meters of a stop by default to board a bus.
     </string>
 
-    <string name="privacy">
-        Shuttle Tracker sends your location data to our server only when Board Bus is activated and
-        stops sending these data when Board Bus is deactivated. You can activate Board Bus manually
-        by tapping “Board Bus” or automatically by positioning your device within Bluetooth range of
-        a Shuttle Tracker Node device on a bus if you opted in to the Shuttle Tracker Network. You
-        can deactivate Board Bus manually by tapping “Leave Bus” or automatically by positioning
-        your device out of Bluetooth range of a Shuttle Tracker Node device on a bus if you opted in
-        to the Shuttle Tracker Network. Your location data are associated with an anonymous, random
-        identifier that rotates every time you start a new shuttle trip. These data aren’t associated
-        with your name, Apple ID, RCS ID, RIN, or any other information that might identify you or
-        your device. We continuously purge location data that are more than 30 seconds old from our
-        server. We may retain resolved location data that are calculated using a combination of
-        system- and user-reported data indefinitely, but these resolved data don’t correspond with
-        any specific user-reported coordinates. Even if you opt in to the Shuttle Tracker Network,
-        we never track your location unless you manually activate Board Bus or physically board a bus.
-        The results of these scans never leave your device, and we only start collecting location
-        data if a scan indicates that you’re physically on a bus.
-    </string>
+    <!--  Formatting broken when using enter so it has to be a one liner  -->
+    <string name="privacy_page">Privacy Policy\nEffective Date: 10-03-2025\n\nShubble (“the App”) respects your privacy. This Privacy Policy explains how we handle your information.\n\nInformation We Collect\nThe App may access your device location in order to:\n\nShow you the closest shuttle stop.\nCalculate how far you are from that stop.\n\nWe do not collect, store, or transmit your location data or any other personal information. All processing happens locally on your device.\n\nUse of Information\nLocation data is used only in real time to display shuttle stop information.\n\nYour location data is never stored, logged, or sent to our servers.\n\nSharing of Information\nWe do not share your location or any other personal information with third parties.\n\nChildren’s Privacy\nShubble does not knowingly collect, store, or share personal information from children.\n\nChanges to This Policy\nIf we make changes to this Privacy Policy, we will update it here and revise the “Effective Date” above.\n\nContact Us\nIf you have any questions or concerns about this Privacy Policy, you can contact us at:\nJoel McCandless\nmail@joelmccandless.com</string>
 
     <string name="analytics_policy">
     If you opt in to analytics, then Shuttle Tracker will send anonymous usage data to our server.
@@ -99,7 +84,7 @@
     recently uploaded analytics reports or opt-in status in Settings > Analytics.
     </string>
 
-    <string name="about_page">Shuttle tracker is developed by the Rensselaer Center for Open Source
+    <string name="about_page">Shubble is developed by the Rensselaer Center for Open Source
         by your fellow RPI students. As an open source application, anyone can help develop the RPI Shuttle Tracker
         regardless of experience! Any contributions are welcome, as well as feedback for our current team.
         If you would like to view our source code, click the button below and open our GitHub page, and you can
