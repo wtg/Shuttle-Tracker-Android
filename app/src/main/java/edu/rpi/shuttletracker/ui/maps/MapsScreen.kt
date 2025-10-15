@@ -372,7 +372,7 @@ private fun StopCircle(
     Circle(
         center = stop.latLng(),
         radius = 15.0,
-        strokeColor = if (selected) Color(0xFF6699FF) else Color.Black,
+        strokeColor = if (selected) Color(0xFF6699FF) else MaterialTheme.colorScheme.onPrimaryContainer,
         strokeWidth = 8f,
         zIndex = 1f,
         fillColor = Color.Transparent,
@@ -402,19 +402,20 @@ fun BusMarker(
 
     val speedText = remember(bus.speedMph) { bus.speedMph }
 
-    // gets proper bus icon
     val busIcon =
-        if (bus.type == "user") {
-            if (colorBlindMode) {
-                stringResource(R.string.colorblind_crowdsourced_bus)
-            } else {
-                stringResource(R.string.crowdsourced_bus)
-            }
+        if (colorBlindMode) {
+            stringResource(R.string.colorblind_GPS_bus)
         } else {
-            if (colorBlindMode) {
-                stringResource(R.string.colorblind_GPS_bus)
-            } else {
-                stringResource(R.string.GPS_bus)
+            when (bus.routeName) {
+                "NORTH" -> {
+                    stringResource(R.string.red_bus)
+                }
+                "WEST" -> {
+                    stringResource(R.string.blue_bus)
+                }
+                else -> {
+                    stringResource(R.string.default_bus)
+                }
             }
         }
 

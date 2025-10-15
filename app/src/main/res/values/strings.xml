@@ -12,6 +12,10 @@
     <string name="colorblind_crowdsourced_bus" translatable="false">cbgreenbus.png</string>
     <string name="simple_circle" translatable="false">simplecircle.png</string>
 
+    <string name="red_bus" translatable="false">redbus.png</string>
+    <string name="blue_bus" translatable="false">bluebus.png</string>
+    <string name="default_bus" translatable="false">defaultbus.png</string>
+
     <!-- URLS -->
     <string name="url_default">https://shuttles.rpi.edu/api/</string>
     <string name="url_private_policy">https://shuttles.rpi.edu/privacy-policy.txt</string>

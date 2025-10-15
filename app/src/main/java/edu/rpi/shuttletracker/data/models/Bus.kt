@@ -22,6 +22,7 @@ data class Bus(
     @SerializedName("address_name") val type: String,
     @SerializedName("timestamp") val date: String,
     @SerializedName("address_id") val uuid: String,
+    @SerializedName("route_name") val routeName: String,
 ) {
     /**
      * Turns the date stored into a time of a generalized time ago from current
