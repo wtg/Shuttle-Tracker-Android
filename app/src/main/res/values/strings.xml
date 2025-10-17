@@ -5,13 +5,7 @@
     <string name="api_key" translatable="false">3</string>
 
     <!-- icons -->
-    <string name="GPS_bus" translatable="false">redbus.png</string>
-    <string name="shubble" translatable="false">shubble.png</string>
-    <string name="crowdsourced_bus" translatable="false">greenbus.png</string>
-    <string name="colorblind_GPS_bus" translatable="false">cbredbus.png</string>
-    <string name="colorblind_crowdsourced_bus" translatable="false">cbgreenbus.png</string>
-    <string name="simple_circle" translatable="false">simplecircle.png</string>
-
+    <string name="colorblind_bus" translatable="false">cbredbus.png</string>
     <string name="red_bus" translatable="false">redbus.png</string>
     <string name="blue_bus" translatable="false">bluebus.png</string>
     <string name="default_bus" translatable="false">defaultbus.png</string>

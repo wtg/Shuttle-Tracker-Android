@@ -404,7 +404,7 @@ fun BusMarker(
 
     val busIcon =
         if (colorBlindMode) {
-            stringResource(R.string.colorblind_GPS_bus)
+            stringResource(R.string.colorblind_bus)
         } else {
             when (bus.routeName) {
                 "NORTH" -> {
