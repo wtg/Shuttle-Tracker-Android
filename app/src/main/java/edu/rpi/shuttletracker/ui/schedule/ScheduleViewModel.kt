@@ -29,9 +29,9 @@ class ScheduleViewModel
         }
 
         fun loadAll() {
-            if (scheduleUiState.value.schedule.isEmpty()) {
-                getSchedule()
-            }
+//            if (scheduleUiState.value.schedule.isEmpty()) {
+//                getSchedule()
+//            }
         }
 
         /**
