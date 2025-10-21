@@ -6,6 +6,8 @@ data class Stop(
     val latitude: Double,
     val longitude: Double,
     val name: String,
+    val offset: Int,
+    val route: String,
 ) {
     fun latLng() = LatLng(latitude, longitude)
 }

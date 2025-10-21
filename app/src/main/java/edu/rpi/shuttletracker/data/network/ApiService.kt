@@ -33,7 +33,7 @@ interface ApiService {
     @GET("announcements")
     suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse>
 
-    @GET("schedule")
+    @GET("aggregated-schedule")
     suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse>
 
     @POST("analytics/entries")
