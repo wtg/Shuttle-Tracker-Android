@@ -50,8 +50,8 @@ class ApiHelperImpl
         private fun parseStopsFromSchema(root: JsonObject): List<Stop> {
             val allStops = mutableListOf<Stop>()
 
-            for ((_, routeJson) in root.entrySet()) {
-                val routeObj = routeJson.asJsonObject
+            for ((routeName, routeElem) in root.entrySet()) {
+                val routeObj = routeElem.asJsonObject
                 val stopIds = routeObj.getAsJsonArray("STOPS") ?: continue
 
                 for (stopIdElement in stopIds) {
@@ -63,8 +63,9 @@ class ApiHelperImpl
                     val latitude = coords[0].asDouble
                     val longitude = coords[1].asDouble
                     val name = stopObj.get("NAME")?.asString ?: stopId
+                    val offset = stopObj.get("OFFSET").asInt
 
-                    allStops.add(Stop(latitude, longitude, name))
+                    allStops.add(Stop(latitude, longitude, name, offset, routeName))
                 }
             }
 
