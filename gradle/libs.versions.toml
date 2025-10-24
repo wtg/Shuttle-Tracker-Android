@@ -2,6 +2,7 @@
 aboutlibraries = "12.2.3"
 accompanist-systemuicontroller = "0.34.0"
 activity-compose = "1.10.1"
+adaptive = "1.3.0-alpha02"
 android-beacon-library = "2.20.5"
 androidx-junit = "1.2.1"
 destinations = "2.2.0"
@@ -25,6 +26,7 @@ logging-interceptor = "4.12.0"
 maps-compose = "6.6.0"
 material-icons-extended = "1.7.8"
 material3 = "1.3.2"
+material3-adaptive = "1.3.0-alpha02"
 network-respose = "5.0.0"
 play-services-location = "21.3.0"
 play-services-maps = "19.2.0"
@@ -53,6 +55,7 @@ activity-compose = { module = "androidx.activity:activity-compose", version.ref 
 
 android-beacon-library = { module = "org.altbeacon:android-beacon-library", version.ref = "android-beacon-library" }
 
+androidx-compose-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore-preferences" }
 
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
@@ -69,6 +72,8 @@ androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = 
 
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons-extended" }
 androidx-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+androidx-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "material3-adaptive" }
+
 
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room-runtime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room-runtime" }
