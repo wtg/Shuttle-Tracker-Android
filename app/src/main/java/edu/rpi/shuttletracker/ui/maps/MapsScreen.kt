@@ -278,7 +278,7 @@ fun BusMap(
         // removes the zoom control which was covered by the FAB
         uiSettings =
             MapUiSettings(
-                zoomControlsEnabled = true,
+                zoomControlsEnabled = false,
                 myLocationButtonEnabled = false,
             ),
     ) {
