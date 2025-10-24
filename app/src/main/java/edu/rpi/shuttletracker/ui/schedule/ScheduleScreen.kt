@@ -1,14 +1,21 @@
 package edu.rpi.shuttletracker.ui.schedule
 
+import android.content.res.Configuration
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -53,6 +61,8 @@ fun ScheduleScreen(
     viewModel: ScheduleViewModel = hiltViewModel(),
 ) {
     val scheduleUiState = viewModel.scheduleUiState.collectAsStateWithLifecycle().value
+    val config = LocalConfiguration.current
+    val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val days = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
     val allowedRoutes = setOf("NORTH", "WEST")
@@ -79,7 +89,7 @@ fun ScheduleScreen(
     // Weekday dropdown values
     val todayName = remember { days[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1] }
     var selectedDay by remember { mutableStateOf(todayName) }
-    val dayIndex = remember(selectedDay) { if (days.indexOf(selectedDay) >= 0) days.indexOf(selectedDay) else 0 }
+    val dayIndex = remember(selectedDay) { days.indexOf(selectedDay).takeIf { it >= 0 } ?: 0 }
 
     // Base times for the selected day + route (strings like "9:00 AM")
     val selectedRouteTimes: List<String> =
@@ -116,50 +126,124 @@ fun ScheduleScreen(
             )
         },
     ) { padding ->
-        Column(
-            modifier =
-                Modifier
-                    .padding(padding)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            LabeledDropdown(
-                label = "Weekday",
-                items = days,
-                selectedItem = selectedDay,
-                onItemSelected = { selectedDay = it },
-            )
-
-            LabeledDropdown(
-                label = "Loop",
-                items = routeDropdownItems,
-                selectedItem = selectedRoute,
-                onItemSelected = { selectedRoute = it },
-            )
-
-            LabeledDropdown(
-                label = "Stop",
-                items = stopDropdownItems,
-                selectedItem = selectedStop,
-                onItemSelected = { selectedStop = it },
-            )
-
-            Box(
+        if (isLandscape) {
+            Row(
                 modifier =
                     Modifier
-                        .fillMaxWidth()
-                        .border(width = 1.dp, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        .padding(8.dp),
+                        .padding(padding)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                ScheduleScroll(
-                    selectedRouteTimes = selectedRouteTimes,
+                Column(
+                    modifier =
+                        Modifier
+                            .widthIn(min = 260.dp, max = 360.dp)
+                            .fillMaxHeight()
+                            .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Controls(
+                        days = days,
+                        selectedDay = selectedDay,
+                        onDay = { selectedDay = it },
+                        routeItems = routeDropdownItems,
+                        selectedRoute = selectedRoute,
+                        onRoute = { selectedRoute = it },
+                        stopItems = stopDropdownItems,
+                        selectedStop = selectedStop,
+                        onStop = { selectedStop = it },
+                    )
+                }
+
+                Box(
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .border(width = 1.dp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            .padding(8.dp),
+                ) {
+                    ScheduleScroll(
+                        selectedRouteTimes = selectedRouteTimes,
+                        selectedStop = selectedStop,
+                        routeInfo = routeMeta[selectedRoute],
+                        isToday = (selectedDay == todayName),
+                    )
+                }
+            }
+        } else {
+            Column(
+                modifier =
+                    Modifier
+                        .padding(padding)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Controls(
+                    days = days,
+                    selectedDay = selectedDay,
+                    onDay = { selectedDay = it },
+                    routeItems = routeDropdownItems,
+                    selectedRoute = selectedRoute,
+                    onRoute = { selectedRoute = it },
+                    stopItems = stopDropdownItems,
                     selectedStop = selectedStop,
-                    routeInfo = routeMeta[selectedRoute],
-                    isToday = (selectedDay == todayName),
+                    onStop = { selectedStop = it },
                 )
+
+                Box(
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .border(width = 1.dp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            .padding(8.dp),
+                ) {
+                    ScheduleScroll(
+                        selectedRouteTimes = selectedRouteTimes,
+                        selectedStop = selectedStop,
+                        routeInfo = routeMeta[selectedRoute],
+                        isToday = (selectedDay == todayName),
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun Controls(
+    days: List<String>,
+    selectedDay: String,
+    onDay: (String) -> Unit,
+    routeItems: List<String>,
+    selectedRoute: String,
+    onRoute: (String) -> Unit,
+    stopItems: List<String>,
+    selectedStop: String,
+    onStop: (String) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        LabeledDropdown(
+            label = "Weekday",
+            items = days,
+            selectedItem = selectedDay,
+            onItemSelected = onDay,
+        )
+        LabeledDropdown(
+            label = "Loop",
+            items = routeItems,
+            selectedItem = selectedRoute,
+            onItemSelected = onRoute,
+        )
+        LabeledDropdown(
+            label = "Stop",
+            items = stopItems,
+            selectedItem = selectedStop,
+            onItemSelected = onStop,
+        )
     }
 }
 
@@ -205,7 +289,6 @@ private fun ScheduleScroll(
                     }
                 } else {
                     val offset = routeInfo.stopByName[selectedStop]?.offset ?: 0
-
                     selectedRouteTimes.map { baseStr ->
                         parseTime(baseStr).plusMinutes(offset.toLong())
                     }
@@ -235,7 +318,7 @@ private fun ScheduleScroll(
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxSize(),
             state = listState,
         ) {
             items(rowDisplay) { line ->
