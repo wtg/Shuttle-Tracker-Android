@@ -182,6 +182,7 @@
     <string name="friday">Friday</string>
     <string name="saturday">Saturday</string>
     <string name="sunday">Sunday</string>
+    <string name="time_estimated">Time (estimated)</string>
 
     <!-- services -->
     <string name="notification_automatic_board_bus_running">Automatic Board Bus service is running</string>

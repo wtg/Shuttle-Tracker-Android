@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.ui.util
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,7 +27,6 @@ fun <T> LabeledDropdown(
     items: List<T>,
     selectedItem: T?,
     onItemSelected: (T) -> Unit,
-    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     itemText: (T) -> String = { it.toString() },
     placeholder: String? = null,
@@ -35,7 +36,7 @@ fun <T> LabeledDropdown(
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { if (enabled) expanded = !expanded },
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         TextField(
             value = selectedItem?.let(itemText) ?: (placeholder ?: ""),
@@ -60,6 +61,7 @@ fun <T> LabeledDropdown(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
+            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.onPrimaryContainer),
         ) {
             items.forEach { item ->
                 val isSelected = item == selectedItem
