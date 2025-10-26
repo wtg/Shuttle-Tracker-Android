@@ -16,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -253,9 +252,9 @@ private fun ScheduleScroll(
             Text(
                 text = "Loading...",
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 4.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp),
             )
             return
         }
@@ -294,38 +293,39 @@ private fun ScheduleScroll(
                 }
             }
 
-        val scheduleItems = remember(rowDisplay, selectedStop) {
-            if (selectedStop != "All Stops") {
-                rowDisplay.map { ScheduleItem.Single(it) }
-            } else {
-                val items = mutableListOf<ScheduleItem>()
-                val groupChildren = mutableListOf<String>()
-                var groupTitle: String? = null
+        val scheduleItems =
+            remember(rowDisplay, selectedStop) {
+                if (selectedStop != "All Stops") {
+                    rowDisplay.map { ScheduleItem.Single(it) }
+                } else {
+                    val items = mutableListOf<ScheduleItem>()
+                    val groupChildren = mutableListOf<String>()
+                    var groupTitle: String? = null
 
-                fun flushGroup() {
-                    if (groupTitle != null) {
-                        items.add(ScheduleItem.Group(groupTitle!!, groupChildren.toList()))
-                        groupChildren.clear()
-                    }
-                }
-
-                for (line in rowDisplay) {
-                    val isTitle = line.contains("Student Union") && !line.contains("(Return)")
-                    if (isTitle) {
-                        flushGroup()
-                        groupTitle = line
-                    } else {
+                    fun flushGroup() {
                         if (groupTitle != null) {
-                            groupChildren.add(line)
-                        } else {
-                            items.add(ScheduleItem.Single(line))
+                            items.add(ScheduleItem.Group(groupTitle!!, groupChildren.toList()))
+                            groupChildren.clear()
                         }
                     }
+
+                    for (line in rowDisplay) {
+                        val isTitle = line.contains("Student Union") && !line.contains("(Return)")
+                        if (isTitle) {
+                            flushGroup()
+                            groupTitle = line
+                        } else {
+                            if (groupTitle != null) {
+                                groupChildren.add(line)
+                            } else {
+                                items.add(ScheduleItem.Single(line))
+                            }
+                        }
+                    }
+                    flushGroup()
+                    items
                 }
-                flushGroup()
-                items
             }
-        }
 
         // Auto-scroll to user time
         LaunchedEffect(rowTimes, isToday, selectedStop) {
@@ -339,7 +339,7 @@ private fun ScheduleScroll(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = listState,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(scheduleItems) { item ->
                 Card(modifier = Modifier.fillMaxWidth()) {
@@ -354,14 +354,15 @@ private fun ScheduleScroll(
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
                                     text = item.title,
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        fontWeight = FontWeight.Normal
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    style =
+                                        MaterialTheme.typography.titleLarge.copy(
+                                            fontWeight = FontWeight.Normal,
+                                        ),
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 item.children.forEach { child ->
                                     Text(
-                                        text = child
+                                        text = child,
                                     )
                                 }
                             }
@@ -375,6 +376,7 @@ private fun ScheduleScroll(
 
 private sealed class ScheduleItem {
     data class Single(val line: String) : ScheduleItem()
+
     data class Group(val title: String, val children: List<String>) : ScheduleItem()
 }
 

@@ -39,7 +39,7 @@ work-runtime-ktx = "2.10.2"
 compose-bom = "2025.06.01"
 
 ksp = "2.2.0-2.0.2"
-android-gradle-plugin = "8.10.1"
+android-gradle-plugin = "8.13.0"
 kotlin = "2.2.0"
 
 ktlint = "12.1.0"
