@@ -45,8 +45,8 @@ android {
         applicationId = "edu.rpi.shuttletracker"
         minSdk = 26
         targetSdk = 36
-        versionCode = 11
-        versionName = "2.1"
+        versionCode = 12
+        versionName = "2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -87,6 +87,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material3.adaptive)
     implementation(libs.core.ktx)
     implementation(libs.androidx.work.runtime.ktx)
 
