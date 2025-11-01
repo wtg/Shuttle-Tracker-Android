@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BusAlert
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material.icons.outlined.Visibility
@@ -117,6 +118,11 @@ fun SettingsScreen(
                 updateColorBlindMode = viewModel::updateColorBlindMode,
             )
 
+            DarkModeSettingItem(
+                darkMode = settingsUiState.darkMode,
+                updateDarkMode = viewModel::updateDarkMode,
+            )
+
             if (settingsUiState.devOptionState) {
                 SettingsItem(
                     Icons.Outlined.Code,
@@ -185,6 +191,23 @@ fun ColorBlindSettingItem(
         Switch(
             checked = colorBlindMode,
             onCheckedChange = { updateColorBlindMode(it) },
+        )
+    }
+}
+
+@Composable
+fun DarkModeSettingItem(
+    darkMode: Boolean,
+    updateDarkMode: (Boolean) -> Unit,
+) {
+    SettingsItem(
+        icon = Icons.Outlined.DarkMode,
+        stringResource(R.string.dark_mode),
+        stringResource(R.string.dark_mode_description),
+    ) {
+        Switch(
+            checked = darkMode,
+            onCheckedChange = { updateDarkMode(it) },
         )
     }
 }

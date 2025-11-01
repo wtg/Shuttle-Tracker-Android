@@ -190,4 +190,6 @@
     <string name="notification_tracking_bus">Tracking bus %1$d</string>
     <string name="notification_stop_tracking">Stop tracking</string>
 
+    <string name="dark_mode">Dark Mode</string>
+    <string name="dark_mode_description">Enable dark mode throughout the app.</string>
 </resources>

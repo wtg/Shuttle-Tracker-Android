@@ -43,6 +43,7 @@ class UserPreferencesRepository
             private val BOARD_BUS_COUNT = intPreferencesKey("board_bus_count")
             private val ALLOW_ANALYTICS = booleanPreferencesKey("allow_analytics")
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
+            private val DARK_MODE = booleanPreferencesKey("dark_mode")
         }
 
         suspend fun getUserId(): String =
@@ -167,6 +168,17 @@ class UserPreferencesRepository
             dataStore.data.map {
                 it[DEV_OPTIONS_ACTIVE] ?: false
             }
+
+        fun getDarkMode(): Flow<Boolean> =
+            dataStore.data.map {
+                it[DARK_MODE] ?: false
+            }
+
+        suspend fun saveDarkMode(darkMode: Boolean) {
+            dataStore.edit {
+                it[DARK_MODE] = darkMode
+            }
+        }
 
         suspend fun getSetupStartIndex(): Int {
             if (!getAboutAccepted().first()) return 0

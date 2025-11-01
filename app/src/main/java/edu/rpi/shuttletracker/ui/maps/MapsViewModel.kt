@@ -75,6 +75,15 @@ class MapsViewModel
                     }
                 }.launchIn(viewModelScope)
 
+            // gets user preference for dark mode
+            userPreferencesRepository.getDarkMode()
+                .flowOn(Dispatchers.Default)
+                .onEach { darkMode ->
+                    _mapsUiState.update {
+                        it.copy(darkMode = darkMode)
+                    }
+                }.launchIn(viewModelScope)
+
             userPreferencesRepository.getMaxStopDist()
                 .flowOn(Dispatchers.Default)
                 .onEach { minStopDist ->
@@ -284,4 +293,5 @@ data class MapsUIState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val minStopDist: Float = 50f,
+    val darkMode: Boolean = false,
 )

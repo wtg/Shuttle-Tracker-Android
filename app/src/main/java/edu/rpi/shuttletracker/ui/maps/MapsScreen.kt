@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -269,7 +268,7 @@ fun BusMap(
                 minZoomPreference = 13f,
                 isMyLocationEnabled = mapLocationEnabled,
                 mapStyleOptions =
-                    if (isSystemInDarkTheme()) {
+                    if (mapsUIState.darkMode) {
                         MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
                     } else {
                         MapStyleOptions("[]")
