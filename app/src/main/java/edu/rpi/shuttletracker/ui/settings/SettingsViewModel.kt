@@ -48,7 +48,7 @@ class SettingsViewModel
             }
         }
 
-        fun updateDarkMode(darkMode: Boolean) {
+        fun updateDarkMode(darkMode: Int) {
             viewModelScope.launch {
                 userPreferencesRepository.saveDarkMode(darkMode)
             }
@@ -60,5 +60,5 @@ data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val devOptionState: Boolean = false,
-    val darkMode: Boolean = false,
+    val darkMode: Int = 0,
 )

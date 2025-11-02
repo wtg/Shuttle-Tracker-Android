@@ -293,5 +293,5 @@ data class MapsUIState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val minStopDist: Float = 50f,
-    val darkMode: Boolean = false,
+    val darkMode: Int = 0,
 )

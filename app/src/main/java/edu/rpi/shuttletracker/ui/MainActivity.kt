@@ -44,12 +44,18 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val initialDark = isSystemInDarkTheme()
             val useDarkTheme by userPreferencesRepository
                 .getDarkMode()
-                .collectAsStateWithLifecycle(initialValue = initialDark)
+                .collectAsStateWithLifecycle(initialValue = 0)
 
-            ShuttleTrackerTheme(darkTheme = useDarkTheme) {
+            ShuttleTrackerTheme(
+                darkTheme =
+                    when (useDarkTheme) {
+                        0 -> isSystemInDarkTheme()
+                        1 -> false
+                        else -> true
+                    },
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
