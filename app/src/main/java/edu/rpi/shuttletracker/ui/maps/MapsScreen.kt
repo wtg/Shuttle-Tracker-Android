@@ -269,7 +269,7 @@ fun BusMap(
                 minZoomPreference = 13f,
                 isMyLocationEnabled = mapLocationEnabled,
                 mapStyleOptions =
-                    if (mapsUIState.darkMode == 2 || (mapsUIState.darkMode == 0 && isSystemInDarkTheme())) {
+                    if (mapsUIState.themeMode == 2 || (mapsUIState.themeMode == 0 && isSystemInDarkTheme())) {
                         MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
                     } else {
                         MapStyleOptions("[]")

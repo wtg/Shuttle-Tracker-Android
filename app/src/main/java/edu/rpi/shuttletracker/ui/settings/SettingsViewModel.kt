@@ -22,13 +22,13 @@ class SettingsViewModel
                 userPreferencesRepository.getAutoBoardService(),
                 userPreferencesRepository.getColorBlindMode(),
                 userPreferencesRepository.getDevOptions(),
-                userPreferencesRepository.getDarkMode(),
-            ) { autoBoardService, colorBindMode, devOptionState, darkMode ->
+                userPreferencesRepository.getThemeMode(),
+            ) { autoBoardService, colorBindMode, devOptionState, themeMode ->
                 return@combine SettingsUiState(
                     autoBoardService = autoBoardService,
                     colorBlindMode = colorBindMode,
                     devOptionState = devOptionState,
-                    darkMode = darkMode,
+                    themeMode = themeMode,
                 )
             }.stateIn(
                 scope = viewModelScope,
@@ -48,9 +48,9 @@ class SettingsViewModel
             }
         }
 
-        fun updateDarkMode(darkMode: Int) {
+        fun updateThemeMode(themeMode: Int) {
             viewModelScope.launch {
-                userPreferencesRepository.saveDarkMode(darkMode)
+                userPreferencesRepository.saveThemeMode(themeMode)
             }
         }
     }
@@ -60,5 +60,5 @@ data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val devOptionState: Boolean = false,
-    val darkMode: Int = 0,
+    val themeMode: Int = 0,
 )

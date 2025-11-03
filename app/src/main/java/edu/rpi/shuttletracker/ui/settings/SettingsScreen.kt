@@ -125,9 +125,9 @@ fun SettingsScreen(
                 updateColorBlindMode = viewModel::updateColorBlindMode,
             )
 
-            DarkModeSettingItem(
-                darkMode = settingsUiState.darkMode,
-                updateDarkMode = viewModel::updateDarkMode,
+            ThemeModeSettingItem(
+                themeMode = settingsUiState.themeMode,
+                updateThemeMode = viewModel::updateThemeMode,
             )
 
             if (settingsUiState.devOptionState) {
@@ -203,9 +203,9 @@ fun ColorBlindSettingItem(
 }
 
 @Composable
-fun DarkModeSettingItem(
-    darkMode: Int,
-    updateDarkMode: (Int) -> Unit,
+fun ThemeModeSettingItem(
+    themeMode: Int,
+    updateThemeMode: (Int) -> Unit,
 ) {
     SettingsItem(
         icon = Icons.Outlined.Contrast,
@@ -222,8 +222,8 @@ fun DarkModeSettingItem(
             options.forEachIndexed { index, label ->
                 SegmentedButton(
                     shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                    onClick = { updateDarkMode(index) },
-                    selected = darkMode == index,
+                    onClick = { updateThemeMode(index) },
+                    selected = themeMode == index,
                 ) {
                     Text(label)
                 }

@@ -76,11 +76,11 @@ class MapsViewModel
                 }.launchIn(viewModelScope)
 
             // gets user preference for dark mode
-            userPreferencesRepository.getDarkMode()
+            userPreferencesRepository.getThemeMode()
                 .flowOn(Dispatchers.Default)
-                .onEach { darkMode ->
+                .onEach { themeMode ->
                     _mapsUiState.update {
-                        it.copy(darkMode = darkMode)
+                        it.copy(themeMode = themeMode)
                     }
                 }.launchIn(viewModelScope)
 
@@ -293,5 +293,5 @@ data class MapsUIState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val minStopDist: Float = 50f,
-    val darkMode: Int = 0,
+    val themeMode: Int = 0,
 )

@@ -44,13 +44,13 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val useDarkTheme by userPreferencesRepository
-                .getDarkMode()
+            val themeMode by userPreferencesRepository
+                .getThemeMode()
                 .collectAsStateWithLifecycle(initialValue = 0)
 
             ShuttleTrackerTheme(
                 darkTheme =
-                    when (useDarkTheme) {
+                    when (themeMode) {
                         0 -> isSystemInDarkTheme()
                         1 -> false
                         else -> true
