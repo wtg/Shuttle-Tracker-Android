@@ -159,6 +159,7 @@
     <string name="dev_options_activated">Dev options activated</string>
     <string name="dev_options_state">Dev options unlocked in %1$d</string>
     <string name="dev_options">Developer Options</string>
+    <string name="app_theme">App Theme</string>
 
     <!-- Analytics -->
     <string name="analytics">Analytics</string>
@@ -190,6 +191,4 @@
     <string name="notification_tracking_bus">Tracking bus %1$d</string>
     <string name="notification_stop_tracking">Stop tracking</string>
 
-    <string name="dark_mode">Dark Mode</string>
-    <string name="dark_mode_description">Enable dark mode throughout the app.</string>
 </resources>

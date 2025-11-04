@@ -209,7 +209,7 @@ fun ThemeModeSettingItem(
 ) {
     SettingsItem(
         icon = Icons.Outlined.Contrast,
-        "App Theme",
+        stringResource(R.string.app_theme),
         bottomPadding = 0.dp,
     )
 
