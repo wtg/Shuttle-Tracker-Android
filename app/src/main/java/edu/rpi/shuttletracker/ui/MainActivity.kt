@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,6 +22,7 @@ import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.setup.TOTAL_PAGES
 import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
+import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
@@ -46,16 +46,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeMode by userPreferencesRepository
                 .getThemeMode()
-                .collectAsStateWithLifecycle(initialValue = 0)
+                .collectAsStateWithLifecycle(initialValue = ThemeMode.System)
 
-            ShuttleTrackerTheme(
-                darkTheme =
-                    when (themeMode) {
-                        0 -> isSystemInDarkTheme()
-                        1 -> false
-                        else -> true
-                    },
-            ) {
+            ShuttleTrackerTheme(themeMode = themeMode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,

@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -94,6 +93,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.ui.theme.isDarkTheme
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
@@ -251,6 +251,7 @@ fun BusMap(
         }
 
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
+    val isDark = isDarkTheme(mapsUIState.themeMode)
 
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
@@ -269,7 +270,7 @@ fun BusMap(
                 minZoomPreference = 13f,
                 isMyLocationEnabled = mapLocationEnabled,
                 mapStyleOptions =
-                    if (mapsUIState.themeMode == 2 || (mapsUIState.themeMode == 0 && isSystemInDarkTheme())) {
+                    if (isDark) {
                         MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
                     } else {
                         MapStyleOptions("[]")

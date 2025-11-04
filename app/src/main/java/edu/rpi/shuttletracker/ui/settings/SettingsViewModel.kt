@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -48,7 +49,7 @@ class SettingsViewModel
             }
         }
 
-        fun updateThemeMode(themeMode: Int) {
+        fun updateThemeMode(themeMode: ThemeMode) {
             viewModelScope.launch {
                 userPreferencesRepository.saveThemeMode(themeMode)
             }
@@ -60,5 +61,5 @@ data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val devOptionState: Boolean = false,
-    val themeMode: Int = 0,
+    val themeMode: ThemeMode = ThemeMode.System,
 )

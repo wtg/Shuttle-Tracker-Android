@@ -13,6 +13,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.ui.setup.TOTAL_PAGES
+import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -43,7 +44,7 @@ class UserPreferencesRepository
             private val BOARD_BUS_COUNT = intPreferencesKey("board_bus_count")
             private val ALLOW_ANALYTICS = booleanPreferencesKey("allow_analytics")
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
-            private val THEME_MODE = intPreferencesKey("theme_mode")
+            private val THEME_MODE = stringPreferencesKey("theme_mode")
         }
 
         suspend fun getUserId(): String =
@@ -169,14 +170,18 @@ class UserPreferencesRepository
                 it[DEV_OPTIONS_ACTIVE] ?: false
             }
 
-        fun getThemeMode(): Flow<Int> =
+        fun getThemeMode(): Flow<ThemeMode> =
             dataStore.data.map {
-                it[THEME_MODE] ?: 0
+                when (it[THEME_MODE]) {
+                    ThemeMode.Light.name -> ThemeMode.Light
+                    ThemeMode.Dark.name -> ThemeMode.Dark
+                    else -> ThemeMode.System
+                }
             }
 
-        suspend fun saveThemeMode(themeMode: Int) {
+        suspend fun saveThemeMode(themeMode: ThemeMode) {
             dataStore.edit {
-                it[THEME_MODE] = themeMode
+                it[THEME_MODE] = themeMode.name
             }
         }
 

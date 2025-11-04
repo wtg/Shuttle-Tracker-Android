@@ -14,6 +14,7 @@ import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -293,5 +294,5 @@ data class MapsUIState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val minStopDist: Float = 50f,
-    val themeMode: Int = 0,
+    val themeMode: ThemeMode = ThemeMode.System,
 )

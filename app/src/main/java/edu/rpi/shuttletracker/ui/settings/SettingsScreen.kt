@@ -48,6 +48,7 @@ import com.ramcosta.composedestinations.generated.destinations.DevMenuScreenDest
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 import edu.rpi.shuttletracker.util.services.BeaconService
 import kotlinx.coroutines.launch
@@ -204,28 +205,28 @@ fun ColorBlindSettingItem(
 
 @Composable
 fun ThemeModeSettingItem(
-    themeMode: Int,
-    updateThemeMode: (Int) -> Unit,
+    themeMode: ThemeMode,
+    updateThemeMode: (ThemeMode) -> Unit,
 ) {
     SettingsItem(
         icon = Icons.Outlined.Contrast,
-        stringResource(R.string.app_theme),
         bottomPadding = 0.dp,
     )
 
-    val options = listOf("System", "Light", "Dark")
+    val themeOptions = listOf(ThemeMode.System, ThemeMode.Light, ThemeMode.Dark)
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
         SingleChoiceSegmentedButtonRow {
-            options.forEachIndexed { index, label ->
+            themeOptions.forEachIndexed { index, option ->
                 SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                    onClick = { updateThemeMode(index) },
-                    selected = themeMode == index,
+                    shape = SegmentedButtonDefaults.itemShape(index, themeOptions.size),
+                    onClick = { updateThemeMode(option) },
+                    selected = themeMode == option,
                 ) {
-                    Text(label)
+                    Text(option.name)
                 }
             }
         }
