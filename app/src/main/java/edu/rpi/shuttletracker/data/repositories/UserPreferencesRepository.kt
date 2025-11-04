@@ -29,7 +29,7 @@ class UserPreferencesRepository
     constructor(
         private val dataStore: DataStore<Preferences>,
         private val apiRepository: Lazy<ApiRepository>,
-        @ApplicationContext private val context: Context,
+        @param:ApplicationContext private val context: Context,
     ) {
         companion object {
             private val USER_ID = stringPreferencesKey("user_id")
