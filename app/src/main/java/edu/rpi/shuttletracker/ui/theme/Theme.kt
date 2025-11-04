@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.ui.theme
 
 import android.os.Build
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -82,7 +83,7 @@ fun ShuttleTrackerTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val isDark = isDarkTheme(themeMode)
+    val isDark = themeMode.isDarkTheme(isSystemInDarkTheme())
 
     val colorScheme =
         when {

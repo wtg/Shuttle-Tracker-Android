@@ -210,6 +210,7 @@ fun ThemeModeSettingItem(
 ) {
     SettingsItem(
         icon = Icons.Outlined.Contrast,
+        stringResource(R.string.app_theme),
         bottomPadding = 0.dp,
     )
 
