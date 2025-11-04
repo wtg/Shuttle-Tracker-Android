@@ -159,6 +159,7 @@
     <string name="dev_options_activated">Dev options activated</string>
     <string name="dev_options_state">Dev options unlocked in %1$d</string>
     <string name="dev_options">Developer Options</string>
+    <string name="app_theme">App Theme</string>
 
     <!-- Analytics -->
     <string name="analytics">Analytics</string>

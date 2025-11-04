@@ -1,12 +1,16 @@
 package edu.rpi.shuttletracker.ui.settings
 
 import android.content.Intent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BusAlert
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material.icons.outlined.Visibility
@@ -14,6 +18,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -31,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
@@ -40,6 +48,7 @@ import com.ramcosta.composedestinations.generated.destinations.DevMenuScreenDest
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 import edu.rpi.shuttletracker.util.services.BeaconService
 import kotlinx.coroutines.launch
@@ -117,6 +126,11 @@ fun SettingsScreen(
                 updateColorBlindMode = viewModel::updateColorBlindMode,
             )
 
+            ThemeModeSettingItem(
+                themeMode = settingsUiState.themeMode,
+                updateThemeMode = viewModel::updateThemeMode,
+            )
+
             if (settingsUiState.devOptionState) {
                 SettingsItem(
                     Icons.Outlined.Code,
@@ -186,5 +200,36 @@ fun ColorBlindSettingItem(
             checked = colorBlindMode,
             onCheckedChange = { updateColorBlindMode(it) },
         )
+    }
+}
+
+@Composable
+fun ThemeModeSettingItem(
+    themeMode: ThemeMode,
+    updateThemeMode: (ThemeMode) -> Unit,
+) {
+    SettingsItem(
+        icon = Icons.Outlined.Contrast,
+        stringResource(R.string.app_theme),
+        bottomPadding = 0.dp,
+    )
+
+    val themeOptions = listOf(ThemeMode.System, ThemeMode.Light, ThemeMode.Dark)
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        SingleChoiceSegmentedButtonRow {
+            themeOptions.forEachIndexed { index, option ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(index, themeOptions.size),
+                    onClick = { updateThemeMode(option) },
+                    selected = themeMode == option,
+                ) {
+                    Text(option.name)
+                }
+            }
+        }
     }
 }

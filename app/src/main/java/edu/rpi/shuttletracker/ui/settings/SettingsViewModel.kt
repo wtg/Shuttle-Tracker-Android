@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -22,11 +23,13 @@ class SettingsViewModel
                 userPreferencesRepository.getAutoBoardService(),
                 userPreferencesRepository.getColorBlindMode(),
                 userPreferencesRepository.getDevOptions(),
-            ) { autoBoardService, colorBindMode, devOptionState ->
+                userPreferencesRepository.getThemeMode(),
+            ) { autoBoardService, colorBindMode, devOptionState, themeMode ->
                 return@combine SettingsUiState(
                     autoBoardService = autoBoardService,
                     colorBlindMode = colorBindMode,
                     devOptionState = devOptionState,
+                    themeMode = themeMode,
                 )
             }.stateIn(
                 scope = viewModelScope,
@@ -45,6 +48,12 @@ class SettingsViewModel
                 userPreferencesRepository.saveColorBlindMode(colorBlindMode)
             }
         }
+
+        fun updateThemeMode(themeMode: ThemeMode) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveThemeMode(themeMode)
+            }
+        }
     }
 
 @Immutable
@@ -52,4 +61,5 @@ data class SettingsUiState(
     val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val devOptionState: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.System,
 )

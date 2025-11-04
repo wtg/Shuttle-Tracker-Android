@@ -251,6 +251,7 @@ fun BusMap(
         }
 
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
+    val isDark = mapsUIState.themeMode.isDarkTheme(isSystemInDarkTheme())
 
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
@@ -269,7 +270,7 @@ fun BusMap(
                 minZoomPreference = 13f,
                 isMyLocationEnabled = mapLocationEnabled,
                 mapStyleOptions =
-                    if (isSystemInDarkTheme()) {
+                    if (isDark) {
                         MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
                     } else {
                         MapStyleOptions("[]")

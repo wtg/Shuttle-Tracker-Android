@@ -7,7 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.NavGraphs
@@ -20,6 +22,7 @@ import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.setup.TOTAL_PAGES
 import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
+import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
@@ -41,7 +44,11 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            ShuttleTrackerTheme {
+            val themeMode by userPreferencesRepository
+                .getThemeMode()
+                .collectAsStateWithLifecycle(initialValue = ThemeMode.System)
+
+            ShuttleTrackerTheme(themeMode = themeMode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,

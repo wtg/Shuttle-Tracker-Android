@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
@@ -27,6 +28,7 @@ fun SettingsItem(
     icon: ImageVector? = null,
     title: String,
     description: String = "",
+    bottomPadding: Dp = 10.dp,
     onClick: () -> Unit = {},
     useLargeAction: Boolean = false,
     actions: @Composable () -> Unit = {},
@@ -36,7 +38,12 @@ fun SettingsItem(
             Modifier
                 .clickable { onClick() }
                 .fillMaxWidth()
-                .padding(vertical = 10.dp, horizontal = 20.dp),
+                .padding(
+                    top = 10.dp,
+                    bottom = bottomPadding,
+                    start = 20.dp,
+                    end = 20.dp,
+                ),
         horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
