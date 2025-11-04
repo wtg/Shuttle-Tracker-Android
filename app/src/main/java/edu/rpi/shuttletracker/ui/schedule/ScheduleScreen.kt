@@ -1,6 +1,8 @@
 package edu.rpi.shuttletracker.ui.schedule
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -94,7 +95,7 @@ fun ScheduleScreen(
     var selectedDay by remember { mutableStateOf(todayName) }
     val dayIndex = remember(selectedDay) { days.indexOf(selectedDay).takeIf { it >= 0 } ?: 0 }
 
-    // Base times for the selected day + route (strings like "9:00 AM")
+    // Gets schedule base times for the selected day and route (north/west)
     val selectedRouteTimes: List<String> =
         remember(selectedDay, selectedRoute, scheduleUiState.schedule) {
             val routeSchedule: Schedule? = scheduleUiState.schedule.getOrNull(dayIndex)
@@ -159,12 +160,20 @@ fun ScheduleScreen(
                     )
                 }
 
-                ScheduleScroll(
-                    selectedRouteTimes = selectedRouteTimes,
-                    selectedStop = selectedStop,
-                    routeInfo = routeMeta[selectedRoute],
-                    isToday = (selectedDay == todayName),
-                )
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .border(width = 1.dp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            .padding(8.dp),
+                ) {
+                    ScheduleScroll(
+                        selectedRouteTimes = selectedRouteTimes,
+                        selectedStop = selectedStop,
+                        routeInfo = routeMeta[selectedRoute],
+                        isToday = (selectedDay == todayName),
+                    )
+                }
             }
         } else {
             Column(
@@ -187,12 +196,20 @@ fun ScheduleScreen(
                     onStop = { selectedStop = it },
                 )
 
-                ScheduleScroll(
-                    selectedRouteTimes = selectedRouteTimes,
-                    selectedStop = selectedStop,
-                    routeInfo = routeMeta[selectedRoute],
-                    isToday = (selectedDay == todayName),
-                )
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .border(width = 1.dp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            .padding(8.dp),
+                ) {
+                    ScheduleScroll(
+                        selectedRouteTimes = selectedRouteTimes,
+                        selectedStop = selectedStop,
+                        routeInfo = routeMeta[selectedRoute],
+                        isToday = (selectedDay == todayName),
+                    )
+                }
             }
         }
     }
@@ -244,7 +261,7 @@ private fun ScheduleScroll(
     Column {
         Text(
             text = stringResource(R.string.time_estimated),
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
         )
 
@@ -293,40 +310,6 @@ private fun ScheduleScroll(
                 }
             }
 
-        val scheduleItems =
-            remember(rowDisplay, selectedStop) {
-                if (selectedStop != "All Stops") {
-                    rowDisplay.map { ScheduleItem.Single(it) }
-                } else {
-                    val items = mutableListOf<ScheduleItem>()
-                    val groupChildren = mutableListOf<String>()
-                    var groupTitle: String? = null
-
-                    fun flushGroup() {
-                        if (groupTitle != null) {
-                            items.add(ScheduleItem.Group(groupTitle!!, groupChildren.toList()))
-                            groupChildren.clear()
-                        }
-                    }
-
-                    for (line in rowDisplay) {
-                        val isTitle = line.contains("Student Union") && !line.contains("(Return)")
-                        if (isTitle) {
-                            flushGroup()
-                            groupTitle = line
-                        } else {
-                            if (groupTitle != null) {
-                                groupChildren.add(line)
-                            } else {
-                                items.add(ScheduleItem.Single(line))
-                            }
-                        }
-                    }
-                    flushGroup()
-                    items
-                }
-            }
-
         // Auto-scroll to user time
         LaunchedEffect(rowTimes, isToday, selectedStop) {
             if (!isToday || rowTimes.isEmpty()) return@LaunchedEffect
@@ -341,43 +324,25 @@ private fun ScheduleScroll(
             state = listState,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(scheduleItems) { item ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    when (item) {
-                        is ScheduleItem.Single -> {
-                            Text(
-                                text = item.line,
-                                modifier = Modifier.padding(16.dp),
-                            )
-                        }
-                        is ScheduleItem.Group -> {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(
-                                    text = item.title,
-                                    style =
-                                        MaterialTheme.typography.titleLarge.copy(
-                                            fontWeight = FontWeight.Normal,
-                                        ),
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                item.children.forEach { child ->
-                                    Text(
-                                        text = child,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+            items(rowDisplay) { line ->
+                val isOutdented =
+                    selectedStop == "All Stops" &&
+                        line.contains("Student Union") &&
+                        !line.contains("(Return)")
+
+                Text(
+                    text = line,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = if (isOutdented) 0.dp else 16.dp,
+                                bottom = 4.dp,
+                            ),
+                )
             }
         }
     }
-}
-
-private sealed class ScheduleItem {
-    data class Single(val line: String) : ScheduleItem()
-
-    data class Group(val title: String, val children: List<String>) : ScheduleItem()
 }
 
 private fun buildRouteMetaFromStops(stops: List<Stop>): Map<String, RouteStops> {
