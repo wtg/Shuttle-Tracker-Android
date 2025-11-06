@@ -8,8 +8,3 @@ data class Schedule(
     @SerializedName("WEST")
     val west: List<String>,
 )
-
-data class RouteStops(
-    val stops: List<Stop>,
-    val stopByName: Map<String, Stop> = stops.associateBy { it.name },
-)

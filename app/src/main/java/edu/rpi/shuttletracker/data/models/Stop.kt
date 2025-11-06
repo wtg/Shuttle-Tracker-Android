@@ -1,13 +1,12 @@
 package edu.rpi.shuttletracker.data.models
 
 import com.google.android.gms.maps.model.LatLng
+import com.google.gson.annotations.SerializedName
 
 data class Stop(
-    val latitude: Double,
-    val longitude: Double,
-    val name: String,
-    val offset: Int,
-    val route: String,
+    @SerializedName("COORDINATES") val coordinates: List<Double>,
+    @SerializedName("OFFSET") val offset: Int,
+    @SerializedName("NAME") val name: String,
 ) {
-    fun latLng() = LatLng(latitude, longitude)
+    fun latLng() = LatLng(coordinates[0], coordinates[1])
 }

@@ -21,8 +21,6 @@ class ApiRepository
 
         suspend fun getAllBuses() = apiHelper.getAllBuses()
 
-        suspend fun getStops() = apiHelper.getStops()
-
         suspend fun getRoutes() = apiHelper.getRoutes()
 
         suspend fun addBus(

@@ -8,7 +8,6 @@ import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.models.Stop
 import kotlinx.coroutines.flow.Flow
 
 interface ApiHelper {
@@ -16,9 +15,7 @@ interface ApiHelper {
 
     suspend fun getAllBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>>
 
-    suspend fun getStops(): NetworkResponse<List<Stop>, ErrorResponse>
-
-    suspend fun getRoutes(): NetworkResponse<List<Route>, ErrorResponse>
+    suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse>
 
     suspend fun addBus(
         busNum: Int,
