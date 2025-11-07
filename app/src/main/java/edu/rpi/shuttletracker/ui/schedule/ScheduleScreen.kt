@@ -42,9 +42,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.data.models.RouteStops
-import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.ui.util.LabeledDropdown
 import java.time.LocalTime
@@ -62,6 +60,7 @@ fun ScheduleScreen(
     windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,
 ) {
     val scheduleUiState = viewModel.scheduleUiState.collectAsStateWithLifecycle().value
+    val routes = scheduleUiState.routes
 
     // Checks if height < 480 dp
     val useHorizontalLayout =
@@ -71,21 +70,20 @@ fun ScheduleScreen(
     val days = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
     val allowedRoutes = setOf("NORTH", "WEST")
 
-    val routeMeta =
-        remember(scheduleUiState.stops) {
-            buildRouteMetaFromStops(scheduleUiState.stops)
-                .filterKeys { it in allowedRoutes }
-        }
-
     // Route dropdown values
-    val routeDropdownItems = remember(routeMeta) { routeMeta.keys.ifEmpty { allowedRoutes }.toList() }
+    val routeDropdownItems = remember(routes) { allowedRoutes.toList() }
     var selectedRoute by remember(routeDropdownItems) { mutableStateOf(routeDropdownItems.first()) }
     if (selectedRoute !in routeDropdownItems) selectedRoute = routeDropdownItems.first()
 
     // Stop dropdown values
     val stopDropdownItems =
-        remember(selectedRoute, routeMeta) {
-            listOf("All Stops") + (routeMeta[selectedRoute]?.stops?.map { it.name } ?: emptyList())
+        remember(selectedRoute, routes) {
+            routes[selectedRoute]?.let { route ->
+                val stopNames =
+                    route.stops.mapNotNull { route.stopDetails[it]?.name }
+                        .ifEmpty { route.stopDetails.values.map { it.name } }
+                listOf("All Stops") + stopNames
+            } ?: listOf("All Stops")
         }
     var selectedStop by remember(selectedRoute) { mutableStateOf(stopDropdownItems.first()) }
     if (selectedStop !in stopDropdownItems) selectedStop = "All Stops"
@@ -98,14 +96,13 @@ fun ScheduleScreen(
     // Gets schedule base times for the selected day and route (north/west)
     val selectedRouteTimes: List<String> =
         remember(selectedDay, selectedRoute, scheduleUiState.schedule) {
-            val routeSchedule: Schedule? = scheduleUiState.schedule.getOrNull(dayIndex)
+            val routeSchedule = scheduleUiState.schedule.getOrNull(dayIndex)
             when (selectedRoute) {
                 "NORTH" -> routeSchedule?.north ?: emptyList()
                 "WEST" -> routeSchedule?.west ?: emptyList()
                 else -> emptyList()
             }
         }
-
     Scaffold(
         snackbarHost = {
             CheckResponseError(
@@ -170,7 +167,7 @@ fun ScheduleScreen(
                     ScheduleScroll(
                         selectedRouteTimes = selectedRouteTimes,
                         selectedStop = selectedStop,
-                        routeInfo = routeMeta[selectedRoute],
+                        routeData = routes[selectedRoute],
                         isToday = (selectedDay == todayName),
                     )
                 }
@@ -195,7 +192,6 @@ fun ScheduleScreen(
                     selectedStop = selectedStop,
                     onStop = { selectedStop = it },
                 )
-
                 Box(
                     modifier =
                         Modifier
@@ -206,7 +202,7 @@ fun ScheduleScreen(
                     ScheduleScroll(
                         selectedRouteTimes = selectedRouteTimes,
                         selectedStop = selectedStop,
-                        routeInfo = routeMeta[selectedRoute],
+                        routeData = routes[selectedRoute],
                         isToday = (selectedDay == todayName),
                     )
                 }
@@ -253,10 +249,11 @@ private fun Controls(
 private fun ScheduleScroll(
     selectedRouteTimes: List<String>,
     selectedStop: String,
-    routeInfo: RouteStops?,
+    routeData: Route?,
     isToday: Boolean,
 ) {
     val listState = rememberLazyListState()
+    val stops = routeData?.stopDetails?.values?.toList() ?: emptyList()
 
     Column {
         Text(
@@ -265,35 +262,28 @@ private fun ScheduleScroll(
             modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
         )
 
-        if (selectedRouteTimes.isEmpty() || routeInfo == null) {
+        if (selectedRouteTimes.isEmpty() || stops.isEmpty()) {
             Text(
                 text = "Loading...",
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
             )
             return
         }
 
         val formatterIn = remember { DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault()) }
         val formatterOut = remember { DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT) }
-        val stops = routeInfo.stops
 
         fun parseTime(timeStr: String): LocalTime = LocalTime.parse(timeStr.uppercase(Locale.getDefault()), formatterIn)
 
-        val rowTimes: List<LocalTime> =
-            remember(selectedRouteTimes, selectedStop, routeInfo) {
+        val rowTimes =
+            remember(selectedRouteTimes, selectedStop, stops) {
                 if (selectedStop == "All Stops") {
-                    // For each base time, include every stop offset
                     selectedRouteTimes.flatMap { baseStr ->
                         stops.map { stop -> parseTime(baseStr).plusMinutes(stop.offset.toLong()) }
                     }
                 } else {
-                    val offset = routeInfo.stopByName[selectedStop]?.offset ?: 0
-                    selectedRouteTimes.map { baseStr ->
-                        parseTime(baseStr).plusMinutes(offset.toLong())
-                    }
+                    val offset = stops.find { it.name == selectedStop }?.offset ?: 0
+                    selectedRouteTimes.map { baseStr -> parseTime(baseStr).plusMinutes(offset.toLong()) }
                 }
             }
 
@@ -302,8 +292,7 @@ private fun ScheduleScroll(
                 if (selectedStop == "All Stops") {
                     val stopNames = selectedRouteTimes.flatMap { _ -> stops.map { it.name } }
                     rowTimes.mapIndexed { index, time ->
-                        val stopName = stopNames[index]
-                        "${time.format(formatterOut)} $stopName"
+                        "${time.format(formatterOut)} ${stopNames[index]}"
                     }
                 } else {
                     rowTimes.map { time -> time.format(formatterOut) }
@@ -342,12 +331,5 @@ private fun ScheduleScroll(
                 )
             }
         }
-    }
-}
-
-private fun buildRouteMetaFromStops(stops: List<Stop>): Map<String, RouteStops> {
-    val byRoute = stops.groupBy { it.route }
-    return byRoute.mapValues { (_, routeStops) ->
-        RouteStops(stops = routeStops)
     }
 }

@@ -284,15 +284,16 @@ fun BusMap(
             ),
     ) {
         // creates the stops
-        mapsUIState.stops.forEach {
-            StopCircle(
-                stop = it,
-                selected = it.name == selectedStop?.name,
-                onSelected = { s ->
-                    selectedStop = s
-                    bottomSheetOnChange(s)
-                },
-            )
+        mapsUIState.routes.forEach { (_, route) ->
+            route.stopDetails.forEach { (_, stop) ->
+                StopCircle(
+                    stop = stop,
+                    selected = stop.name == selectedStop?.name,
+                    onSelected = { s ->
+                        selectedStop = s
+                    },
+                )
+            }
         }
 
         // creates the bus markers
@@ -304,16 +305,19 @@ fun BusMap(
         }
 
         // draws the paths
-        mapsUIState.routes.forEach {
-            Polyline(
-                points = it.latLng(),
-                color =
-                    Color(
-                        android.graphics.Color.valueOf(
-                            it.colorName.toColorInt(),
-                        ).toArgb(),
-                    ),
-            )
+        mapsUIState.routes.forEach { (_, route) ->
+            val points = route.latLng()
+            if (points.isNotEmpty()) {
+                Polyline(
+                    points = points,
+                    color =
+                        Color(
+                            android.graphics.Color.valueOf(
+                                route.color.toColorInt(),
+                            ).toArgb(),
+                        ),
+                )
+            }
         }
     }
 
@@ -369,7 +373,7 @@ fun BusMap(
 private fun StopCircle(
     stop: Stop,
     selected: Boolean,
-    onSelected: (Stop?) -> Unit,
+    onSelected: (Stop) -> Unit,
 ) {
     val context = LocalContext.current
     Circle(
@@ -403,22 +407,14 @@ fun BusMarker(
         markerState.position = bus.latLng()
     }
 
-    val speedText = remember(bus.speedMph) { bus.speedMph }
-
     val busIcon =
         if (colorBlindMode) {
             stringResource(R.string.colorblind_bus)
         } else {
             when (bus.routeName) {
-                "NORTH" -> {
-                    stringResource(R.string.red_bus)
-                }
-                "WEST" -> {
-                    stringResource(R.string.blue_bus)
-                }
-                else -> {
-                    stringResource(R.string.default_bus)
-                }
+                "NORTH" -> stringResource(R.string.red_bus)
+                "WEST" -> stringResource(R.string.blue_bus)
+                else -> stringResource(R.string.default_bus)
             }
         }
 
@@ -428,7 +424,7 @@ fun BusMarker(
     val timeBusUpdate = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
     val snippetText =
         buildString {
-            append(stringResource(R.string.bus_speed, speedText))
+            append(stringResource(R.string.bus_speed, bus.speedMph))
             if (timeBusUpdate.isNotBlank()) {
                 append(" • ")
                 append(timeBusUpdate)

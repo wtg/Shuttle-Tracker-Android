@@ -1,18 +1,78 @@
 package edu.rpi.shuttletracker.data.models
 
 import com.google.android.gms.maps.model.LatLng
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.annotations.SerializedName
+import java.lang.reflect.Type
 
 data class Route(
-    val colorName: String,
-    val coordinates: List<Coordinate>,
+    @SerializedName("COLOR") val color: String,
+    @SerializedName("STOPS") val stops: List<String>,
+    @SerializedName("POLYLINE_STOPS") val polylineStops: List<String>,
+    @SerializedName("ROUTES") val coordinates: List<List<List<Double>>>,
+    val stopDetails: Map<String, Stop>,
 ) {
     fun latLng(): List<LatLng> =
-        coordinates.map {
-            LatLng(it.latitude, it.longitude)
+        buildList {
+            coordinates.forEach { polyline ->
+                polyline.forEach { pair ->
+                    if (pair.size >= 2) {
+                        add(LatLng(pair[0], pair[1]))
+                    }
+                }
+            }
         }
 }
 
-data class Coordinate(
-    val latitude: Double,
-    val longitude: Double,
-)
+class RouteDeserializer : JsonDeserializer<Route> {
+    override fun deserialize(
+        json: JsonElement,
+        typeOfT: Type,
+        context: JsonDeserializationContext,
+    ): Route {
+        val obj = json.asJsonObject
+        val color = obj["COLOR"].asString
+
+        val stops: List<String> =
+            context.deserialize(
+                obj["STOPS"],
+                object : com.google.gson.reflect.TypeToken<List<String>>() {}.type,
+            )
+
+        val polylineStops: List<String> =
+            context.deserialize(
+                obj["POLYLINE_STOPS"],
+                object : com.google.gson.reflect.TypeToken<List<String>>() {}.type,
+            )
+
+        val coordinates: List<List<List<Double>>> =
+            context.deserialize(
+                obj["ROUTES"],
+                object : com.google.gson.reflect.TypeToken<List<List<List<Double>>>>() {}.type,
+            )
+
+        // Decode dynamic stop keys, but only those listed in STOPS
+        val fixedKeys = setOf("COLOR", "STOPS", "POLYLINE_STOPS", "ROUTES")
+        val validStops = stops.toSet()
+        val details = mutableMapOf<String, Stop>()
+        for ((key, value) in obj.entrySet()) {
+            if (key !in fixedKeys && key in validStops) {
+                // Safely try to parse Stop and errors are silently ignored.
+                runCatching {
+                    val stop = context.deserialize<Stop>(value, Stop::class.java)
+                    details[key] = stop
+                }
+            }
+        }
+
+        return Route(
+            color = color,
+            stops = stops,
+            polylineStops = polylineStops,
+            coordinates = coordinates,
+            stopDetails = details,
+        )
+    }
+}

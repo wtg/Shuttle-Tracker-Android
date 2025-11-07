@@ -15,6 +15,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import edu.rpi.shuttletracker.data.models.Route
+import edu.rpi.shuttletracker.data.models.RouteDeserializer
 import edu.rpi.shuttletracker.data.network.ApiHelper
 import edu.rpi.shuttletracker.data.network.ApiService
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
@@ -93,6 +95,7 @@ object ShuttleTrackerModule {
         val gson =
             GsonBuilder()
                 .registerTypeAdapterFactory(FlattenTypeAdapterFactory())
+                .registerTypeAdapter(Route::class.java, RouteDeserializer())
                 .create()
 
         val url =
