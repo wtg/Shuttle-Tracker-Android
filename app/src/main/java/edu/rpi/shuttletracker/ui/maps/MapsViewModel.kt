@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.ui.maps
 
-import android.location.Location
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,7 +10,6 @@ import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.models.Route
-import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
@@ -102,10 +100,6 @@ class MapsViewModel
          * THIS IGNORES THE RUNNING BUSES AS THIS SHOULD BE SUBSCRIBED TO FROM UI
          * */
         fun loadAll() {
-            if (mapsUiState.value.stops.isEmpty()) {
-                loadStops()
-            }
-
             if (mapsUiState.value.routes.isEmpty()) {
                 loadRoutes()
             }
@@ -129,19 +123,19 @@ class MapsViewModel
             }
         }
 
-        /**
-         * @param location: users current location
-         * @return returns the distance to closest stop in METERS
-         * */
-        fun closestDistanceToStop(location: Location): Float =
-            _mapsUiState.value.stops.minOfOrNull {
-                location.distanceTo(
-                    Location("stop").apply {
-                        longitude = it.longitude
-                        latitude = it.latitude
-                    },
-                )
-            } ?: Float.MAX_VALUE
+//        /**
+//         * @param location: users current location
+//         * @return returns the distance to closest stop in METERS
+//         * */
+//        fun closestDistanceToStop(location: Location): Float =
+//            _mapsUiState.value.stops.minOfOrNull {
+//                location.distanceTo(
+//                    Location("stop").apply {
+//                        longitude = it.longitude
+//                        latitude = it.latitude
+//                    },
+//                )
+//            } ?: Float.MAX_VALUE
 
         /**
          * sets all the errors to none
@@ -202,19 +196,6 @@ class MapsViewModel
                             _mapsUiState.update { it.copy(allBuses = ids) }
                         }
                     }
-            }
-        }
-
-        /**
-         * Loads all possible stops and maps the API response
-         * */
-        private fun loadStops() {
-            viewModelScope.launch {
-                readApiResponse(apiRepository.getStops()) { stops ->
-                    _mapsUiState.update {
-                        it.copy(stops = stops)
-                    }
-                }
             }
         }
 
@@ -284,8 +265,7 @@ class MapsViewModel
 data class MapsUIState(
     val runningBuses: List<Bus> = listOf(),
     val allBuses: List<String> = listOf(),
-    val stops: List<Stop> = listOf(),
-    val routes: List<Route> = listOf(),
+    val routes: Map<String, Route> = emptyMap(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
     val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
