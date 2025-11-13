@@ -22,6 +22,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -31,9 +34,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -224,17 +229,21 @@ private fun Controls(
     onStop: (String) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            routeItems.forEachIndexed { index, option ->
+                SegmentedButton(
+                    selected = selectedRoute == option,
+                    onClick = { onRoute(option) },
+                    shape = SegmentedButtonDefaults.itemShape(index, routeItems.size),
+                    label = { Text(option) },
+                )
+            }
+        }
         LabeledDropdown(
             label = "Weekday",
             items = days,
             selectedItem = selectedDay,
             onItemSelected = onDay,
-        )
-        LabeledDropdown(
-            label = "Loop",
-            items = routeItems,
-            selectedItem = selectedRoute,
-            onItemSelected = onRoute,
         )
         LabeledDropdown(
             label = "Stop",
@@ -246,16 +255,26 @@ private fun Controls(
 }
 
 @Composable
-private fun ScheduleScroll(
+fun ScheduleScroll(
     selectedRouteTimes: List<String>,
     selectedStop: String,
     routeData: Route?,
     isToday: Boolean,
+    centered: Boolean = false,
 ) {
     val listState = rememberLazyListState()
     val stops = routeData?.stopDetails?.values?.toList() ?: emptyList()
 
-    Column {
+    val columnModifier = if (centered) Modifier.fillMaxSize() else Modifier
+    val columnHorizontal = if (centered) Alignment.CenterHorizontally else Alignment.Start
+    val columnVertical = if (centered) Arrangement.Center else Arrangement.Top
+    val textAlign = if (centered) TextAlign.Center else TextAlign.Start
+
+    Column(
+        modifier = columnModifier,
+        horizontalAlignment = columnHorizontal,
+        verticalArrangement = columnVertical,
+    ) {
         Text(
             text = stringResource(R.string.time_estimated),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
@@ -321,11 +340,12 @@ private fun ScheduleScroll(
 
                 Text(
                     text = line,
+                    textAlign = textAlign,
                     modifier =
                         Modifier
                             .fillMaxWidth()
                             .padding(
-                                start = if (isOutdented) 0.dp else 16.dp,
+                                start = if (!isOutdented && !centered) 16.dp else 0.dp,
                                 bottom = 4.dp,
                             ),
                 )

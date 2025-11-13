@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,14 +42,19 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -94,10 +100,12 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.ui.schedule.ScheduleScroll
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 @Destination<RootGraph>(start = true)
 @Composable
@@ -179,6 +187,12 @@ fun MapsScreen(
         BusMap(mapsUIState = mapsUiState, padding = padding, bottomSheetOnChange = {
             bottomSheetLoaded = it
         })
+
+        StopInfoBottomSheet(
+            stop = bottomSheetLoaded,
+            mapsUIState = mapsUiState,
+            onDismiss = { bottomSheetLoaded = null },
+        )
 
         Box(
             modifier =
@@ -267,7 +281,7 @@ fun BusMap(
                         LatLng(42.741173465236876, -73.6543446409232),
                     ),
                 isBuildingEnabled = true,
-                minZoomPreference = 13f,
+                minZoomPreference = 14f,
                 isMyLocationEnabled = mapLocationEnabled,
                 mapStyleOptions =
                     if (isDark) {
@@ -291,6 +305,7 @@ fun BusMap(
                     selected = stop.name == selectedStop?.name,
                     onSelected = { s ->
                         selectedStop = s
+                        bottomSheetOnChange(s)
                     },
                 )
             }
@@ -375,7 +390,6 @@ private fun StopCircle(
     selected: Boolean,
     onSelected: (Stop) -> Unit,
 ) {
-    val context = LocalContext.current
     Circle(
         center = stop.latLng(),
         radius = 15.0,
@@ -386,7 +400,6 @@ private fun StopCircle(
         clickable = true,
         onClick = {
             onSelected(stop)
-            Toast.makeText(context, stop.name, Toast.LENGTH_LONG).show()
             true
         },
     )
@@ -672,6 +685,97 @@ fun ActionButton(
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
         ) {
             Icon(icon, icon.name)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StopInfoBottomSheet(
+    stop: Stop?,
+    mapsUIState: MapsUIState,
+    onDismiss: () -> Unit,
+) {
+    if (stop == null) return
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+
+    val routes = mapsUIState.routes
+    val schedule = mapsUIState.schedule
+
+    val allowedRoutes = setOf("NORTH", "WEST")
+
+    val routeNames =
+        remember(stop, routes) {
+            routes
+                .filter { (routeName, route) ->
+                    routeName in allowedRoutes &&
+                        route.stopDetails.values.any { it.name == stop.name }
+                }
+                .keys
+                .sorted()
+        }
+
+    val days = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+    val todayName = remember { days[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1] }
+    var selectedDay by remember { mutableStateOf(todayName) }
+    val dayIndex = remember { Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1 }
+
+    var selectedRoute by remember(routeNames) { mutableStateOf(routeNames.firstOrNull()) }
+
+    val selectedRouteTimes: List<String> =
+        remember(todayName, selectedRoute, schedule) {
+            val routeSchedule = schedule.getOrNull(dayIndex)
+            when (selectedRoute) {
+                "NORTH" -> routeSchedule?.north ?: emptyList()
+                "WEST" -> routeSchedule?.west ?: emptyList()
+                else -> emptyList()
+            }
+        }
+
+    ModalBottomSheet(
+        modifier = Modifier.fillMaxHeight(),
+        sheetState = sheetState,
+        onDismissRequest = onDismiss,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth(0.7f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    stop.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 5.dp),
+                )
+
+                if (routeNames.size > 1) {
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        routeNames.forEachIndexed { index, option ->
+                            SegmentedButton(
+                                selected = selectedRoute == option,
+                                onClick = { selectedRoute = option },
+                                shape = SegmentedButtonDefaults.itemShape(index, routeNames.size),
+                                label = { Text(option) },
+                            )
+                        }
+                    }
+                }
+
+                ScheduleScroll(
+                    selectedRouteTimes = selectedRouteTimes,
+                    selectedStop = stop.name,
+                    routeData = routes[selectedRoute],
+                    isToday = (selectedDay == todayName),
+                    centered = true,
+                )
+            }
         }
     }
 }

@@ -10,6 +10,7 @@ import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.models.Route
+import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
@@ -102,6 +103,9 @@ class MapsViewModel
         fun loadAll() {
             if (mapsUiState.value.routes.isEmpty()) {
                 loadRoutes()
+            }
+            if (mapsUiState.value.schedule.isEmpty()) {
+                loadSchedule()
             }
 
 //            if (mapsUiState.value.allBuses.isEmpty()) {
@@ -212,6 +216,16 @@ class MapsViewModel
             }
         }
 
+        private fun loadSchedule() {
+            viewModelScope.launch {
+                readApiResponse(apiRepository.getSchedule()) { response ->
+                    _mapsUiState.update {
+                        it.copy(schedule = response)
+                    }
+                }
+            }
+        }
+
         /**
          * Reads the network response and maps it to correct place
          * */
@@ -266,6 +280,7 @@ data class MapsUIState(
     val runningBuses: List<Bus> = listOf(),
     val allBuses: List<String> = listOf(),
     val routes: Map<String, Route> = emptyMap(),
+    val schedule: List<Schedule> = listOf(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
     val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
