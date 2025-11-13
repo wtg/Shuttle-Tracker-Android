@@ -80,18 +80,7 @@ fun ScheduleScreen(
     var selectedRoute by remember(routeDropdownItems) { mutableStateOf(routeDropdownItems.first()) }
     if (selectedRoute !in routeDropdownItems) selectedRoute = routeDropdownItems.first()
 
-    // Stop dropdown values
-    val stopDropdownItems =
-        remember(selectedRoute, routes) {
-            routes[selectedRoute]?.let { route ->
-                val stopNames =
-                    route.stops.mapNotNull { route.stopDetails[it]?.name }
-                        .ifEmpty { route.stopDetails.values.map { it.name } }
-                listOf("All Stops") + stopNames
-            } ?: listOf("All Stops")
-        }
-    var selectedStop by remember(selectedRoute) { mutableStateOf(stopDropdownItems.first()) }
-    if (selectedStop !in stopDropdownItems) selectedStop = "All Stops"
+    val selectedStop = "All Stops"
 
     // Weekday dropdown values
     val todayName = remember { days[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1] }
@@ -156,9 +145,6 @@ fun ScheduleScreen(
                         routeItems = routeDropdownItems,
                         selectedRoute = selectedRoute,
                         onRoute = { selectedRoute = it },
-                        stopItems = stopDropdownItems,
-                        selectedStop = selectedStop,
-                        onStop = { selectedStop = it },
                     )
                 }
 
@@ -173,7 +159,6 @@ fun ScheduleScreen(
                         selectedRouteTimes = selectedRouteTimes,
                         selectedStop = selectedStop,
                         routeData = routes[selectedRoute],
-                        isToday = (selectedDay == todayName),
                     )
                 }
             }
@@ -193,9 +178,6 @@ fun ScheduleScreen(
                     routeItems = routeDropdownItems,
                     selectedRoute = selectedRoute,
                     onRoute = { selectedRoute = it },
-                    stopItems = stopDropdownItems,
-                    selectedStop = selectedStop,
-                    onStop = { selectedStop = it },
                 )
                 Box(
                     modifier =
@@ -208,7 +190,6 @@ fun ScheduleScreen(
                         selectedRouteTimes = selectedRouteTimes,
                         selectedStop = selectedStop,
                         routeData = routes[selectedRoute],
-                        isToday = (selectedDay == todayName),
                     )
                 }
             }
@@ -224,9 +205,6 @@ private fun Controls(
     routeItems: List<String>,
     selectedRoute: String,
     onRoute: (String) -> Unit,
-    stopItems: List<String>,
-    selectedStop: String,
-    onStop: (String) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -245,12 +223,6 @@ private fun Controls(
             selectedItem = selectedDay,
             onItemSelected = onDay,
         )
-        LabeledDropdown(
-            label = "Stop",
-            items = stopItems,
-            selectedItem = selectedStop,
-            onItemSelected = onStop,
-        )
     }
 }
 
@@ -259,7 +231,6 @@ fun ScheduleScroll(
     selectedRouteTimes: List<String>,
     selectedStop: String,
     routeData: Route?,
-    isToday: Boolean,
     centered: Boolean = false,
 ) {
     val listState = rememberLazyListState()
@@ -270,13 +241,20 @@ fun ScheduleScroll(
     val columnVertical = if (centered) Arrangement.Center else Arrangement.Top
     val textAlign = if (centered) TextAlign.Center else TextAlign.Start
 
+    val reliableStops = listOf("All Stops", "Student Union")
+
     Column(
         modifier = columnModifier,
         horizontalAlignment = columnHorizontal,
         verticalArrangement = columnVertical,
     ) {
         Text(
-            text = stringResource(R.string.time_estimated),
+            text =
+                if (selectedStop in reliableStops) {
+                    stringResource(R.string.time_estimated_reliable)
+                } else {
+                    stringResource(R.string.time_estimated_unreliable)
+                },
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
         )
@@ -297,8 +275,8 @@ fun ScheduleScroll(
         val rowTimes =
             remember(selectedRouteTimes, selectedStop, stops) {
                 if (selectedStop == "All Stops") {
-                    selectedRouteTimes.flatMap { baseStr ->
-                        stops.map { stop -> parseTime(baseStr).plusMinutes(stop.offset.toLong()) }
+                    selectedRouteTimes.map { baseStr ->
+                        parseTime(baseStr)
                     }
                 } else {
                     val offset = stops.find { it.name == selectedStop }?.offset ?: 0
@@ -308,19 +286,12 @@ fun ScheduleScroll(
 
         val rowDisplay =
             remember(rowTimes, selectedStop) {
-                if (selectedStop == "All Stops") {
-                    val stopNames = selectedRouteTimes.flatMap { _ -> stops.map { it.name } }
-                    rowTimes.mapIndexed { index, time ->
-                        "${time.format(formatterOut)} ${stopNames[index]}"
-                    }
-                } else {
-                    rowTimes.map { time -> time.format(formatterOut) }
-                }
+                rowTimes.map { time -> time.format(formatterOut) }
             }
 
         // Auto-scroll to user time
-        LaunchedEffect(rowTimes, isToday, selectedStop) {
-            if (!isToday || rowTimes.isEmpty()) return@LaunchedEffect
+        LaunchedEffect(rowTimes, selectedStop) {
+            if (rowTimes.isEmpty()) return@LaunchedEffect
             val now = LocalTime.now()
             val firstUpcomingIndex = rowTimes.indexOfFirst { !it.isBefore(now) }
             val scrollToIndex = if (firstUpcomingIndex >= 0) firstUpcomingIndex else rowTimes.lastIndex
@@ -333,22 +304,45 @@ fun ScheduleScroll(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(rowDisplay) { line ->
-                val isOutdented =
-                    selectedStop == "All Stops" &&
-                        line.contains("Student Union") &&
-                        !line.contains("(Return)")
-
-                Text(
-                    text = line,
-                    textAlign = textAlign,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = if (!isOutdented && !centered) 16.dp else 0.dp,
-                                bottom = 4.dp,
-                            ),
-                )
+                if (selectedStop == "All Stops") {
+                    Text(
+                        text = "$line Student Union",
+                        textAlign = textAlign,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    start = 0.dp,
+                                    bottom = 4.dp,
+                                ),
+                    )
+                    stops
+                        .filter { it.name != "Student Union" }
+                        .forEach { stop ->
+                            Text(
+                                text = stop.name,
+                                textAlign = textAlign,
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            start = if (!centered) 16.dp else 0.dp,
+                                            bottom = 2.dp,
+                                        ),
+                            )
+                        }
+                } else {
+                    Text(
+                        text = line,
+                        textAlign = textAlign,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    bottom = 4.dp,
+                                ),
+                    )
+                }
             }
         }
     }

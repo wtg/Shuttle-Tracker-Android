@@ -772,7 +772,6 @@ fun StopInfoBottomSheet(
                     selectedRouteTimes = selectedRouteTimes,
                     selectedStop = stop.name,
                     routeData = routes[selectedRoute],
-                    isToday = (selectedDay == todayName),
                     centered = true,
                 )
             }
