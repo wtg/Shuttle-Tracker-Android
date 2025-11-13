@@ -2,10 +2,8 @@ package edu.rpi.shuttletracker.ui.maps
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Canvas
 import android.location.Location
 import android.widget.Toast
 import androidx.compose.animation.core.Animatable
@@ -64,21 +62,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.createBitmap
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -100,6 +95,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.ui.theme.BusColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
@@ -414,17 +410,17 @@ fun BusMarker(
         markerState.position = bus.latLng()
     }
 
-    val busIcon =
+    val busColor =
         when {
-            colorBlindMode -> R.drawable.ic_default_bus
-            bus.routeName == "NORTH" -> R.drawable.ic_red_bus
-            bus.routeName == "WEST" -> R.drawable.ic_blue_bus
-            else -> R.drawable.ic_default_bus
+            colorBlindMode -> BusColors.Default
+            bus.routeName == "NORTH" -> BusColors.North
+            bus.routeName == "WEST" -> BusColors.West
+            else -> BusColors.Default
         }
 
     val icon =
-        remember(busIcon) {
-            bitmapDescriptorFromVector(context, busIcon)
+        remember(busColor) {
+            getBusMarkerDescriptor(context, 25f, busColor.toArgb())
         }
 
     // gets bus speed and last time it updated
@@ -682,21 +678,4 @@ fun ActionButton(
             Icon(icon, icon.name)
         }
     }
-}
-
-fun bitmapDescriptorFromVector(
-    context: Context,
-    vectorResId: Int,
-    size: Float = 25f,
-): BitmapDescriptor {
-    val pxSize = (size * context.resources.displayMetrics.density).toInt()
-    val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
-    val bitmap =
-        createBitmap(pxSize, pxSize).apply {
-            val canvas = Canvas(this)
-            vectorDrawable?.setBounds(0, 0, canvas.width, canvas.height)
-            vectorDrawable?.draw(canvas)
-        }
-
-    return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
