@@ -23,7 +23,7 @@ sealed class Permission(
 
     data object Location : Permission(
         "Location",
-        "See where you are and crowd source bus data.",
+        "Access your location to display your position on the map.",
         arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,

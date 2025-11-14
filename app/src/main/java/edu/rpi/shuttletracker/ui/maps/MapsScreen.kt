@@ -66,7 +66,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -78,7 +80,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -101,6 +102,7 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.schedule.ScheduleScroll
+import edu.rpi.shuttletracker.ui.theme.BusColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import edu.rpi.shuttletracker.util.services.BeaconService
 import edu.rpi.shuttletracker.util.services.LocationService
@@ -337,7 +339,7 @@ fun BusMap(
     }
 
     // Icon to recenter the user on the map to their location
-    // makes sure its in the top left
+    // makes sure its in the top right
     Box(
         modifier =
             Modifier
@@ -413,6 +415,7 @@ fun BusMarker(
     bus: Bus,
     colorBlindMode: Boolean,
 ) {
+    val context = LocalContext.current
     val markerState = rememberUpdatedMarkerState(position = bus.latLng())
 
     // every time bus changes, update the position of the marker
@@ -420,18 +423,18 @@ fun BusMarker(
         markerState.position = bus.latLng()
     }
 
-    val busIcon =
-        if (colorBlindMode) {
-            stringResource(R.string.colorblind_bus)
-        } else {
-            when (bus.routeName) {
-                "NORTH" -> stringResource(R.string.red_bus)
-                "WEST" -> stringResource(R.string.blue_bus)
-                else -> stringResource(R.string.default_bus)
-            }
+    val busColor =
+        when {
+            colorBlindMode -> BusColors.Default
+            bus.routeName == "NORTH" -> BusColors.North
+            bus.routeName == "WEST" -> BusColors.West
+            else -> BusColors.Default
         }
 
-    val icon = BitmapDescriptorFactory.fromAsset(busIcon)
+    val icon =
+        remember(busColor) {
+            getBusMarkerDescriptor(context, 25f, busColor.toArgb())
+        }
 
     // gets bus speed and last time it updated
     val timeBusUpdate = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
@@ -449,6 +452,7 @@ fun BusMarker(
         title = stringResource(R.string.bus_number, bus.id),
         icon = icon,
         snippet = snippetText,
+        anchor = Offset(0.5f, 0.5f),
         onClick = {
             it.showInfoWindow()
             true
