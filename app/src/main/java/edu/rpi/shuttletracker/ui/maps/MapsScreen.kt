@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Refresh
@@ -87,6 +88,7 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.Polyline
@@ -204,9 +206,6 @@ fun MapsScreen(
                     .fillMaxSize(),
         ) {
             Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 // navigates to announcements
@@ -268,6 +267,7 @@ fun BusMap(
 
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
     val isDark = mapsUIState.themeMode.isDarkTheme(isSystemInDarkTheme())
+    var mapType by remember { mutableStateOf(MapType.NORMAL) }
 
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
@@ -282,6 +282,7 @@ fun BusMap(
                         LatLng(42.72095724005504, -73.70196321825452),
                         LatLng(42.741173465236876, -73.6543446409232),
                     ),
+                mapType = mapType,
                 isBuildingEnabled = true,
                 minZoomPreference = 14f,
                 isMyLocationEnabled = mapLocationEnabled,
@@ -348,37 +349,49 @@ fun BusMap(
                 .padding(horizontal = 10.dp),
         contentAlignment = Alignment.TopEnd,
     ) {
-        ActionButton(
-            icon =
-                if (mapLocationEnabled) {
-                    Icons.Outlined.MyLocation
-                } else {
-                    Icons.Outlined.LocationDisabled
-                },
+        Column(
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            // finds current position and moves to there
-            LocationServices.getFusedLocationProviderClient(context).lastLocation
-                .addOnSuccessListener { location: Location? ->
-                    if (location == null) return@addOnSuccessListener
+            ActionButton(
+                icon =
+                    if (mapLocationEnabled) {
+                        Icons.Outlined.MyLocation
+                    } else {
+                        Icons.Outlined.LocationDisabled
+                    },
+            ) {
+                // finds current position and moves to there
+                LocationServices.getFusedLocationProviderClient(context).lastLocation
+                    .addOnSuccessListener { location: Location? ->
+                        if (location == null) return@addOnSuccessListener
 
-                    coroutineScope.launch {
-                        cameraPositionState.animate(
-                            update =
-                                CameraUpdateFactory.newCameraPosition(
-                                    CameraPosition.builder()
-                                        .target(
-                                            LatLng(
-                                                location.latitude,
-                                                location.longitude,
-                                            ),
-                                        ).tilt(0f)
-                                        .zoom(cameraPositionState.position.zoom)
-                                        .build(),
-                                ),
-                            durationMs = 1000,
-                        )
+                        coroutineScope.launch {
+                            cameraPositionState.animate(
+                                update =
+                                    CameraUpdateFactory.newCameraPosition(
+                                        CameraPosition.builder()
+                                            .target(
+                                                LatLng(
+                                                    location.latitude,
+                                                    location.longitude,
+                                                ),
+                                            ).tilt(0f)
+                                            .zoom(cameraPositionState.position.zoom)
+                                            .build(),
+                                    ),
+                                durationMs = 1000,
+                            )
+                        }
                     }
-                }
+            }
+            ActionButton(icon = Icons.Outlined.Layers) {
+                mapType =
+                    if (mapType == MapType.NORMAL) {
+                        MapType.HYBRID
+                    } else {
+                        MapType.NORMAL
+                    }
+            }
         }
     }
 }
