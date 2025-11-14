@@ -24,7 +24,6 @@
     <string name="refresh">Refresh</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="permissions">Permissions</string>
-    <string name="automatic_board_bus">Automatic Board Bus</string>
     <string name="announcements">Announcements</string>
     <string name="schedule">Schedule</string>
     <string name="settings">Settings</string>
@@ -63,13 +62,8 @@
 
     <!-- Explanations-->
     <string name="info_intro">
-        Shuttle Tracker shows you the real-time locations of the RPI campus shuttles,
-        powered by crowd-sourced location data.\n\nThe map is automatically refreshed every 5 seconds.
-        Green buses have high-quality location data,
-        and red buses have low-quality location data. In colorblind mode, the green buses
-        are replaced by buses with an aqua target/scope icon, and the red buses are replaced by
-        a purple dial icon. When boarding a bus, tap \"Board Bus\", and when getting off,
-        tap \"Leave Bus\". You must be within 20 meters of a stop by default to board a bus.
+        Shuttle Tracker shows you the real-time locations of the RPI campus shuttles.
+        The bus color matches the route color.
     </string>
 
     <!--  Formatting broken when using enter so it has to be a one liner  -->
@@ -94,14 +88,9 @@
 
     <string name="notifications">Notifications</string>
     <string name="location">Location</string>
-    <string name="bluetooth">Bluetooth</string>
-    <string name="background_location">Background Location</string>
 
     <string name="notification_rational">Notifications allow you to know whether or not any shuttle tracking services are running</string>
-    <string name="location_rational">Location is required to show your current location and to crowdsource shuttle locations</string>
-    <string name="bluetooth_rational">Bluetooth is required to detect nearby beacons for Automatic Board Bus</string>
-    <string name="background_location_rational">Background location is required to automatically start Automatic Board Bus services on device restart/app update\n\nClick \"Allow all the time\" in location permission\n\nLocation permissions must be granted prior on the previous page</string>
-    <string name="automatic_board_bus_rational">Automatic Board Bus lets you share your location to everyone else when a bus beacon is detected nearby\n\nThis requires the permissions above</string>
+    <string name="location_rational">Location is required to show your current location on the map</string>
 
     <string name="to_settings_explanation">Go to settings to enable permissions</string>
     <string name="to_settings">To settings</string>
@@ -110,9 +99,6 @@
     <string name="permission_denied">Permission denied.</string>
     <string name="permission_granted">Permission granted.</string>
     <string name="grant_permissions">Grant permissions</string>
-
-    <string name="enable_automatic_board_bus">Enable Automatic Board Bus</string>
-    <string name="automatic_board_bus_enabled">Automatic Board Bus enabled, thank you!</string>
 
     <string name="complete_setup">Complete setup</string>
     <string name="next_page">Next page</string>
@@ -124,20 +110,10 @@
     <!-- Maps screen -->
     <string name="bus_number">Bus %1$s</string>
     <string name="bus_speed">%.1f mph</string>
-    <string name="distance_warning">Must be %1$dm from a stop to board</string>
     <string name="no_location_warning">Unable to determine your location</string>
 
-    <string name="board_bus">Board Bus</string>
-    <string name="leave_bus">Leave Bus</string>
-
-    <string name="choose_bus">Choose a bus</string>
-    <string name="no_bus_chosen">No bus chosen</string>
-
     <!-- Errors -->
-    <string name="location_service">Location service</string>
-    <string name="error_server_location">Your location may not be on a valid shuttle route</string>
     <string name="understand">I understand</string>
-    <string name="service_missing_permissions">Missing permissions required for service</string>
     <string name="error_network">Network error</string>
     <string name="error_server">Server error</string>
     <string name="error_unknown">Unknown error</string>
@@ -152,7 +128,6 @@
     <string name="change_url_warning">Changing the URL will restart the app and stop all running services</string>
     <string name="invalid_url">Invalid URL</string>
     <string name="color_blind_description">More accessible bus icons</string>
-    <string name="auto_boarding_description">Help us crowd-source bus data!</string>
     <string name="color_blind_mode">Colorblind mode</string>
     <string name="current_meters">%1$d meters</string>
     <string name="libraries_used">Libraries used</string>
@@ -165,7 +140,6 @@
     <string name="analytics">Analytics</string>
     <string name="user_id">User id</string>
     <string name="android_version">Android version</string>
-    <string name="boarded_buses">Boarded buses</string>
     <string name="debug_mode">Debug mode</string>
 
 
@@ -185,11 +159,5 @@
     <string name="sunday">Sunday</string>
     <string name="time_estimated_reliable">Estimated Time</string>
     <string name="time_estimated_unreliable">Estimated Time (do not rely on)</string>
-
-    <!-- services -->
-    <string name="notification_automatic_board_bus_running">Automatic Board Bus service is running</string>
-    <string name="notification_location_launching">Launching location service</string>
-    <string name="notification_tracking_bus">Tracking bus %1$d</string>
-    <string name="notification_stop_tracking">Stop tracking</string>
 
 </resources>
