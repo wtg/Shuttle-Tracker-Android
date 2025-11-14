@@ -6,9 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.Bus
-import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.ErrorResponse
-import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
@@ -47,24 +45,6 @@ class MapsViewModel
         init {
             loadAll()
             loadRunningBuses()
-
-//            // sets auto board service state
-//            userPreferencesRepository.getAutoBoardService()
-//                .flowOn(Dispatchers.Default)
-//                .onEach { autoBoardService ->
-//                    _mapsUiState.update {
-//                        it.copy(autoBoardService = autoBoardService)
-//                    }
-//                }.launchIn(viewModelScope)
-//
-//            // sets the notification read count
-//            userPreferencesRepository.getNotificationsRead()
-//                .flowOn(Dispatchers.Default)
-//                .onEach { count ->
-//                    _mapsUiState.update {
-//                        it.copy(notificationsRead = count)
-//                    }
-//                }.launchIn(viewModelScope)
 
             // gets user preference for colorblind mode
             userPreferencesRepository.getColorBlindMode()
@@ -107,14 +87,6 @@ class MapsViewModel
             if (mapsUiState.value.schedule.isEmpty()) {
                 loadSchedule()
             }
-
-//            if (mapsUiState.value.allBuses.isEmpty()) {
-//                loadAllBuses()
-//            }
-
-//            if (mapsUiState.value.notificationsRead == -1) {
-//                loadAnnouncementCount()
-//            }
         }
 
         fun refreshRunningBusses() {
@@ -126,20 +98,6 @@ class MapsViewModel
                 }
             }
         }
-
-//        /**
-//         * @param location: users current location
-//         * @return returns the distance to closest stop in METERS
-//         * */
-//        fun closestDistanceToStop(location: Location): Float =
-//            _mapsUiState.value.stops.minOfOrNull {
-//                location.distanceTo(
-//                    Location("stop").apply {
-//                        longitude = it.longitude
-//                        latitude = it.latitude
-//                    },
-//                )
-//            } ?: Float.MAX_VALUE
 
         /**
          * sets all the errors to none
@@ -185,21 +143,6 @@ class MapsViewModel
                             SharingStarted.WhileSubscribed(5000),
                             1,
                         )
-            }
-        }
-
-        /**
-         * Loads all possible buses and maps the API response
-         * */
-        private fun loadAllBuses() {
-            viewModelScope.launch {
-                apiRepository.getAllBuses()
-                    .collect { response ->
-                        readApiResponse(response) { busesMap ->
-                            val ids = busesMap.values.map { it.id }.sorted()
-                            _mapsUiState.update { it.copy(allBuses = ids) }
-                        }
-                    }
             }
         }
 
@@ -251,25 +194,6 @@ class MapsViewModel
                     }
             }
         }
-
-        fun leaveBusPressed() {
-            viewModelScope.launch {
-                apiRepository.sendAnalytics(Event(boardBusDeactivatedManual = true))
-                apiRepository.sendAnalytics(Event(leaveBusTapped = EmptyEvent))
-            }
-        }
-
-        fun boardBusPressed() {
-            viewModelScope.launch {
-                apiRepository.sendAnalytics(Event(boardBusTapped = EmptyEvent))
-            }
-        }
-
-        fun busSelectionCanceled() {
-            viewModelScope.launch {
-                apiRepository.sendAnalytics(Event(busSelectionCanceled = EmptyEvent))
-            }
-        }
     }
 
 /**
@@ -278,7 +202,6 @@ class MapsViewModel
 @Immutable
 data class MapsUIState(
     val runningBuses: List<Bus> = listOf(),
-    val allBuses: List<String> = listOf(),
     val routes: Map<String, Route> = emptyMap(),
     val schedule: List<Schedule> = listOf(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
@@ -286,7 +209,6 @@ data class MapsUIState(
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
     val notificationsRead: Int = -1,
     val totalAnnouncements: Int = -1,
-    val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val minStopDist: Float = 50f,
     val themeMode: ThemeMode = ThemeMode.System,

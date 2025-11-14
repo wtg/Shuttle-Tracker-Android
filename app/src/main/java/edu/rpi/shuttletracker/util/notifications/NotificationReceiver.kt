@@ -7,11 +7,9 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
-import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.MainActivity
-import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -33,16 +31,6 @@ class NotificationReceiver : BroadcastReceiver() {
         intent: Intent,
     ) {
         when (intent.action) {
-            ACTION_STOP_LOCATION_SERVICE -> {
-                goAsync {
-                    apiRepository.sendAnalytics(Event(boardBusDeactivatedManual = true))
-                }
-
-                context.stopService(
-                    Intent(context, LocationService::class.java),
-                )
-            }
-
             ACTION_MARK_NOTIFICATIONS_READ -> {
                 val notificationManager: NotificationManager =
                     context.getSystemService(
@@ -58,25 +46,7 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val ACTION_STOP_LOCATION_SERVICE = "STOP_SERVICE"
         const val ACTION_MARK_NOTIFICATIONS_READ = "MARK_NOTIFICATIONS_READ"
-
-        /**
-         * Creates a pending intent to stop location tracking service
-         * */
-        internal fun stopLocationService(context: Context): PendingIntent {
-            val intent =
-                Intent(context, NotificationReceiver::class.java).apply {
-                    action = ACTION_STOP_LOCATION_SERVICE
-                }
-
-            return PendingIntent.getBroadcast(
-                context,
-                0,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-        }
 
         /**
          * Creates a pending intent to open an activity

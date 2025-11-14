@@ -3,7 +3,6 @@ package edu.rpi.shuttletracker.data.network
 import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
-import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
@@ -33,11 +32,6 @@ class ApiHelperImpl
             }
 
         override suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse> = apiService.getRoutes()
-
-        override suspend fun addBus(
-            busNum: Int,
-            bus: BoardBus,
-        ): NetworkResponse<Unit, ErrorResponse> = apiService.addBus(busNum, bus)
 
         override suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse> =
             apiService.getAnnouncements()

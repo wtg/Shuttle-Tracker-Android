@@ -3,7 +3,6 @@ package edu.rpi.shuttletracker.data.network
 import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
-import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
@@ -16,11 +15,6 @@ interface ApiHelper {
     suspend fun getAllBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>>
 
     suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse>
-
-    suspend fun addBus(
-        busNum: Int,
-        bus: BoardBus,
-    ): NetworkResponse<Unit, ErrorResponse>
 
     suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse>
 

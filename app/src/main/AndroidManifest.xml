@@ -8,14 +8,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
 
     <application
@@ -42,15 +37,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <service
-            android:name=".util.services.LocationService"
-            android:exported="false"
-            android:foregroundServiceType="location" />
-
-        <service
-            android:name=".util.services.BeaconService"
-            android:exported="false"
-            android:foregroundServiceType="location" />
         <service
             android:name=".util.services.FirebaseService"
             android:exported="false">

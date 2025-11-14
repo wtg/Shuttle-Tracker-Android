@@ -3,7 +3,6 @@ package edu.rpi.shuttletracker.data.repositories
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.Lazy
 import edu.rpi.shuttletracker.data.models.AnalyticsFactory
-import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.network.ApiHelperImpl
@@ -22,11 +21,6 @@ class ApiRepository
         suspend fun getAllBuses() = apiHelper.getAllBuses()
 
         suspend fun getRoutes() = apiHelper.getRoutes()
-
-        suspend fun addBus(
-            busNum: Int,
-            bus: BoardBus,
-        ) = apiHelper.addBus(busNum, bus)
 
         suspend fun getAnnouncements() = apiHelper.getAnnouncements()
 
