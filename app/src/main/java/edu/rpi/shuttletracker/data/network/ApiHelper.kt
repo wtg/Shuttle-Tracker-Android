@@ -10,9 +10,7 @@ import edu.rpi.shuttletracker.data.models.Schedule
 import kotlinx.coroutines.flow.Flow
 
 interface ApiHelper {
-    suspend fun getRunningBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>>
-
-    suspend fun getAllBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>>
+    suspend fun getBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>>
 
     suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse>
 

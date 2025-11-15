@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -38,13 +37,13 @@ class MapsViewModel
         private val _mapsUiState = MutableStateFlow(MapsUIState())
         val mapsUiState: StateFlow<MapsUIState> = _mapsUiState
 
-        // shared flow of the running busses, this is to be subscribed to in UI
-        lateinit var runningBusesState: SharedFlow<Unit>
+        // shared flow of the running buses, this is to be subscribed to in UI
+        lateinit var busesState: SharedFlow<Unit>
             private set
 
         init {
             loadAll()
-            loadRunningBuses()
+            loadBuses()
 
             // gets user preference for colorblind mode
             userPreferencesRepository.getColorBlindMode()
@@ -89,16 +88,6 @@ class MapsViewModel
             }
         }
 
-        fun refreshRunningBusses() {
-            viewModelScope.launch {
-                readApiResponse(apiRepository.getRunningBuses().first()) { runningBusses ->
-                    _mapsUiState.update {
-                        it.copy(runningBuses = runningBusses.values.toList())
-                    }
-                }
-            }
-        }
-
         /**
          * sets all the errors to none
          * */
@@ -127,14 +116,14 @@ class MapsViewModel
          * Creates a shared flow to update the ui state when subscribed
          * THIS MUST BE SUBSCRIBED TO IN UI
          * */
-        private fun loadRunningBuses() {
+        private fun loadBuses() {
             viewModelScope.launch {
-                runningBusesState =
-                    apiRepository.getRunningBuses()
+                busesState =
+                    apiRepository.getBuses()
                         .map { response ->
                             readApiResponse(response) { buses ->
                                 _mapsUiState.update {
-                                    it.copy(runningBuses = buses.values.toList())
+                                    it.copy(buses = buses.values.toList())
                                 }
                             }
                         }
@@ -201,7 +190,7 @@ class MapsViewModel
  * */
 @Immutable
 data class MapsUIState(
-    val runningBuses: List<Bus> = listOf(),
+    val buses: List<Bus> = listOf(),
     val routes: Map<String, Route> = emptyMap(),
     val schedule: List<Schedule> = listOf(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,

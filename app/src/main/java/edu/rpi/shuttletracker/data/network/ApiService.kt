@@ -13,10 +13,7 @@ import retrofit2.http.POST
 
 interface ApiService {
     @GET("locations")
-    suspend fun getRunningBuses(): NetworkResponse<Map<String, Bus>, ErrorResponse>
-
-    @GET("locations")
-    suspend fun getAllBuses(): NetworkResponse<Map<String, Bus>, ErrorResponse>
+    suspend fun getBuses(): NetworkResponse<Map<String, Bus>, ErrorResponse>
 
     @GET("routes")
     suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse>

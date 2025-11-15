@@ -16,9 +16,7 @@ class ApiRepository
         private val userPreferencesRepository: Lazy<UserPreferencesRepository>,
         private val analyticsFactory: AnalyticsFactory,
     ) {
-        suspend fun getRunningBuses() = apiHelper.getRunningBuses()
-
-        suspend fun getAllBuses() = apiHelper.getAllBuses()
+        suspend fun getBuses() = apiHelper.getBuses()
 
         suspend fun getRoutes() = apiHelper.getRoutes()
 

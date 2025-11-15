@@ -3,9 +3,6 @@ package edu.rpi.shuttletracker.ui.maps
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +18,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
@@ -36,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -50,7 +45,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -98,7 +92,7 @@ fun MapsScreen(
 ) {
     // makes sure the 2 flows are collected when ui is open
     val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
-    viewModel.runningBusesState.collectAsStateWithLifecycle({})
+    viewModel.busesState.collectAsStateWithLifecycle({})
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -250,7 +244,7 @@ fun BusMap(
         }
 
         // creates the bus markers
-        mapsUIState.runningBuses.forEach {
+        mapsUIState.buses.forEach {
             BusMarker(
                 bus = it,
                 colorBlindMode = mapsUIState.colorBlindMode,
@@ -397,35 +391,6 @@ fun BusMarker(
 }
 
 /**
- * A FAB that refreshes server items on click
- * */
-@Composable
-fun RefreshFab(refresh: () -> Unit) {
-    val refreshAnimation = remember { Animatable(0F) }
-    val coroutineScope = rememberCoroutineScope()
-
-    SmallFloatingActionButton(
-        onClick = {
-            refresh()
-            coroutineScope.launch {
-                refreshAnimation.animateTo(
-                    targetValue = 360F,
-                    animationSpec = tween(500, easing = LinearEasing),
-                )
-                refreshAnimation.snapTo(0F)
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-    ) {
-        Icon(
-            Icons.Outlined.Refresh,
-            stringResource(R.string.refresh),
-            modifier = Modifier.rotate(refreshAnimation.value),
-        )
-    }
-}
-
-/**
  * Buttons that let you do things that is displayed on the map
  * @param badgeCount: if a badge is needed for a item, it will display
  * @param action: what to do on button click
@@ -495,7 +460,7 @@ fun StopInfoBottomSheet(
 
     val days = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
     val todayName = remember { days[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1] }
-    var selectedDay by remember { mutableStateOf(todayName) }
+//    var selectedDay by remember { mutableStateOf(todayName) }
     val dayIndex = remember { Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1 }
 
     var selectedRoute by remember(routeNames) { mutableStateOf(routeNames.firstOrNull()) }
