@@ -20,13 +20,11 @@ class SettingsViewModel
     ) : ViewModel() {
         val settingsUiState =
             combine(
-                userPreferencesRepository.getAutoBoardService(),
                 userPreferencesRepository.getColorBlindMode(),
                 userPreferencesRepository.getDevOptions(),
                 userPreferencesRepository.getThemeMode(),
-            ) { autoBoardService, colorBindMode, devOptionState, themeMode ->
+            ) { colorBindMode, devOptionState, themeMode ->
                 return@combine SettingsUiState(
-                    autoBoardService = autoBoardService,
                     colorBlindMode = colorBindMode,
                     devOptionState = devOptionState,
                     themeMode = themeMode,
@@ -36,12 +34,6 @@ class SettingsViewModel
                 SharingStarted.WhileSubscribed(),
                 SettingsUiState(),
             )
-
-        fun updateAutoBoardService(autoBoardService: Boolean) {
-            viewModelScope.launch {
-                userPreferencesRepository.saveAutoBoardService(autoBoardService)
-            }
-        }
 
         fun updateColorBlindMode(colorBlindMode: Boolean) {
             viewModelScope.launch {
@@ -58,7 +50,6 @@ class SettingsViewModel
 
 @Immutable
 data class SettingsUiState(
-    val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val devOptionState: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.System,
