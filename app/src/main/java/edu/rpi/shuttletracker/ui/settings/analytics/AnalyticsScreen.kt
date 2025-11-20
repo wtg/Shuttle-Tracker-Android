@@ -77,11 +77,6 @@ fun AnalyticsScreen(
             )
 
             SettingsItem(
-                title = stringResource(R.string.board_bus),
-                description = analytics.boardBusCount.toString(),
-            )
-
-            SettingsItem(
                 title = stringResource(R.string.debug_mode),
                 description = BuildConfig.DEBUG.toString(),
             )

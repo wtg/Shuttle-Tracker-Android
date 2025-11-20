@@ -1,72 +1,52 @@
 package edu.rpi.shuttletracker.ui.maps
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
-import android.widget.Toast
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.SmallFloatingActionButton
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -74,7 +54,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -98,7 +77,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
@@ -106,8 +84,6 @@ import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.schedule.ScheduleScroll
 import edu.rpi.shuttletracker.ui.theme.BusColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
-import edu.rpi.shuttletracker.util.services.BeaconService
-import edu.rpi.shuttletracker.util.services.LocationService
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -119,40 +95,11 @@ fun MapsScreen(
 ) {
     // makes sure the 2 flows are collected when ui is open
     val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
-    viewModel.runningBusesState.collectAsStateWithLifecycle({})
+    viewModel.busesState.collectAsStateWithLifecycle({})
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val coroutineScope = rememberCoroutineScope()
-
-    val context = LocalContext.current
-
     var bottomSheetLoaded by remember { mutableStateOf<Stop?>(null) }
-
-    val errorStartingBeaconService = BeaconService.permissionError.collectAsStateWithLifecycle().value
-    val errorStartingLocationService = LocationService.permissionError.collectAsStateWithLifecycle().value
-
-    // shows a snackbar whenever the service isn't able to run, usually because of lack of permissions
-    LaunchedEffect(errorStartingBeaconService, errorStartingLocationService) {
-        if (errorStartingBeaconService || errorStartingLocationService) {
-            coroutineScope.launch {
-                val result =
-                    snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.service_missing_permissions),
-                        actionLabel = context.getString(R.string.fix),
-                        duration = SnackbarDuration.Long,
-                    )
-                when (result) {
-                    SnackbarResult.ActionPerformed -> {
-                        navigator.navigate(SetupScreenDestination())
-                    }
-
-                    SnackbarResult.Dismissed -> { // IGNORED
-                    }
-                }
-            }
-        }
-    }
 
     Scaffold(
         snackbarHost = {
@@ -170,22 +117,6 @@ fun MapsScreen(
 
             SnackbarHost(hostState = snackbarHostState)
         },
-//        floatingActionButton = {
-//            Column(horizontalAlignment = Alignment.End) {
-//                RefreshFab {
-//                    viewModel.refreshRunningBusses()
-//                    viewModel.loadAll()
-//                }
-//                BoardBusFab(
-//                    mapsUiState.allBuses,
-//                    viewModel::closestDistanceToStop,
-//                    mapsUiState.minStopDist,
-//                    viewModel::leaveBusPressed,
-//                    viewModel::boardBusPressed,
-//                    viewModel::busSelectionCanceled,
-//                )
-//            }
-//        },
     ) { padding ->
 
         BusMap(mapsUIState = mapsUiState, padding = padding, bottomSheetOnChange = {
@@ -315,7 +246,7 @@ fun BusMap(
         }
 
         // creates the bus markers
-        mapsUIState.runningBuses.forEach {
+        mapsUIState.buses.forEach {
             BusMarker(
                 bus = it,
                 colorBlindMode = mapsUIState.colorBlindMode,
@@ -474,198 +405,6 @@ fun BusMarker(
 }
 
 /**
- * The Floating Action Button for boarding the bus
- * */
-@SuppressLint("MissingPermission") // permissions checked in external composable
-@Composable
-fun BoardBusFab(
-    buses: List<Int>,
-    checkDistanceToStop: (location: Location) -> Float,
-    minStopDist: Float,
-    leaveBusPressed: () -> Unit,
-    boardBusPressed: () -> Unit,
-    busSectionCanceled: () -> Unit,
-) {
-    val locationServiceBusNumber = LocationService.busNum.collectAsStateWithLifecycle().value
-    val context = LocalContext.current
-
-    var busPickerState by remember { mutableStateOf(false) }
-
-    // launches the bus picker dialog
-    if (busPickerState) {
-        BusPicker(
-            buses = buses,
-            onBusChosen = {
-                val intent =
-                    Intent(context, LocationService::class.java).apply {
-                        putExtra(LocationService.BUNDLE_BUS_ID, it)
-                    }
-                context.startForegroundService(intent)
-                boardBusPressed()
-            },
-            onDismiss = {
-                busPickerState = false
-                busSectionCanceled()
-            },
-        )
-    }
-
-    ExtendedFloatingActionButton(
-        onClick = {
-            if (locationServiceBusNumber != null) {
-                context.stopService(Intent(context, LocationService::class.java))
-                leaveBusPressed()
-            } else {
-                LocationServices.getFusedLocationProviderClient(context).lastLocation
-                    .addOnSuccessListener { location: Location? ->
-                        if (location == null) return@addOnSuccessListener
-
-                        // if they a location was found and they are 50 m away from a stop
-                        if (checkDistanceToStop(location) <= minStopDist) {
-                            busPickerState = true
-                        } else {
-                            // not close enough to a stop
-                            Toast.makeText(
-                                context,
-                                context.getString(
-                                    R.string.distance_warning,
-//                                    minStopDist.toInt(),
-                                ),
-                                Toast.LENGTH_SHORT,
-                            ).show()
-                        }
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(
-                            context,
-                            context.getText(R.string.no_location_warning),
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    }
-            }
-        },
-        icon = { Icon(Icons.Default.DirectionsBus, stringResource(R.string.board_bus)) },
-        text = {
-            Text(
-                text =
-                    if (locationServiceBusNumber != null) {
-                        stringResource(R.string.leave_bus)
-                    } else {
-                        stringResource(R.string.board_bus)
-                    },
-            )
-        },
-    )
-}
-
-/**
- * A FAB that refreshes server items on click
- * */
-@Composable
-fun RefreshFab(refresh: () -> Unit) {
-    val refreshAnimation = remember { Animatable(0F) }
-    val coroutineScope = rememberCoroutineScope()
-
-    SmallFloatingActionButton(
-        onClick = {
-            refresh()
-            coroutineScope.launch {
-                refreshAnimation.animateTo(
-                    targetValue = 360F,
-                    animationSpec = tween(500, easing = LinearEasing),
-                )
-                refreshAnimation.snapTo(0F)
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-    ) {
-        Icon(
-            Icons.Outlined.Refresh,
-            stringResource(R.string.refresh),
-            modifier = Modifier.rotate(refreshAnimation.value),
-        )
-    }
-}
-
-/**
- * Dialog that appears to choose which bus to board
- * */
-@Composable
-fun BusPicker(
-    buses: List<Int>,
-    onBusChosen: (Int) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    // -1 will be unselected
-    var selectedBus by remember { mutableIntStateOf(-1) }
-    val context = LocalContext.current
-
-    Dialog(onDismissRequest = { onDismiss() }) {
-        Card(
-            modifier =
-                Modifier
-                    .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.choose_bus),
-                    style = MaterialTheme.typography.headlineLarge,
-                )
-
-                LazyColumn(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .height(500.dp)
-                            .padding(10.dp),
-                ) {
-                    items(items = buses, itemContent = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(
-                                selected = selectedBus == it,
-                                onClick = { selectedBus = it },
-                            )
-
-                            Text(text = it.toString())
-                        }
-                    })
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Button(onClick = {
-                        if (selectedBus == -1) {
-                            Toast.makeText(
-                                context,
-                                context.getText(R.string.no_bus_chosen),
-                                Toast.LENGTH_LONG,
-                            ).show()
-                        } else {
-                            onBusChosen(selectedBus)
-                        }
-
-                        onDismiss()
-                    }) {
-                        Text(text = stringResource(R.string.select))
-                    }
-                    Button(onClick = { onDismiss() }) {
-                        Text(text = stringResource(R.string.cancel))
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
  * Buttons that let you do things that is displayed on the map
  * @param badgeCount: if a badge is needed for a item, it will display
  * @param action: what to do on button click
@@ -735,7 +474,7 @@ fun StopInfoBottomSheet(
 
     val days = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
     val todayName = remember { days[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1] }
-    var selectedDay by remember { mutableStateOf(todayName) }
+//    var selectedDay by remember { mutableStateOf(todayName) }
     val dayIndex = remember { Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1 }
 
     var selectedRoute by remember(routeNames) { mutableStateOf(routeNames.firstOrNull()) }

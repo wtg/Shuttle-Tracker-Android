@@ -3,7 +3,6 @@ package edu.rpi.shuttletracker.data.network
 import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
-import edu.rpi.shuttletracker.data.models.BoardBus
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
@@ -16,28 +15,15 @@ import javax.inject.Inject
 class ApiHelperImpl
     @Inject
     constructor(private val apiService: ApiService) : ApiHelper {
-        override suspend fun getRunningBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>> =
+        override suspend fun getBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>> =
             flow {
                 while (true) {
-                    emit(apiService.getRunningBuses())
-                    delay(5000)
-                }
-            }
-
-        override suspend fun getAllBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>> =
-            flow {
-                while (true) {
-                    emit(apiService.getAllBuses())
+                    emit(apiService.getBuses())
                     delay(5000)
                 }
             }
 
         override suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse> = apiService.getRoutes()
-
-        override suspend fun addBus(
-            busNum: Int,
-            bus: BoardBus,
-        ): NetworkResponse<Unit, ErrorResponse> = apiService.addBus(busNum, bus)
 
         override suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse> =
             apiService.getAnnouncements()

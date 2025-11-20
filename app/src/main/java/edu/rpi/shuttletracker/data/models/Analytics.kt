@@ -26,8 +26,6 @@ data class Analytics(
     val clientPlatformVersion: String,
     @SerializedName("appVersion")
     val appVersion: String,
-    @SerializedName("boardBusCount")
-    val boardBusCount: Int,
     @Flatten("userSettings::colorBlindMode")
     val colorBlindMode: Boolean,
     @Flatten("userSettings::logging")
@@ -44,11 +42,6 @@ data class Analytics(
 data class Event(
     @Flatten("colorBlindModeToggled::enabled")
     val colorBlindModeToggled: Boolean? = null,
-    @Flatten("boardBusActivated::manual")
-    val boardBusActivatedManual: Boolean? = null,
-    // IMPLEMENTED BESIDES CANCEL ON MAIN SCREEN
-    @Flatten("boardBusDeactivated::manual")
-    val boardBusDeactivatedManual: Boolean? = null,
     // THIS IS NOT PLANNED ON BEING USED
     @Flatten("announcementViewed::id")
     val announcementViewed: String? = null,
@@ -65,12 +58,6 @@ data class Event(
     val locationAccuracyAuthorizationDidChange: Int? = null,
     @Flatten("coldLaunch")
     val coldLaunch: EmptyEvent? = null,
-    @Flatten("boardBusTapped")
-    val boardBusTapped: EmptyEvent? = null,
-    @Flatten("leaveBusTapped")
-    val leaveBusTapped: EmptyEvent? = null,
-    @Flatten("busSelectionCanceled")
-    val busSelectionCanceled: EmptyEvent? = null,
     @Flatten("announcementsListOpened")
     val announcementsListOpened: EmptyEvent? = null,
     // THIS IS NOT PLANNED ON BEING USED
@@ -100,7 +87,6 @@ class AnalyticsFactory
                 clientPlatform = "android",
                 clientPlatformVersion = android.os.Build.VERSION.RELEASE.toString(),
                 appVersion = BuildConfig.VERSION_NAME,
-                boardBusCount = runBlocking { userPreferencesRepository.getBoardBusCount() },
                 colorBlindMode = runBlocking { userPreferencesRepository.getColorBlindMode().first() },
                 logging = false,
                 serverBaseURL = runBlocking { userPreferencesRepository.getBaseUrl().first() },

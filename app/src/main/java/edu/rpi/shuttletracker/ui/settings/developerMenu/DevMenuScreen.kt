@@ -47,8 +47,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.MainActivity
 import edu.rpi.shuttletracker.ui.util.SettingsItem
-import edu.rpi.shuttletracker.util.services.BeaconService
-import edu.rpi.shuttletracker.util.services.LocationService
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -97,7 +95,6 @@ fun DevMenuScreen(
             BaseUrlSettingItem(
                 currentUrl = devMenuUiState.baseUrl,
                 updateBaseUrl = viewModel::updateBaseUrl,
-                updateAutoBoardService = viewModel::updateAutoBoardServiceBlocking,
             )
         }
     }
@@ -127,7 +124,6 @@ fun MinStopDistItem(
 fun BaseUrlSettingItem(
     currentUrl: String,
     updateBaseUrl: (String) -> Unit,
-    updateAutoBoardService: (Boolean) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var textFieldUrl by remember { mutableStateOf(currentUrl) }
@@ -171,13 +167,6 @@ fun BaseUrlSettingItem(
                 Button(onClick = {
                     // checks for valid url
                     if (Patterns.WEB_URL.matcher(textFieldUrl).matches()) {
-                        // stops all services from running
-                        context.stopService(Intent(context, BeaconService::class.java))
-                        context.stopService(Intent(context, LocationService::class.java))
-
-                        // preference to use auto boarding turned off
-                        updateAutoBoardService(false)
-
                         // updates the preferred url
                         updateBaseUrl(textFieldUrl)
 

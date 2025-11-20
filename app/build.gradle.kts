@@ -88,6 +88,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material3.adaptive)
+    implementation(libs.androidx.appcompat)
     implementation(libs.core.ktx)
     implementation(libs.androidx.work.runtime.ktx)
 
@@ -99,9 +100,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.androidx.ui.test.manifest)
     debugImplementation(libs.androidx.ui.tooling)
-
-    // beacon
-    implementation(libs.android.beacon.library)
 
     // hilt
     implementation(libs.hilt.android)

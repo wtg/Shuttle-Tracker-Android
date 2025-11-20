@@ -40,14 +40,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.MapsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.util.services.BeaconService
 import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -183,7 +181,6 @@ fun AnalyticsPage(
 @Composable
 @Preview
 fun PermissionsPage() {
-    val autoBoardingRunning = BeaconService.isRunning.collectAsStateWithLifecycle().value
     val context = LocalContext.current
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -202,11 +199,6 @@ fun PermissionsPage() {
 //
 //        HorizontalDivider(modifier = Modifier.padding(10.dp))
 //
-//        Button(onClick = {
-//            context.startForegroundService(Intent(context, BeaconService::class.java))
-//        }, enabled = !autoBoardingRunning) {
-//            Text(text = if (!autoBoardingRunning) "Enable auto-boarding" else "Auto-boarding enabled")
-//        }
 //
 //        Text(
 //            text = "Requires background location and bluetooth permissions",

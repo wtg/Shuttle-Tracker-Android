@@ -55,15 +55,6 @@ class DevMenuViewModel
             }
         }
 
-        /**
-         * MAKE SURE THIS IS BLOCKING OR ELSE STUFF BREAKS
-         * */
-        fun updateAutoBoardServiceBlocking(autoBoardService: Boolean) {
-            runBlocking {
-                userPreferencesRepository.saveAutoBoardService(autoBoardService)
-            }
-        }
-
         fun updateDevMenu(devOptions: Boolean) {
             viewModelScope.launch {
                 userPreferencesRepository.activateDevOptions(devOptions)

@@ -6,9 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.Bus
-import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.ErrorResponse
-import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
@@ -19,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -40,31 +37,13 @@ class MapsViewModel
         private val _mapsUiState = MutableStateFlow(MapsUIState())
         val mapsUiState: StateFlow<MapsUIState> = _mapsUiState
 
-        // shared flow of the running busses, this is to be subscribed to in UI
-        lateinit var runningBusesState: SharedFlow<Unit>
+        // shared flow of the running buses, this is to be subscribed to in UI
+        lateinit var busesState: SharedFlow<Unit>
             private set
 
         init {
             loadAll()
-            loadRunningBuses()
-
-//            // sets auto board service state
-//            userPreferencesRepository.getAutoBoardService()
-//                .flowOn(Dispatchers.Default)
-//                .onEach { autoBoardService ->
-//                    _mapsUiState.update {
-//                        it.copy(autoBoardService = autoBoardService)
-//                    }
-//                }.launchIn(viewModelScope)
-//
-//            // sets the notification read count
-//            userPreferencesRepository.getNotificationsRead()
-//                .flowOn(Dispatchers.Default)
-//                .onEach { count ->
-//                    _mapsUiState.update {
-//                        it.copy(notificationsRead = count)
-//                    }
-//                }.launchIn(viewModelScope)
+            loadBuses()
 
             // gets user preference for colorblind mode
             userPreferencesRepository.getColorBlindMode()
@@ -107,39 +86,7 @@ class MapsViewModel
             if (mapsUiState.value.schedule.isEmpty()) {
                 loadSchedule()
             }
-
-//            if (mapsUiState.value.allBuses.isEmpty()) {
-//                loadAllBuses()
-//            }
-
-//            if (mapsUiState.value.notificationsRead == -1) {
-//                loadAnnouncementCount()
-//            }
         }
-
-        fun refreshRunningBusses() {
-            viewModelScope.launch {
-                readApiResponse(apiRepository.getRunningBuses().first()) { runningBusses ->
-                    _mapsUiState.update {
-                        it.copy(runningBuses = runningBusses.values.toList())
-                    }
-                }
-            }
-        }
-
-//        /**
-//         * @param location: users current location
-//         * @return returns the distance to closest stop in METERS
-//         * */
-//        fun closestDistanceToStop(location: Location): Float =
-//            _mapsUiState.value.stops.minOfOrNull {
-//                location.distanceTo(
-//                    Location("stop").apply {
-//                        longitude = it.longitude
-//                        latitude = it.latitude
-//                    },
-//                )
-//            } ?: Float.MAX_VALUE
 
         /**
          * sets all the errors to none
@@ -169,14 +116,14 @@ class MapsViewModel
          * Creates a shared flow to update the ui state when subscribed
          * THIS MUST BE SUBSCRIBED TO IN UI
          * */
-        private fun loadRunningBuses() {
+        private fun loadBuses() {
             viewModelScope.launch {
-                runningBusesState =
-                    apiRepository.getRunningBuses()
+                busesState =
+                    apiRepository.getBuses()
                         .map { response ->
                             readApiResponse(response) { buses ->
                                 _mapsUiState.update {
-                                    it.copy(runningBuses = buses.values.toList())
+                                    it.copy(buses = buses.values.toList())
                                 }
                             }
                         }
@@ -185,21 +132,6 @@ class MapsViewModel
                             SharingStarted.WhileSubscribed(5000),
                             1,
                         )
-            }
-        }
-
-        /**
-         * Loads all possible buses and maps the API response
-         * */
-        private fun loadAllBuses() {
-            viewModelScope.launch {
-                apiRepository.getAllBuses()
-                    .collect { response ->
-                        readApiResponse(response) { busesMap ->
-                            val ids = busesMap.values.map { it.id }.sorted()
-                            _mapsUiState.update { it.copy(allBuses = ids) }
-                        }
-                    }
             }
         }
 
@@ -251,25 +183,6 @@ class MapsViewModel
                     }
             }
         }
-
-        fun leaveBusPressed() {
-            viewModelScope.launch {
-                apiRepository.sendAnalytics(Event(boardBusDeactivatedManual = true))
-                apiRepository.sendAnalytics(Event(leaveBusTapped = EmptyEvent))
-            }
-        }
-
-        fun boardBusPressed() {
-            viewModelScope.launch {
-                apiRepository.sendAnalytics(Event(boardBusTapped = EmptyEvent))
-            }
-        }
-
-        fun busSelectionCanceled() {
-            viewModelScope.launch {
-                apiRepository.sendAnalytics(Event(busSelectionCanceled = EmptyEvent))
-            }
-        }
     }
 
 /**
@@ -277,8 +190,7 @@ class MapsViewModel
  * */
 @Immutable
 data class MapsUIState(
-    val runningBuses: List<Bus> = listOf(),
-    val allBuses: List<String> = listOf(),
+    val buses: List<Bus> = listOf(),
     val routes: Map<String, Route> = emptyMap(),
     val schedule: List<Schedule> = listOf(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
@@ -286,7 +198,6 @@ data class MapsUIState(
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
     val notificationsRead: Int = -1,
     val totalAnnouncements: Int = -1,
-    val autoBoardService: Boolean = false,
     val colorBlindMode: Boolean = false,
     val minStopDist: Float = 50f,
     val themeMode: ThemeMode = ThemeMode.System,

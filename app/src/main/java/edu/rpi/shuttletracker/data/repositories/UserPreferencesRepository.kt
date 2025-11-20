@@ -35,13 +35,11 @@ class UserPreferencesRepository
         companion object {
             private val USER_ID = stringPreferencesKey("user_id")
             private val NOTIFICATIONS_READ = intPreferencesKey("notifications_read")
-            private val AUTO_BOARD_SERVICE = booleanPreferencesKey("auto_board_service")
             private val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
             private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
             private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
             private val MAX_STOP_DIST = floatPreferencesKey("max_stop_dist")
             private val BASE_URL = stringPreferencesKey("base_url")
-            private val BOARD_BUS_COUNT = intPreferencesKey("board_bus_count")
             private val ALLOW_ANALYTICS = booleanPreferencesKey("allow_analytics")
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
             private val THEME_MODE = stringPreferencesKey("theme_mode")
@@ -66,17 +64,6 @@ class UserPreferencesRepository
         suspend fun saveNotificationsRead(count: Int) {
             dataStore.edit {
                 it[NOTIFICATIONS_READ] = count
-            }
-        }
-
-        fun getAutoBoardService(): Flow<Boolean> =
-            dataStore.data.map {
-                it[AUTO_BOARD_SERVICE] ?: false
-            }
-
-        suspend fun saveAutoBoardService(autoBoardServiceState: Boolean) {
-            dataStore.edit {
-                it[AUTO_BOARD_SERVICE] = autoBoardServiceState
             }
         }
 
@@ -137,17 +124,6 @@ class UserPreferencesRepository
             }
         }
 
-        suspend fun getBoardBusCount(): Int =
-            dataStore.data.map {
-                it[BOARD_BUS_COUNT] ?: 0
-            }.first()
-
-        suspend fun incrementBoardBusCount() {
-            dataStore.edit {
-                it[BOARD_BUS_COUNT] = getBoardBusCount() + 1
-            }
-        }
-
         fun getAllowAnalytics(): Flow<Boolean> =
             dataStore.data.map {
                 it[ALLOW_ANALYTICS] ?: false
@@ -188,7 +164,6 @@ class UserPreferencesRepository
         suspend fun getSetupStartIndex(): Int {
             if (!getAboutAccepted().first()) return 0
             if (!getPrivacyPolicyAccepted().first()) return 1
-//            if (!BeaconService.isRunning.first()) return 3
             return TOTAL_PAGES
         }
     }
