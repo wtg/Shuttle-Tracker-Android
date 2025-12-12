@@ -1,10 +1,10 @@
 package edu.rpi.shuttletracker.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
@@ -75,46 +74,47 @@ fun SettingsScreen(
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
-        Column(
-            modifier =
-                Modifier
-                    .padding(padding),
+        LazyColumn(
+            modifier = Modifier.padding(padding),
         ) {
-            ColorBlindSettingItem(
-                colorBlindMode = settingsUiState.colorBlindMode,
-                updateColorBlindMode = viewModel::updateColorBlindMode,
-            )
+//            item {
+//                ColorBlindSettingItem(
+//                    colorBlindMode = settingsUiState.colorBlindMode,
+//                    updateColorBlindMode = viewModel::updateColorBlindMode,
+//                )
+//            }
 
-            ThemeModeSettingItem(
-                themeMode = settingsUiState.themeMode,
-                updateThemeMode = viewModel::updateThemeMode,
-            )
-
+            item {
+                ThemeModeSettingItem(
+                    themeMode = settingsUiState.themeMode,
+                    updateThemeMode = viewModel::updateThemeMode,
+                )
+            }
             if (settingsUiState.devOptionState) {
+                item {
+                    SettingsItem(
+                        Icons.Outlined.Code,
+                        stringResource(R.string.dev_options),
+                        onClick = { navigator.navigate(DevMenuScreenDestination()) },
+                    )
+                }
+            }
+
+            item {
                 SettingsItem(
-                    Icons.Outlined.Code,
-                    stringResource(R.string.dev_options),
-                    onClick = { navigator.navigate(DevMenuScreenDestination()) },
+                    Icons.Outlined.RestartAlt,
+                    stringResource(R.string.redo_setup),
+                    onClick = { navigator.navigate(SetupScreenDestination(true)) },
                 )
             }
 
-//            SettingsItem(
-//                Icons.Outlined.Timeline,
-//                stringResource(R.string.analytics),
-//                onClick = { navigator.navigate(AnalyticsScreenDestination()) },
-//            )
-
-            SettingsItem(
-                Icons.Outlined.RestartAlt,
-                "Redo Setup",
-                onClick = { navigator.navigate(SetupScreenDestination(true)) },
-            )
-
-            SettingsItem(
-                Icons.Outlined.Info,
-                stringResource(R.string.about),
-                onClick = { navigator.navigate(AboutScreenDestination()) },
-            )
+            item {
+                SettingsItem(
+                    Icons.Outlined.Info,
+                    stringResource(R.string.about),
+                    onClick = { navigator.navigate(AboutScreenDestination()) },
+                )
+            }
         }
     }
 }
@@ -144,7 +144,7 @@ fun ThemeModeSettingItem(
     SettingsItem(
         icon = Icons.Outlined.Contrast,
         stringResource(R.string.app_theme),
-        bottomPadding = 0.dp,
+        hasBottomSpacing = false,
     )
 
     val themeOptions = listOf(ThemeMode.System, ThemeMode.Light, ThemeMode.Dark)

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
@@ -143,7 +144,7 @@ fun MapsScreen(
  *
  * @param mapsUIState: The UI state of the view from the view-model
  * @param padding: Padding needed for the map content padding
- * @param buttonSheetOnChange: Callback invoked when a stop is selected/deselected
+ * @param bottonSheetOnChange: Callback invoked when a stop is selected/deselected
  * to close/open the stop bottom sheet
  * @param onScheduleClick: Callback invoked when the user taps the Schedule button.
  * @param onSettingsClick: Callback invoked when the user taps the Settings button.
@@ -254,12 +255,20 @@ fun BusMap(
             }
         }
 
+        val mapTypeIcon =
+            if (mapType == MapType.NORMAL) {
+                Icons.Outlined.Layers
+            } else {
+                Icons.Filled.Layers
+            }
+
         MapButtonsOverlay(
             modifier =
                 Modifier
                     .padding(padding)
                     .padding(horizontal = 10.dp),
             mapLocationEnabled = mapLocationEnabled,
+            mapTypeIcon = mapTypeIcon,
             onScheduleClick = onScheduleClick,
             onSettingsClick = onSettingsClick,
             onRecenterClick = {
@@ -510,6 +519,7 @@ fun StopInfoBottomSheet(
 fun MapButtonsOverlay(
     modifier: Modifier = Modifier,
     mapLocationEnabled: Boolean,
+    mapTypeIcon: ImageVector,
     onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onRecenterClick: () -> Unit,
@@ -552,7 +562,7 @@ fun MapButtonsOverlay(
                 onRecenterClick()
             }
 
-            ActionButton(icon = Icons.Outlined.Layers) {
+            ActionButton(icon = mapTypeIcon) {
                 onToggleMapTypeClick()
             }
         }

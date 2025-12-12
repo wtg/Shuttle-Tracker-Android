@@ -135,6 +135,7 @@
     <string name="dev_options_state">Dev options unlocked in %1$d</string>
     <string name="dev_options">Developer Options</string>
     <string name="app_theme">App Theme</string>
+    <string name="redo_setup">Redo Setup</string>
 
     <!-- Analytics -->
     <string name="analytics">Analytics</string>
