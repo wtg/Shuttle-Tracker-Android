@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.ui.maps
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.maps.android.compose.MapType
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.Bus
@@ -31,7 +32,7 @@ class MapsViewModel
     @Inject
     constructor(
         private val apiRepository: ApiRepository,
-        userPreferencesRepository: UserPreferencesRepository,
+        private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
         // represents the ui state of the view
         private val _mapsUiState = MutableStateFlow(MapsUIState())
@@ -60,6 +61,14 @@ class MapsViewModel
                 .onEach { themeMode ->
                     _mapsUiState.update {
                         it.copy(themeMode = themeMode)
+                    }
+                }.launchIn(viewModelScope)
+
+            userPreferencesRepository.getMapType()
+                .flowOn(Dispatchers.Default)
+                .onEach { mapType ->
+                    _mapsUiState.update {
+                        it.copy(mapType = mapType)
                     }
                 }.launchIn(viewModelScope)
 
@@ -158,6 +167,26 @@ class MapsViewModel
             }
         }
 
+        fun updateMapType(mapType: MapType) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveMapType(mapType)
+                _mapsUiState.update {
+                    it.copy(mapType = mapType)
+                }
+            }
+        }
+
+        fun toggleMapType() {
+            val next =
+                if (mapsUiState.value.mapType == MapType.NORMAL) {
+                    MapType.HYBRID
+                } else {
+                    MapType.NORMAL
+                }
+
+            updateMapType(next)
+        }
+
         /**
          * Reads the network response and maps it to correct place
          * */
@@ -201,4 +230,5 @@ data class MapsUIState(
     val colorBlindMode: Boolean = false,
     val minStopDist: Float = 50f,
     val themeMode: ThemeMode = ThemeMode.System,
+    val mapType: MapType = MapType.NORMAL,
 )

@@ -123,12 +123,9 @@ fun MapsScreen(
             mapsUIState = mapsUiState,
             padding = padding,
             bottomSheetOnChange = { bottomSheetLoaded = it },
-            onScheduleClick = {
-                navigator.navigate(ScheduleScreenDestination())
-            },
-            onSettingsClick = {
-                navigator.navigate(SettingsScreenDestination())
-            },
+            onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
+            onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
+            onToggleMapTypeClick = { viewModel.toggleMapType() },
         )
 
         StopInfoBottomSheet(
@@ -146,8 +143,10 @@ fun MapsScreen(
  * @param padding: Padding needed for the map content padding
  * @param bottonSheetOnChange: Callback invoked when a stop is selected/deselected
  * to close/open the stop bottom sheet
- * @param onScheduleClick: Callback invoked when the user taps the Schedule button.
- * @param onSettingsClick: Callback invoked when the user taps the Settings button.
+ * @param onScheduleClick: Callback invoked when the user taps the Schedule button
+ * @param onSettingsClick: Callback invoked when the user taps the Settings button
+ * @param onToggleMapTypeClick: Callback invoked when user taps the MapType button
+ *
  * */
 @Composable
 fun BusMap(
@@ -156,6 +155,7 @@ fun BusMap(
     bottomSheetOnChange: (Stop?) -> Unit,
     onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onToggleMapTypeClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -182,7 +182,6 @@ fun BusMap(
 
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
     val isDark = mapsUIState.themeMode.isDarkTheme(isSystemInDarkTheme())
-    var mapType by remember { mutableStateOf(MapType.NORMAL) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
@@ -190,7 +189,6 @@ fun BusMap(
             // makes sure the items drawn (current location and compass) are clickable
             contentPadding = padding,
             cameraPositionState = cameraPositionState,
-            // auto dark theme
             properties =
                 MapProperties(
                     latLngBoundsForCameraTarget =
@@ -198,7 +196,7 @@ fun BusMap(
                             LatLng(42.72095724005504, -73.70196321825452),
                             LatLng(42.741173465236876, -73.6543446409232),
                         ),
-                    mapType = mapType,
+                    mapType = mapsUIState.mapType,
                     isBuildingEnabled = true,
                     minZoomPreference = 14f,
                     isMyLocationEnabled = mapLocationEnabled,
@@ -256,7 +254,7 @@ fun BusMap(
         }
 
         val mapTypeIcon =
-            if (mapType == MapType.NORMAL) {
+            if (mapsUIState.mapType == MapType.NORMAL) {
                 Icons.Outlined.Layers
             } else {
                 Icons.Filled.Layers
@@ -295,14 +293,7 @@ fun BusMap(
                         }
                     }
             },
-            onToggleMapTypeClick = {
-                mapType =
-                    if (mapType == MapType.NORMAL) {
-                        MapType.HYBRID
-                    } else {
-                        MapType.NORMAL
-                    }
-            },
+            onToggleMapTypeClick = onToggleMapTypeClick,
         )
     }
 }
