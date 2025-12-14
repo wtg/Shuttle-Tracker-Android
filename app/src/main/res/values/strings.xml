@@ -111,6 +111,11 @@
     <string name="bus_number">Bus %1$s</string>
     <string name="bus_speed">%.1f mph</string>
     <string name="no_location_warning">Unable to determine your location</string>
+    <string name="bottom_sheet_peek_title">"Student Union Schedule"</string>
+    <string name="bottom_sheet_peek_subtitle">"Tap to view times"</string>
+    <string name="union_schedule">"Union Schedule"</string>
+    <string name="upcoming">"Upcoming"</string>
+    <string name="earlier">"Earlier Today"</string>
 
     <!-- Errors -->
     <string name="understand">I understand</string>

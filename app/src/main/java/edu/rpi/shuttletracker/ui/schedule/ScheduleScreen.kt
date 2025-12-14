@@ -227,7 +227,7 @@ private fun Controls(
 }
 
 @Composable
-fun ScheduleScroll(
+private fun ScheduleScroll(
     selectedRouteTimes: List<String>,
     selectedStop: String,
     routeData: Route?,
