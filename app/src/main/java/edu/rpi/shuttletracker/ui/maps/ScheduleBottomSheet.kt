@@ -1,0 +1,360 @@
+package edu.rpi.shuttletracker.ui.maps
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.data.models.DayOfWeek
+import edu.rpi.shuttletracker.data.models.Schedule
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScheduleBottomSheet(
+    isOpen: Boolean,
+    mapsUIState: MapsUIState,
+    onDismiss: () -> Unit,
+) {
+    if (!isOpen) return
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+
+    val schedule = mapsUIState.schedule
+
+    ModalBottomSheet(
+        modifier = Modifier.fillMaxHeight(),
+        sheetState = sheetState,
+        onDismissRequest = onDismiss,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                stringResource(R.string.union_schedule),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 5.dp),
+            )
+
+            if (schedule == null) {
+                return@Column
+            }
+            ScheduleTimesList(schedule = schedule)
+        }
+    }
+}
+
+@Composable
+private fun ScheduleTimesList(schedule: Schedule) {
+    var selectedDay by remember { mutableStateOf(DayOfWeek.fromToday()) }
+    var selectedDirection by remember { mutableStateOf<String?>(null) }
+
+    val directions =
+        remember(selectedDay, schedule) {
+            availableDirections(selectedDay, schedule)
+        }
+
+    // keep direction valid like your Swift reset logic
+    LaunchedEffect(selectedDay, directions) {
+        selectedDirection =
+            when {
+                directions.isEmpty() -> null
+                selectedDirection == null -> directions.first()
+                directions.contains(selectedDirection) -> selectedDirection
+                else -> directions.first()
+            }
+    }
+
+    // Day chips row
+    LazyRow(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(end = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(DayOfWeek.entries, key = { it.name }) { day ->
+            FilterChip(
+                selected = selectedDay == day,
+                onClick = { selectedDay = day },
+                label = { Text(day.displayName) },
+            )
+        }
+    }
+
+    if (directions.isNotEmpty()) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth(0.9f),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            directions.forEach { dir ->
+                RouteTab(
+                    label = dir.lowercase().replaceFirstChar { it.uppercase() } + " Route",
+                    route = dir,
+                    selectedRoute = selectedDirection,
+                    onRouteSelected = { selectedDirection = it },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        HorizontalDivider(Modifier, DividerDefaults.Thickness)
+
+        val times =
+            remember(selectedDay, selectedDirection, schedule) {
+                val dir = selectedDirection ?: return@remember emptyList()
+                consolidatedTimes(dir, selectedDay, schedule)
+            }
+
+        if (selectedDirection == null) {
+            Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                Text("Select a Route")
+            }
+        } else if (times.isEmpty()) {
+            Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                Text("No upcoming shuttles today")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(bottom = 24.dp),
+            ) {
+                items(times, key = { it.busName + it.time + it.direction }) { item ->
+                    ScheduleTimeRow(
+                        time = item.time,
+                        busName = item.busName,
+                    )
+                }
+            }
+        }
+    } else {
+        Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+            Text("No shuttles running")
+        }
+    }
+}
+
+@Composable
+private fun ScheduleTimeRow(
+    time: String,
+    busName: String,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = time,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+            )
+
+            val tagColor = busTagColor(busName)
+
+            Surface(
+                color = tagColor.copy(alpha = 0.15f),
+                shape = RoundedCornerShape(6.dp),
+            ) {
+                Text(
+                    text = busName,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = tagColor,
+                )
+            }
+        }
+
+        // Divider line below each entry
+        HorizontalDivider(
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+            thickness = 0.5.dp,
+        )
+    }
+}
+
+@Composable
+private fun busTagColor(busName: String): Color {
+    val n = busName.lowercase()
+    return when {
+        "north" in n -> Color(0xFFD32F2F)
+        "west" in n -> Color(0xFF1976D2)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+}
+
+@Composable
+private fun RouteTab(
+    label: String,
+    route: String,
+    selectedRoute: String?,
+    onRouteSelected: (String) -> Unit,
+    modifier: Modifier,
+) {
+    val selected = route == selectedRoute
+
+    Surface(
+        onClick = { onRouteSelected(route) },
+        shape = RoundedCornerShape(12.dp),
+        tonalElevation = if (selected) 2.dp else 0.dp,
+        color =
+            if (selected) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            },
+        modifier = modifier,
+    ) {
+        Text(
+            text = label,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.labelLarge,
+            color =
+                if (selected) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+        )
+    }
+}
+
+// Data helpers
+
+private fun scheduleTypeFor(
+    day: DayOfWeek,
+    data: Schedule,
+): String =
+    when (day) {
+        DayOfWeek.MONDAY -> data.monday
+        DayOfWeek.TUESDAY -> data.tuesday
+        DayOfWeek.WEDNESDAY -> data.wednesday
+        DayOfWeek.THURSDAY -> data.thursday
+        DayOfWeek.FRIDAY -> data.friday
+        DayOfWeek.SATURDAY -> data.saturday
+        DayOfWeek.SUNDAY -> data.sunday
+    }
+
+private fun scheduleMapFor(
+    day: DayOfWeek,
+    data: Schedule,
+): Map<String, List<List<String>>> {
+    return when (scheduleTypeFor(day, data).lowercase()) {
+        "weekday" -> data.weekday
+        "saturday" -> data.saturdaySchedule
+        "sunday" -> data.sundaySchedule
+        else -> emptyMap()
+    }
+}
+
+private fun availableDirections(
+    day: DayOfWeek,
+    data: Schedule,
+): List<String> {
+    val scheduleMap = scheduleMapFor(day, data)
+    val dirs = mutableSetOf<String>()
+
+    for ((_, times) in scheduleMap) {
+        for (pair in times) {
+            if (pair.size > 1) dirs.add(pair[1])
+        }
+    }
+    return dirs.sorted()
+}
+
+private data class TimeInfo(
+    val time: String,
+    val direction: String,
+    val busName: String,
+    val minutesOfDay: Int,
+)
+
+private fun parseMinutesOfDay(timeStr: String): Int? =
+    runCatching {
+        val t =
+            LocalTime.parse(
+                timeStr.trim(),
+                DateTimeFormatter.ofPattern("h:mm a", Locale.US),
+            )
+        t.hour * 60 + t.minute
+    }.getOrNull()
+
+private fun consolidatedTimes(
+    direction: String,
+    day: DayOfWeek,
+    data: Schedule,
+): List<TimeInfo> {
+    val scheduleMap = scheduleMapFor(day, data)
+
+    val now = Calendar.getInstance()
+    val isToday = DayOfWeek.fromToday() == day
+    val nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+
+    val out = mutableListOf<TimeInfo>()
+
+    for ((busName, times) in scheduleMap) {
+        for (pair in times) {
+            if (pair.size <= 1) continue
+
+            val timeStr = pair[0]
+            val dirStr = pair[1]
+            if (dirStr != direction) continue
+
+            val minutes = parseMinutesOfDay(timeStr) ?: continue
+            if (isToday && minutes < nowMinutes) continue
+
+            out +=
+                TimeInfo(
+                    time = timeStr,
+                    direction = dirStr,
+                    busName = busName,
+                    minutesOfDay = minutes,
+                )
+        }
+    }
+
+    return out.sortedBy { it.minutesOfDay }
+}

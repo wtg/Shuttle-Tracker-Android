@@ -3,16 +3,12 @@ package edu.rpi.shuttletracker.ui.maps
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -33,19 +29,13 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +45,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -63,7 +52,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -90,11 +78,11 @@ import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDes
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
+import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.theme.BusColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 @Destination<RootGraph>(start = true)
 @Composable
@@ -309,93 +297,6 @@ private fun BusMap(
             },
             onToggleMapTypeClick = onToggleMapTypeClick,
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ScheduleBottomSheet(
-    isOpen: Boolean,
-    mapsUIState: MapsUIState,
-    onDismiss: () -> Unit,
-) {
-    if (!isOpen) return
-
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-
-    val routes = mapsUIState.routes
-    val schedule = mapsUIState.schedule
-
-    val allowedRoutes = setOf("NORTH", "WEST")
-
-    val routeNames =
-        remember(routes) {
-            routes
-                .filter { (routeName) ->
-                    routeName in allowedRoutes
-                }
-                .keys
-                .sorted()
-        }
-
-    val dayIndex = remember { Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1 }
-
-    var selectedRoute by remember(routeNames) {
-        mutableStateOf(routeNames.firstOrNull())
-    }
-
-    val selectedRouteTimes: List<String> =
-        remember(dayIndex, selectedRoute, schedule) {
-            val routeSchedule = schedule.getOrNull(dayIndex)
-            when (selectedRoute) {
-                "NORTH" -> routeSchedule?.north ?: emptyList()
-                "WEST" -> routeSchedule?.west ?: emptyList()
-                else -> emptyList()
-            }
-        }
-
-    val (upcomingTimes, departedTimes) =
-        remember(selectedRouteTimes, dayIndex, selectedRoute) {
-            splitTimesByNow(selectedRouteTimes)
-        }
-
-    ModalBottomSheet(
-        modifier = Modifier.fillMaxHeight(),
-        sheetState = sheetState,
-        onDismissRequest = onDismiss,
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                stringResource(R.string.union_schedule),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 5.dp),
-            )
-
-            if (routeNames.size > 1) {
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth(0.7f)) {
-                    routeNames.forEachIndexed { index, option ->
-                        SegmentedButton(
-                            selected = selectedRoute == option,
-                            onClick = { selectedRoute = option },
-                            shape = SegmentedButtonDefaults.itemShape(index, routeNames.size),
-                            label = { Text(option) },
-                        )
-                    }
-                }
-            }
-            TimesBox(
-                title = stringResource(R.string.upcoming),
-                times = upcomingTimes,
-            )
-
-            TimesBox(
-                title = stringResource(R.string.earlier),
-                times = departedTimes,
-            )
-        }
     }
 }
 
@@ -627,79 +528,4 @@ private fun BottomSheetPeek(
             }
         }
     }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun TimesBox(
-    title: String,
-    times: List<String>,
-) {
-    if (times.isEmpty()) {
-        return
-    }
-
-    Text(
-        modifier =
-            Modifier
-                .padding(top = 10.dp),
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-    )
-
-    Box(
-        modifier =
-            Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(6.dp),
-    ) {
-        Column(
-            modifier =
-                Modifier
-                    .padding(6.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            // Wraps horizontally
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                times.forEach { t ->
-                    FilterChip(
-                        selected = false,
-                        onClick = { /* does nothing for now */ },
-                        label = { Text(t, fontSize = 12.sp) },
-                    )
-                }
-            }
-        }
-    }
-}
-
-private fun splitTimesByNow(times: List<String>): Pair<List<String>, List<String>> {
-    if (times.isEmpty()) return times to emptyList()
-
-    val now =
-        Calendar.getInstance().run {
-            get(Calendar.HOUR_OF_DAY) * 60 + get(Calendar.MINUTE)
-        }
-
-    return times.partition { time ->
-        (timeToMinutes(time) ?: -1) >= now
-    }
-}
-
-private fun timeToMinutes(time: String): Int? {
-    val parts = time.trim().split(" ", ":")
-    if (parts.size != 3) return null
-
-    var hour = parts[0].toIntOrNull() ?: return null
-    val minute = parts[1].toIntOrNull() ?: return null
-    val amPm = parts[2]
-
-    if (amPm.equals("PM", true) && hour != 12) hour += 12
-    if (amPm.equals("AM", true) && hour == 12) hour = 0
-
-    return hour * 60 + minute
 }
