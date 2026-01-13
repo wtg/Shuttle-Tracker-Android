@@ -11,7 +11,7 @@
     <string name="default_bus" translatable="false">defaultbus.png</string>
 
     <!-- URLS -->
-    <string name="url_default">https://shuttles.rpi.edu/api/</string>
+    <string name="url_default">https://api-shuttles.rpi.edu/api/</string>
     <string name="url_private_policy">https://shuttles.rpi.edu/privacy-policy.txt</string>
     <string name="url_repository">https://github.com/wtg/Shuttle-Tracker-Android</string>
     <string name="url_repository_issues">https://github.com/wtg/Shuttle-Tracker-Android/issues</string>

@@ -7,9 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.time.Duration
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
+import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
@@ -29,11 +27,8 @@ data class Bus(
      * updates once per second if subscribed to
      * */
     fun getTimeAgo(): Flow<String> {
-        // Parse naive timestamp and assume UTC (change ZoneOffset.UTC if you want a different zone)
         val busInstant =
-            LocalDateTime.parse(date, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-                .atZone(ZoneOffset.UTC)
-                .toInstant()
+            OffsetDateTime.parse(date).toInstant()
 
         return flow {
             while (true) {

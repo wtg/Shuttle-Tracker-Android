@@ -22,7 +22,6 @@ import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -78,7 +77,6 @@ import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDes
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
-import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.theme.BusColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
@@ -412,9 +410,9 @@ private fun MapButtonsOverlay(
                     .align(Alignment.TopStart),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            ActionButton(icon = Icons.Outlined.Schedule) {
-                onScheduleClick()
-            }
+//            ActionButton(icon = Icons.Outlined.Schedule) {
+//                onScheduleClick()
+//            }
 
             ActionButton(icon = Icons.Outlined.Settings) {
                 onSettingsClick()
