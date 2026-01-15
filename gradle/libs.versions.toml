@@ -9,13 +9,10 @@ datastore-preferences = "1.1.7"
 espresso-core = "3.6.1"
 
 
-firebase-analytics = "22.5.0"
-firebase-bom = "33.16.0"
-firebase-messaging = "24.1.2"
-google-service = "4.4.3"
+firebase-bom = "34.8.0"
 
 
-google-services = "4.4.3"
+google-services = "4.4.4"
 hilt = "2.56.2"
 hilt-navigation-compose = "1.2.0"
 junit = "4.13.2"
@@ -83,10 +80,10 @@ converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref
 destinations = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "destinations" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 
-firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebase-analytics" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 
-firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebase-messaging" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 google-services = { module = "com.google.gms:google-services", version.ref = "google-services" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
@@ -111,6 +108,6 @@ kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
-google-service = { id = "com.google.gms.google-services", version.ref = "google-service" }
+google-service = { id = "com.google.gms.google-services", version.ref = "google-services" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
