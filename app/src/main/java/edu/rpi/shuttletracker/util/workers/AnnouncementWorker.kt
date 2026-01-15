@@ -71,18 +71,18 @@ class AnnouncementWorker
                 ) as NotificationManager
 
             val notificationBody =
-                NotificationCompat.Builder(
-                    context,
-                    Notifications.CHANNEL_ANNOUNCEMENT,
-                ).setContentTitle(subject)
+                NotificationCompat
+                    .Builder(
+                        context,
+                        Notifications.CHANNEL_ANNOUNCEMENT,
+                    ).setContentTitle(subject)
                     .setContentText(body)
                     .setSmallIcon(R.drawable.ic_stat_default)
                     .addAction(
                         R.drawable.baseline_mark_email_read_24,
                         context.getString(R.string.mark_as_read),
                         NotificationReceiver.markNotificationsRead(context, notificationCount),
-                    )
-                    .setContentIntent(NotificationReceiver.openAnnouncements(context))
+                    ).setContentIntent(NotificationReceiver.openAnnouncements(context))
                     .setAutoCancel(true)
                     .build()
 
@@ -92,7 +92,8 @@ class AnnouncementWorker
         companion object {
             fun startWork(context: Context) {
                 val constraints =
-                    Constraints.Builder()
+                    Constraints
+                        .Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
                         .build()
 

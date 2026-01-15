@@ -321,14 +321,13 @@ private fun scheduleTypeFor(
 private fun scheduleMapFor(
     day: DayOfWeek,
     data: Schedule,
-): Map<String, List<List<String>>> {
-    return when (scheduleTypeFor(day, data).lowercase()) {
+): Map<String, List<List<String>>> =
+    when (scheduleTypeFor(day, data).lowercase()) {
         "weekday" -> data.weekday
         "saturday" -> data.saturdaySchedule
         "sunday" -> data.sundaySchedule
         else -> emptyMap()
     }
-}
 
 private fun availableDirections(
     day: DayOfWeek,

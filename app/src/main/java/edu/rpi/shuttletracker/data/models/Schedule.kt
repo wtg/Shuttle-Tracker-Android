@@ -17,7 +17,10 @@ data class Schedule(
     @SerializedName("sunday") val sundaySchedule: Map<String, List<List<String>>>,
 )
 
-enum class DayOfWeek(val displayName: String, val calendarConst: Int) {
+enum class DayOfWeek(
+    val displayName: String,
+    val calendarConst: Int,
+) {
     MONDAY("Mon", Calendar.MONDAY),
     TUESDAY("Tue", Calendar.TUESDAY),
     WEDNESDAY("Wed", Calendar.WEDNESDAY),

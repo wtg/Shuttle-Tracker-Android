@@ -10,7 +10,9 @@ import edu.rpi.shuttletracker.util.workers.AnnouncementWorker
 import javax.inject.Inject
 
 @HiltAndroidApp
-class ShuttleTrackerApplication : Application(), Configuration.Provider {
+class ShuttleTrackerApplication :
+    Application(),
+    Configuration.Provider {
     @Inject lateinit var workerFactory: HiltWorkerFactory
 
     override fun onCreate() {
@@ -25,7 +27,8 @@ class ShuttleTrackerApplication : Application(), Configuration.Provider {
 
     override val workManagerConfiguration: Configuration
         get() =
-            Configuration.Builder()
+            Configuration
+                .Builder()
                 .setWorkerFactory(workerFactory)
                 .build()
 }

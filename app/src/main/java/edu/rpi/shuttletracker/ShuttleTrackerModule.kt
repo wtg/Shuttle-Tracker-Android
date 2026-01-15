@@ -51,7 +51,8 @@ object ShuttleTrackerModule {
             if (!context.hasNetwork()) {
                 // 2 week cache for offline
                 request =
-                    request.newBuilder()
+                    request
+                        .newBuilder()
                         .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 14)
                         .removeHeader("Pragma")
                         .build()
@@ -73,13 +74,15 @@ object ShuttleTrackerModule {
             val loggingInterceptor = HttpLoggingInterceptor()
 
             loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-            OkHttpClient.Builder()
+            OkHttpClient
+                .Builder()
                 .cache(myCache)
                 .addInterceptor(cacheInterceptor)
                 .addInterceptor(loggingInterceptor)
                 .build()
         } else {
-            OkHttpClient.Builder()
+            OkHttpClient
+                .Builder()
                 .cache(myCache)
                 .addInterceptor(cacheInterceptor)
                 .build()
@@ -103,7 +106,8 @@ object ShuttleTrackerModule {
                 return@runBlocking userPreferencesRepository.getBaseUrl().first()
             }
 
-        return Retrofit.Builder()
+        return Retrofit
+            .Builder()
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(NetworkResponseAdapterFactory())
             .baseUrl(url)

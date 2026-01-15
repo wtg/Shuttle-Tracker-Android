@@ -22,7 +22,8 @@ data class Announcement(
         val outputFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
         val busDate =
-            ZonedDateTime.parse(date)
+            ZonedDateTime
+                .parse(date)
                 .truncatedTo(ChronoUnit.SECONDS)
                 .toLocalDate()
 

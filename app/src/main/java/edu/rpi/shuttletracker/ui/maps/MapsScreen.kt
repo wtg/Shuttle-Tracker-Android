@@ -242,9 +242,10 @@ private fun BusMap(
                         points = points,
                         color =
                             Color(
-                                android.graphics.Color.valueOf(
-                                    route.color.toColorInt(),
-                                ).toArgb(),
+                                android.graphics.Color
+                                    .valueOf(
+                                        route.color.toColorInt(),
+                                    ).toArgb(),
                             ),
                     )
                 }
@@ -268,7 +269,9 @@ private fun BusMap(
             onScheduleClick = onScheduleClick,
             onSettingsClick = onSettingsClick,
             onRecenterClick = {
-                LocationServices.getFusedLocationProviderClient(context).lastLocation
+                LocationServices
+                    .getFusedLocationProviderClient(context)
+                    .lastLocation
                     .addOnSuccessListener { location: Location? ->
                         if (location == null) return@addOnSuccessListener
 
@@ -276,7 +279,8 @@ private fun BusMap(
                             cameraPositionState.animate(
                                 update =
                                     CameraUpdateFactory.newCameraPosition(
-                                        CameraPosition.builder()
+                                        CameraPosition
+                                            .builder()
                                             .target(
                                                 LatLng(
                                                     location.latitude,

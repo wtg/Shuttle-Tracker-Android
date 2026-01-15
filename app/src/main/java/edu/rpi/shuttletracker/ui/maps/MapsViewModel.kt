@@ -47,7 +47,8 @@ class MapsViewModel
             loadBuses()
 
             // gets user preference for colorblind mode
-            userPreferencesRepository.getColorBlindMode()
+            userPreferencesRepository
+                .getColorBlindMode()
                 .flowOn(Dispatchers.Default)
                 .onEach { colorBlindMode ->
                     _mapsUiState.update {
@@ -56,7 +57,8 @@ class MapsViewModel
                 }.launchIn(viewModelScope)
 
             // gets user preference for dark mode
-            userPreferencesRepository.getThemeMode()
+            userPreferencesRepository
+                .getThemeMode()
                 .flowOn(Dispatchers.Default)
                 .onEach { themeMode ->
                     _mapsUiState.update {
@@ -64,7 +66,8 @@ class MapsViewModel
                     }
                 }.launchIn(viewModelScope)
 
-            userPreferencesRepository.getMapType()
+            userPreferencesRepository
+                .getMapType()
                 .flowOn(Dispatchers.Default)
                 .onEach { mapType ->
                     _mapsUiState.update {
@@ -72,7 +75,8 @@ class MapsViewModel
                     }
                 }.launchIn(viewModelScope)
 
-            userPreferencesRepository.getMaxStopDist()
+            userPreferencesRepository
+                .getMaxStopDist()
                 .flowOn(Dispatchers.Default)
                 .onEach { minStopDist ->
                     _mapsUiState.update {
@@ -128,15 +132,15 @@ class MapsViewModel
         private fun loadBuses() {
             viewModelScope.launch {
                 busesState =
-                    apiRepository.getBuses()
+                    apiRepository
+                        .getBuses()
                         .map { response ->
                             readApiResponse(response) { buses ->
                                 _mapsUiState.update {
                                     it.copy(buses = buses.values.toList())
                                 }
                             }
-                        }
-                        .shareIn(
+                        }.shareIn(
                             viewModelScope,
                             SharingStarted.WhileSubscribed(5000),
                             1,

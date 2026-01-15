@@ -85,7 +85,9 @@ class AnalyticsFactory
                 userID = runBlocking { userPreferencesRepository.getUserId() },
                 date = getCurrentFormattedDate(),
                 clientPlatform = "android",
-                clientPlatformVersion = android.os.Build.VERSION.RELEASE.toString(),
+                clientPlatformVersion =
+                    android.os.Build.VERSION.RELEASE
+                        .toString(),
                 appVersion = BuildConfig.VERSION_NAME,
                 colorBlindMode = runBlocking { userPreferencesRepository.getColorBlindMode().first() },
                 logging = false,
