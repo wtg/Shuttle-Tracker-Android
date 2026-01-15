@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.google.maps.android.compose.MapType
 import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.R
@@ -43,6 +44,7 @@ class UserPreferencesRepository
             private val ALLOW_ANALYTICS = booleanPreferencesKey("allow_analytics")
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
             private val THEME_MODE = stringPreferencesKey("theme_mode")
+            private val MAP_TYPE = stringPreferencesKey("map_type")
         }
 
         suspend fun getUserId(): String =
@@ -78,6 +80,20 @@ class UserPreferencesRepository
             }
 
             apiRepository.get().sendAnalytics(Event(colorBlindModeToggled = colorBlindMode))
+        }
+
+        fun getMapType(): Flow<MapType> =
+            dataStore.data.map {
+                when (it[MAP_TYPE]) {
+                    MapType.HYBRID.name -> MapType.HYBRID
+                    else -> MapType.NORMAL
+                }
+            }
+
+        suspend fun saveMapType(mapType: MapType) {
+            dataStore.edit {
+                it[MAP_TYPE] = mapType.name
+            }
         }
 
         fun getPrivacyPolicyAccepted(): Flow<Boolean> =

@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Schedule
@@ -65,6 +67,7 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.Polyline
@@ -116,48 +119,20 @@ fun MapsScreen(
         },
     ) { padding ->
 
-        BusMap(mapsUIState = mapsUiState, padding = padding, bottomSheetOnChange = {
-            bottomSheetLoaded = it
-        })
+        BusMap(
+            mapsUIState = mapsUiState,
+            padding = padding,
+            bottomSheetOnChange = { bottomSheetLoaded = it },
+            onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
+            onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
+            onToggleMapTypeClick = { viewModel.toggleMapType() },
+        )
 
         StopInfoBottomSheet(
             stop = bottomSheetLoaded,
             mapsUIState = mapsUiState,
             onDismiss = { bottomSheetLoaded = null },
         )
-
-        Box(
-            modifier =
-                Modifier
-                    .padding(padding)
-                    .padding(horizontal = 10.dp)
-                    .fillMaxSize(),
-        ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                // navigates to announcements
-//                ActionButton(
-//                    icon = Icons.Outlined.Notifications,
-//                    badgeCount = mapsUiState.totalAnnouncements - mapsUiState.notificationsRead,
-//                ) {
-//                    navigator.navigate(AnnouncementsScreenDestination())
-//                }
-
-                // navigates to the schedule
-                ActionButton(icon = Icons.Outlined.Schedule) {
-                    navigator.navigate(ScheduleScreenDestination())
-                }
-
-                // navigates to settings
-                ActionButton(icon = Icons.Outlined.Settings) {
-                    navigator.navigate(SettingsScreenDestination())
-                }
-            }
-        }
     }
 }
 
@@ -166,12 +141,21 @@ fun MapsScreen(
  *
  * @param mapsUIState: The UI state of the view from the view-model
  * @param padding: Padding needed for the map content padding
+ * @param bottonSheetOnChange: Callback invoked when a stop is selected/deselected
+ * to close/open the stop bottom sheet
+ * @param onScheduleClick: Callback invoked when the user taps the Schedule button
+ * @param onSettingsClick: Callback invoked when the user taps the Settings button
+ * @param onToggleMapTypeClick: Callback invoked when user taps the MapType button
+ *
  * */
 @Composable
 fun BusMap(
     mapsUIState: MapsUIState,
     padding: PaddingValues,
     bottomSheetOnChange: (Stop?) -> Unit,
+    onScheduleClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onToggleMapTypeClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -199,117 +183,118 @@ fun BusMap(
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
     val isDark = mapsUIState.themeMode.isDarkTheme(isSystemInDarkTheme())
 
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        // makes sure the items drawn (current location and compass) are clickable
-        contentPadding = padding,
-        cameraPositionState = cameraPositionState,
-        // auto dark theme
-        properties =
-            MapProperties(
-                latLngBoundsForCameraTarget =
-                    LatLngBounds(
-                        LatLng(42.72095724005504, -73.70196321825452),
-                        LatLng(42.741173465236876, -73.6543446409232),
-                    ),
-                isBuildingEnabled = true,
-                minZoomPreference = 14f,
-                isMyLocationEnabled = mapLocationEnabled,
-                mapStyleOptions =
-                    if (isDark) {
-                        MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
-                    } else {
-                        MapStyleOptions("[]")
-                    },
-            ),
-        // removes the zoom control which was covered by the FAB
-        uiSettings =
-            MapUiSettings(
-                zoomControlsEnabled = false,
-                myLocationButtonEnabled = false,
-            ),
-    ) {
-        // creates the stops
-        mapsUIState.routes.forEach { (_, route) ->
-            route.stopDetails.forEach { (_, stop) ->
-                StopCircle(
-                    stop = stop,
-                    selected = stop.name == selectedStop?.name,
-                    onSelected = { s ->
-                        selectedStop = s
-                        bottomSheetOnChange(s)
-                    },
-                )
-            }
-        }
-
-        // creates the bus markers
-        mapsUIState.buses.forEach {
-            BusMarker(
-                bus = it,
-                colorBlindMode = mapsUIState.colorBlindMode,
-            )
-        }
-
-        // draws the paths
-        mapsUIState.routes.forEach { (_, route) ->
-            val points = route.latLng()
-            if (points.isNotEmpty()) {
-                Polyline(
-                    points = points,
-                    color =
-                        Color(
-                            android.graphics.Color.valueOf(
-                                route.color.toColorInt(),
-                            ).toArgb(),
+    Box(modifier = Modifier.fillMaxSize()) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            // makes sure the items drawn (current location and compass) are clickable
+            contentPadding = padding,
+            cameraPositionState = cameraPositionState,
+            properties =
+                MapProperties(
+                    latLngBoundsForCameraTarget =
+                        LatLngBounds(
+                            LatLng(42.72095724005504, -73.70196321825452),
+                            LatLng(42.741173465236876, -73.6543446409232),
                         ),
+                    mapType = mapsUIState.mapType,
+                    isBuildingEnabled = true,
+                    minZoomPreference = 14f,
+                    isMyLocationEnabled = mapLocationEnabled,
+                    mapStyleOptions =
+                        if (isDark) {
+                            MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
+                        } else {
+                            MapStyleOptions("[]")
+                        },
+                ),
+            // removes the zoom control which was covered by the FAB
+            uiSettings =
+                MapUiSettings(
+                    zoomControlsEnabled = false,
+                    myLocationButtonEnabled = false,
+                ),
+        ) {
+            // creates the stops
+            mapsUIState.routes.forEach { (_, route) ->
+                route.stopDetails.forEach { (_, stop) ->
+                    StopCircle(
+                        stop = stop,
+                        selected = stop.name == selectedStop?.name,
+                        onSelected = { s ->
+                            selectedStop = s
+                            bottomSheetOnChange(s)
+                        },
+                    )
+                }
+            }
+
+            // creates the bus markers
+            mapsUIState.buses.forEach {
+                BusMarker(
+                    bus = it,
+                    colorBlindMode = mapsUIState.colorBlindMode,
                 )
             }
-        }
-    }
 
-    // Icon to recenter the user on the map to their location
-    // makes sure its in the top right
-    Box(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 10.dp),
-        contentAlignment = Alignment.TopEnd,
-    ) {
-        ActionButton(
-            icon =
-                if (mapLocationEnabled) {
-                    Icons.Outlined.MyLocation
-                } else {
-                    Icons.Outlined.LocationDisabled
-                },
-        ) {
-            // finds current position and moves to there
-            LocationServices.getFusedLocationProviderClient(context).lastLocation
-                .addOnSuccessListener { location: Location? ->
-                    if (location == null) return@addOnSuccessListener
-
-                    coroutineScope.launch {
-                        cameraPositionState.animate(
-                            update =
-                                CameraUpdateFactory.newCameraPosition(
-                                    CameraPosition.builder()
-                                        .target(
-                                            LatLng(
-                                                location.latitude,
-                                                location.longitude,
-                                            ),
-                                        ).tilt(0f)
-                                        .zoom(cameraPositionState.position.zoom)
-                                        .build(),
-                                ),
-                            durationMs = 1000,
-                        )
-                    }
+            // draws the paths
+            mapsUIState.routes.forEach { (_, route) ->
+                val points = route.latLng()
+                if (points.isNotEmpty()) {
+                    Polyline(
+                        points = points,
+                        color =
+                            Color(
+                                android.graphics.Color.valueOf(
+                                    route.color.toColorInt(),
+                                ).toArgb(),
+                            ),
+                    )
                 }
+            }
         }
+
+        val mapTypeIcon =
+            if (mapsUIState.mapType == MapType.NORMAL) {
+                Icons.Outlined.Layers
+            } else {
+                Icons.Filled.Layers
+            }
+
+        MapButtonsOverlay(
+            modifier =
+                Modifier
+                    .padding(padding)
+                    .padding(horizontal = 10.dp),
+            mapLocationEnabled = mapLocationEnabled,
+            mapTypeIcon = mapTypeIcon,
+            onScheduleClick = onScheduleClick,
+            onSettingsClick = onSettingsClick,
+            onRecenterClick = {
+                LocationServices.getFusedLocationProviderClient(context).lastLocation
+                    .addOnSuccessListener { location: Location? ->
+                        if (location == null) return@addOnSuccessListener
+
+                        coroutineScope.launch {
+                            cameraPositionState.animate(
+                                update =
+                                    CameraUpdateFactory.newCameraPosition(
+                                        CameraPosition.builder()
+                                            .target(
+                                                LatLng(
+                                                    location.latitude,
+                                                    location.longitude,
+                                                ),
+                                            ).tilt(0f)
+                                            .zoom(cameraPositionState.position.zoom)
+                                            .build(),
+                                    ),
+                                durationMs = 1000,
+                            )
+                        }
+                    }
+            },
+            onToggleMapTypeClick = onToggleMapTypeClick,
+        )
     }
 }
 
@@ -516,6 +501,60 @@ fun StopInfoBottomSheet(
                     routeData = routes[selectedRoute],
                     centered = true,
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun MapButtonsOverlay(
+    modifier: Modifier = Modifier,
+    mapLocationEnabled: Boolean,
+    mapTypeIcon: ImageVector,
+    onScheduleClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onRecenterClick: () -> Unit,
+    onToggleMapTypeClick: () -> Unit,
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+    ) {
+        // Left side (Schedule, Settings)
+        Column(
+            modifier =
+                Modifier
+                    .align(Alignment.TopStart),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            ActionButton(icon = Icons.Outlined.Schedule) {
+                onScheduleClick()
+            }
+
+            ActionButton(icon = Icons.Outlined.Settings) {
+                onSettingsClick()
+            }
+        }
+
+        // Right side (Location, Layers)
+        Column(
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            ActionButton(
+                icon =
+                    if (mapLocationEnabled) {
+                        Icons.Outlined.MyLocation
+                    } else {
+                        Icons.Outlined.LocationDisabled
+                    },
+            ) {
+                onRecenterClick()
+            }
+
+            ActionButton(icon = mapTypeIcon) {
+                onToggleMapTypeClick()
             }
         }
     }
