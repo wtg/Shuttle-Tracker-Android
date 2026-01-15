@@ -69,10 +69,7 @@ fun ScheduleBottomSheet(
                 modifier = Modifier.padding(bottom = 5.dp),
             )
 
-            if (schedule == null) {
-                return@Column
-            }
-            ScheduleTimesList(schedule = schedule)
+            schedule?.let { ScheduleTimesList(schedule = it) }
         }
     }
 }
@@ -87,7 +84,6 @@ private fun ScheduleTimesList(schedule: Schedule) {
             availableDirections(selectedDay, schedule)
         }
 
-    // keep direction valid like your Swift reset logic
     LaunchedEffect(selectedDay, directions) {
         selectedDirection =
             when {
@@ -144,11 +140,11 @@ private fun ScheduleTimesList(schedule: Schedule) {
 
         if (selectedDirection == null) {
             Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                Text("Select a Route")
+                Text(stringResource(R.string.schedule_select_route))
             }
         } else if (times.isEmpty()) {
             Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                Text("No upcoming shuttles today")
+                Text(stringResource(R.string.schedule_no_upcoming_today))
             }
         } else {
             LazyColumn(
@@ -165,7 +161,7 @@ private fun ScheduleTimesList(schedule: Schedule) {
         }
     } else {
         Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-            Text("No shuttles running")
+            Text(stringResource(R.string.schedule_none_running))
         }
     }
 }
@@ -189,7 +185,7 @@ private fun ScheduleTimeRow(
                 modifier = Modifier.weight(1f),
             )
 
-            val tagColor = busTagColor(busName)
+            val tagColor = busTagColor(busName, MaterialTheme.colorScheme.onSurfaceVariant)
 
             Surface(
                 color = tagColor.copy(alpha = 0.15f),
@@ -204,7 +200,6 @@ private fun ScheduleTimeRow(
             }
         }
 
-        // Divider line below each entry
         HorizontalDivider(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp),
             thickness = 0.5.dp,
@@ -212,13 +207,15 @@ private fun ScheduleTimeRow(
     }
 }
 
-@Composable
-private fun busTagColor(busName: String): Color {
+private fun busTagColor(
+    busName: String,
+    defaultColor: Color,
+): Color {
     val n = busName.lowercase()
     return when {
         "north" in n -> Color(0xFFD32F2F)
         "west" in n -> Color(0xFF1976D2)
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
+        else -> defaultColor
     }
 }
 

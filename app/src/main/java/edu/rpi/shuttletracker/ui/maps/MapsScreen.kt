@@ -221,9 +221,7 @@ private fun BusMap(
                     StopCircle(
                         stop = stop,
                         selected = stop.name == selectedStop?.name,
-                        onSelected = { s ->
-                            selectedStop = s
-                        },
+                        onSelected = { selectedStop = it },
                     )
                 }
             }
@@ -383,6 +381,7 @@ private fun BusMarker(
         icon = icon,
         snippet = snippetText,
         anchor = Offset(0.5f, 0.5f),
+        zIndex = 3f,
         onClick = {
             it.showInfoWindow()
             true
