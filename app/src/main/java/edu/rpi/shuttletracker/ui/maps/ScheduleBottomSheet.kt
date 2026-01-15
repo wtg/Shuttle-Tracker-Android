@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.ui.maps
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,15 +10,17 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -69,13 +72,13 @@ fun ScheduleBottomSheet(
                 modifier = Modifier.padding(bottom = 5.dp),
             )
 
-            schedule?.let { ScheduleTimesList(schedule = it) }
+            schedule?.let { ScheduleTimesContent(schedule = it) }
         }
     }
 }
 
 @Composable
-private fun ScheduleTimesList(schedule: Schedule) {
+private fun ScheduleTimesContent(schedule: Schedule) {
     var selectedDay by remember { mutableStateOf(DayOfWeek.fromToday()) }
     var selectedDirection by remember { mutableStateOf<String?>(null) }
 
@@ -94,75 +97,115 @@ private fun ScheduleTimesList(schedule: Schedule) {
             }
     }
 
-    // Day chips row
-    LazyRow(
+    DaySelector(
+        selectedDay = selectedDay,
+        onSelect = { selectedDay = it },
+    )
+
+    if (directions.isEmpty()) {
+        EmptyState(R.string.schedule_none_running)
+        return
+    }
+
+    RouteSelector(
+        directions = directions,
+        selectedDirection = selectedDirection,
+        onSelect = { selectedDirection = it },
+    )
+
+    HorizontalDivider(Modifier, DividerDefaults.Thickness)
+
+    val times =
+        remember(selectedDay, selectedDirection, schedule) {
+            val dir = selectedDirection ?: return@remember emptyList()
+            consolidatedTimes(dir, selectedDay, schedule)
+        }
+
+    ScheduleBody(
+        selectedDirection = selectedDirection,
+        times = times,
+    )
+}
+
+@Composable
+private fun DaySelector(
+    selectedDay: DayOfWeek,
+    onSelect: (DayOfWeek) -> Unit,
+) {
+    val scrollState = rememberScrollState()
+    val days = DayOfWeek.entries
+
+    SingleChoiceSegmentedButtonRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-        contentPadding = PaddingValues(end = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .horizontalScroll(scrollState),
     ) {
-        items(DayOfWeek.entries, key = { it.name }) { day ->
-            FilterChip(
+        days.forEachIndexed { index, day ->
+            SegmentedButton(
                 selected = selectedDay == day,
-                onClick = { selectedDay = day },
+                onClick = { onSelect(day) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = days.size),
                 label = { Text(day.displayName) },
             )
         }
     }
+}
 
-    if (directions.isNotEmpty()) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            directions.forEach { dir ->
-                RouteTab(
-                    label = dir.lowercase().replaceFirstChar { it.uppercase() } + " Route",
-                    route = dir,
-                    selectedRoute = selectedDirection,
-                    onRouteSelected = { selectedDirection = it },
-                    modifier = Modifier.weight(1f),
-                )
-            }
+@Composable
+private fun RouteSelector(
+    directions: List<String>,
+    selectedDirection: String?,
+    onSelect: (String) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(0.9f),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        directions.forEach { dir ->
+            RouteTab(
+                label = dir.lowercase().replaceFirstChar { it.uppercase() } + " Route",
+                route = dir,
+                selectedRoute = selectedDirection,
+                onRouteSelected = onSelect,
+                modifier = Modifier.weight(1f),
+            )
         }
-        HorizontalDivider(Modifier, DividerDefaults.Thickness)
+    }
+}
 
-        val times =
-            remember(selectedDay, selectedDirection, schedule) {
-                val dir = selectedDirection ?: return@remember emptyList()
-                consolidatedTimes(dir, selectedDay, schedule)
-            }
-
-        if (selectedDirection == null) {
-            Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.schedule_select_route))
-            }
-        } else if (times.isEmpty()) {
-            Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.schedule_no_upcoming_today))
-            }
-        } else {
+@Composable
+private fun ScheduleBody(
+    selectedDirection: String?,
+    times: List<TimeInfo>,
+) {
+    when {
+        selectedDirection == null -> EmptyState(R.string.schedule_select_route)
+        times.isEmpty() -> EmptyState(R.string.schedule_no_upcoming_today)
+        else -> {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(bottom = 24.dp),
             ) {
                 items(times, key = { it.busName + it.time + it.direction }) { item ->
-                    ScheduleTimeRow(
-                        time = item.time,
-                        busName = item.busName,
-                    )
+                    ScheduleTimeRow(time = item.time, busName = item.busName)
                 }
             }
         }
-    } else {
-        Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.schedule_none_running))
-        }
+    }
+}
+
+@Composable
+private fun EmptyState(textRes: Int) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(stringResource(textRes))
     }
 }
 
