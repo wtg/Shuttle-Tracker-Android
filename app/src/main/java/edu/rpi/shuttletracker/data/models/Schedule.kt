@@ -15,9 +15,31 @@ data class Schedule(
     @SerializedName("weekday") val weekday: Map<String, List<List<String>>>,
     @SerializedName("saturday") val saturdaySchedule: Map<String, List<List<String>>>,
     @SerializedName("sunday") val sundaySchedule: Map<String, List<List<String>>>,
-)
+) {
+    fun scheduleTypeFor(day: DayOfWeek): String =
+        when (day) {
+            DayOfWeek.MONDAY -> monday
+            DayOfWeek.TUESDAY -> tuesday
+            DayOfWeek.WEDNESDAY -> wednesday
+            DayOfWeek.THURSDAY -> thursday
+            DayOfWeek.FRIDAY -> friday
+            DayOfWeek.SATURDAY -> saturday
+            DayOfWeek.SUNDAY -> sunday
+        }
 
-enum class DayOfWeek(val displayName: String, val calendarConst: Int) {
+    fun scheduleMapFor(day: DayOfWeek): Map<String, List<List<String>>> =
+        when (scheduleTypeFor(day).lowercase()) {
+            "weekday" -> weekday
+            "saturday" -> saturdaySchedule
+            "sunday" -> sundaySchedule
+            else -> emptyMap()
+        }
+}
+
+enum class DayOfWeek(
+    val displayName: String,
+    val calendarConst: Int,
+) {
     MONDAY("Mon", Calendar.MONDAY),
     TUESDAY("Tue", Calendar.TUESDAY),
     WEDNESDAY("Wed", Calendar.WEDNESDAY),

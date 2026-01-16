@@ -304,37 +304,11 @@ private fun RouteTab(
 
 // Data helpers
 
-private fun scheduleTypeFor(
-    day: DayOfWeek,
-    data: Schedule,
-): String =
-    when (day) {
-        DayOfWeek.MONDAY -> data.monday
-        DayOfWeek.TUESDAY -> data.tuesday
-        DayOfWeek.WEDNESDAY -> data.wednesday
-        DayOfWeek.THURSDAY -> data.thursday
-        DayOfWeek.FRIDAY -> data.friday
-        DayOfWeek.SATURDAY -> data.saturday
-        DayOfWeek.SUNDAY -> data.sunday
-    }
-
-private fun scheduleMapFor(
-    day: DayOfWeek,
-    data: Schedule,
-): Map<String, List<List<String>>> {
-    return when (scheduleTypeFor(day, data).lowercase()) {
-        "weekday" -> data.weekday
-        "saturday" -> data.saturdaySchedule
-        "sunday" -> data.sundaySchedule
-        else -> emptyMap()
-    }
-}
-
 private fun availableDirections(
     day: DayOfWeek,
     data: Schedule,
 ): List<String> {
-    val scheduleMap = scheduleMapFor(day, data)
+    val scheduleMap = data.scheduleMapFor(day)
     val dirs = mutableSetOf<String>()
 
     for ((_, times) in scheduleMap) {
@@ -367,7 +341,7 @@ private fun consolidatedTimes(
     day: DayOfWeek,
     data: Schedule,
 ): List<TimeInfo> {
-    val scheduleMap = scheduleMapFor(day, data)
+    val scheduleMap = data.scheduleMapFor(day)
 
     val now = Calendar.getInstance()
     val isToday = DayOfWeek.fromToday() == day
