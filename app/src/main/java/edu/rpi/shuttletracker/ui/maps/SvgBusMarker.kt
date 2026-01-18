@@ -14,15 +14,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import kotlin.math.roundToInt
 
-/**
- * <svg viewBox="0 0 50 50">
- *   <circle cx="25" cy="25" r="25" fill="{color}"/>
- *   <circle cx="25" cy="25" r="21" fill="white"/>
- *   <g transform="translate(6,6) scale(1.6)">
- *     <path fill="{color}" d="M18 11H6V6h12 ..."/>
- *   </g>
- * </svg>
- */
 private fun buildBusMarkerBitmap(
     pxSize: Int,
     @ColorInt color: Int,

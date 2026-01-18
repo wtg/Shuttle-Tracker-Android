@@ -92,7 +92,7 @@ class MapsViewModel
             if (mapsUiState.value.routes.isEmpty()) {
                 loadRoutes()
             }
-            if (mapsUiState.value.schedule.isEmpty()) {
+            if (mapsUiState.value.schedule == null) {
                 loadSchedule()
             }
         }
@@ -221,7 +221,7 @@ class MapsViewModel
 data class MapsUIState(
     val buses: List<Bus> = listOf(),
     val routes: Map<String, Route> = emptyMap(),
-    val schedule: List<Schedule> = listOf(),
+    val schedule: Schedule? = null,
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
     val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,

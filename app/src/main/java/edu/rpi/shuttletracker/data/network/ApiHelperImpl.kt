@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.data.network
 
 import com.haroldadmin.cnradapter.NetworkResponse
+import edu.rpi.shuttletracker.data.models.AggregatedSchedule
 import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.Bus
@@ -28,7 +29,10 @@ class ApiHelperImpl
         override suspend fun getAnnouncements(): NetworkResponse<List<Announcement>, ErrorResponse> =
             apiService.getAnnouncements()
 
-        override suspend fun getSchedule(): NetworkResponse<List<Schedule>, ErrorResponse> = apiService.getSchedule()
+        override suspend fun getSchedule(): NetworkResponse<Schedule, ErrorResponse> = apiService.getSchedule()
+
+        override suspend fun getAggregatedSchedule(): NetworkResponse<List<AggregatedSchedule>, ErrorResponse> =
+            apiService.getAggregatedSchedule()
 
         override suspend fun addAnalytics(analytics: Analytics): NetworkResponse<Unit, ErrorResponse> =
             apiService.addAnalytics(

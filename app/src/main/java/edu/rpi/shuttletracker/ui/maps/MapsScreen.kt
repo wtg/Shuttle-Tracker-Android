@@ -8,19 +8,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -29,15 +30,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -81,11 +78,9 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.ui.schedule.ScheduleScroll
 import edu.rpi.shuttletracker.ui.theme.BusColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 @Destination<RootGraph>(start = true)
 @Composable
@@ -99,7 +94,7 @@ fun MapsScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var bottomSheetLoaded by remember { mutableStateOf<Stop?>(null) }
+    var isBottomSheetOpen by remember { mutableStateOf(false) }
 
     Scaffold(
         snackbarHost = {
@@ -119,19 +114,27 @@ fun MapsScreen(
         },
     ) { padding ->
 
-        BusMap(
+        Box(modifier = Modifier.fillMaxSize()) {
+            BusMap(
+                mapsUIState = mapsUiState,
+                padding = padding,
+                onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
+                onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
+                onToggleMapTypeClick = { viewModel.toggleMapType() },
+            )
+            BottomSheetPeek(
+                onClick = { isBottomSheetOpen = true },
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(padding)
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+        }
+        ScheduleBottomSheet(
+            isOpen = isBottomSheetOpen,
             mapsUIState = mapsUiState,
-            padding = padding,
-            bottomSheetOnChange = { bottomSheetLoaded = it },
-            onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
-            onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
-            onToggleMapTypeClick = { viewModel.toggleMapType() },
-        )
-
-        StopInfoBottomSheet(
-            stop = bottomSheetLoaded,
-            mapsUIState = mapsUiState,
-            onDismiss = { bottomSheetLoaded = null },
+            onDismiss = { isBottomSheetOpen = false },
         )
     }
 }
@@ -141,7 +144,6 @@ fun MapsScreen(
  *
  * @param mapsUIState: The UI state of the view from the view-model
  * @param padding: Padding needed for the map content padding
- * @param bottonSheetOnChange: Callback invoked when a stop is selected/deselected
  * to close/open the stop bottom sheet
  * @param onScheduleClick: Callback invoked when the user taps the Schedule button
  * @param onSettingsClick: Callback invoked when the user taps the Settings button
@@ -149,10 +151,9 @@ fun MapsScreen(
  *
  * */
 @Composable
-fun BusMap(
+private fun BusMap(
     mapsUIState: MapsUIState,
     padding: PaddingValues,
-    bottomSheetOnChange: (Stop?) -> Unit,
     onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
@@ -220,10 +221,7 @@ fun BusMap(
                     StopCircle(
                         stop = stop,
                         selected = stop.name == selectedStop?.name,
-                        onSelected = { s ->
-                            selectedStop = s
-                            bottomSheetOnChange(s)
-                        },
+                        onSelected = { selectedStop = it },
                     )
                 }
             }
@@ -307,16 +305,31 @@ private fun StopCircle(
     selected: Boolean,
     onSelected: (Stop) -> Unit,
 ) {
+    val markerState = rememberUpdatedMarkerState(position = stop.latLng())
+
     Circle(
         center = stop.latLng(),
         radius = 15.0,
-        strokeColor = if (selected) Color(0xFF6699FF) else MaterialTheme.colorScheme.onPrimaryContainer,
+        strokeColor =
+            if (selected) {
+                Color(0xFF6699FF)
+            } else {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            },
         strokeWidth = 8f,
         zIndex = 1f,
         fillColor = Color.Transparent,
-        clickable = true,
+    )
+
+    Marker(
+        state = markerState,
+        title = stop.name,
+        anchor = Offset(0.5f, 0.5f),
+        alpha = 0f,
+        zIndex = 2f,
         onClick = {
             onSelected(stop)
+            markerState.showInfoWindow()
             true
         },
     )
@@ -326,7 +339,7 @@ private fun StopCircle(
  * Creates a marker for a bus
  * */
 @Composable
-fun BusMarker(
+private fun BusMarker(
     bus: Bus,
     colorBlindMode: Boolean,
 ) {
@@ -368,11 +381,64 @@ fun BusMarker(
         icon = icon,
         snippet = snippetText,
         anchor = Offset(0.5f, 0.5f),
+        zIndex = 3f,
         onClick = {
             it.showInfoWindow()
             true
         },
     )
+}
+
+@Composable
+private fun MapButtonsOverlay(
+    modifier: Modifier = Modifier,
+    mapLocationEnabled: Boolean,
+    mapTypeIcon: ImageVector,
+    onScheduleClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onRecenterClick: () -> Unit,
+    onToggleMapTypeClick: () -> Unit,
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+    ) {
+        // Left side (Schedule, Settings)
+        Column(
+            modifier =
+                Modifier
+                    .align(Alignment.TopStart),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+//            ActionButton(icon = Icons.Outlined.Schedule) {
+//                onScheduleClick()
+//            }
+
+            ActionButton(icon = Icons.Outlined.Settings) {
+                onSettingsClick()
+            }
+        }
+        // Right side (Location, Layers)
+        Column(
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            ActionButton(
+                icon =
+                    if (mapLocationEnabled) {
+                        Icons.Outlined.MyLocation
+                    } else {
+                        Icons.Outlined.LocationDisabled
+                    },
+            ) {
+                onRecenterClick()
+            }
+            ActionButton(icon = mapTypeIcon) {
+                onToggleMapTypeClick()
+            }
+        }
+    }
 }
 
 /**
@@ -416,145 +482,46 @@ fun ActionButton(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StopInfoBottomSheet(
-    stop: Stop?,
-    mapsUIState: MapsUIState,
-    onDismiss: () -> Unit,
+private fun BottomSheetPeek(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    if (stop == null) return
-
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-
-    val routes = mapsUIState.routes
-    val schedule = mapsUIState.schedule
-
-    val allowedRoutes = setOf("NORTH", "WEST")
-
-    val routeNames =
-        remember(stop, routes) {
-            routes
-                .filter { (routeName, route) ->
-                    routeName in allowedRoutes &&
-                        route.stopDetails.values.any { it.name == stop.name }
-                }
-                .keys
-                .sorted()
-        }
-
-    val days = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
-    val todayName = remember { days[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1] }
-//    var selectedDay by remember { mutableStateOf(todayName) }
-    val dayIndex = remember { Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1 }
-
-    var selectedRoute by remember(routeNames) { mutableStateOf(routeNames.firstOrNull()) }
-
-    val selectedRouteTimes: List<String> =
-        remember(todayName, selectedRoute, schedule) {
-            val routeSchedule = schedule.getOrNull(dayIndex)
-            when (selectedRoute) {
-                "NORTH" -> routeSchedule?.north ?: emptyList()
-                "WEST" -> routeSchedule?.west ?: emptyList()
-                else -> emptyList()
-            }
-        }
-
-    ModalBottomSheet(
-        modifier = Modifier.fillMaxHeight(),
-        sheetState = sheetState,
-        onDismissRequest = onDismiss,
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 6.dp,
+        shadowElevation = 6.dp,
+        onClick = onClick,
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth(0.7f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    stop.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 5.dp),
-                )
-
-                if (routeNames.size > 1) {
-                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                        routeNames.forEachIndexed { index, option ->
-                            SegmentedButton(
-                                selected = selectedRoute == option,
-                                onClick = { selectedRoute = option },
-                                shape = SegmentedButtonDefaults.itemShape(index, routeNames.size),
-                                label = { Text(option) },
-                            )
-                        }
-                    }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.bottom_sheet_peek_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = stringResource(R.string.bottom_sheet_peek_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
-
-                ScheduleScroll(
-                    selectedRouteTimes = selectedRouteTimes,
-                    selectedStop = stop.name,
-                    routeData = routes[selectedRoute],
-                    centered = true,
+                Icon(
+                    imageVector = Icons.Outlined.ExpandLess,
+                    contentDescription = null,
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun MapButtonsOverlay(
-    modifier: Modifier = Modifier,
-    mapLocationEnabled: Boolean,
-    mapTypeIcon: ImageVector,
-    onScheduleClick: () -> Unit,
-    onSettingsClick: () -> Unit,
-    onRecenterClick: () -> Unit,
-    onToggleMapTypeClick: () -> Unit,
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-    ) {
-        // Left side (Schedule, Settings)
-        Column(
-            modifier =
-                Modifier
-                    .align(Alignment.TopStart),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            ActionButton(icon = Icons.Outlined.Schedule) {
-                onScheduleClick()
-            }
-
-            ActionButton(icon = Icons.Outlined.Settings) {
-                onSettingsClick()
-            }
-        }
-
-        // Right side (Location, Layers)
-        Column(
-            modifier =
-                Modifier
-                    .align(Alignment.TopEnd),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            ActionButton(
-                icon =
-                    if (mapLocationEnabled) {
-                        Icons.Outlined.MyLocation
-                    } else {
-                        Icons.Outlined.LocationDisabled
-                    },
-            ) {
-                onRecenterClick()
-            }
-
-            ActionButton(icon = mapTypeIcon) {
-                onToggleMapTypeClick()
             }
         }
     }

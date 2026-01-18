@@ -11,7 +11,7 @@
     <string name="default_bus" translatable="false">defaultbus.png</string>
 
     <!-- URLS -->
-    <string name="url_default">https://shuttles.rpi.edu/api/</string>
+    <string name="url_default">https://api-shuttles.rpi.edu/api/</string>
     <string name="url_private_policy">https://shuttles.rpi.edu/privacy-policy.txt</string>
     <string name="url_repository">https://github.com/wtg/Shuttle-Tracker-Android</string>
     <string name="url_repository_issues">https://github.com/wtg/Shuttle-Tracker-Android/issues</string>
@@ -111,6 +111,14 @@
     <string name="bus_number">Bus %1$s</string>
     <string name="bus_speed">%.1f mph</string>
     <string name="no_location_warning">Unable to determine your location</string>
+    <string name="bottom_sheet_peek_title">"Student Union Schedule"</string>
+    <string name="bottom_sheet_peek_subtitle">"Tap to view times"</string>
+    <string name="union_schedule">Union Schedule</string>
+    <string name="upcoming">"Upcoming"</string>
+    <string name="earlier">"Earlier Today"</string>
+    <string name="schedule_select_route">Select a route</string>
+    <string name="schedule_no_upcoming_today">No upcoming shuttles today</string>
+    <string name="schedule_none_running">No shuttles running</string>
 
     <!-- Errors -->
     <string name="understand">I understand</string>

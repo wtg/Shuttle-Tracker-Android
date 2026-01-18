@@ -24,6 +24,8 @@ class ApiRepository
 
         suspend fun getSchedule() = apiHelper.getSchedule()
 
+        suspend fun getAggregatedSchedule() = apiHelper.getAggregatedSchedule()
+
         suspend fun sendAnalytics(event: Event): NetworkResponse<Unit, ErrorResponse>? {
             if (!userPreferencesRepository.get().getAllowAnalytics().first()) return null
 

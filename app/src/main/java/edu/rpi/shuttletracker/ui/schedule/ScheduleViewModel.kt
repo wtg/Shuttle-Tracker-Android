@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.rpi.shuttletracker.data.models.AggregatedSchedule
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
-import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +31,7 @@ class ScheduleViewModel
 
         fun loadAll() {
             if (scheduleUiState.value.schedule.isEmpty()) {
-                getSchedule()
+                getAggregatedSchedule()
             }
             if (scheduleUiState.value.routes.isEmpty()) {
                 getRoutes()
@@ -52,9 +52,9 @@ class ScheduleViewModel
             }
         }
 
-        private fun getSchedule() {
+        private fun getAggregatedSchedule() {
             viewModelScope.launch {
-                readApiResponse(apiRepository.getSchedule()) { response ->
+                readApiResponse(apiRepository.getAggregatedSchedule()) { response ->
                     _scheduleUiState.update {
                         it.copy(schedule = response)
                     }
@@ -101,7 +101,7 @@ class ScheduleViewModel
 
 @Immutable
 data class ScheduleUIState(
-    val schedule: List<Schedule> = listOf(),
+    val schedule: List<AggregatedSchedule> = listOf(),
     val routes: Map<String, Route> = emptyMap(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
     val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
