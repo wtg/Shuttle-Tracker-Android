@@ -34,7 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.LibrariesScreenDestination
@@ -126,7 +126,8 @@ fun AboutScreen(
                     if (timesClicked == 0) {
                         toast =
                             Toast.makeText(
-                                context, context.getString(R.string.dev_options_activated),
+                                context,
+                                context.getString(R.string.dev_options_activated),
                                 Toast.LENGTH_SHORT,
                             )
                         viewModel.activateDevOptions()

@@ -15,7 +15,9 @@ import java.lang.reflect.Field
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FIELD)
-annotation class Flatten(val path: String)
+annotation class Flatten(
+    val path: String,
+)
 
 /**
  * Created by Tishka17 on 18.05.2016.

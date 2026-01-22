@@ -39,7 +39,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -181,11 +181,12 @@ fun BaseUrlSettingItem(
                         }
                         Runtime.getRuntime().exit(0)
                     } else {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.invalid_url),
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                        Toast
+                            .makeText(
+                                context,
+                                context.getString(R.string.invalid_url),
+                                Toast.LENGTH_SHORT,
+                            ).show()
                     }
                 }) {
                     Text(text = stringResource(R.string.save))

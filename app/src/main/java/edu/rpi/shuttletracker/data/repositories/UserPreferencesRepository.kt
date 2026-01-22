@@ -48,15 +48,16 @@ class UserPreferencesRepository
         }
 
         suspend fun getUserId(): String =
-            dataStore.data.map { preference ->
-                if (preference[USER_ID] == null) {
-                    dataStore.edit {
-                        it[USER_ID] = UUID.randomUUID().toString()
+            dataStore.data
+                .map { preference ->
+                    if (preference[USER_ID] == null) {
+                        dataStore.edit {
+                            it[USER_ID] = UUID.randomUUID().toString()
+                        }
                     }
-                }
 
-                preference[USER_ID] ?: UUID.randomUUID().toString()
-            }.first().toString()
+                    preference[USER_ID] ?: UUID.randomUUID().toString()
+                }.first()
 
         fun getNotificationsRead(): Flow<Int> =
             dataStore.data.map {

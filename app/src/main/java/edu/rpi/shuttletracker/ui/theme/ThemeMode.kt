@@ -6,11 +6,10 @@ enum class ThemeMode {
     Dark,
     ;
 
-    fun isDarkTheme(systemInDarkTheme: Boolean): Boolean {
-        return when (this) {
+    fun isDarkTheme(systemInDarkTheme: Boolean): Boolean =
+        when (this) {
             System -> systemInDarkTheme
             Dark -> true
             Light -> false
         }
-    }
 }

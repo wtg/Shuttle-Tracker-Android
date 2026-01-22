@@ -45,10 +45,11 @@ class FirebaseService : FirebaseMessagingService() {
             ) as NotificationManager
 
         val notificationBody =
-            NotificationCompat.Builder(
-                this,
-                Notifications.CHANNEL_ANNOUNCEMENT,
-            ).setContentTitle("FCM")
+            NotificationCompat
+                .Builder(
+                    this,
+                    Notifications.CHANNEL_ANNOUNCEMENT,
+                ).setContentTitle("FCM")
                 .setContentText(body)
                 .setSmallIcon(R.drawable.ic_stat_default)
                 .setContentIntent(NotificationReceiver.openAnnouncements(this))
