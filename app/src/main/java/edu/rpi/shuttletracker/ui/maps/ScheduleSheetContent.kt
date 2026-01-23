@@ -41,6 +41,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
+// Header / Peak
+
 @Composable
 fun ScheduleSheetContent(
     schedule: Schedule?,
@@ -75,28 +77,27 @@ fun ScheduleSheetContent(
             if (schedule == null) {
                 EmptyState(R.string.schedule_no_upcoming_today)
             } else {
-                ScheduleTimesContent(schedule = schedule)
+                ScheduleDetailsContent(schedule = schedule)
             }
         }
     }
 }
 
 @Composable
-fun ScheduleTimesContent(schedule: Schedule) {
+private fun ScheduleDetailsContent(schedule: Schedule) {
     var selectedDay by remember { mutableStateOf(DayOfWeek.fromToday()) }
     var selectedDirection by remember { mutableStateOf<String?>(null) }
 
     val directions =
         remember(selectedDay, schedule) {
-            availableDirections(selectedDay, schedule)
+            directionsForDay(selectedDay, schedule)
         }
 
     LaunchedEffect(selectedDay, directions) {
         selectedDirection =
             when {
                 directions.isEmpty() -> null
-                selectedDirection == null -> directions.first()
-                directions.contains(selectedDirection) -> selectedDirection
+                selectedDirection in directions -> selectedDirection
                 else -> directions.first()
             }
     }
@@ -130,6 +131,8 @@ fun ScheduleTimesContent(schedule: Schedule) {
         times = times,
     )
 }
+
+// Selectors
 
 @Composable
 private fun DaySelector(
@@ -170,7 +173,13 @@ private fun RouteSelector(
     ) {
         directions.forEach { dir ->
             RouteTab(
-                label = dir.lowercase().replaceFirstChar { it.uppercase() } + " Route",
+                label =
+                    stringResource(
+                        R.string.route_label_format,
+                        dir
+                            .lowercase()
+                            .replaceFirstChar { it.titlecase() },
+                    ),
                 route = dir,
                 selectedRoute = selectedDirection,
                 onRouteSelected = onSelect,
@@ -179,6 +188,48 @@ private fun RouteSelector(
         }
     }
 }
+
+@Composable
+private fun RouteTab(
+    label: String,
+    route: String,
+    selectedRoute: String?,
+    onRouteSelected: (String) -> Unit,
+    modifier: Modifier,
+) {
+    val selected = route == selectedRoute
+
+    Surface(
+        onClick = { onRouteSelected(route) },
+        shape = RoundedCornerShape(12.dp),
+        tonalElevation = if (selected) 2.dp else 0.dp,
+        color =
+            if (selected) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            },
+        modifier = modifier,
+    ) {
+        Text(
+            text = label,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.labelLarge,
+            color =
+                if (selected) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+        )
+    }
+}
+
+// List content
 
 @Composable
 private fun ScheduleBody(
@@ -198,18 +249,6 @@ private fun ScheduleBody(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun EmptyState(textRes: Int) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(stringResource(textRes))
     }
 }
 
@@ -254,6 +293,18 @@ private fun ScheduleTimeRow(
     }
 }
 
+@Composable
+private fun EmptyState(textRes: Int) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(stringResource(textRes))
+    }
+}
+
 private fun busTagColor(
     busName: String,
     defaultColor: Color,
@@ -266,49 +317,9 @@ private fun busTagColor(
     }
 }
 
-@Composable
-private fun RouteTab(
-    label: String,
-    route: String,
-    selectedRoute: String?,
-    onRouteSelected: (String) -> Unit,
-    modifier: Modifier,
-) {
-    val selected = route == selectedRoute
-
-    Surface(
-        onClick = { onRouteSelected(route) },
-        shape = RoundedCornerShape(12.dp),
-        tonalElevation = if (selected) 2.dp else 0.dp,
-        color =
-            if (selected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            },
-        modifier = modifier,
-    ) {
-        Text(
-            text = label,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.labelLarge,
-            color =
-                if (selected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-        )
-    }
-}
-
 // Data helpers
 
-private fun availableDirections(
+private fun directionsForDay(
     day: DayOfWeek,
     data: Schedule,
 ): List<String> {

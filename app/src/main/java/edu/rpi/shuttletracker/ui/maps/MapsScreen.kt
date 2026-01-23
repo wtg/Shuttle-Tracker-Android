@@ -107,6 +107,7 @@ fun MapsScreen(
         sheetPeekHeight = 160.dp,
         sheetDragHandle = { BottomSheetDefaults.DragHandle() },
         sheetContainerColor = MaterialTheme.colorScheme.surface,
+        sheetShadowElevation = 10.dp,
         sheetContent = {
             val showDetails by remember(scaffoldState.bottomSheetState) {
                 derivedStateOf {
@@ -136,22 +137,20 @@ fun MapsScreen(
         },
     ) { padding ->
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            BusMap(
-                mapsUIState = mapsUiState,
-                padding = padding,
-                onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
-                onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
-                onToggleMapTypeClick = { viewModel.toggleMapType() },
-            )
-        }
+        ShuttleMap(
+            mapsUiState = mapsUiState,
+            padding = padding,
+            onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
+            onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
+            onToggleMapTypeClick = { viewModel.toggleMapType() },
+        )
     }
 }
 
 /**
  * Creates the map displaying everything
  *
- * @param mapsUIState: The UI state of the view from the view-model
+ * @param mapsUiState: The UI state of the view from the view-model
  * @param padding: Padding needed for the map content padding
  * to close/open the stop bottom sheet
  * @param onScheduleClick: Callback invoked when the user taps the Schedule button
@@ -160,8 +159,8 @@ fun MapsScreen(
  *
  * */
 @Composable
-private fun BusMap(
-    mapsUIState: MapsUIState,
+private fun ShuttleMap(
+    mapsUiState: MapsUiState,
     padding: PaddingValues,
     onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -171,7 +170,7 @@ private fun BusMap(
     val coroutineScope = rememberCoroutineScope()
 
     // can't show current location without location
-    val mapLocationEnabled by remember {
+    val isLocationPermissionGranted by remember {
         mutableStateOf(
             ActivityCompat.checkSelfPermission(
                 context,
@@ -191,7 +190,7 @@ private fun BusMap(
         }
 
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
-    val isDark = mapsUIState.themeMode.isDarkTheme(isSystemInDarkTheme())
+    val isDark = mapsUiState.themeMode.isDarkTheme(isSystemInDarkTheme())
 
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
@@ -206,10 +205,10 @@ private fun BusMap(
                             LatLng(42.72095724005504, -73.70196321825452),
                             LatLng(42.741173465236876, -73.6543446409232),
                         ),
-                    mapType = mapsUIState.mapType,
+                    mapType = mapsUiState.mapType,
                     isBuildingEnabled = true,
                     minZoomPreference = 14f,
-                    isMyLocationEnabled = mapLocationEnabled,
+                    isMyLocationEnabled = isLocationPermissionGranted,
                     mapStyleOptions =
                         if (isDark) {
                             MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
@@ -225,9 +224,9 @@ private fun BusMap(
                 ),
         ) {
             // creates the stops
-            mapsUIState.routes.forEach { (_, route) ->
+            mapsUiState.routes.forEach { (_, route) ->
                 route.stopDetails.forEach { (_, stop) ->
-                    StopCircle(
+                    StopMarker(
                         stop = stop,
                         selected = stop.name == selectedStop?.name,
                         onSelected = { selectedStop = it },
@@ -236,15 +235,15 @@ private fun BusMap(
             }
 
             // creates the bus markers
-            mapsUIState.buses.forEach {
+            mapsUiState.buses.forEach {
                 BusMarker(
                     bus = it,
-                    colorBlindMode = mapsUIState.colorBlindMode,
+                    colorBlindMode = mapsUiState.colorBlindMode,
                 )
             }
 
             // draws the paths
-            mapsUIState.routes.forEach { (_, route) ->
+            mapsUiState.routes.forEach { (_, route) ->
                 val points = route.latLng()
                 if (points.isNotEmpty()) {
                     Polyline(
@@ -262,7 +261,7 @@ private fun BusMap(
         }
 
         val mapTypeIcon =
-            if (mapsUIState.mapType == MapType.NORMAL) {
+            if (mapsUiState.mapType == MapType.NORMAL) {
                 Icons.Outlined.Layers
             } else {
                 Icons.Filled.Layers
@@ -274,7 +273,7 @@ private fun BusMap(
                     .statusBarsPadding()
                     .padding(padding)
                     .padding(horizontal = 10.dp),
-            mapLocationEnabled = mapLocationEnabled,
+            isMyLocationEnabled = isLocationPermissionGranted,
             mapTypeIcon = mapTypeIcon,
             onScheduleClick = onScheduleClick,
             onSettingsClick = onSettingsClick,
@@ -314,7 +313,7 @@ private fun BusMap(
  * Creates a marker for a stop
  * */
 @Composable
-private fun StopCircle(
+private fun StopMarker(
     stop: Stop,
     selected: Boolean,
     onSelected: (Stop) -> Unit,
@@ -379,13 +378,13 @@ private fun BusMarker(
         }
 
     // gets bus speed and last time it updated
-    val timeBusUpdate = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
+    val lastUpdatedAgoText = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
     val snippetText =
         buildString {
             append(stringResource(R.string.bus_speed, bus.speedMph))
-            if (timeBusUpdate.isNotBlank()) {
+            if (lastUpdatedAgoText.isNotBlank()) {
                 append(" • ")
-                append(timeBusUpdate)
+                append(lastUpdatedAgoText)
             }
         }
 
@@ -406,7 +405,7 @@ private fun BusMarker(
 @Composable
 private fun MapButtonsOverlay(
     modifier: Modifier = Modifier,
-    mapLocationEnabled: Boolean,
+    isMyLocationEnabled: Boolean,
     mapTypeIcon: ImageVector,
     onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -416,7 +415,7 @@ private fun MapButtonsOverlay(
     Box(
         modifier = modifier.fillMaxSize(),
     ) {
-        // Left side (Schedule, Settings)
+        // Left side
         Column(
             modifier =
                 Modifier
@@ -431,7 +430,7 @@ private fun MapButtonsOverlay(
                 onSettingsClick()
             }
         }
-        // Right side (Location, Layers)
+        // Right side
         Column(
             modifier =
                 Modifier
@@ -440,7 +439,7 @@ private fun MapButtonsOverlay(
         ) {
             ActionButton(
                 icon =
-                    if (mapLocationEnabled) {
+                    if (isMyLocationEnabled) {
                         Icons.Outlined.MyLocation
                     } else {
                         Icons.Outlined.LocationDisabled
@@ -460,9 +459,8 @@ private fun MapButtonsOverlay(
  * @param badgeCount: if a badge is needed for a item, it will display
  * @param action: what to do on button click
  * */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActionButton(
+private fun ActionButton(
     icon: ImageVector,
     badgeCount: Int = 0,
     action: () -> Unit,

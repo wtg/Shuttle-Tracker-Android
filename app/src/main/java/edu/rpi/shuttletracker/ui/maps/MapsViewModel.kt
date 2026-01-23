@@ -35,8 +35,8 @@ class MapsViewModel
         private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
         // represents the ui state of the view
-        private val _mapsUiState = MutableStateFlow(MapsUIState())
-        val mapsUiState: StateFlow<MapsUIState> = _mapsUiState
+        private val _mapsUiState = MutableStateFlow(MapsUiState())
+        val mapsUiState: StateFlow<MapsUiState> = _mapsUiState
 
         // shared flow of the running buses, this is to be subscribed to in UI
         lateinit var busesState: SharedFlow<Unit>
@@ -222,7 +222,7 @@ class MapsViewModel
  * Representation of the screen
  * */
 @Immutable
-data class MapsUIState(
+data class MapsUiState(
     val buses: List<Bus> = listOf(),
     val routes: Map<String, Route> = emptyMap(),
     val schedule: Schedule? = null,
