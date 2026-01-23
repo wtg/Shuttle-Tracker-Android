@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,16 +13,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,41 +40,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleBottomSheet(
-    isOpen: Boolean,
-    mapsUIState: MapsUIState,
-    onDismiss: () -> Unit,
-) {
-    if (!isOpen) return
-
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-
-    val schedule = mapsUIState.schedule
-
-    ModalBottomSheet(
-        modifier = Modifier.fillMaxHeight(),
-        sheetState = sheetState,
-        onDismissRequest = onDismiss,
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                stringResource(R.string.union_schedule),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 5.dp),
-            )
-
-            schedule?.let { ScheduleTimesContent(schedule = it) }
-        }
-    }
-}
-
-@Composable
-private fun ScheduleTimesContent(schedule: Schedule) {
+fun ScheduleTimesContent(schedule: Schedule) {
     var selectedDay by remember { mutableStateOf(DayOfWeek.fromToday()) }
     var selectedDirection by remember { mutableStateOf<String?>(null) }
 
@@ -198,7 +161,7 @@ private fun ScheduleBody(
 }
 
 @Composable
-private fun EmptyState(textRes: Int) {
+fun EmptyState(textRes: Int) {
     Box(
         Modifier
             .fillMaxWidth()

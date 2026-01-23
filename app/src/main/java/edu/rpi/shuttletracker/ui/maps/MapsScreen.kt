@@ -8,35 +8,40 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,6 +87,7 @@ import edu.rpi.shuttletracker.ui.theme.BusColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>(start = true)
 @Composable
 fun MapsScreen(
@@ -94,9 +100,30 @@ fun MapsScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var isBottomSheetOpen by remember { mutableStateOf(false) }
+    val sheetState =
+        rememberStandardBottomSheetState(
+            initialValue = SheetValue.PartiallyExpanded,
+        )
+    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
 
-    Scaffold(
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = 160.dp,
+        sheetDragHandle = { BottomSheetDefaults.DragHandle() },
+        sheetContainerColor = MaterialTheme.colorScheme.surface,
+        sheetContent = {
+            val showDetails by remember {
+                derivedStateOf {
+                    scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded ||
+                        scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+                }
+            }
+
+            ScheduleSheetContent(
+                mapsUIState = mapsUiState,
+                isExpanded = showDetails,
+            )
+        },
         snackbarHost = {
             // finds errors when requesting data to server
             CheckResponseError(
@@ -109,7 +136,6 @@ fun MapsScreen(
                     viewModel.loadAll()
                 },
             )
-
             SnackbarHost(hostState = snackbarHostState)
         },
     ) { padding ->
@@ -122,20 +148,7 @@ fun MapsScreen(
                 onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
                 onToggleMapTypeClick = { viewModel.toggleMapType() },
             )
-            BottomSheetPeek(
-                onClick = { isBottomSheetOpen = true },
-                modifier =
-                    Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(padding)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-            )
         }
-        ScheduleBottomSheet(
-            isOpen = isBottomSheetOpen,
-            mapsUIState = mapsUiState,
-            onDismiss = { isBottomSheetOpen = false },
-        )
     }
 }
 
@@ -262,6 +275,7 @@ private fun BusMap(
         MapButtonsOverlay(
             modifier =
                 Modifier
+                    .statusBarsPadding()
                     .padding(padding)
                     .padding(horizontal = 10.dp),
             mapLocationEnabled = mapLocationEnabled,
@@ -487,45 +501,42 @@ fun ActionButton(
 }
 
 @Composable
-private fun BottomSheetPeek(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+fun ScheduleSheetContent(
+    mapsUIState: MapsUIState,
+    isExpanded: Boolean,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        tonalElevation = 6.dp,
-        shadowElevation = 6.dp,
-        onClick = onClick,
+    val schedule = mapsUIState.schedule
+
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(.86f),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Row(
+        Text(
+            text = stringResource(R.string.union_schedule),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
+
+        Text(
+            text = "Chasen stop available M–F, 7:00 AM – 5:30 PM",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+
+        if (isExpanded) {
+            HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.bottom_sheet_peek_title),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        text = stringResource(R.string.bottom_sheet_peek_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-                Icon(
-                    imageVector = Icons.Outlined.ExpandLess,
-                    contentDescription = null,
-                )
+                thickness = DividerDefaults.Thickness,
+            )
+
+            if (schedule == null) {
+                EmptyState(R.string.schedule_no_upcoming_today)
+            } else {
+                ScheduleTimesContent(schedule = schedule)
             }
         }
     }
