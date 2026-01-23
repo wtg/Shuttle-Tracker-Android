@@ -114,7 +114,7 @@
     <string name="bottom_sheet_peek_title">"Student Union Shuttle Arrivals"</string>
     <string name="bottom_sheet_peek_subtitle">"Chasan stop available M–F, 7:00 AM – 5:30 PM"</string>
     <string name="schedule_select_route">Select a route</string>
-    <string name="schedule_no_upcoming_today">No upcoming shuttles today</string>
+    <string name="no_schedule_found">No schedule found</string>
     <string name="schedule_none_running">No shuttles running</string>
     <string name="route_label_format">%1$s Route</string>
 
