@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,9 +26,7 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
@@ -112,7 +108,7 @@ fun MapsScreen(
         sheetDragHandle = { BottomSheetDefaults.DragHandle() },
         sheetContainerColor = MaterialTheme.colorScheme.surface,
         sheetContent = {
-            val showDetails by remember {
+            val showDetails by remember(scaffoldState.bottomSheetState) {
                 derivedStateOf {
                     scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded ||
                         scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
@@ -120,8 +116,8 @@ fun MapsScreen(
             }
 
             ScheduleSheetContent(
-                mapsUIState = mapsUiState,
-                isExpanded = showDetails,
+                schedule = mapsUiState.schedule,
+                showDetails = showDetails,
             )
         },
         snackbarHost = {
@@ -496,48 +492,6 @@ fun ActionButton(
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
         ) {
             Icon(icon, icon.name)
-        }
-    }
-}
-
-@Composable
-fun ScheduleSheetContent(
-    mapsUIState: MapsUIState,
-    isExpanded: Boolean,
-) {
-    val schedule = mapsUIState.schedule
-
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(.86f),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = stringResource(R.string.union_schedule),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
-
-        Text(
-            text = "Chasen stop available M–F, 7:00 AM – 5:30 PM",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
-
-        if (isExpanded) {
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth(),
-                thickness = DividerDefaults.Thickness,
-            )
-
-            if (schedule == null) {
-                EmptyState(R.string.schedule_no_upcoming_today)
-            } else {
-                ScheduleTimesContent(schedule = schedule)
-            }
         }
     }
 }

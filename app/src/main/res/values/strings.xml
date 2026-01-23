@@ -112,10 +112,7 @@
     <string name="bus_speed">%.1f mph</string>
     <string name="no_location_warning">Unable to determine your location</string>
     <string name="bottom_sheet_peek_title">"Student Union Schedule"</string>
-    <string name="bottom_sheet_peek_subtitle">"Tap to view times"</string>
-    <string name="union_schedule">Union Schedule</string>
-    <string name="upcoming">"Upcoming"</string>
-    <string name="earlier">"Earlier Today"</string>
+    <string name="bottom_sheet_peek_subtitle">"Chasan stop available M–F, 7:00 AM – 5:30 PM"</string>
     <string name="schedule_select_route">Select a route</string>
     <string name="schedule_no_upcoming_today">No upcoming shuttles today</string>
     <string name="schedule_none_running">No shuttles running</string>

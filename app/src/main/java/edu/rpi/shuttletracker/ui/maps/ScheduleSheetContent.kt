@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +40,46 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
+
+@Composable
+fun ScheduleSheetContent(
+    schedule: Schedule?,
+    showDetails: Boolean,
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(.86f),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = stringResource(R.string.bottom_sheet_peek_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
+
+        Text(
+            text = stringResource(R.string.bottom_sheet_peek_subtitle),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+
+        if (showDetails) {
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = DividerDefaults.Thickness,
+            )
+
+            if (schedule == null) {
+                EmptyState(R.string.schedule_no_upcoming_today)
+            } else {
+                ScheduleTimesContent(schedule = schedule)
+            }
+        }
+    }
+}
 
 @Composable
 fun ScheduleTimesContent(schedule: Schedule) {
@@ -133,7 +174,7 @@ private fun RouteSelector(
                 route = dir,
                 selectedRoute = selectedDirection,
                 onRouteSelected = onSelect,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).padding(bottom = 8.dp),
             )
         }
     }
@@ -161,7 +202,7 @@ private fun ScheduleBody(
 }
 
 @Composable
-fun EmptyState(textRes: Int) {
+private fun EmptyState(textRes: Int) {
     Box(
         Modifier
             .fillMaxWidth()
