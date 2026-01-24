@@ -8,35 +8,36 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,6 +83,7 @@ import edu.rpi.shuttletracker.ui.theme.BusColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>(start = true)
 @Composable
 fun MapsScreen(
@@ -94,9 +96,31 @@ fun MapsScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var isBottomSheetOpen by remember { mutableStateOf(false) }
+    val sheetState =
+        rememberStandardBottomSheetState(
+            initialValue = SheetValue.PartiallyExpanded,
+        )
+    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
 
-    Scaffold(
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = 160.dp,
+        sheetDragHandle = { BottomSheetDefaults.DragHandle() },
+        sheetContainerColor = MaterialTheme.colorScheme.surface,
+        sheetShadowElevation = 10.dp,
+        sheetContent = {
+            val showDetails by remember(scaffoldState.bottomSheetState) {
+                derivedStateOf {
+                    scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded ||
+                        scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+                }
+            }
+
+            ScheduleSheetContent(
+                schedule = mapsUiState.schedule,
+                showDetails = showDetails,
+            )
+        },
         snackbarHost = {
             // finds errors when requesting data to server
             CheckResponseError(
@@ -109,32 +133,16 @@ fun MapsScreen(
                     viewModel.loadAll()
                 },
             )
-
             SnackbarHost(hostState = snackbarHostState)
         },
     ) { padding ->
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            BusMap(
-                mapsUIState = mapsUiState,
-                padding = padding,
-                onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
-                onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
-                onToggleMapTypeClick = { viewModel.toggleMapType() },
-            )
-            BottomSheetPeek(
-                onClick = { isBottomSheetOpen = true },
-                modifier =
-                    Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(padding)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-            )
-        }
-        ScheduleBottomSheet(
-            isOpen = isBottomSheetOpen,
-            mapsUIState = mapsUiState,
-            onDismiss = { isBottomSheetOpen = false },
+        ShuttleMap(
+            mapsUiState = mapsUiState,
+            padding = padding,
+            onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
+            onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
+            onToggleMapTypeClick = { viewModel.toggleMapType() },
         )
     }
 }
@@ -142,7 +150,7 @@ fun MapsScreen(
 /**
  * Creates the map displaying everything
  *
- * @param mapsUIState: The UI state of the view from the view-model
+ * @param mapsUiState: The UI state of the view from the view-model
  * @param padding: Padding needed for the map content padding
  * to close/open the stop bottom sheet
  * @param onScheduleClick: Callback invoked when the user taps the Schedule button
@@ -151,8 +159,8 @@ fun MapsScreen(
  *
  * */
 @Composable
-private fun BusMap(
-    mapsUIState: MapsUIState,
+private fun ShuttleMap(
+    mapsUiState: MapsUiState,
     padding: PaddingValues,
     onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -162,7 +170,7 @@ private fun BusMap(
     val coroutineScope = rememberCoroutineScope()
 
     // can't show current location without location
-    val mapLocationEnabled by remember {
+    val isLocationPermissionGranted by remember {
         mutableStateOf(
             ActivityCompat.checkSelfPermission(
                 context,
@@ -182,7 +190,7 @@ private fun BusMap(
         }
 
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
-    val isDark = mapsUIState.themeMode.isDarkTheme(isSystemInDarkTheme())
+    val isDark = mapsUiState.themeMode.isDarkTheme(isSystemInDarkTheme())
 
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
@@ -197,10 +205,10 @@ private fun BusMap(
                             LatLng(42.72095724005504, -73.70196321825452),
                             LatLng(42.741173465236876, -73.6543446409232),
                         ),
-                    mapType = mapsUIState.mapType,
+                    mapType = mapsUiState.mapType,
                     isBuildingEnabled = true,
                     minZoomPreference = 14f,
-                    isMyLocationEnabled = mapLocationEnabled,
+                    isMyLocationEnabled = isLocationPermissionGranted,
                     mapStyleOptions =
                         if (isDark) {
                             MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
@@ -216,9 +224,9 @@ private fun BusMap(
                 ),
         ) {
             // creates the stops
-            mapsUIState.routes.forEach { (_, route) ->
+            mapsUiState.routes.forEach { (_, route) ->
                 route.stopDetails.forEach { (_, stop) ->
-                    StopCircle(
+                    StopMarker(
                         stop = stop,
                         selected = stop.name == selectedStop?.name,
                         onSelected = { selectedStop = it },
@@ -227,15 +235,15 @@ private fun BusMap(
             }
 
             // creates the bus markers
-            mapsUIState.buses.forEach {
+            mapsUiState.buses.forEach {
                 BusMarker(
                     bus = it,
-                    colorBlindMode = mapsUIState.colorBlindMode,
+                    colorBlindMode = mapsUiState.colorBlindMode,
                 )
             }
 
             // draws the paths
-            mapsUIState.routes.forEach { (_, route) ->
+            mapsUiState.routes.forEach { (_, route) ->
                 val points = route.latLng()
                 if (points.isNotEmpty()) {
                     Polyline(
@@ -253,7 +261,7 @@ private fun BusMap(
         }
 
         val mapTypeIcon =
-            if (mapsUIState.mapType == MapType.NORMAL) {
+            if (mapsUiState.mapType == MapType.NORMAL) {
                 Icons.Outlined.Layers
             } else {
                 Icons.Filled.Layers
@@ -262,9 +270,10 @@ private fun BusMap(
         MapButtonsOverlay(
             modifier =
                 Modifier
+                    .statusBarsPadding()
                     .padding(padding)
                     .padding(horizontal = 10.dp),
-            mapLocationEnabled = mapLocationEnabled,
+            isMyLocationEnabled = isLocationPermissionGranted,
             mapTypeIcon = mapTypeIcon,
             onScheduleClick = onScheduleClick,
             onSettingsClick = onSettingsClick,
@@ -304,7 +313,7 @@ private fun BusMap(
  * Creates a marker for a stop
  * */
 @Composable
-private fun StopCircle(
+private fun StopMarker(
     stop: Stop,
     selected: Boolean,
     onSelected: (Stop) -> Unit,
@@ -369,13 +378,13 @@ private fun BusMarker(
         }
 
     // gets bus speed and last time it updated
-    val timeBusUpdate = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
+    val lastUpdatedAgoText = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
     val snippetText =
         buildString {
             append(stringResource(R.string.bus_speed, bus.speedMph))
-            if (timeBusUpdate.isNotBlank()) {
+            if (lastUpdatedAgoText.isNotBlank()) {
                 append(" • ")
-                append(timeBusUpdate)
+                append(lastUpdatedAgoText)
             }
         }
 
@@ -396,7 +405,7 @@ private fun BusMarker(
 @Composable
 private fun MapButtonsOverlay(
     modifier: Modifier = Modifier,
-    mapLocationEnabled: Boolean,
+    isMyLocationEnabled: Boolean,
     mapTypeIcon: ImageVector,
     onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -406,7 +415,7 @@ private fun MapButtonsOverlay(
     Box(
         modifier = modifier.fillMaxSize(),
     ) {
-        // Left side (Schedule, Settings)
+        // Left side
         Column(
             modifier =
                 Modifier
@@ -421,7 +430,7 @@ private fun MapButtonsOverlay(
                 onSettingsClick()
             }
         }
-        // Right side (Location, Layers)
+        // Right side
         Column(
             modifier =
                 Modifier
@@ -430,7 +439,7 @@ private fun MapButtonsOverlay(
         ) {
             ActionButton(
                 icon =
-                    if (mapLocationEnabled) {
+                    if (isMyLocationEnabled) {
                         Icons.Outlined.MyLocation
                     } else {
                         Icons.Outlined.LocationDisabled
@@ -450,9 +459,8 @@ private fun MapButtonsOverlay(
  * @param badgeCount: if a badge is needed for a item, it will display
  * @param action: what to do on button click
  * */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActionButton(
+private fun ActionButton(
     icon: ImageVector,
     badgeCount: Int = 0,
     action: () -> Unit,
@@ -482,51 +490,6 @@ fun ActionButton(
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
         ) {
             Icon(icon, icon.name)
-        }
-    }
-}
-
-@Composable
-private fun BottomSheetPeek(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        tonalElevation = 6.dp,
-        shadowElevation = 6.dp,
-        onClick = onClick,
-    ) {
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.bottom_sheet_peek_title),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        text = stringResource(R.string.bottom_sheet_peek_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-                Icon(
-                    imageVector = Icons.Outlined.ExpandLess,
-                    contentDescription = null,
-                )
-            }
         }
     }
 }

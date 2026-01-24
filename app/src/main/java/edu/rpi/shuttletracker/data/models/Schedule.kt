@@ -11,7 +11,8 @@ data class Schedule(
     @SerializedName("FRIDAY") val friday: String,
     @SerializedName("SATURDAY") val saturday: String,
     @SerializedName("SUNDAY") val sunday: String,
-    // busName -> list of [time, direction]
+    // Map<busName, List<[time, direction]>>
+    // ex. AM WEST Bus 1 -> list of ["7:00 AM", "WEST"]
     @SerializedName("weekday") val weekday: Map<String, List<List<String>>>,
     @SerializedName("saturday") val saturdaySchedule: Map<String, List<List<String>>>,
     @SerializedName("sunday") val sundaySchedule: Map<String, List<List<String>>>,
