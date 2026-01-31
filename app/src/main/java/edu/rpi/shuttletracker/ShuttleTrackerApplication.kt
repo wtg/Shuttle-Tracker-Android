@@ -6,7 +6,6 @@ import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
 import edu.rpi.shuttletracker.util.notifications.Notifications
 import edu.rpi.shuttletracker.util.services.FirebaseService
-import edu.rpi.shuttletracker.util.workers.AnnouncementWorker
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -22,7 +21,7 @@ class ShuttleTrackerApplication :
 
         FirebaseService.retrieveToken()
 
-        AnnouncementWorker.startWork(this)
+//        AnnouncementWorker.startWork(this)
     }
 
     override val workManagerConfiguration: Configuration

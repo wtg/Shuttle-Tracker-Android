@@ -38,9 +38,9 @@ class NotificationReceiver : BroadcastReceiver() {
                     ) as NotificationManager
 
                 notificationManager.cancel(Notifications.ID_ANNOUNCEMENT)
-                goAsync {
-                    userPreferencesRepository.saveNotificationsRead(intent.getIntExtra("count", 0))
-                }
+//                goAsync {
+//                    userPreferencesRepository.saveNotificationsRead(intent.getIntExtra("count", 0))
+//                }
             }
         }
     }
