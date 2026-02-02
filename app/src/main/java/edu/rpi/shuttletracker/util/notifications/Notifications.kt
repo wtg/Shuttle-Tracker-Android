@@ -5,22 +5,24 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationChannelGroupCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_DEFAULT
-import edu.rpi.shuttletracker.R
 
 /**
  * Based on the notification generator for Tachiyomi
  * */
 object Notifications {
+    // Group
     private const val GROUP_TRACKER = "group_tracker"
-    const val CHANNEL_TRACKING_BUS = "tracking_bus_channel"
-    const val ID_TRACKING_BUS = 1
-
     private const val GROUP_ANNOUNCEMENTS = "group_announcements"
-    const val CHANNEL_ANNOUNCEMENT = "announcement_channel"
-    const val ID_ANNOUNCEMENT = 11
-
     private const val GROUP_DEPARTURES = "group_departures"
+
+    // Channels
+    const val CHANNEL_TRACKING_BUS = "tracking_bus_channel"
+    const val CHANNEL_ANNOUNCEMENT = "announcement_channel"
     const val CHANNEL_FIRING_DEPARTURES = "departure_alarm_channel"
+
+    // IDs
+    const val ID_TRACKING_BUS = 1
+    const val ID_ANNOUNCEMENT = 11
     const val ID_FIRING_DEPARTURE = 10000
 
     private val deprecatedChannels =
@@ -38,16 +40,8 @@ object Notifications {
         notificationManager.createNotificationChannelGroupsCompat(
             listOf(
                 buildNotificationChannelGroup(
-                    GROUP_TRACKER,
-                    context.getString(R.string.bus_tracker),
-                ),
-                buildNotificationChannelGroup(
                     GROUP_ANNOUNCEMENTS,
                     "Announcements",
-                ),
-                buildNotificationChannelGroup(
-                    GROUP_DEPARTURES,
-                    "Departures",
                 ),
             ),
         )
@@ -56,22 +50,10 @@ object Notifications {
         notificationManager.createNotificationChannelsCompat(
             listOf(
                 buildNotificationChannel(
-                    GROUP_TRACKER,
-                    CHANNEL_TRACKING_BUS,
-                    IMPORTANCE_DEFAULT,
-                    context.getString(R.string.tracker),
-                ),
-                buildNotificationChannel(
                     GROUP_ANNOUNCEMENTS,
                     CHANNEL_ANNOUNCEMENT,
                     IMPORTANCE_DEFAULT,
                     "Announcement",
-                ),
-                buildNotificationChannel(
-                    GROUP_DEPARTURES,
-                    CHANNEL_FIRING_DEPARTURES,
-                    IMPORTANCE_DEFAULT,
-                    "Firing departures",
                 ),
             ),
         )

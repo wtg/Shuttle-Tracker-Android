@@ -33,11 +33,19 @@ class FirebaseService : FirebaseMessagingService() {
         super.onMessageReceived(message)
 
         message.notification?.let {
-            it.body?.let { body -> sendNotification(body) }
+            val title = it.title
+            val body = it.body
+
+            if (title != null && body != null) {
+                sendNotification(title, body)
+            }
         }
     }
 
-    private fun sendNotification(body: String) {
+    private fun sendNotification(
+        title: String,
+        body: String,
+    ) {
         val notificationManager: NotificationManager =
             getSystemService(
                 NOTIFICATION_SERVICE,
@@ -48,7 +56,7 @@ class FirebaseService : FirebaseMessagingService() {
                 .Builder(
                     this,
                     Notifications.CHANNEL_ANNOUNCEMENT,
-                ).setContentTitle("FCM")
+                ).setContentTitle(title)
                 .setContentText(body)
                 .setSmallIcon(R.drawable.ic_stat_default)
                 .setContentIntent(NotificationReceiver.openMaps(this))

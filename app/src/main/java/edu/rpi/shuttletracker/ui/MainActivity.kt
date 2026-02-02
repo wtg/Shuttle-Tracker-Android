@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.ui
 
+import android.app.NotificationManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -65,5 +66,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val nm = getSystemService(NotificationManager::class.java)
+        nm?.cancelAll()
     }
 }
