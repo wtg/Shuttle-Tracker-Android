@@ -8,6 +8,7 @@ import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
+import edu.rpi.shuttletracker.data.models.VehicleETAData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -23,6 +24,14 @@ class ApiHelperImpl
                 while (true) {
                     emit(apiService.getBuses())
                     delay(5000)
+                }
+            }
+
+        override suspend fun getEtas(): Flow<NetworkResponse<Map<String, VehicleETAData>, ErrorResponse>> =
+            flow {
+                while (true) {
+                    emit(apiService.getEtas())
+                    delay(30_000)
                 }
             }
 

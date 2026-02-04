@@ -18,6 +18,8 @@ class ApiRepository
     ) {
         suspend fun getBuses() = apiHelper.getBuses()
 
+        suspend fun getEtas() = apiHelper.getEtas()
+
         suspend fun getRoutes() = apiHelper.getRoutes()
 
         suspend fun getAnnouncements() = apiHelper.getAnnouncements()
