@@ -90,9 +90,7 @@ fun MapsScreen(
     navigator: DestinationsNavigator,
     viewModel: MapsViewModel = hiltViewModel(),
 ) {
-    // makes sure the 2 flows are collected when ui is open
     val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
-    viewModel.busesState.collectAsStateWithLifecycle({})
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -235,7 +233,7 @@ private fun ShuttleMap(
             }
 
             // creates the bus markers
-            mapsUiState.buses.forEach {
+            mapsUiState.buses.values.forEach {
                 BusMarker(
                     bus = it,
                     colorBlindMode = mapsUiState.colorBlindMode,
@@ -390,7 +388,7 @@ private fun BusMarker(
 
     Marker(
         state = markerState,
-        title = stringResource(R.string.bus_number, bus.id),
+        title = stringResource(R.string.bus_number, bus.name),
         icon = icon,
         snippet = snippetText,
         anchor = Offset(0.5f, 0.5f),

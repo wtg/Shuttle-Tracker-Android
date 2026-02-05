@@ -9,9 +9,6 @@ import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.VehicleETAData
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class ApiHelperImpl
@@ -19,21 +16,10 @@ class ApiHelperImpl
     constructor(
         private val apiService: ApiService,
     ) : ApiHelper {
-        override suspend fun getBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>> =
-            flow {
-                while (true) {
-                    emit(apiService.getBuses())
-                    delay(5000)
-                }
-            }
+        override suspend fun getBuses(): NetworkResponse<Map<String, Bus>, ErrorResponse> = apiService.getBuses()
 
-        override suspend fun getEtas(): Flow<NetworkResponse<Map<String, VehicleETAData>, ErrorResponse>> =
-            flow {
-                while (true) {
-                    emit(apiService.getEtas())
-                    delay(30_000)
-                }
-            }
+        override suspend fun getEtas(): NetworkResponse<Map<String, VehicleETAData>, ErrorResponse> =
+            apiService.getEtas()
 
         override suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse> = apiService.getRoutes()
 

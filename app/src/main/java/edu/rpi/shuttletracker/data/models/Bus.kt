@@ -12,7 +12,7 @@ import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 data class Bus(
-    @SerializedName("name") val id: String,
+    val name: String,
     val latitude: Double,
     val longitude: Double,
     @SerializedName("speed_mph") val speedMph: Double,
