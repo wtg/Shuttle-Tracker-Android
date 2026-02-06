@@ -6,7 +6,11 @@ import edu.rpi.shuttletracker.data.models.AnalyticsFactory
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.network.ApiHelperImpl
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import javax.inject.Inject
 
 class ApiRepository
@@ -16,9 +20,21 @@ class ApiRepository
         private val userPreferencesRepository: Lazy<UserPreferencesRepository>,
         private val analyticsFactory: AnalyticsFactory,
     ) {
-        suspend fun getBuses() = apiHelper.getBuses()
+        fun observeBuses(pollMs: Long = 5_000L) =
+            flow {
+                while (currentCoroutineContext().isActive) {
+                    emit(apiHelper.getBuses())
+                    delay(pollMs)
+                }
+            }
 
-        suspend fun getEtas() = apiHelper.getEtas()
+        fun observeEtas(pollMs: Long = 30_000L) =
+            flow {
+                while (currentCoroutineContext().isActive) {
+                    emit(apiHelper.getEtas())
+                    delay(pollMs)
+                }
+            }
 
         suspend fun getRoutes() = apiHelper.getRoutes()
 

@@ -15,14 +15,12 @@ import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,8 +37,8 @@ class MapsViewModel
 
         init {
             loadAll()
-            loadBuses()
-            loadEtas()
+            observeBuses()
+            observeEtas()
             loadPreferences()
         }
 
@@ -67,40 +65,30 @@ class MapsViewModel
             }
         }
 
-        private fun loadAnnouncementCount() {
-            viewModelScope.launch {
-                readApiResponse(apiRepository.getAnnouncements()) { announcements ->
-                    _mapsUiState.update {
-                        it.copy(totalAnnouncements = announcements.size)
-                    }
-                }
-            }
-        }
-
-        private fun loadBuses() {
-            viewModelScope.launch {
-                while (isActive) {
-                    readApiResponse(apiRepository.getBuses()) { buses ->
+        private fun observeBuses() {
+            apiRepository
+                .observeBuses(pollMs = 5_000L)
+                .flowOn(Dispatchers.IO)
+                .onEach { response ->
+                    readApiResponse(response) { buses ->
                         _mapsUiState.update {
                             it.copy(buses = buses)
                         }
                     }
-                    delay(5_000)
-                }
-            }
+                }.launchIn(viewModelScope)
         }
 
-        private fun loadEtas() {
-            viewModelScope.launch {
-                while (isActive) {
-                    readApiResponse(apiRepository.getEtas()) { etas ->
+        private fun observeEtas() {
+            apiRepository
+                .observeEtas(pollMs = 30_000L)
+                .flowOn(Dispatchers.IO)
+                .onEach { response ->
+                    readApiResponse(response) { etas ->
                         _mapsUiState.update {
                             it.copy(vehicleEtas = etas)
                         }
                     }
-                    delay(30_000)
-                }
-            }
+                }.launchIn(viewModelScope)
         }
 
         /**
