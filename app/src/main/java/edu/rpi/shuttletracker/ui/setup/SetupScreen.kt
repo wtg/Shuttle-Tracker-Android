@@ -230,7 +230,7 @@ fun PermissionBox(permission: Permission) {
             contract = ActivityResultContracts.RequestMultiplePermissions(),
         ) { permissions ->
             allGranted =
-                permissions.values.reduce { acc, permissionGranted ->
+                permissions.values.fold(true) { acc, permissionGranted ->
                     acc && permissionGranted
                 }
         }

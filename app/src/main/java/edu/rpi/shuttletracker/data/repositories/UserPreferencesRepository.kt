@@ -183,4 +183,14 @@ class UserPreferencesRepository
             if (!getPrivacyPolicyAccepted().first()) return 1
             return TOTAL_PAGES
         }
+
+        suspend fun clearAllPreferences() {
+            dataStore.edit { prefs ->
+                val userId = prefs[USER_ID]
+                prefs.clear()
+                if (userId != null) {
+                    prefs[USER_ID] = userId
+                }
+            }
+        }
     }
