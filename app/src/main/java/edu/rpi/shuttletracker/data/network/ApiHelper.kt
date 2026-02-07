@@ -8,12 +8,12 @@ import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.models.VehicleETAData
+import edu.rpi.shuttletracker.data.models.VehicleStopEta
 
 interface ApiHelper {
     suspend fun getBuses(): NetworkResponse<Map<String, Bus>, ErrorResponse>
 
-    suspend fun getEtas(): NetworkResponse<Map<String, VehicleETAData>, ErrorResponse>
+    suspend fun getEtas(): NetworkResponse<Map<String, VehicleStopEta>, ErrorResponse>
 
     suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse>
 

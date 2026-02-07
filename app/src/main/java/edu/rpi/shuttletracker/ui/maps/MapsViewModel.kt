@@ -10,7 +10,7 @@ import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.models.VehicleETAData
+import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
@@ -38,24 +38,19 @@ class MapsViewModel
         init {
             loadAll()
             observeBuses()
-            observeEtas()
+//            observeEtas()
             loadPreferences()
         }
 
         fun loadAll() {
-            if (mapsUiState.value.routes.isEmpty()) {
-                loadRoutes()
-            }
-            if (mapsUiState.value.schedule == null) {
-                loadSchedule()
-            }
+            if (mapsUiState.value.routes.isEmpty()) loadRoutes()
+            if (mapsUiState.value.schedule == null) loadSchedule()
         }
 
         /**
          * sets all the errors to none
          * */
         fun clearErrors() {
-            loadAll()
             _mapsUiState.update {
                 it.copy(
                     unknownError = null,
@@ -63,6 +58,11 @@ class MapsViewModel
                     serverError = null,
                 )
             }
+        }
+
+        fun retry() {
+            clearErrors()
+            loadAll()
         }
 
         private fun observeBuses() {
@@ -85,7 +85,7 @@ class MapsViewModel
                 .onEach { response ->
                     readApiResponse(response) { etas ->
                         _mapsUiState.update {
-                            it.copy(vehicleEtas = etas)
+                            it.copy(vehicleStopEtas = etas)
                         }
                     }
                 }.launchIn(viewModelScope)
@@ -190,14 +190,12 @@ data class MapsUiState(
     val buses: Map<String, Bus> = emptyMap(),
     val routes: Map<String, Route> = emptyMap(),
     val schedule: Schedule? = null,
-    val vehicleEtas: Map<String, VehicleETAData> = emptyMap(),
+    val vehicleStopEtas: Map<String, VehicleStopEta> = emptyMap(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
     val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
     val notificationsRead: Int = -1,
     val totalAnnouncements: Int = -1,
-    val colorBlindMode: Boolean = false,
-    val minStopDist: Float = 50f,
     val themeMode: ThemeMode = ThemeMode.System,
     val mapType: MapType = MapType.NORMAL,
 )

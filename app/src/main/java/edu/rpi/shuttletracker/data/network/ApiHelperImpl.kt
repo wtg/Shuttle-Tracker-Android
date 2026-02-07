@@ -8,7 +8,7 @@ import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.models.VehicleETAData
+import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import javax.inject.Inject
 
 class ApiHelperImpl
@@ -18,7 +18,7 @@ class ApiHelperImpl
     ) : ApiHelper {
         override suspend fun getBuses(): NetworkResponse<Map<String, Bus>, ErrorResponse> = apiService.getBuses()
 
-        override suspend fun getEtas(): NetworkResponse<Map<String, VehicleETAData>, ErrorResponse> =
+        override suspend fun getEtas(): NetworkResponse<Map<String, VehicleStopEta>, ErrorResponse> =
             apiService.getEtas()
 
         override suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse> = apiService.getRoutes()

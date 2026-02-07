@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.ui.maps
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -126,10 +127,7 @@ fun MapsScreen(
                 mapsUiState.serverError,
                 mapsUiState.unknownError,
                 ignoreErrorRequest = { viewModel.clearErrors() },
-                retryErrorRequest = {
-                    viewModel.clearErrors()
-                    viewModel.loadAll()
-                },
+                retryErrorRequest = { viewModel.retry() },
             )
             SnackbarHost(hostState = snackbarHostState)
         },
@@ -211,7 +209,7 @@ private fun ShuttleMap(
                         if (isDark) {
                             MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
                         } else {
-                            MapStyleOptions("[]")
+                            null
                         },
                 ),
             // removes the zoom control which was covered by the FAB
@@ -236,7 +234,6 @@ private fun ShuttleMap(
             mapsUiState.buses.values.forEach {
                 BusMarker(
                     bus = it,
-                    colorBlindMode = mapsUiState.colorBlindMode,
                 )
             }
 
@@ -350,10 +347,7 @@ private fun StopMarker(
  * Creates a marker for a bus
  * */
 @Composable
-private fun BusMarker(
-    bus: Bus,
-    colorBlindMode: Boolean,
-) {
+private fun BusMarker(bus: Bus) {
     val context = LocalContext.current
     val markerState = rememberUpdatedMarkerState(position = bus.latLng())
 
@@ -363,10 +357,9 @@ private fun BusMarker(
     }
 
     val busColor =
-        when {
-            colorBlindMode -> BusColors.Default
-            bus.routeName == "NORTH" -> BusColors.North
-            bus.routeName == "WEST" -> BusColors.West
+        when (bus.routeName) {
+            "NORTH" -> BusColors.North
+            "WEST" -> BusColors.West
             else -> BusColors.Default
         }
 
