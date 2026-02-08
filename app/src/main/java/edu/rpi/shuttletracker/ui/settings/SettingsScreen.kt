@@ -10,9 +10,8 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.RestartAlt
-import androidx.compose.material.icons.outlined.Security
-import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,7 +21,6 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -79,27 +77,19 @@ fun SettingsScreen(
         LazyColumn(
             modifier = Modifier.padding(padding),
         ) {
-//            item {
-//                ColorBlindSettingItem(
-//                    colorBlindMode = settingsUiState.colorBlindMode,
-//                    updateColorBlindMode = viewModel::updateColorBlindMode,
-//                )
-//            }
-
             item {
                 ThemeModeSettingItem(
                     themeMode = settingsUiState.themeMode,
                     updateThemeMode = viewModel::updateThemeMode,
                 )
             }
-            if (settingsUiState.devOptionState) {
-                item {
-                    SettingsItem(
-                        Icons.Outlined.Code,
-                        stringResource(R.string.dev_options),
-                        onClick = { navigator.navigate(DevMenuScreenDestination()) },
-                    )
-                }
+
+            item {
+                SettingsItem(
+                    Icons.Outlined.PrivacyTip,
+                    stringResource(R.string.permissions),
+                    onClick = { navigator.navigate(PermissionsScreenDestination()) },
+                )
             }
 
             item {
@@ -118,31 +108,16 @@ fun SettingsScreen(
                 )
             }
 
-            item {
-                SettingsItem(
-                    Icons.Outlined.Security,
-                    stringResource(R.string.permissions),
-                    onClick = { navigator.navigate(PermissionsScreenDestination()) },
-                )
+            if (settingsUiState.devOptionState) {
+                item {
+                    SettingsItem(
+                        Icons.Outlined.Code,
+                        stringResource(R.string.dev_options),
+                        onClick = { navigator.navigate(DevMenuScreenDestination()) },
+                    )
+                }
             }
         }
-    }
-}
-
-@Composable
-fun ColorBlindSettingItem(
-    colorBlindMode: Boolean,
-    updateColorBlindMode: (Boolean) -> Unit,
-) {
-    SettingsItem(
-        icon = Icons.Outlined.Visibility,
-        stringResource(R.string.color_blind_mode),
-        stringResource(R.string.color_blind_description),
-    ) {
-        Switch(
-            checked = colorBlindMode,
-            onCheckedChange = { updateColorBlindMode(it) },
-        )
     }
 }
 
