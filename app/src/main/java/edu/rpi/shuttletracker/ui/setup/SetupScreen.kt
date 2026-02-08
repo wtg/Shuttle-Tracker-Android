@@ -181,7 +181,7 @@ fun AnalyticsPage(
 @Composable
 @Preview
 fun PermissionsPage() {
-    val context = LocalContext.current
+    LocalContext.current
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

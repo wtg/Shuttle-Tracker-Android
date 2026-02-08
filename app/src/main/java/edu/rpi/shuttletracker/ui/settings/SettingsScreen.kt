@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RestartAlt
+import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,6 +38,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.DevMenuScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.PermissionsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
@@ -113,6 +115,14 @@ fun SettingsScreen(
                     Icons.Outlined.Info,
                     stringResource(R.string.about),
                     onClick = { navigator.navigate(AboutScreenDestination()) },
+                )
+            }
+
+            item {
+                SettingsItem(
+                    Icons.Outlined.Security,
+                    stringResource(R.string.permissions),
+                    onClick = { navigator.navigate(PermissionsScreenDestination()) },
                 )
             }
         }

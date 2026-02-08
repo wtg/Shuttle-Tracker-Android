@@ -1,7 +1,6 @@
 package edu.rpi.shuttletracker.util.services
 
 import android.app.NotificationManager
-import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -41,7 +40,7 @@ class FirebaseService : FirebaseMessagingService() {
     private fun sendNotification(body: String) {
         val notificationManager: NotificationManager =
             getSystemService(
-                Context.NOTIFICATION_SERVICE,
+                NOTIFICATION_SERVICE,
             ) as NotificationManager
 
         val notificationBody =
