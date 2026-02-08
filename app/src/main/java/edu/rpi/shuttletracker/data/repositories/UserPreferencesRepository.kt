@@ -13,7 +13,6 @@ import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Event
-import edu.rpi.shuttletracker.ui.setup.TOTAL_PAGES
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -39,6 +38,7 @@ class UserPreferencesRepository
             private val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
             private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
             private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
+            private val SETUP_COMPLETED = booleanPreferencesKey("setup_completed")
             private val MAX_STOP_DIST = floatPreferencesKey("max_stop_dist")
             private val BASE_URL = stringPreferencesKey("base_url")
             private val ALLOW_ANALYTICS = booleanPreferencesKey("allow_analytics")
@@ -119,6 +119,17 @@ class UserPreferencesRepository
             }
         }
 
+        fun getSetupCompleted(): Flow<Boolean> =
+            dataStore.data.map {
+                it[SETUP_COMPLETED] ?: false
+            }
+
+        suspend fun saveSetupCompleted(setupCompleted: Boolean) {
+            dataStore.edit {
+                it[SETUP_COMPLETED] = setupCompleted
+            }
+        }
+
         fun getMaxStopDist(): Flow<Float> =
             dataStore.data.map {
                 it[MAX_STOP_DIST] ?: 20f
@@ -176,12 +187,6 @@ class UserPreferencesRepository
             dataStore.edit {
                 it[THEME_MODE] = themeMode.name
             }
-        }
-
-        suspend fun getSetupStartIndex(): Int {
-            if (!getAboutAccepted().first()) return 0
-            if (!getPrivacyPolicyAccepted().first()) return 1
-            return TOTAL_PAGES
         }
 
         suspend fun clearAllPreferences() {

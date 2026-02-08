@@ -46,7 +46,6 @@ import com.ramcosta.composedestinations.generated.destinations.MapsScreenDestina
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
-import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -54,18 +53,8 @@ import kotlinx.coroutines.runBlocking
 fun SetupScreen(
     navigator: DestinationsNavigator,
     viewModel: SetupScreenViewModel = hiltViewModel(),
-    manualStart: Boolean = false,
 ) {
-    val startPage = if (manualStart) 0 else runBlocking { viewModel.getStartPage() }
-    if (startPage == TOTAL_PAGES) {
-        navigator.navigate(MapsScreenDestination) {
-            popUpTo(SetupScreenDestination) {
-                inclusive = true
-            }
-        }
-    }
-
-    var currentPage by remember { mutableIntStateOf(startPage) }
+    var currentPage by remember { mutableIntStateOf(0) }
 
     BackHandler(currentPage > 0) {
         --currentPage
@@ -135,7 +124,15 @@ fun SetupScreen(
                     HorizontalDivider(modifier = Modifier.fillMaxWidth())
                     Button(modifier = Modifier.fillMaxWidth(), onClick = {
                         pages[currentPage].onComplete()
-                        ++currentPage
+
+                        if (currentPage == pages.lastIndex) {
+                            viewModel.completeSetup()
+                            navigator.navigate(MapsScreenDestination) {
+                                popUpTo(SetupScreenDestination) { inclusive = true }
+                            }
+                        } else {
+                            currentPage++
+                        }
                     }) {
                         Text(text = pages[currentPage].nextText)
                     }
@@ -229,10 +226,7 @@ fun PermissionBox(permission: Permission) {
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestMultiplePermissions(),
         ) { permissions ->
-            allGranted =
-                permissions.values.fold(true) { acc, permissionGranted ->
-                    acc && permissionGranted
-                }
+            allGranted = permissions.all { it.value }
         }
 
     Row(
