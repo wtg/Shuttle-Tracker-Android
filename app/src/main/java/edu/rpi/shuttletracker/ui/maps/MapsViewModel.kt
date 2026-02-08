@@ -6,11 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.maps.android.compose.MapType
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.models.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
+import edu.rpi.shuttletracker.data.models.vehicle.VehicleStopEta
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
@@ -37,8 +37,8 @@ class MapsViewModel
 
         init {
             loadAll()
-            observeBuses()
-//            observeEtas()
+            observeVehicleLocations()
+//            observeVehicleEtas()
             loadPreferences()
         }
 
@@ -65,22 +65,22 @@ class MapsViewModel
             loadAll()
         }
 
-        private fun observeBuses() {
+        private fun observeVehicleLocations() {
             apiRepository
-                .observeBuses(pollMs = 5_000L)
+                .observeVehicleLocations(pollMs = 5_000L)
                 .flowOn(Dispatchers.IO)
                 .onEach { response ->
                     readApiResponse(response) { buses ->
                         _mapsUiState.update {
-                            it.copy(buses = buses)
+                            it.copy(vehicleLocations = buses)
                         }
                     }
                 }.launchIn(viewModelScope)
         }
 
-        private fun observeEtas() {
+        private fun observeVehicleEtas() {
             apiRepository
-                .observeEtas(pollMs = 30_000L)
+                .observeVehicleEtas(pollMs = 30_000L)
                 .flowOn(Dispatchers.IO)
                 .onEach { response ->
                     readApiResponse(response) { etas ->
@@ -187,10 +187,10 @@ class MapsViewModel
  * */
 @Immutable
 data class MapsUiState(
-    val buses: Map<String, Bus> = emptyMap(),
+    val vehicleLocations: Map<String, VehicleLocation> = emptyMap(),
+    val vehicleStopEtas: Map<String, VehicleStopEta> = emptyMap(),
     val routes: Map<String, Route> = emptyMap(),
     val schedule: Schedule? = null,
-    val vehicleStopEtas: Map<String, VehicleStopEta> = emptyMap(),
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
     val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
     val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,

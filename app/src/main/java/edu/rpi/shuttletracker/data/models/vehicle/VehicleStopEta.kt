@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.data.models
+package edu.rpi.shuttletracker.data.models.vehicle
 
 import com.google.gson.annotations.SerializedName
 

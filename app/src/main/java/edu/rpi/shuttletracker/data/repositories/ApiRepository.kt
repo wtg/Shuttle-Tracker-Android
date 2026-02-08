@@ -20,18 +20,18 @@ class ApiRepository
         private val userPreferencesRepository: Lazy<UserPreferencesRepository>,
         private val analyticsFactory: AnalyticsFactory,
     ) {
-        fun observeBuses(pollMs: Long = 5_000L) =
+        fun observeVehicleLocations(pollMs: Long = 5_000L) =
             flow {
                 while (currentCoroutineContext().isActive) {
-                    emit(apiHelper.getBuses())
+                    emit(apiHelper.getVehicleLocations())
                     delay(pollMs)
                 }
             }
 
-        fun observeEtas(pollMs: Long = 30_000L) =
+        fun observeVehicleEtas(pollMs: Long = 30_000L) =
             flow {
                 while (currentCoroutineContext().isActive) {
-                    emit(apiHelper.getEtas())
+                    emit(apiHelper.getVehicleEtas())
                     delay(pollMs)
                 }
             }
