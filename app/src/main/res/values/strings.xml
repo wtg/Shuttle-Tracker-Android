@@ -5,10 +5,6 @@
     <string name="api_key" translatable="false">3</string>
 
     <!-- icons -->
-    <string name="colorblind_bus" translatable="false">cbredbus.png</string>
-    <string name="red_bus" translatable="false">redbus.png</string>
-    <string name="blue_bus" translatable="false">bluebus.png</string>
-    <string name="default_bus" translatable="false">defaultbus.png</string>
 
     <!-- URLS -->
     <string name="url_default">https://api-shuttles.rpi.edu/api/</string>
@@ -108,8 +104,8 @@
 
 
     <!-- Maps screen -->
-    <string name="bus_number">Bus %1$s</string>
-    <string name="bus_speed">%.1f mph</string>
+    <string name="vehicle_number">Shuttle %1$s</string>
+    <string name="vehicle_speed">%.1f mph</string>
     <string name="no_location_warning">Unable to determine your location</string>
     <string name="bottom_sheet_peek_title">"Student Union Shuttle Arrivals"</string>
     <string name="bottom_sheet_peek_subtitle">"Chasan stop available M–F, 7:00 AM – 5:30 PM"</string>
@@ -133,7 +129,7 @@
     <string name="base_url">Base URL</string>
     <string name="change_url_warning">Changing the URL will restart the app and stop all running services</string>
     <string name="invalid_url">Invalid URL</string>
-    <string name="color_blind_description">More accessible bus icons</string>
+    <string name="color_blind_description">More accessible shuttle icons</string>
     <string name="color_blind_mode">Colorblind mode</string>
     <string name="current_meters">%1$d meters</string>
     <string name="libraries_used">Libraries used</string>

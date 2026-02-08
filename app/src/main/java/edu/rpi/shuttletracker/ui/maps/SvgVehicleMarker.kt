@@ -14,7 +14,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import kotlin.math.roundToInt
 
-private fun buildBusMarkerBitmap(
+private fun buildVehicleMarkerBitmap(
     pxSize: Int,
     @ColorInt color: Int,
 ): Bitmap {
@@ -70,9 +70,9 @@ private fun buildBusMarkerBitmap(
     return bitmap
 }
 
-private object BusMarkerCache : LruCache<String, BitmapDescriptor>(8)
+private object VehicleMarkerCache : LruCache<String, BitmapDescriptor>(8)
 
-fun getBusMarkerDescriptor(
+fun getVehicleMarkerDescriptor(
     context: Context,
     dpSize: Float,
     @ColorInt color: Int,
@@ -81,12 +81,12 @@ fun getBusMarkerDescriptor(
     val pxSize = (dpSize * density).roundToInt()
 
     val cacheKey = "pxSize=$pxSize;color=$color"
-    BusMarkerCache.get(cacheKey)?.let { return it }
+    VehicleMarkerCache.get(cacheKey)?.let { return it }
 
-    val markerBitmap = buildBusMarkerBitmap(pxSize, color)
+    val markerBitmap = buildVehicleMarkerBitmap(pxSize, color)
     val markerDescriptor = BitmapDescriptorFactory.fromBitmap(markerBitmap)
 
-    BusMarkerCache.put(cacheKey, markerDescriptor)
+    VehicleMarkerCache.put(cacheKey, markerDescriptor)
 
     return markerDescriptor
 }

@@ -62,7 +62,7 @@ val md_theme_dark_surfaceTint = Color(0xFFFFB3B0)
 val md_theme_dark_outlineVariant = Color(0xFF524342)
 val md_theme_dark_scrim = Color(0xFF000000)
 
-object BusColors {
+object VehicleColors {
     val Default = Color(0xFF444444)
     val North = Color(0xFFFF0000)
     val West = Color(0xFF0000FF)

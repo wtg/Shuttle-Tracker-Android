@@ -46,6 +46,11 @@ class SettingsViewModel
                 userPreferencesRepository.saveThemeMode(themeMode)
             }
         }
+
+        fun clearAllPreferences() =
+            viewModelScope.launch {
+                userPreferencesRepository.clearAllPreferences()
+            }
     }
 
 @Immutable

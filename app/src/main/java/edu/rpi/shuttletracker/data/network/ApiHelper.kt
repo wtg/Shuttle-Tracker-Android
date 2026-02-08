@@ -4,14 +4,16 @@ import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.data.models.AggregatedSchedule
 import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.models.Announcement
-import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import kotlinx.coroutines.flow.Flow
+import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
+import edu.rpi.shuttletracker.data.models.vehicle.VehicleStopEta
 
 interface ApiHelper {
-    suspend fun getBuses(): Flow<NetworkResponse<Map<String, Bus>, ErrorResponse>>
+    suspend fun getVehicleLocations(): NetworkResponse<Map<String, VehicleLocation>, ErrorResponse>
+
+    suspend fun getVehicleEtas(): NetworkResponse<Map<String, VehicleStopEta>, ErrorResponse>
 
     suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse>
 

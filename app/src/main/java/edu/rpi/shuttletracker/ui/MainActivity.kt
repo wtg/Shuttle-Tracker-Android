@@ -20,11 +20,10 @@ import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
-import edu.rpi.shuttletracker.ui.setup.TOTAL_PAGES
 import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -48,20 +47,27 @@ class MainActivity : ComponentActivity() {
                 .getThemeMode()
                 .collectAsStateWithLifecycle(initialValue = ThemeMode.System)
 
+            val setupCompleted by userPreferencesRepository
+                .getSetupCompleted()
+                .map { it as Boolean? }
+                .collectAsStateWithLifecycle(initialValue = null)
+
             ShuttleTrackerTheme(themeMode = themeMode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    DestinationsNavHost(
-                        navGraph = NavGraphs.root,
-                        start =
-                            if (runBlocking { userPreferencesRepository.getSetupStartIndex() == TOTAL_PAGES }) {
-                                MapsScreenDestination()
-                            } else {
-                                SetupScreenDestination()
-                            },
-                    )
+                    if (setupCompleted != null) {
+                        DestinationsNavHost(
+                            navGraph = NavGraphs.root,
+                            start =
+                                if (setupCompleted == true) {
+                                    MapsScreenDestination()
+                                } else {
+                                    SetupScreenDestination()
+                                },
+                        )
+                    }
                 }
             }
         }

@@ -124,8 +124,8 @@ private fun ScheduleDetailsContent(schedule: Schedule) {
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(bottom = 24.dp),
     ) {
-        items(times, key = { it.busName + it.time + it.route }) { item ->
-            ScheduleTimeRow(time = item.time, busName = item.busName)
+        items(times, key = { it.vehicleName + it.time + it.route }) { item ->
+            ScheduleTimeRow(time = item.time, vehicleName = item.vehicleName)
         }
     }
 }
@@ -232,7 +232,7 @@ private fun RouteTab(
 @Composable
 private fun ScheduleTimeRow(
     time: String,
-    busName: String,
+    vehicleName: String,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -248,14 +248,14 @@ private fun ScheduleTimeRow(
                 modifier = Modifier.weight(1f),
             )
 
-            val tagColor = busTagColor(busName, MaterialTheme.colorScheme.onSurfaceVariant)
+            val tagColor = vehicleTagColor(vehicleName, MaterialTheme.colorScheme.onSurfaceVariant)
 
             Surface(
                 color = tagColor.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(6.dp),
             ) {
                 Text(
-                    text = busName,
+                    text = vehicleName,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                     style = MaterialTheme.typography.labelSmall,
                     color = tagColor,
@@ -282,11 +282,11 @@ private fun EmptyState(textRes: Int) {
     }
 }
 
-private fun busTagColor(
-    busName: String,
+private fun vehicleTagColor(
+    vehicleName: String,
     defaultColor: Color,
 ): Color {
-    val n = busName.lowercase()
+    val n = vehicleName.lowercase()
     return when {
         "north" in n -> Color(0xFFD32F2F)
         "west" in n -> Color(0xFF1976D2)
@@ -317,7 +317,7 @@ private fun routesForDay(
 private data class TimeInfo(
     val time: String,
     val route: String,
-    val busName: String,
+    val vehicleName: String,
     val minutesOfDay: Int,
 )
 
@@ -350,7 +350,7 @@ private fun consolidatedTimes(
 
     val out = mutableListOf<TimeInfo>()
 
-    for ((busName, times) in scheduleMap) {
+    for ((vehicleName, times) in scheduleMap) {
         for (pair in times) {
             if (pair.size <= 1) continue
 
@@ -365,7 +365,7 @@ private fun consolidatedTimes(
                 TimeInfo(
                     time = timeStr,
                     route = routeStr,
-                    busName = busName,
+                    vehicleName = vehicleName,
                     minutesOfDay = minutes,
                 )
         }

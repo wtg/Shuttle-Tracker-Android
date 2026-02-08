@@ -13,8 +13,6 @@ class SetupScreenViewModel
     constructor(
         private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
-        suspend fun getStartPage() = userPreferencesRepository.getSetupStartIndex()
-
         fun getAnalyticsEnabled() = userPreferencesRepository.getAllowAnalytics()
 
         fun updatePrivacyPolicyAccepted() {
@@ -32,6 +30,12 @@ class SetupScreenViewModel
         fun updateAllowAnalytics() {
             viewModelScope.launch {
                 userPreferencesRepository.saveAllowAnalytics(true)
+            }
+        }
+
+        fun completeSetup() {
+            viewModelScope.launch {
+                userPreferencesRepository.saveSetupCompleted(true)
             }
         }
     }
