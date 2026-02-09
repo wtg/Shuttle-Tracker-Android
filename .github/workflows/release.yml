@@ -32,7 +32,7 @@ jobs:
 
       - name: Create local.properties
         run: |
-          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> local.properties
+          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" > local.properties
 
       - name: Build Release APK + AAB
         run: |
@@ -65,7 +65,6 @@ jobs:
           path: |
             ${{ steps.sign_apk.outputs.signedReleaseFile }}
             ${{ steps.sign_aab.outputs.signedReleaseFile }}
-        if: always()
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
@@ -75,6 +74,8 @@ jobs:
             ${{ steps.sign_apk.outputs.signedReleaseFile }}
             ${{ steps.sign_aab.outputs.signedReleaseFile }}
           generate_release_notes: true
+          draft: true
+          prerelease: true
 
       - name: Cleanup secrets
         if: always()

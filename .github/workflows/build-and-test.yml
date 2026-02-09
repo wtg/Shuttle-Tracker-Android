@@ -1,0 +1,50 @@
+name: Build and Test
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+env:
+  MAIN_MODULE: app
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Create local.properties
+        if: ${{ secrets.MAPS_API_KEY != '' }}
+        run: |
+          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" > local.properties
+
+      - name: Ktlint Check
+        run: ./gradlew ktlintCheck
+
+      - name: Build Debug
+        run: ./gradlew :${{ env.MAIN_MODULE }}:assembleDebug
+
+      - name: Unit Tests
+        run: ./gradlew testDebugUnitTest
+
+      - name: Cleanup
+        if: always()
+        run: rm -f local.properties
