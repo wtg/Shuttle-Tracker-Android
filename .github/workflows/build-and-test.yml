@@ -32,7 +32,6 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Create local.properties
-        if: ${{ secrets.MAPS_API_KEY != '' }}
         run: |
           echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" > local.properties
 
