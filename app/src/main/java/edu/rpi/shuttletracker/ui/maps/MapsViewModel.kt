@@ -38,7 +38,7 @@ class MapsViewModel
         init {
             loadAll()
             observeVehicleLocations()
-//            observeVehicleEtas()
+            observeVehicleEtas()
             loadPreferences()
         }
 
@@ -80,7 +80,7 @@ class MapsViewModel
 
         private fun observeVehicleEtas() {
             apiRepository
-                .observeVehicleEtas(pollMs = 30_000L)
+                .observeVehicleEtas(pollMs = 5_000L)
                 .flowOn(Dispatchers.IO)
                 .onEach { response ->
                     readApiResponse(response) { etas ->
