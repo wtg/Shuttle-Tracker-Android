@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
@@ -115,12 +114,6 @@ fun MapsScreen(
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
-                    selected = true,
-                    onClick = { /* already on home/map */ },
-                    icon = { Icon(Icons.Outlined.Home, contentDescription = null) },
-                    label = { Text("Home") },
-                )
-                NavigationBarItem(
                     selected = false,
                     onClick = { /* TODO open ModalBottomSheet later */ },
                     icon = { Icon(Icons.Outlined.StopCircle, contentDescription = null) },
@@ -131,12 +124,6 @@ fun MapsScreen(
                     onClick = { navigator.navigate(ScheduleScreenDestination()) },
                     icon = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
                     label = { Text("Schedule") },
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navigator.navigate(SettingsScreenDestination()) },
-                    icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
-                    label = { Text("Settings") },
                 )
             }
         },
@@ -471,9 +458,9 @@ private fun MapButtonsOverlay(
 //                onScheduleClick()
 //            }
 //
-//            ActionButton(icon = Icons.Outlined.Settings) {
-//                onSettingsClick()
-//            }
+            ActionButton(icon = Icons.Outlined.Settings) {
+                onSettingsClick()
+            }
         }
         // Right side
         Column(

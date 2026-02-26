@@ -44,7 +44,7 @@ fun StopEtaContent(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        StopEtaHeader(stopTitle, onClearStop)
+        StopEtaHeader(stopTitle, onClearStop, selectedStop)
 
         if (selectedStopKey == null) {
             return
@@ -70,7 +70,6 @@ fun StopEtaContent(
             EmptyState("No ETAs found")
             return
         }
-
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
@@ -98,6 +97,7 @@ fun StopEtaContent(
 private fun StopEtaHeader(
     title: String,
     onClearStop: () -> Unit,
+    stopSelected: Stop?,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
@@ -108,18 +108,20 @@ private fun StopEtaHeader(
             text = title,
             style = MaterialTheme.typography.titleMedium,
         )
-
-        Box(
-            modifier =
-                Modifier
-                    .size(28.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(50),
-                    ).clickable { onClearStop() },
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("✕")
+        // show exit "x" if stop selected
+        if (stopSelected != null) {
+            Box(
+                modifier =
+                    Modifier
+                        .size(28.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(50),
+                        ).clickable { onClearStop() },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("✕")
+            }
         }
     }
 }
