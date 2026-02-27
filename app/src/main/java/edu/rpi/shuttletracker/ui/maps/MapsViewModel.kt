@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -85,7 +86,10 @@ class MapsViewModel
                 .onEach { response ->
                     readApiResponse(response) { etas ->
                         _mapsUiState.update {
-                            it.copy(vehicleStopEtas = etas)
+                            it.copy(
+                                vehicleStopEtas = etas,
+                                lastEtasUpdatedAt = Instant.now(),
+                            )
                         }
                     }
                 }.launchIn(viewModelScope)
@@ -198,4 +202,5 @@ data class MapsUiState(
     val totalAnnouncements: Int = -1,
     val themeMode: ThemeMode = ThemeMode.System,
     val mapType: MapType = MapType.NORMAL,
+    val lastEtasUpdatedAt: Instant? = null,
 )

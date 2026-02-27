@@ -20,12 +20,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
 import edu.rpi.shuttletracker.data.models.vehicle.VehicleStopEta
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 
 @Composable
 fun StopEtaContent(
@@ -34,6 +39,7 @@ fun StopEtaContent(
     selectedStop: Stop?,
     vehicleStopEtas: Map<String, VehicleStopEta>,
     vehicleLocations: Map<String, VehicleLocation>,
+    lastEtasUpdatedAt: Instant?,
     onClearStop: () -> Unit,
     onEtaChipClick: (vehicleId: String) -> Unit,
 ) {
@@ -43,7 +49,7 @@ fun StopEtaContent(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        StopEtaHeader(stopTitle, onClearStop, selectedStop)
+        StopEtaHeader(stopTitle, onClearStop, selectedStop, lastEtasUpdatedAt)
 
         if (selectedStopKey == null) {
             return
@@ -64,7 +70,7 @@ fun StopEtaContent(
             etas
                 .filter { Duration.between(now, it.etaInstant).toMinutes() >= -5 }
 
-        if (visibleEtas.isEmpty()) {
+        if (visibleEtas.isEmpty() || stopTitle == "Blitman") {
             Text(
                 text = "No ETAs found",
                 style = MaterialTheme.typography.bodyMedium,
@@ -105,7 +111,13 @@ private fun StopEtaHeader(
     title: String,
     onClearStop: () -> Unit,
     stopSelected: Stop?,
+    lastEtasUpdatedAt: Instant?,
 ) {
+    val updatedText =
+        updatedAgoFlow(lastEtasUpdatedAt)
+            .collectAsStateWithLifecycle(initialValue = "")
+            .value
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -115,19 +127,32 @@ private fun StopEtaHeader(
             text = title,
             style = MaterialTheme.typography.titleMedium,
         )
-        // show exit "x" if stop selected
+
         if (stopSelected != null) {
-            Box(
-                modifier =
-                    Modifier
-                        .size(28.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            shape = RoundedCornerShape(50),
-                        ).clickable { onClearStop() },
-                contentAlignment = Alignment.Center,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("✕")
+                if (updatedText.isNotBlank()) {
+                    Text(
+                        text = updatedText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                Box(
+                    modifier =
+                        Modifier
+                            .size(28.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = RoundedCornerShape(50),
+                            ).clickable { onClearStop() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("✕")
+                }
             }
         }
     }
@@ -187,3 +212,27 @@ private fun buildVehicleEtas(
         }.sortedBy { it.etaInstant }
 
 private fun String.toInstantOrNull(): Instant? = runCatching { OffsetDateTime.parse(trim()).toInstant() }.getOrNull()
+
+fun updatedAgoFlow(lastUpdatedAt: Instant?): Flow<String> =
+    flow {
+        if (lastUpdatedAt == null) {
+            emit("")
+            return@flow
+        }
+
+        while (true) {
+            val now = Instant.now().truncatedTo(ChronoUnit.SECONDS)
+            val duration = Duration.between(lastUpdatedAt, now)
+
+            val secs = duration.seconds.coerceAtLeast(0)
+            val text =
+                when {
+                    secs < 5 -> ""
+                    secs < 60 -> "Updated ${secs}s ago"
+                    else -> "Updated ${secs / 60}m ago"
+                }
+
+            emit(text)
+            delay(1000)
+        }
+    }
