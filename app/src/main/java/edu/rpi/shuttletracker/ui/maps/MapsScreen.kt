@@ -549,7 +549,6 @@ fun EtaOverlayCard(
             selectedStop = selectedStop,
             vehicleStopEtas = vehicleStopEtas,
             vehicleLocations = vehicleLocations,
-            showDetails = false,
             onClearStop = onClearStop,
             onEtaChipClick = onEtaChipClick,
         )

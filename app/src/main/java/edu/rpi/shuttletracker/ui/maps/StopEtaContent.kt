@@ -34,14 +34,13 @@ fun StopEtaContent(
     selectedStop: Stop?,
     vehicleStopEtas: Map<String, VehicleStopEta>,
     vehicleLocations: Map<String, VehicleLocation>,
-    showDetails: Boolean,
     onClearStop: () -> Unit,
     onEtaChipClick: (vehicleId: String) -> Unit,
 ) {
     val stopTitle = selectedStop?.name ?: "Tap a stop to see etas"
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         StopEtaHeader(stopTitle, onClearStop, selectedStop)
@@ -64,23 +63,31 @@ fun StopEtaContent(
         val visibleEtas =
             etas
                 .filter { Duration.between(now, it.etaInstant).toMinutes() >= -5 }
-                .take(if (showDetails) 8 else 3)
 
         if (visibleEtas.isEmpty()) {
-            EmptyState("No ETAs found")
-            return
-        }
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            items(visibleEtas, key = { it.vehicleId }) { eta ->
-                EtaChip(
-                    eta = eta,
-                    onClick = { onEtaChipClick(eta.vehicleId) },
-                )
+            Text(
+                text = "No ETAs found",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+        } else {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                items(visibleEtas, key = { it.vehicleId }) { eta ->
+                    EtaChip(
+                        eta = eta,
+                        now = now,
+                        onClick = { onEtaChipClick(eta.vehicleId) },
+                    )
+                }
             }
         }
 
@@ -127,23 +134,12 @@ private fun StopEtaHeader(
 }
 
 @Composable
-private fun EmptyState(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(bottom = 6.dp),
-    )
-}
-
-@Composable
 private fun EtaChip(
     eta: VehicleEta,
+    now: Instant,
     onClick: () -> Unit,
 ) {
-    val now = Instant.now()
     val mins = Duration.between(now, eta.etaInstant).toMinutes()
-
     val etaText =
         when {
             mins <= 0 -> "now"
