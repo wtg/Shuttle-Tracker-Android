@@ -18,7 +18,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.Vehicle
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -38,12 +40,15 @@ import java.time.OffsetDateTime
 @Composable
 fun StopSheetContent(
     routes: Map<String, Route>,
-    vehicleStopEtas: Map<String, VehicleStopEta>,
+    vehicles: List<Vehicle>,
     showDetails: Boolean,
     onStopClick: (stopKey: String, stop: Stop) -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().fillMaxHeight(.86f),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(.86f),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -59,18 +64,21 @@ fun StopSheetContent(
             modifier = Modifier.padding(bottom = 8.dp),
         )
 
-        if (!showDetails) return
+        if (!showDetails) return@Column
 
-        HorizontalDivider(Modifier.fillMaxWidth(), DividerDefaults.Thickness)
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = DividerDefaults.Thickness,
+        )
 
         if (routes.isEmpty()) {
             EmptyState(R.string.no_schedule_found)
-            return
+            return@Column
         }
 
         StopsDetailsContent(
             routes = routes,
-            vehicleStopEtas = vehicleStopEtas,
+            vehicles = vehicles,
             onStopClick = onStopClick,
         )
     }
@@ -79,11 +87,17 @@ fun StopSheetContent(
 @Composable
 private fun StopsDetailsContent(
     routes: Map<String, Route>,
-    vehicleStopEtas: Map<String, VehicleStopEta>,
+    vehicles: List<Vehicle>,
     onStopClick: (stopKey: String, stop: Stop) -> Unit,
 ) {
     val allowedRoutes = setOf("NORTH", "WEST")
-    val routeKeys = remember(routes) { allowedRoutes.toList() }
+
+    val routeKeys =
+        remember(routes) {
+            routes.keys
+                .filter { it in allowedRoutes }
+                .sorted()
+        }
 
     var selectedRouteKey by remember(routeKeys) {
         mutableStateOf(routeKeys.firstOrNull())
@@ -94,25 +108,70 @@ private fun StopsDetailsContent(
         return
     }
 
+    val lastSeenStopIndexByVehicle = remember { mutableStateMapOf<String, Int>() }
+
+    LaunchedEffect(vehicles, routes) {
+        vehicles.forEach { vehicle ->
+            val routeKey = vehicle.routeName ?: return@forEach
+            val route = routes[routeKey] ?: return@forEach
+            val currentStopName = vehicle.currentStop ?: return@forEach
+
+            val matchedIndex =
+                route.stops.indexOfFirst { stopKey ->
+                    route.stopDetails[stopKey]?.name.equals(currentStopName, ignoreCase = true)
+                }
+
+            if (matchedIndex == -1) return@forEach
+
+            val previousIndex = lastSeenStopIndexByVehicle[vehicle.id]
+            val lastRouteIndex = route.stops.lastIndex
+
+            when {
+                previousIndex == null -> {
+                    lastSeenStopIndexByVehicle[vehicle.id] = matchedIndex
+                }
+
+                matchedIndex > previousIndex -> {
+                    lastSeenStopIndexByVehicle[vehicle.id] = matchedIndex
+                }
+
+                previousIndex >= lastRouteIndex - 1 && matchedIndex <= 1 -> {
+                    lastSeenStopIndexByVehicle[vehicle.id] = matchedIndex
+                }
+            }
+        }
+    }
+
     RouteSelector(
         routes = routeKeys,
         selectedRoute = selectedRouteKey,
         onSelect = { selectedRouteKey = it },
     )
 
-    HorizontalDivider(Modifier, DividerDefaults.Thickness)
+    HorizontalDivider(
+        modifier = Modifier.fillMaxWidth(),
+        thickness = DividerDefaults.Thickness,
+    )
 
     val stopRows =
-        remember(selectedRouteKey, routes, vehicleStopEtas) {
+        remember(selectedRouteKey, routes, vehicles, lastSeenStopIndexByVehicle.toMap()) {
             val route = routes[selectedRouteKey] ?: return@remember emptyList()
-            buildStopRowsForRoute(route, vehicleStopEtas)
+            buildStopRowsForRoute(
+                route = route,
+                vehicles = vehicles,
+                routeKey = selectedRouteKey!!,
+                lastSeenStopIndexByVehicle = lastSeenStopIndexByVehicle,
+            )
         }
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(bottom = 24.dp),
     ) {
-        items(stopRows, key = { it.stopKey }) { row ->
+        items(
+            items = stopRows,
+            key = { it.stopKey },
+        ) { row ->
             StopEtaRow(
                 stopName = row.stop.name,
                 etaLabels = row.etaLabels,
@@ -138,14 +197,15 @@ private fun RouteSelector(
                 label =
                     stringResource(
                         R.string.route_label_format,
-                        dir
-                            .lowercase()
-                            .replaceFirstChar { it.titlecase() },
+                        dir.lowercase().replaceFirstChar { it.titlecase() },
                     ),
                 route = dir,
                 selectedRoute = selectedRoute,
                 onRouteSelected = onSelect,
-                modifier = Modifier.weight(1f).padding(bottom = 8.dp),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .padding(bottom = 8.dp),
             )
         }
     }
@@ -206,7 +266,10 @@ private fun StopEtaRow(
                 .clickable { onClick() },
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -249,16 +312,15 @@ private fun StopEtaRow(
 @Composable
 private fun EmptyState(textRes: Int) {
     Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(stringResource(textRes))
+        Text(text = stringResource(textRes))
     }
 }
-
-// Data helpers
 
 private data class StopRow(
     val stopKey: String,
@@ -268,26 +330,51 @@ private data class StopRow(
 
 private fun buildStopRowsForRoute(
     route: Route,
-    vehicleStopEtas: Map<String, VehicleStopEta>,
+    vehicles: List<Vehicle>,
+    routeKey: String,
+    lastSeenStopIndexByVehicle: Map<String, Int>,
 ): List<StopRow> {
     val now = Instant.now()
 
     return route.stopDetails.map { (stopKey, stop) ->
+        val candidateIndex = route.stops.indexOf(stopKey)
+
         val nextMins =
-            vehicleStopEtas
-                .mapNotNull { (_, etaData) ->
-                    val raw = etaData.stopTimes[stopKey] ?: return@mapNotNull null
-                    val etaInstant = raw.toInstantOrNull() ?: return@mapNotNull null
+            vehicles
+                .asSequence()
+                .filter { it.routeName == routeKey }
+                .mapNotNull { vehicle ->
+                    if (candidateIndex != -1) {
+                        val lastSeenIndex = lastSeenStopIndexByVehicle[vehicle.id]
+                        if (lastSeenIndex != null && candidateIndex <= lastSeenIndex) {
+                            return@mapNotNull null
+                        }
+                    }
+
+                    val rawEta = vehicle.stopTimes[stopKey] ?: return@mapNotNull null
+                    val etaInstant = rawEta.toInstantOrNull() ?: return@mapNotNull null
+
+                    val firstStopKey = route.stops.firstOrNull()
+                    val firstStopName = firstStopKey?.let { route.stopDetails[it]?.name }
+                    val isCurrentlyAtFirstStop =
+                        firstStopName != null &&
+                            vehicle.currentStop.equals(firstStopName, ignoreCase = true)
+
+                    if (isCurrentlyAtFirstStop && etaInstant.isBefore(now)) {
+                        return@mapNotNull null
+                    }
+
                     Duration.between(now, etaInstant).toMinutes()
                 }.filter { it >= -1 }
                 .sorted()
                 .take(2)
+                .toList()
 
         val labels =
-            nextMins.map { m ->
+            nextMins.map { mins ->
                 when {
-                    m <= 0 -> "now"
-                    else -> "${m}m"
+                    mins <= 0 -> "now"
+                    else -> "${mins}m"
                 }
             }
 

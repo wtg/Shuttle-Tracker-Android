@@ -16,14 +16,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.Vehicle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -37,8 +39,8 @@ fun StopEtaContent(
     modifier: Modifier = Modifier,
     selectedStopKey: String?,
     selectedStop: Stop?,
-    vehicleStopEtas: Map<String, VehicleStopEta>,
-    vehicleLocations: Map<String, VehicleLocation>,
+    routes: Map<String, Route>,
+    vehicles: List<Vehicle>,
     lastEtasUpdatedAt: Instant?,
     onClearStop: () -> Unit,
     onEtaChipClick: (vehicleId: String) -> Unit,
@@ -49,28 +51,53 @@ fun StopEtaContent(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        StopEtaHeader(stopTitle, onClearStop, selectedStop, lastEtasUpdatedAt)
+        StopEtaHeader(
+            title = stopTitle,
+            onClearStop = onClearStop,
+            stopSelected = selectedStop,
+            lastEtasUpdatedAt = lastEtasUpdatedAt,
+        )
 
-        if (selectedStopKey == null) {
-            return
+        if (selectedStopKey == null) return@Column
+
+        val lastSeenStopIndexByVehicle = remember { mutableStateMapOf<String, Int>() }
+
+        LaunchedEffect(vehicles, routes) {
+            vehicles.forEach { vehicle ->
+                val routeKey = vehicle.routeName ?: return@forEach
+                val route = routes[routeKey] ?: return@forEach
+                val currentStopName = vehicle.currentStop ?: return@forEach
+
+                val matchedIndex =
+                    route.stops.indexOfFirst { stopKey ->
+                        route.stopDetails[stopKey]?.name.equals(currentStopName, ignoreCase = true)
+                    }
+
+                if (matchedIndex == -1) return@forEach
+
+                val previousIndex = lastSeenStopIndexByVehicle[vehicle.id]
+                if (previousIndex == null || matchedIndex > previousIndex) {
+                    lastSeenStopIndexByVehicle[vehicle.id] = matchedIndex
+                }
+            }
         }
 
         val etas =
-            remember(selectedStopKey, vehicleStopEtas, vehicleLocations) {
+            remember(selectedStopKey, vehicles, routes, lastSeenStopIndexByVehicle.toMap()) {
                 buildVehicleEtas(
-                    selectedStopKey,
-                    vehicleStopEtas,
-                    vehicleLocations,
+                    stopKey = selectedStopKey,
+                    routes = routes,
+                    vehicles = vehicles,
+                    lastSeenStopIndexByVehicle = lastSeenStopIndexByVehicle,
                 )
             }
 
         val now = Instant.now()
 
         val visibleEtas =
-            etas
-                .filter { Duration.between(now, it.etaInstant).toMinutes() >= -5 }
+            etas.filter { Duration.between(now, it.etaInstant).toMinutes() >= -5 }
 
-        if (visibleEtas.isEmpty() || stopTitle == "Blitman") {
+        if (visibleEtas.isEmpty()) {
             Text(
                 text = "No ETAs found",
                 style = MaterialTheme.typography.bodyMedium,
@@ -87,7 +114,10 @@ fun StopEtaContent(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                items(visibleEtas, key = { it.vehicleId }) { eta ->
+                items(
+                    items = visibleEtas,
+                    key = { it.vehicleId },
+                ) { eta ->
                     EtaChip(
                         eta = eta,
                         now = now,
@@ -119,7 +149,10 @@ private fun StopEtaHeader(
             .value
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -167,7 +200,7 @@ private fun EtaChip(
     val mins = Duration.between(now, eta.etaInstant).toMinutes()
     val etaText =
         when {
-            mins <= 0 -> "now"
+            mins <= 0 -> "${mins}m"
             else -> "${mins}m"
         }
 
@@ -194,22 +227,51 @@ private data class VehicleEta(
 
 private fun buildVehicleEtas(
     stopKey: String,
-    vehicleStopEtas: Map<String, VehicleStopEta>,
-    vehicleLocations: Map<String, VehicleLocation>,
-): List<VehicleEta> =
-    vehicleStopEtas
-        .mapNotNull { (vehicleId, etaData) ->
-            val rawTime = etaData.stopTimes[stopKey] ?: return@mapNotNull null
-            val instant = rawTime.toInstantOrNull() ?: return@mapNotNull null
+    routes: Map<String, Route>,
+    vehicles: List<Vehicle>,
+    lastSeenStopIndexByVehicle: Map<String, Int>,
+): List<VehicleEta> {
+    val now = Instant.now()
 
-            val vehicle = vehicleLocations[vehicleId]
+    return vehicles
+        .asSequence()
+        .mapNotNull { vehicle ->
+            val routeKey = vehicle.routeName
+            val route = routeKey?.let(routes::get)
+
+            val rawTime = vehicle.stopTimes[stopKey] ?: return@mapNotNull null
+            val etaInstant = rawTime.toInstantOrNull() ?: return@mapNotNull null
+
+            if (route != null) {
+                val candidateIndex = route.stops.indexOf(stopKey)
+                if (candidateIndex != -1) {
+                    val lastSeenIndex = lastSeenStopIndexByVehicle[vehicle.id]
+
+                    // Only show ETAs for stops after the last recorded stop index
+                    if (lastSeenIndex != null && candidateIndex <= lastSeenIndex) {
+                        return@mapNotNull null
+                    }
+                }
+
+                // If the bus is currently at the first stop, hide old ETAs
+                val firstStopKey = route.stops.firstOrNull()
+                val firstStopName = firstStopKey?.let { route.stopDetails[it]?.name }
+                val isCurrentlyAtFirstStop =
+                    firstStopName != null && vehicle.currentStop == firstStopName
+
+                if (isCurrentlyAtFirstStop && etaInstant.isBefore(now)) {
+                    return@mapNotNull null
+                }
+            }
 
             VehicleEta(
-                vehicleId = vehicleId,
-                vehicleLabel = vehicle?.name.orEmpty(),
-                etaInstant = instant,
+                vehicleId = vehicle.id,
+                vehicleLabel = vehicle.name,
+                etaInstant = etaInstant,
             )
         }.sortedBy { it.etaInstant }
+        .toList()
+}
 
 private fun String.toInstantOrNull(): Instant? = runCatching { OffsetDateTime.parse(trim()).toInstant() }.getOrNull()
 

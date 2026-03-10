@@ -81,9 +81,9 @@ import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDes
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.Vehicle
 import edu.rpi.shuttletracker.ui.theme.VehicleColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.launch
@@ -103,8 +103,8 @@ fun MapsScreen(
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
     var selectedVehicleId by remember { mutableStateOf<String?>(null) }
 
+    var showSheet by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showStopsSheet by rememberSaveable { mutableStateOf(false) }
 
     val cameraPositionState =
         rememberCameraPositionState {
@@ -122,10 +122,11 @@ fun MapsScreen(
             NavigationBar {
                 NavigationBarItem(
                     selected = false,
-                    onClick = { showStopsSheet = true },
+                    onClick = { showSheet = true },
                     icon = { Icon(Icons.Outlined.StopCircle, contentDescription = null) },
                     label = { Text("Stops") },
                 )
+
                 NavigationBarItem(
                     selected = false,
                     onClick = { navigator.navigate(ScheduleScreenDestination()) },
@@ -156,6 +157,7 @@ fun MapsScreen(
                 cameraPositionState = cameraPositionState,
                 selectedStopKey = selectedStopKey,
                 selectedStop = selectedStop,
+                selectedVehicleId = selectedVehicleId,
                 onStopSelected = { stopKey, stop ->
                     selectedStopKey = stopKey
                     selectedStop = stop
@@ -170,8 +172,8 @@ fun MapsScreen(
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                 selectedStopKey = selectedStopKey,
                 selectedStop = selectedStop,
-                vehicleStopEtas = mapsUiState.vehicleStopEtas,
-                vehicleLocations = mapsUiState.vehicleLocations,
+                routes = mapsUiState.routes,
+                vehicles = mapsUiState.vehicles,
                 lastEtasUpdatedAt = mapsUiState.lastEtasUpdatedAt,
                 onClearStop = {
                     selectedStopKey = null
@@ -180,13 +182,13 @@ fun MapsScreen(
                 },
                 onEtaChipClick = { vehicleId ->
                     selectedVehicleId = vehicleId
-                    val loc = mapsUiState.vehicleLocations[vehicleId] ?: return@EtaOverlayCard
+                    val vehicle = mapsUiState.vehicles.firstOrNull { it.id == vehicleId } ?: return@EtaOverlayCard
                     scope.launch {
                         cameraPositionState.animate(
                             CameraUpdateFactory.newCameraPosition(
                                 CameraPosition
                                     .Builder()
-                                    .target(loc.latLng())
+                                    .target(vehicle.latLng())
                                     .zoom(maxOf(cameraPositionState.position.zoom, 16f))
                                     .tilt(0f)
                                     .build(),
@@ -197,20 +199,19 @@ fun MapsScreen(
                 },
             )
 
-            if (showStopsSheet) {
+            if (showSheet) {
                 ModalBottomSheet(
-                    onDismissRequest = { showStopsSheet = false },
+                    onDismissRequest = { showSheet = false },
                     sheetState = sheetState,
                 ) {
                     StopSheetContent(
                         routes = mapsUiState.routes,
-                        vehicleStopEtas = mapsUiState.vehicleStopEtas,
+                        vehicles = mapsUiState.vehicles,
                         showDetails = true,
                         onStopClick = { stopKey, stop ->
                             selectedStopKey = stopKey
                             selectedStop = stop
-                            selectedVehicleId = null
-                            showStopsSheet = false
+                            showSheet = false
                             scope.launch {
                                 cameraPositionState.animate(
                                     CameraUpdateFactory.newCameraPosition(
@@ -253,6 +254,7 @@ private fun ShuttleMap(
     cameraPositionState: CameraPositionState,
     selectedStopKey: String?,
     selectedStop: Stop?,
+    selectedVehicleId: String?,
     onStopSelected: (stopKey: String, stop: Stop) -> Unit,
 ) {
     val context = LocalContext.current
@@ -313,9 +315,10 @@ private fun ShuttleMap(
             }
 
             // creates the vehicle markers
-            mapsUiState.vehicleLocations.values.forEach {
+            mapsUiState.vehicles.forEach { vehicle ->
                 VehicleMarker(
-                    vehicleLocation = it,
+                    vehicle = vehicle,
+                    selected = vehicle.id == selectedVehicleId,
                 )
             }
 
@@ -428,17 +431,28 @@ private fun StopMarker(
  * Creates a marker for a vehicle
  * */
 @Composable
-private fun VehicleMarker(vehicleLocation: VehicleLocation) {
+private fun VehicleMarker(
+    vehicle: Vehicle,
+    selected: Boolean,
+) {
     val context = LocalContext.current
-    val markerState = rememberUpdatedMarkerState(position = vehicleLocation.latLng())
+    val markerState = rememberUpdatedMarkerState(position = vehicle.latLng())
 
     // every time the vehicle changes, update the position of the marker
-    LaunchedEffect(vehicleLocation) {
-        markerState.position = vehicleLocation.latLng()
+    LaunchedEffect(vehicle) {
+        markerState.position = vehicle.latLng()
+    }
+
+    LaunchedEffect(selected) {
+        if (selected) {
+            markerState.showInfoWindow()
+        } else {
+            markerState.hideInfoWindow()
+        }
     }
 
     val vehicleColor =
-        when (vehicleLocation.routeName) {
+        when (vehicle.routeName) {
             "NORTH" -> VehicleColors.North
             "WEST" -> VehicleColors.West
             else -> VehicleColors.Default
@@ -450,10 +464,13 @@ private fun VehicleMarker(vehicleLocation: VehicleLocation) {
         }
 
     // gets vehicle speed and last time it updated
-    val lastUpdatedAgoText = vehicleLocation.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
+    val timeAgoFlow = remember(vehicle.timestamp) { vehicle.getTimeAgo() }
+    val lastUpdatedAgoText =
+        timeAgoFlow.collectAsStateWithLifecycle(initialValue = "").value
+
     val snippetText =
         buildString {
-            append(stringResource(R.string.vehicle_speed, vehicleLocation.speedMph))
+            append(stringResource(R.string.vehicle_speed, vehicle.speedMph))
             if (lastUpdatedAgoText.isNotBlank()) {
                 append(" • ")
                 append(lastUpdatedAgoText)
@@ -462,7 +479,7 @@ private fun VehicleMarker(vehicleLocation: VehicleLocation) {
 
     Marker(
         state = markerState,
-        title = stringResource(R.string.vehicle_number, vehicleLocation.name),
+        title = stringResource(R.string.vehicle_number, vehicle.name),
         icon = icon,
         snippet = snippetText,
         anchor = Offset(0.5f, 0.5f),
@@ -571,8 +588,8 @@ fun EtaOverlayCard(
     modifier: Modifier = Modifier,
     selectedStopKey: String?,
     selectedStop: Stop?,
-    vehicleStopEtas: Map<String, VehicleStopEta>,
-    vehicleLocations: Map<String, VehicleLocation>,
+    routes: Map<String, Route>,
+    vehicles: List<Vehicle>,
     lastEtasUpdatedAt: Instant?,
     onClearStop: () -> Unit,
     onEtaChipClick: (vehicleId: String) -> Unit,
@@ -588,8 +605,8 @@ fun EtaOverlayCard(
             modifier = Modifier.padding(vertical = 2.dp),
             selectedStopKey = selectedStopKey,
             selectedStop = selectedStop,
-            vehicleStopEtas = vehicleStopEtas,
-            vehicleLocations = vehicleLocations,
+            routes = routes,
+            vehicles = vehicles,
             lastEtasUpdatedAt = lastEtasUpdatedAt,
             onClearStop = onClearStop,
             onEtaChipClick = onEtaChipClick,
