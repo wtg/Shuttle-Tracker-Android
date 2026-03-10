@@ -16,6 +16,9 @@ import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.ui.maps.utils.EtaUtils
+import edu.rpi.shuttletracker.ui.maps.utils.StopRowUi
+import edu.rpi.shuttletracker.ui.maps.utils.VehicleEtaUi
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,14 +34,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MapsViewModel
+    // represents the ui state of the view
     @Inject
     constructor(
         private val apiRepository: ApiRepository,
         private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
-        // represents the ui state of the view
         private val _mapsUiState = MutableStateFlow(MapsUiState())
         val mapsUiState: StateFlow<MapsUiState> = _mapsUiState
+
+        private var lastSeenStopIndexByVehicle: Map<String, Int> = emptyMap()
 
         init {
             loadAll()
@@ -51,9 +56,6 @@ class MapsViewModel
             if (mapsUiState.value.schedule == null) loadSchedule()
         }
 
-        /**
-         * sets all the errors to none
-         * */
         fun clearErrors() {
             _mapsUiState.update {
                 it.copy(
@@ -67,6 +69,16 @@ class MapsViewModel
         fun retry() {
             clearErrors()
             loadAll()
+        }
+
+        fun setSelectedStop(stopKey: String?) {
+            _mapsUiState.update { it.copy(selectedStopKey = stopKey) }
+            recomputeDerivedState()
+        }
+
+        fun setSelectedRoute(routeKey: String?) {
+            _mapsUiState.update { it.copy(selectedRouteKey = routeKey) }
+            recomputeDerivedState()
         }
 
         private fun observeVehicles() {
@@ -99,18 +111,18 @@ class MapsViewModel
                             lastEtasUpdatedAt = Instant.now(),
                         )
                     }
+
+                    recomputeDerivedState()
                 }.launchIn(viewModelScope)
         }
 
-        /**
-         * Loads all possible routes and maps the API response
-         * */
         private fun loadRoutes() {
             viewModelScope.launch {
                 readApiResponse(apiRepository.getRoutes()) { routes ->
                     _mapsUiState.update {
                         it.copy(routes = routes)
                     }
+                    recomputeDerivedState()
                 }
             }
         }
@@ -126,7 +138,6 @@ class MapsViewModel
         }
 
         private fun loadPreferences() {
-            // gets user preference for dark mode
             userPreferencesRepository
                 .getThemeMode()
                 .flowOn(Dispatchers.Default)
@@ -166,9 +177,64 @@ class MapsViewModel
             updateMapType(next)
         }
 
-        /**
-         * Reads the network response and maps it to correct place
-         * */
+        private fun recomputeDerivedState() {
+            val state = _mapsUiState.value
+            val routes = state.routes
+            val vehicles = state.vehicles
+
+            lastSeenStopIndexByVehicle =
+                EtaUtils.updateLastSeenStopIndices(
+                    vehicles,
+                    routes,
+                    lastSeenStopIndexByVehicle,
+                )
+
+            val allowedRouteKeys =
+                routes.keys
+                    .filter { it in setOf("NORTH", "WEST") }
+                    .sorted()
+
+            val resolvedSelectedRouteKey =
+                when {
+                    state.selectedRouteKey in allowedRouteKeys -> state.selectedRouteKey
+                    else -> allowedRouteKeys.firstOrNull()
+                }
+
+            val selectedStopEtas =
+                state.selectedStopKey?.let { stopKey ->
+                    EtaUtils.buildSelectedStopEtas(
+                        stopKey,
+                        routes,
+                        vehicles,
+                        lastSeenStopIndexByVehicle,
+                    )
+                } ?: emptyList()
+
+            val stopRows =
+                resolvedSelectedRouteKey?.let { routeKey ->
+                    val route = routes[routeKey]
+                    if (route != null) {
+                        EtaUtils.buildStopRowsForRoute(
+                            route,
+                            vehicles,
+                            routeKey,
+                            lastSeenStopIndexByVehicle,
+                        )
+                    } else {
+                        emptyList()
+                    }
+                } ?: emptyList()
+
+            _mapsUiState.update {
+                it.copy(
+                    allowedRouteKeys = allowedRouteKeys,
+                    selectedRouteKey = resolvedSelectedRouteKey,
+                    selectedStopEtas = selectedStopEtas,
+                    stopRows = stopRows,
+                )
+            }
+        }
+
         private fun <T> readApiResponse(
             response: NetworkResponse<T, ErrorResponse>,
             success: (body: T) -> Unit,
@@ -193,9 +259,6 @@ class MapsViewModel
         }
     }
 
-/**
- * Representation of the screen
- * */
 @Immutable
 data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),
@@ -209,4 +272,9 @@ data class MapsUiState(
     val themeMode: ThemeMode = ThemeMode.System,
     val mapType: MapType = MapType.NORMAL,
     val lastEtasUpdatedAt: Instant? = null,
+    val selectedStopKey: String? = null,
+    val selectedRouteKey: String? = null,
+    val selectedStopEtas: List<VehicleEtaUi> = emptyList(),
+    val stopRows: List<StopRowUi> = emptyList(),
+    val allowedRouteKeys: List<String> = emptyList(),
 )

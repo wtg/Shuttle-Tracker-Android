@@ -81,13 +81,15 @@ import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDes
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.Vehicle
+import edu.rpi.shuttletracker.ui.maps.components.StopEtaContent
+import edu.rpi.shuttletracker.ui.maps.components.StopSheetContent
+import edu.rpi.shuttletracker.ui.maps.components.getVehicleMarkerDescriptor
+import edu.rpi.shuttletracker.ui.maps.utils.VehicleEtaUi
 import edu.rpi.shuttletracker.ui.theme.VehicleColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.launch
-import java.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>(start = true)
@@ -99,7 +101,6 @@ fun MapsScreen(
     val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var selectedStopKey by remember { mutableStateOf<String?>(null) }
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
     var selectedVehicleId by remember { mutableStateOf<String?>(null) }
 
@@ -155,11 +156,11 @@ fun MapsScreen(
                 onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
                 onToggleMapTypeClick = { viewModel.toggleMapType() },
                 cameraPositionState = cameraPositionState,
-                selectedStopKey = selectedStopKey,
+                selectedStopKey = mapsUiState.selectedStopKey,
                 selectedStop = selectedStop,
                 selectedVehicleId = selectedVehicleId,
                 onStopSelected = { stopKey, stop ->
-                    selectedStopKey = stopKey
+                    viewModel.setSelectedStop(stopKey)
                     selectedStop = stop
                 },
             )
@@ -170,13 +171,12 @@ fun MapsScreen(
                         .align(Alignment.BottomCenter)
                         .padding(padding)
                         .padding(horizontal = 12.dp, vertical = 10.dp),
-                selectedStopKey = selectedStopKey,
-                selectedStop = selectedStop,
-                routes = mapsUiState.routes,
-                vehicles = mapsUiState.vehicles,
+                title = selectedStop?.name ?: "Tap a stop to see etas",
+                selectedStopEtas = mapsUiState.selectedStopEtas,
                 lastEtasUpdatedAt = mapsUiState.lastEtasUpdatedAt,
+                stopSelected = selectedStop != null,
                 onClearStop = {
-                    selectedStopKey = null
+                    viewModel.setSelectedStop(null)
                     selectedStop = null
                     selectedVehicleId = null
                 },
@@ -205,11 +205,15 @@ fun MapsScreen(
                     sheetState = sheetState,
                 ) {
                     StopSheetContent(
-                        routes = mapsUiState.routes,
-                        vehicles = mapsUiState.vehicles,
+                        routeKeys = mapsUiState.allowedRouteKeys,
+                        selectedRouteKey = mapsUiState.selectedRouteKey,
+                        stopRows = mapsUiState.stopRows,
                         showDetails = true,
+                        onRouteSelected = { routeKey ->
+                            viewModel.setSelectedRoute(routeKey)
+                        },
                         onStopClick = { stopKey, stop ->
-                            selectedStopKey = stopKey
+                            viewModel.setSelectedStop(stopKey)
                             selectedStop = stop
                             showSheet = false
                             scope.launch {
@@ -233,17 +237,6 @@ fun MapsScreen(
     }
 }
 
-/**
- * Creates the map displaying everything
- *
- * @param mapsUiState: The UI state of the view from the view-model
- * @param padding: Padding needed for the map content padding
- * to close/open the stop bottom sheet
- * @param onScheduleClick: Callback invoked when the user taps the Schedule button
- * @param onSettingsClick: Callback invoked when the user taps the Settings button
- * @param onToggleMapTypeClick: Callback invoked when user taps the MapType button
- *
- * */
 @Composable
 private fun ShuttleMap(
     mapsUiState: MapsUiState,
@@ -586,11 +579,10 @@ private fun ActionButton(
 @Composable
 fun EtaOverlayCard(
     modifier: Modifier = Modifier,
-    selectedStopKey: String?,
-    selectedStop: Stop?,
-    routes: Map<String, Route>,
-    vehicles: List<Vehicle>,
-    lastEtasUpdatedAt: Instant?,
+    title: String,
+    selectedStopEtas: List<VehicleEtaUi>,
+    lastEtasUpdatedAt: java.time.Instant?,
+    stopSelected: Boolean,
     onClearStop: () -> Unit,
     onEtaChipClick: (vehicleId: String) -> Unit,
 ) {
@@ -603,11 +595,10 @@ fun EtaOverlayCard(
     ) {
         StopEtaContent(
             modifier = Modifier.padding(vertical = 2.dp),
-            selectedStopKey = selectedStopKey,
-            selectedStop = selectedStop,
-            routes = routes,
-            vehicles = vehicles,
+            title = title,
+            selectedStopEtas = selectedStopEtas,
             lastEtasUpdatedAt = lastEtasUpdatedAt,
+            stopSelected = stopSelected,
             onClearStop = onClearStop,
             onEtaChipClick = onEtaChipClick,
         )
