@@ -36,6 +36,14 @@ class ApiRepository
                 }
             }
 
+        fun observeVehicleVelocities(pollMs: Long = 30_000L) =
+            flow {
+                while (currentCoroutineContext().isActive) {
+                    emit(apiHelper.getVehicleVelocities())
+                    delay(pollMs)
+                }
+            }
+
         suspend fun getRoutes() = apiHelper.getRoutes()
 
         suspend fun getAnnouncements() = apiHelper.getAnnouncements()
