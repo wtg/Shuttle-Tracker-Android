@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.ui.maps
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -348,11 +349,29 @@ private fun StopMarker(
 @Composable
 private fun VehicleMarker(vehicleLocation: VehicleLocation) {
     val context = LocalContext.current
-    val markerState = rememberUpdatedMarkerState(position = vehicleLocation.latLng())
+    val target = vehicleLocation.latLng()
 
-    // every time the vehicle changes, update the position of the marker
-    LaunchedEffect(vehicleLocation) {
-        markerState.position = vehicleLocation.latLng()
+    val lat = remember { androidx.compose.animation.core.Animatable(target.latitude.toFloat()) }
+    val lng = remember { androidx.compose.animation.core.Animatable(target.longitude.toFloat()) }
+
+    val markerState = rememberUpdatedMarkerState(
+        position = LatLng(lat.value.toDouble(), lng.value.toDouble())
+    )
+
+    LaunchedEffect(target) {
+        launch {
+            lat.animateTo(
+                target.latitude.toFloat(),
+                animationSpec = tween(durationMillis = 2000)
+            )
+        }
+
+        launch {
+            lng.animateTo(
+                target.longitude.toFloat(),
+                animationSpec = tween(durationMillis = 2000)
+            )
+        }
     }
 
     val vehicleColor =
