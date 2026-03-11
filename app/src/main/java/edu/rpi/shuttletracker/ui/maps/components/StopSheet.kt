@@ -13,8 +13,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,13 +29,41 @@ import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.ui.maps.utils.StopRowUi
+import edu.rpi.shuttletracker.ui.maps.utils.VehicleEtaLabel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StopSheetContent(
+fun StopSheet(
+    show: Boolean,
+    sheetState: SheetState,
     routeKeys: List<String>,
     selectedRouteKey: String?,
     stopRows: List<StopRowUi>,
-    showDetails: Boolean,
+    onDismiss: () -> Unit,
+    onRouteSelected: (String) -> Unit,
+    onStopClick: (stopKey: String, stop: Stop) -> Unit,
+) {
+    if (!show) return
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        StopSheetContent(
+            routeKeys = routeKeys,
+            selectedRouteKey = selectedRouteKey,
+            stopRows = stopRows,
+            onRouteSelected = onRouteSelected,
+            onStopClick = onStopClick,
+        )
+    }
+}
+
+@Composable
+private fun StopSheetContent(
+    routeKeys: List<String>,
+    selectedRouteKey: String?,
+    stopRows: List<StopRowUi>,
     onRouteSelected: (String) -> Unit,
     onStopClick: (stopKey: String, stop: Stop) -> Unit,
 ) {
@@ -44,19 +75,17 @@ fun StopSheetContent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = stringResource(R.string.bottom_sheet_peek_title),
+            text = stringResource(R.string.stop_etas_title),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(bottom = 4.dp),
         )
 
         Text(
-            text = stringResource(R.string.bottom_sheet_peek_subtitle),
+            text = stringResource(R.string.stop_etas_subtitle),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp),
         )
-
-        if (!showDetails) return@Column
 
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
@@ -194,7 +223,7 @@ private fun RouteTab(
 @Composable
 private fun StopEtaRow(
     stopName: String,
-    etaLabels: List<String>,
+    etaLabels: List<VehicleEtaLabel>,
     onClick: () -> Unit,
 ) {
     Column(
@@ -224,13 +253,13 @@ private fun StopEtaRow(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
-                    etaLabels.forEach { label ->
+                    etaLabels.forEach { eta ->
                         Surface(
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(999.dp),
                         ) {
                             Text(
-                                text = label,
+                                text = "${eta.vehicleLabel} • ${eta.minutes}m",
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                 style = MaterialTheme.typography.labelLarge,
                             )
@@ -248,7 +277,7 @@ private fun StopEtaRow(
 }
 
 @Composable
-private fun EmptyState(textRes: Int) {
+fun EmptyState(textRes: Int) {
     Box(
         modifier =
             Modifier

@@ -29,7 +29,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -77,14 +76,14 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.Vehicle
+import edu.rpi.shuttletracker.ui.maps.components.ScheduleSheet
 import edu.rpi.shuttletracker.ui.maps.components.StopEtaContent
-import edu.rpi.shuttletracker.ui.maps.components.StopSheetContent
+import edu.rpi.shuttletracker.ui.maps.components.StopSheet
 import edu.rpi.shuttletracker.ui.maps.components.getVehicleMarkerDescriptor
 import edu.rpi.shuttletracker.ui.maps.utils.VehicleEtaUi
 import edu.rpi.shuttletracker.ui.theme.VehicleColors
@@ -105,7 +104,9 @@ fun MapsScreen(
     var selectedVehicleId by remember { mutableStateOf<String?>(null) }
 
     var showSheet by rememberSaveable { mutableStateOf(false) }
+    var showScheduleSheet by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scheduleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val cameraPositionState =
         rememberCameraPositionState {
@@ -130,7 +131,7 @@ fun MapsScreen(
 
                 NavigationBarItem(
                     selected = false,
-                    onClick = { navigator.navigate(ScheduleScreenDestination()) },
+                    onClick = { showScheduleSheet = true },
                     icon = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
                     label = { Text("Schedule") },
                 )
@@ -152,7 +153,6 @@ fun MapsScreen(
             ShuttleMap(
                 mapsUiState = mapsUiState,
                 padding = padding,
-                onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
                 onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
                 onToggleMapTypeClick = { viewModel.toggleMapType() },
                 cameraPositionState = cameraPositionState,
@@ -170,7 +170,7 @@ fun MapsScreen(
                     Modifier
                         .align(Alignment.BottomCenter)
                         .padding(padding)
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                        .padding(horizontal = 12.dp, vertical = 24.dp),
                 title = selectedStop?.name ?: "Tap a stop to see etas",
                 selectedStopEtas = mapsUiState.selectedStopEtas,
                 lastEtasUpdatedAt = mapsUiState.lastEtasUpdatedAt,
@@ -198,41 +198,42 @@ fun MapsScreen(
                     }
                 },
             )
-
-            if (showSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = { showSheet = false },
-                    sheetState = sheetState,
-                ) {
-                    StopSheetContent(
-                        routeKeys = mapsUiState.allowedRouteKeys,
-                        selectedRouteKey = mapsUiState.selectedRouteKey,
-                        stopRows = mapsUiState.stopRows,
-                        showDetails = true,
-                        onRouteSelected = { routeKey ->
-                            viewModel.setSelectedRoute(routeKey)
-                        },
-                        onStopClick = { stopKey, stop ->
-                            viewModel.setSelectedStop(stopKey)
-                            selectedStop = stop
-                            showSheet = false
-                            scope.launch {
-                                cameraPositionState.animate(
-                                    CameraUpdateFactory.newCameraPosition(
-                                        CameraPosition
-                                            .Builder()
-                                            .target(stop.latLng())
-                                            .zoom(maxOf(cameraPositionState.position.zoom, 16f))
-                                            .tilt(0f)
-                                            .build(),
-                                    ),
-                                    1000,
-                                )
-                            }
-                        },
-                    )
-                }
-            }
+            StopSheet(
+                show = showSheet,
+                sheetState = sheetState,
+                routeKeys = mapsUiState.allowedRouteKeys,
+                selectedRouteKey = mapsUiState.selectedRouteKey,
+                stopRows = mapsUiState.stopRows,
+                onDismiss = { showSheet = false },
+                onRouteSelected = { routeKey ->
+                    viewModel.setSelectedRoute(routeKey)
+                },
+                onStopClick = { stopKey, stop ->
+                    viewModel.setSelectedStop(stopKey)
+                    selectedStop = stop
+                    showSheet = false
+                    scope.launch {
+                        cameraPositionState.animate(
+                            CameraUpdateFactory.newCameraPosition(
+                                CameraPosition
+                                    .Builder()
+                                    .target(stop.latLng())
+                                    .zoom(maxOf(cameraPositionState.position.zoom, 16f))
+                                    .tilt(0f)
+                                    .build(),
+                            ),
+                            1000,
+                        )
+                    }
+                },
+            )
+            ScheduleSheet(
+                show = showScheduleSheet,
+                sheetState = scheduleSheetState,
+                schedule = mapsUiState.schedule,
+                routesByName = mapsUiState.routes,
+                onDismiss = { showScheduleSheet = false },
+            )
         }
     }
 }
@@ -241,7 +242,6 @@ fun MapsScreen(
 private fun ShuttleMap(
     mapsUiState: MapsUiState,
     padding: PaddingValues,
-    onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
     cameraPositionState: CameraPositionState,
@@ -347,7 +347,6 @@ private fun ShuttleMap(
                     .padding(horizontal = 10.dp),
             isMyLocationEnabled = isLocationPermissionGranted,
             mapTypeIcon = mapTypeIcon,
-            onScheduleClick = onScheduleClick,
             onSettingsClick = onSettingsClick,
             onRecenterClick = {
                 LocationServices
@@ -489,7 +488,6 @@ private fun MapButtonsOverlay(
     modifier: Modifier = Modifier,
     isMyLocationEnabled: Boolean,
     mapTypeIcon: ImageVector,
-    onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onRecenterClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
@@ -504,10 +502,6 @@ private fun MapButtonsOverlay(
                     .align(Alignment.TopStart),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-//            ActionButton(icon = Icons.Outlined.Schedule) {
-//                onScheduleClick()
-//            }
-//
             ActionButton(icon = Icons.Outlined.Settings) {
                 onSettingsClick()
             }

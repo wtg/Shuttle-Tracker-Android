@@ -22,7 +22,13 @@ data class VehicleEtaUi(
 data class StopRowUi(
     val stopKey: String,
     val stop: Stop,
-    val etaLabels: List<String>,
+    val etaLabels: List<VehicleEtaLabel>,
+)
+
+@Immutable
+data class VehicleEtaLabel(
+    val vehicleLabel: String,
+    val minutes: Long,
 )
 
 object EtaUtils {
@@ -117,10 +123,14 @@ object EtaUtils {
                             return@mapNotNull null
                         }
 
-                        Duration.between(now, etaInstant).toMinutes()
-                    }.sorted()
+                        val minutesUntilArrival = Duration.between(now, etaInstant).toMinutes()
+
+                        VehicleEtaLabel(
+                            vehicleLabel = vehicle.name,
+                            minutes = minutesUntilArrival,
+                        )
+                    }.sortedBy { it.minutes }
                     .take(maxEtasPerStop)
-                    .map(::formatEtaMinutes)
                     .toList()
 
             StopRowUi(
