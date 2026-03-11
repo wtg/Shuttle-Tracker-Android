@@ -47,7 +47,17 @@ fun parseLocalTime(timeText: String): LocalTime? =
         )
     }.getOrNull()
 
-fun parseMinutesOfDay(timeText: String): Int? = parseLocalTime(timeText)?.let { it.hour * 60 + it.minute }
+fun parseMinutesOfDay(timeText: String): Int? =
+    parseLocalTime(timeText)?.let { time ->
+        val minutes = time.hour * 60 + time.minute
+
+        // Moves after midnight departures at the end of the list
+        if (time.hour in 0..3) {
+            minutes + 24 * 60
+        } else {
+            minutes
+        }
+    }
 
 fun formatLocalTime(time: LocalTime): String = time.format(DateTimeFormatter.ofPattern("h:mm a", Locale.US))
 

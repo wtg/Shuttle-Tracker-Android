@@ -31,28 +31,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun StopEtaContent(
-    modifier: Modifier = Modifier,
-    title: String,
-    selectedStopEtas: List<VehicleEtaUi>,
-    lastEtasUpdatedAt: Instant?,
-    stopSelected: Boolean,
-    onClearStop: () -> Unit,
-    onEtaChipClick: (vehicleId: String) -> Unit,
-) {
-    StopEtaContainer(
-        modifier = modifier,
-        title = title,
-        selectedStopEtas = selectedStopEtas,
-        lastEtasUpdatedAt = lastEtasUpdatedAt,
-        stopSelected = stopSelected,
-        onClearStop = onClearStop,
-        onEtaChipClick = onEtaChipClick,
-    )
-}
-
-@Composable
-private fun StopEtaContainer(
+fun StopEtaCard(
     modifier: Modifier = Modifier,
     title: String,
     selectedStopEtas: List<VehicleEtaUi>,
@@ -76,7 +55,7 @@ private fun StopEtaContainer(
 
         if (selectedStopEtas.isEmpty()) {
             Text(
-                text = "No ETAs found",
+                text = stringResource(R.string.no_etas),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier =
@@ -173,7 +152,7 @@ private fun EtaChip(
     onClick: () -> Unit,
 ) {
     Text(
-        text = "Shuttle ${eta.vehicleLabel} • ${eta.etaText}",
+        text = stringResource(R.string.shuttle_eta_chip, eta.vehicleLabel, eta.etaText),
         style = MaterialTheme.typography.bodyMedium,
         modifier =
             Modifier

@@ -74,6 +74,58 @@ private fun StopSheetContent(
                 .fillMaxHeight(.86f),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        StopsHeader()
+
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = DividerDefaults.Thickness,
+        )
+
+        if (routeKeys.isEmpty() || selectedRouteKey == null) {
+            EmptyState(R.string.no_schedule_found)
+            return@Column
+        }
+
+        RouteSelector(
+            routes = routeKeys,
+            selectedRoute = selectedRouteKey,
+            onSelect = onRouteSelected,
+        )
+
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = DividerDefaults.Thickness,
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(bottom = 24.dp),
+        ) {
+            items(
+                items = stopRows,
+                key = { it.stopKey },
+            ) { row ->
+                StopEtaRow(
+                    stopName = row.stop.name,
+                    etaLabels = row.etaLabels,
+                    onClick = {
+                        onStopClick(row.stopKey, row.stop)
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StopsHeader() {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Text(
             text = stringResource(R.string.stop_etas_title),
             style = MaterialTheme.typography.titleLarge,
@@ -84,69 +136,8 @@ private fun StopSheetContent(
             text = stringResource(R.string.stop_etas_subtitle),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 8.dp),
+            textAlign = TextAlign.Center,
         )
-
-        HorizontalDivider(
-            modifier = Modifier.fillMaxWidth(),
-            thickness = DividerDefaults.Thickness,
-        )
-
-        if (routeKeys.isEmpty()) {
-            EmptyState(R.string.no_schedule_found)
-            return@Column
-        }
-
-        StopsDetailsContent(
-            routeKeys = routeKeys,
-            selectedRouteKey = selectedRouteKey,
-            stopRows = stopRows,
-            onRouteSelected = onRouteSelected,
-            onStopClick = onStopClick,
-        )
-    }
-}
-
-@Composable
-private fun StopsDetailsContent(
-    routeKeys: List<String>,
-    selectedRouteKey: String?,
-    stopRows: List<StopRowUi>,
-    onRouteSelected: (String) -> Unit,
-    onStopClick: (stopKey: String, stop: Stop) -> Unit,
-) {
-    if (routeKeys.isEmpty() || selectedRouteKey == null) {
-        EmptyState(R.string.no_schedule_found)
-        return
-    }
-
-    RouteSelector(
-        routes = routeKeys,
-        selectedRoute = selectedRouteKey,
-        onSelect = onRouteSelected,
-    )
-
-    HorizontalDivider(
-        modifier = Modifier.fillMaxWidth(),
-        thickness = DividerDefaults.Thickness,
-    )
-
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(bottom = 24.dp),
-    ) {
-        items(
-            items = stopRows,
-            key = { it.stopKey },
-        ) { row ->
-            StopEtaRow(
-                stopName = row.stop.name,
-                etaLabels = row.etaLabels,
-                onClick = {
-                    onStopClick(row.stopKey, row.stop)
-                },
-            )
-        }
     }
 }
 
@@ -174,7 +165,7 @@ private fun RouteSelector(
                 modifier =
                     Modifier
                         .weight(1f)
-                        .padding(bottom = 8.dp),
+                        .padding(vertical = 8.dp),
             )
         }
     }
@@ -259,7 +250,12 @@ private fun StopEtaRow(
                             shape = RoundedCornerShape(999.dp),
                         ) {
                             Text(
-                                text = "${eta.vehicleLabel} • ${eta.minutes}m",
+                                text =
+                                    when {
+                                        eta.scheduledTime != null -> "Scheduled • ${eta.scheduledTime}"
+                                        eta.minutes != null -> "${eta.vehicleLabel} • ${eta.minutes}m"
+                                        else -> eta.vehicleLabel
+                                    },
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                 style = MaterialTheme.typography.labelLarge,
                             )

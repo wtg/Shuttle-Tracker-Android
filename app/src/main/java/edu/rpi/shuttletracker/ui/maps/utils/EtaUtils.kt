@@ -1,12 +1,18 @@
 package edu.rpi.shuttletracker.ui.maps.utils
 
 import androidx.compose.runtime.Immutable
+import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.data.models.Route
+import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.Vehicle
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
 
 private const val PREVIOUS_LOOP_ETA_MAX_AGE_SECONDS = 300L
 
@@ -28,7 +34,8 @@ data class StopRowUi(
 @Immutable
 data class VehicleEtaLabel(
     val vehicleLabel: String,
-    val minutes: Long,
+    val minutes: Long? = null,
+    val scheduledTime: String? = null,
 )
 
 object EtaUtils {
@@ -49,9 +56,11 @@ object EtaUtils {
                 previousStopIndex == null -> {
                     updatedStopIndexByVehicleId[vehicle.id] = currentStopIndex
                 }
+
                 currentStopIndex > previousStopIndex -> {
                     updatedStopIndexByVehicleId[vehicle.id] = currentStopIndex
                 }
+
                 currentStopIndex == 0 && previousStopIndex > 0 -> {
                     // Bus looped back to the beginning of the route
                     updatedStopIndexByVehicleId[vehicle.id] = 0
@@ -101,6 +110,8 @@ object EtaUtils {
         vehicles: List<Vehicle>,
         routeName: String,
         lastSeenStopIndexByVehicleId: Map<String, Int>,
+        schedule: Schedule?,
+        day: DayOfWeek,
         now: Instant = Instant.now(),
         maxEtasPerStop: Int = 2,
     ): List<StopRowUi> {
@@ -118,7 +129,9 @@ object EtaUtils {
                             return@mapNotNull null
                         }
 
-                        val etaInstant = vehicle.stopTimes[stopKey]?.toInstantOrNull() ?: return@mapNotNull null
+                        val etaInstant =
+                            vehicle.stopTimes[stopKey]?.toInstantOrNull() ?: return@mapNotNull null
+
                         if (shouldHideOldEtaAtRouteStart(vehicle, route, etaInstant, now)) {
                             return@mapNotNull null
                         }
@@ -129,9 +142,22 @@ object EtaUtils {
                             vehicleLabel = vehicle.name,
                             minutes = minutesUntilArrival,
                         )
-                    }.sortedBy { it.minutes }
+                    }.sortedBy { it.minutes ?: Long.MAX_VALUE }
                     .take(maxEtasPerStop)
-                    .toList()
+                    .toMutableList()
+
+            val firstStopKey = route.stops.firstOrNull()
+            val isFirstStop = stopKey == firstStopKey
+
+            if (isFirstStop && etaLabels.isEmpty() && schedule != null) {
+                etaLabels +=
+                    nextScheduledDepartures(
+                        routeName = routeName,
+                        day = day,
+                        schedule = schedule,
+                        maxCount = 2,
+                    )
+            }
 
             StopRowUi(
                 stopKey = stopKey,
@@ -207,4 +233,54 @@ object EtaUtils {
 
     private fun String.toInstantOrNull(): Instant? =
         runCatching { OffsetDateTime.parse(trim()).toInstant() }.getOrNull()
+
+    private fun nextScheduledDepartures(
+        routeName: String,
+        day: DayOfWeek,
+        schedule: Schedule,
+        maxCount: Int,
+    ): List<VehicleEtaLabel> {
+        val scheduleMap = schedule.scheduleMapFor(day)
+
+        val now = Calendar.getInstance()
+        val nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+
+        val formatter = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
+
+        val departures =
+            buildList {
+                for ((vehicleName, times) in scheduleMap) {
+                    for (pair in times) {
+                        if (pair.size <= 1) continue
+
+                        val timeStr = pair[0]
+                        val scheduledRouteName = pair[1]
+                        if (scheduledRouteName != routeName) continue
+
+                        val localTime =
+                            runCatching { LocalTime.parse(timeStr.trim(), formatter) }.getOrNull()
+                                ?: continue
+
+                        val minutesOfDay = localTime.hour * 60 + localTime.minute
+                        if (minutesOfDay < nowMinutes) continue
+
+                        add(
+                            Triple(
+                                vehicleName,
+                                timeStr,
+                                minutesOfDay,
+                            ),
+                        )
+                    }
+                }
+            }.sortedBy { it.third }
+                .take(maxCount)
+
+        return departures.map { (vehicleName, timeStr, _) ->
+            VehicleEtaLabel(
+                vehicleLabel = vehicleName,
+                scheduledTime = timeStr,
+            )
+        }
+    }
 }

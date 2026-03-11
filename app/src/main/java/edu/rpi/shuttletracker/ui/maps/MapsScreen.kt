@@ -82,7 +82,7 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.Vehicle
 import edu.rpi.shuttletracker.ui.maps.components.ScheduleSheet
-import edu.rpi.shuttletracker.ui.maps.components.StopEtaContent
+import edu.rpi.shuttletracker.ui.maps.components.StopEtaCard
 import edu.rpi.shuttletracker.ui.maps.components.StopSheet
 import edu.rpi.shuttletracker.ui.maps.components.getVehicleMarkerDescriptor
 import edu.rpi.shuttletracker.ui.maps.utils.VehicleEtaUi
@@ -170,8 +170,8 @@ fun MapsScreen(
                     Modifier
                         .align(Alignment.BottomCenter)
                         .padding(padding)
-                        .padding(horizontal = 12.dp, vertical = 24.dp),
-                title = selectedStop?.name ?: "Tap a stop to see etas",
+                        .padding(horizontal = 12.dp, vertical = 27.dp),
+                title = selectedStop?.name ?: stringResource(R.string.tap_indicator),
                 selectedStopEtas = mapsUiState.selectedStopEtas,
                 lastEtasUpdatedAt = mapsUiState.lastEtasUpdatedAt,
                 stopSelected = selectedStop != null,
@@ -587,7 +587,7 @@ fun EtaOverlayCard(
         shadowElevation = 8.dp,
         color = MaterialTheme.colorScheme.surface,
     ) {
-        StopEtaContent(
+        StopEtaCard(
             modifier = Modifier.padding(vertical = 2.dp),
             title = title,
             selectedStopEtas = selectedStopEtas,

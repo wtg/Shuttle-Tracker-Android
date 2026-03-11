@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.maps.android.compose.MapType
 import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
@@ -215,10 +216,12 @@ class MapsViewModel
                     val route = routes[routeKey]
                     if (route != null) {
                         EtaUtils.buildStopRowsForRoute(
-                            route,
-                            vehicles,
-                            routeKey,
-                            lastSeenStopIndexByVehicle,
+                            route = route,
+                            vehicles = vehicles,
+                            routeName = routeKey,
+                            lastSeenStopIndexByVehicleId = lastSeenStopIndexByVehicle,
+                            schedule = state.schedule,
+                            day = DayOfWeek.fromToday(),
                         )
                     } else {
                         emptyList()

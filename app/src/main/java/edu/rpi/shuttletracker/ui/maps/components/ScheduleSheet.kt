@@ -374,7 +374,6 @@ private fun ScheduleTimeRow(
                             Text(
                                 text = stopTime.stopName,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.weight(1f),
                             )
 

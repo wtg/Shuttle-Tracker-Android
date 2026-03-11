@@ -91,7 +91,7 @@
     <string name="to_settings_explanation">Go to settings to enable permissions</string>
     <string name="to_settings">To settings</string>
     <string name="not_now">Not now</string>
-    
+
     <string name="permission_denied">Permission denied.</string>
     <string name="permission_granted">Permission granted.</string>
     <string name="grant_permissions">Grant permissions</string>
@@ -119,13 +119,15 @@
         Stop times for other locations are precomputed and may not be fully accurate.</string>
 
     <!-- Eta content -->
-    <string name="tap_indicator">"Tap a stop to see etas"</string>
-    <string name="eta_note">"Note: ETAs may be off by a few minutes."</string>
-    <string name="no_etas">"No ETAs found"</string>
+    <string name="tap_indicator">Tap a stop to see etas</string>
+    <string name="eta_note">Note: ETAs may be off by a few minutes.</string>
+    <string name="no_etas">No ETAs found</string>
+    <string name="shuttle_eta_chip">Shuttle %1$s • %2$s</string>
 
     <!-- Eta stop bottom sheet -->
-    <string name="stop_etas_title">"ETAs for each Stop"</string>
-    <string name="stop_etas_subtitle">"Chasan stop available M–F, 7:00 AM – 5:30 PM"</string>
+    <string name="stop_etas_title">Stop ETAs</string>
+    <string name="stop_etas_subtitle">Chasan stop available M–F, 7:00 AM – 5:30 PM.
+        ETAs are still in development and may be inaccurate.</string>
 
 
     <!-- Errors -->
