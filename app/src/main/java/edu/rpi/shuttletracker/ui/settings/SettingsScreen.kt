@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -45,6 +46,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.ui.util.SettingsItem
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -71,6 +73,8 @@ fun SettingsScreen(
     val settingsUiState = viewModel.settingsUiState.collectAsStateWithLifecycle().value
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -101,7 +105,12 @@ fun SettingsScreen(
                 SettingsItem(
                     Icons.Outlined.RestartAlt,
                     stringResource(R.string.redo_setup),
-                    onClick = { navigator.navigate(SetupScreenDestination(true)) },
+                    onClick = {
+                        scope.launch {
+                            viewModel.clearAllPreferences()
+                            navigator.navigate(SetupScreenDestination())
+                        }
+                    },
                 )
             }
 

@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.data.models
+package edu.rpi.shuttletracker.data.models.vehicle
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.annotations.SerializedName
@@ -11,16 +11,13 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
-data class Bus(
-    @SerializedName("name") val id: String,
+data class VehicleLocation(
+    val name: String,
     val latitude: Double,
     val longitude: Double,
     @SerializedName("speed_mph") val speedMph: Double,
-    // Assuming type means address_name
-    @SerializedName("address_name") val type: String,
-    @SerializedName("timestamp") val date: String,
-    @SerializedName("address_id") val uuid: String,
     @SerializedName("route_name") val routeName: String,
+    @SerializedName("timestamp") val date: String,
 ) {
     /**
      * Turns the date stored into a time of a generalized time ago from current

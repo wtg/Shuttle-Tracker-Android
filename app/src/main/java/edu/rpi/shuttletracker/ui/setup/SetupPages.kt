@@ -2,8 +2,6 @@ package edu.rpi.shuttletracker.ui.setup
 
 import androidx.compose.runtime.Composable
 
-const val TOTAL_PAGES = 3
-
 /**
  * Contains all the screens the setup process will have and simple information to display about each
  * */

@@ -77,9 +77,9 @@ import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDes
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.data.models.Bus
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.ui.theme.BusColors
+import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
+import edu.rpi.shuttletracker.ui.theme.VehicleColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.launch
 
@@ -90,9 +90,7 @@ fun MapsScreen(
     navigator: DestinationsNavigator,
     viewModel: MapsViewModel = hiltViewModel(),
 ) {
-    // makes sure the 2 flows are collected when ui is open
     val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
-    viewModel.busesState.collectAsStateWithLifecycle({})
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -128,10 +126,7 @@ fun MapsScreen(
                 mapsUiState.serverError,
                 mapsUiState.unknownError,
                 ignoreErrorRequest = { viewModel.clearErrors() },
-                retryErrorRequest = {
-                    viewModel.clearErrors()
-                    viewModel.loadAll()
-                },
+                retryErrorRequest = { viewModel.retry() },
             )
             SnackbarHost(hostState = snackbarHostState)
         },
@@ -213,7 +208,7 @@ private fun ShuttleMap(
                         if (isDark) {
                             MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
                         } else {
-                            MapStyleOptions("[]")
+                            null
                         },
                 ),
             // removes the zoom control which was covered by the FAB
@@ -234,11 +229,10 @@ private fun ShuttleMap(
                 }
             }
 
-            // creates the bus markers
-            mapsUiState.buses.forEach {
-                BusMarker(
-                    bus = it,
-                    colorBlindMode = mapsUiState.colorBlindMode,
+            // creates the vehicle markers
+            mapsUiState.vehicleLocations.values.forEach {
+                VehicleMarker(
+                    vehicleLocation = it,
                 )
             }
 
@@ -349,39 +343,35 @@ private fun StopMarker(
 }
 
 /**
- * Creates a marker for a bus
+ * Creates a marker for a vehicle
  * */
 @Composable
-private fun BusMarker(
-    bus: Bus,
-    colorBlindMode: Boolean,
-) {
+private fun VehicleMarker(vehicleLocation: VehicleLocation) {
     val context = LocalContext.current
-    val markerState = rememberUpdatedMarkerState(position = bus.latLng())
+    val markerState = rememberUpdatedMarkerState(position = vehicleLocation.latLng())
 
-    // every time bus changes, update the position of the marker
-    LaunchedEffect(bus) {
-        markerState.position = bus.latLng()
+    // every time the vehicle changes, update the position of the marker
+    LaunchedEffect(vehicleLocation) {
+        markerState.position = vehicleLocation.latLng()
     }
 
-    val busColor =
-        when {
-            colorBlindMode -> BusColors.Default
-            bus.routeName == "NORTH" -> BusColors.North
-            bus.routeName == "WEST" -> BusColors.West
-            else -> BusColors.Default
+    val vehicleColor =
+        when (vehicleLocation.routeName) {
+            "NORTH" -> VehicleColors.North
+            "WEST" -> VehicleColors.West
+            else -> VehicleColors.Default
         }
 
     val icon =
-        remember(busColor) {
-            getBusMarkerDescriptor(context, 25f, busColor.toArgb())
+        remember(vehicleColor) {
+            getVehicleMarkerDescriptor(context, 25f, vehicleColor.toArgb())
         }
 
-    // gets bus speed and last time it updated
-    val lastUpdatedAgoText = bus.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
+    // gets vehicle speed and last time it updated
+    val lastUpdatedAgoText = vehicleLocation.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
     val snippetText =
         buildString {
-            append(stringResource(R.string.bus_speed, bus.speedMph))
+            append(stringResource(R.string.vehicle_speed, vehicleLocation.speedMph))
             if (lastUpdatedAgoText.isNotBlank()) {
                 append(" • ")
                 append(lastUpdatedAgoText)
@@ -390,7 +380,7 @@ private fun BusMarker(
 
     Marker(
         state = markerState,
-        title = stringResource(R.string.bus_number, bus.id),
+        title = stringResource(R.string.vehicle_number, vehicleLocation.name),
         icon = icon,
         snippet = snippetText,
         anchor = Offset(0.5f, 0.5f),
