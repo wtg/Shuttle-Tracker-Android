@@ -26,6 +26,7 @@ retrofit = "3.0.0"
 
 room-runtime = "2.8.4"
 
+secrets-gradle-plugin = "2.0.1"
 work-runtime-ktx = "2.11.0"
 
 compose-bom = "2026.01.00"
@@ -98,6 +99,7 @@ play-services-maps = { module = "com.google.android.gms:play-services-maps", ver
 network-reponse = { module = "com.github.haroldadmin:NetworkResponseAdapter", version.ref = "network-respose" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 
+secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secrets-gradle-plugin" }
 ui = { module = "androidx.compose.ui:ui" }
 
 [plugins]
