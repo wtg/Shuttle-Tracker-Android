@@ -7,6 +7,7 @@ plugins {
     id("com.mikepenz.aboutlibraries.plugin")
     id("com.google.gms.google-services")
     id("org.jlleitschuh.gradle.ktlint")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)

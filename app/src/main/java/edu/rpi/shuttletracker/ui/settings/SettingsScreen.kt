@@ -1,5 +1,8 @@
 package edu.rpi.shuttletracker.ui.settings
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,7 +14,7 @@ import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RestartAlt
-import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,7 +24,6 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,6 +55,16 @@ fun SettingsScreen(
     navigator: DestinationsNavigator,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+
+    val openAppSettings: () -> Unit = {
+        val intent =
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", context.packageName, null)
+            }
+        context.startActivity(intent)
+    }
+
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             rememberTopAppBarState(),
@@ -81,27 +94,11 @@ fun SettingsScreen(
         LazyColumn(
             modifier = Modifier.padding(padding),
         ) {
-//            item {
-//                ColorBlindSettingItem(
-//                    colorBlindMode = settingsUiState.colorBlindMode,
-//                    updateColorBlindMode = viewModel::updateColorBlindMode,
-//                )
-//            }
-
             item {
                 ThemeModeSettingItem(
                     themeMode = settingsUiState.themeMode,
                     updateThemeMode = viewModel::updateThemeMode,
                 )
-            }
-            if (settingsUiState.devOptionState) {
-                item {
-                    SettingsItem(
-                        Icons.Outlined.Code,
-                        stringResource(R.string.dev_options),
-                        onClick = { navigator.navigate(DevMenuScreenDestination()) },
-                    )
-                }
             }
 
             item {
@@ -124,24 +121,25 @@ fun SettingsScreen(
                     onClick = { navigator.navigate(AboutScreenDestination()) },
                 )
             }
-        }
-    }
-}
 
-@Composable
-fun ColorBlindSettingItem(
-    colorBlindMode: Boolean,
-    updateColorBlindMode: (Boolean) -> Unit,
-) {
-    SettingsItem(
-        icon = Icons.Outlined.Visibility,
-        stringResource(R.string.color_blind_mode),
-        stringResource(R.string.color_blind_description),
-    ) {
-        Switch(
-            checked = colorBlindMode,
-            onCheckedChange = { updateColorBlindMode(it) },
-        )
+            item {
+                SettingsItem(
+                    icon = Icons.Outlined.Settings,
+                    title = stringResource(R.string.open_app_settings),
+                    onClick = openAppSettings,
+                )
+            }
+
+            if (settingsUiState.devOptionState) {
+                item {
+                    SettingsItem(
+                        Icons.Outlined.Code,
+                        stringResource(R.string.dev_options),
+                        onClick = { navigator.navigate(DevMenuScreenDestination()) },
+                    )
+                }
+            }
+        }
     }
 }
 
