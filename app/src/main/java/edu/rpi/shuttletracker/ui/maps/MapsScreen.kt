@@ -102,6 +102,7 @@ fun MapsScreen(
 
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
     var selectedVehicleId by remember { mutableStateOf<String?>(null) }
+    var selectedScheduleRoute by rememberSaveable { mutableStateOf<String?>(null) }
 
     var showSheet by rememberSaveable { mutableStateOf(false) }
     var showScheduleSheet by rememberSaveable { mutableStateOf(false) }
@@ -232,6 +233,8 @@ fun MapsScreen(
                 sheetState = scheduleSheetState,
                 schedule = mapsUiState.schedule,
                 routesByName = mapsUiState.routes,
+                selectedRoute = selectedScheduleRoute,
+                onSelectedRouteChange = { selectedScheduleRoute = it },
                 onDismiss = { showScheduleSheet = false },
             )
         }

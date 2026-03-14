@@ -10,21 +10,7 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
 
-fun routesForDay(
-    day: DayOfWeek,
-    schedule: Schedule,
-): List<String> {
-    val scheduleMap = schedule.scheduleMapFor(day)
-    val directions = mutableSetOf<String>()
-
-    for ((_, times) in scheduleMap) {
-        for (pair in times) {
-            if (pair.size > 1) directions.add(pair[1])
-        }
-    }
-
-    return directions.sorted()
-}
+private val TIME_FORMATTER = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
 
 data class StopTimeInfo(
     val stopName: String,
@@ -39,45 +25,20 @@ data class TimeInfo(
     val stopTimes: List<StopTimeInfo>,
 )
 
-fun parseLocalTime(timeText: String): LocalTime? =
-    runCatching {
-        LocalTime.parse(
-            timeText.trim(),
-            DateTimeFormatter.ofPattern("h:mm a", Locale.US),
-        )
-    }.getOrNull()
+fun routesForDay(
+    day: DayOfWeek,
+    schedule: Schedule,
+): List<String> {
+    val scheduleMap = schedule.scheduleMapFor(day)
+    val directions = mutableSetOf<String>()
 
-fun parseMinutesOfDay(timeText: String): Int? =
-    parseLocalTime(timeText)?.let { time ->
-        val minutes = time.hour * 60 + time.minute
-
-        // Moves after midnight departures at the end of the list
-        if (time.hour in 0..3) {
-            minutes + 24 * 60
-        } else {
-            minutes
+    for ((_, times) in scheduleMap) {
+        for (pair in times) {
+            if (pair.size > 1) directions.add(pair[1])
         }
     }
 
-fun formatLocalTime(time: LocalTime): String = time.format(DateTimeFormatter.ofPattern("h:mm a", Locale.US))
-
-fun buildStopTimesForDeparture(
-    routeName: String,
-    departureTime: String,
-    routesByName: Map<String, Route>,
-): List<StopTimeInfo> {
-    val route = routesByName[routeName] ?: return emptyList()
-    val departureLocalTime = parseLocalTime(departureTime) ?: return emptyList()
-
-    return route.stops.mapNotNull { stopKey ->
-        val stop = route.stopDetails[stopKey] ?: return@mapNotNull null
-        val stopTime = departureLocalTime.plusMinutes(stop.offset.toLong())
-
-        StopTimeInfo(
-            stopName = stop.name,
-            time = formatLocalTime(stopTime),
-        )
-    }
+    return directions.sorted()
 }
 
 /**
@@ -120,3 +81,41 @@ fun consolidatedTimes(
 
     return out.sortedBy { it.minutesOfDay }
 }
+
+fun buildStopTimesForDeparture(
+    routeName: String,
+    departureTime: String,
+    routesByName: Map<String, Route>,
+): List<StopTimeInfo> {
+    val route = routesByName[routeName] ?: return emptyList()
+    val departureLocalTime = parseLocalTime(departureTime) ?: return emptyList()
+
+    return route.stops.mapNotNull { stopKey ->
+        val stop = route.stopDetails[stopKey] ?: return@mapNotNull null
+        val stopTime = departureLocalTime.plusMinutes(stop.offset.toLong())
+
+        StopTimeInfo(
+            stopName = stop.name,
+            time = formatLocalTime(stopTime),
+        )
+    }
+}
+
+fun parseMinutesOfDay(timeText: String): Int? =
+    parseLocalTime(timeText)?.let { time ->
+        val minutes = time.hour * 60 + time.minute
+
+        // Moves after midnight departures at the end of the list
+        if (time.hour in 0..3) {
+            minutes + 24 * 60
+        } else {
+            minutes
+        }
+    }
+
+fun parseLocalTime(timeText: String): LocalTime? =
+    runCatching {
+        LocalTime.parse(timeText.trim(), TIME_FORMATTER)
+    }.getOrNull()
+
+fun formatLocalTime(time: LocalTime): String = time.format(TIME_FORMATTER)

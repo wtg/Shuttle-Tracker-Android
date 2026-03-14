@@ -116,7 +116,7 @@
     <!-- Schedule bottom sheet -->
     <string name="schedule_title">Student Union Schedule</string>
     <string name="schedule_subtitle">Times are based on departures from the Student Union.
-        Stop times for other locations are precomputed and may not be fully accurate.</string>
+        Arrival times at other stops are estimated using fixed offsets and may not be exact.</string>
 
     <!-- Eta content -->
     <string name="tap_indicator">Tap a stop to see etas</string>

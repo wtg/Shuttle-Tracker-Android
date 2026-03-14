@@ -53,6 +53,8 @@ fun ScheduleSheet(
     sheetState: SheetState,
     schedule: Schedule?,
     routesByName: Map<String, Route>,
+    selectedRoute: String?,
+    onSelectedRouteChange: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     if (!show) return
@@ -64,6 +66,8 @@ fun ScheduleSheet(
         ScheduleSheetContent(
             schedule = schedule,
             routesByName = routesByName,
+            selectedRoute = selectedRoute,
+            onSelectedRouteChange = onSelectedRouteChange,
         )
     }
 }
@@ -72,6 +76,8 @@ fun ScheduleSheet(
 private fun ScheduleSheetContent(
     schedule: Schedule?,
     routesByName: Map<String, Route>,
+    selectedRoute: String?,
+    onSelectedRouteChange: (String) -> Unit,
 ) {
     Column(
         modifier =
@@ -89,7 +95,13 @@ private fun ScheduleSheetContent(
 
         when (schedule) {
             null -> EmptyState(R.string.no_schedule_found)
-            else -> ScheduleDetailsContent(schedule = schedule, routesByName = routesByName)
+            else ->
+                ScheduleDetailsContent(
+                    schedule = schedule,
+                    routesByName = routesByName,
+                    selectedRoute = selectedRoute,
+                    onSelectedRouteChange = onSelectedRouteChange,
+                )
         }
     }
 }
@@ -122,6 +134,8 @@ private fun ScheduleHeader() {
 private fun ScheduleDetailsContent(
     schedule: Schedule,
     routesByName: Map<String, Route>,
+    selectedRoute: String?,
+    onSelectedRouteChange: (String) -> Unit,
 ) {
     var selectedDay by remember { mutableStateOf(DayOfWeek.fromToday()) }
 
@@ -130,9 +144,12 @@ private fun ScheduleDetailsContent(
             routesForDay(selectedDay, schedule)
         }
 
-    var selectedRoute by remember(selectedDay, routes) {
-        mutableStateOf(routes.firstOrNull())
-    }
+    val activeRoute =
+        when {
+            selectedRoute in routes -> selectedRoute
+            routes.isNotEmpty() -> routes.first()
+            else -> null
+        }
 
     DaySelector(
         selectedDay = selectedDay,
@@ -146,15 +163,15 @@ private fun ScheduleDetailsContent(
 
     RouteSelector(
         routes = routes,
-        selectedRoute = selectedRoute,
-        onSelect = { selectedRoute = it },
+        selectedRoute = activeRoute,
+        onSelect = onSelectedRouteChange,
     )
 
     HorizontalDivider(Modifier, DividerDefaults.Thickness)
 
     val times =
-        remember(selectedDay, selectedRoute, schedule, routesByName) {
-            val routeName = selectedRoute ?: return@remember emptyList()
+        remember(selectedDay, activeRoute, schedule, routesByName) {
+            val routeName = activeRoute ?: return@remember emptyList()
             consolidatedTimes(
                 routeName = routeName,
                 day = selectedDay,
@@ -168,7 +185,7 @@ private fun ScheduleDetailsContent(
         return
     }
 
-    var expandedRowKey by remember(selectedDay, selectedRoute) {
+    var expandedRowKey by remember(selectedDay, activeRoute) {
         mutableStateOf<String?>(null)
     }
 
@@ -180,13 +197,21 @@ private fun ScheduleDetailsContent(
     val scrollIndex =
         remember(times) {
             times.indexOfFirst { it.minutesOfDay >= nowMinutes }.let { index ->
-                if (index == -1) 0 else index
+                if (index <= 0) 0 else index - 1
             }
         }
 
     LaunchedEffect(times, scrollIndex) {
         if (times.isNotEmpty()) {
+            val autoExpandedItem = times[scrollIndex]
+            expandedRowKey =
+                autoExpandedItem.vehicleName +
+                autoExpandedItem.departureTime +
+                autoExpandedItem.routeName
+
             listState.scrollToItem(scrollIndex)
+        } else {
+            expandedRowKey = null
         }
     }
 
