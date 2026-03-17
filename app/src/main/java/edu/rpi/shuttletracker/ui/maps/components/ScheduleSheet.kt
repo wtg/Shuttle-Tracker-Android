@@ -1,5 +1,12 @@
 package edu.rpi.shuttletracker.ui.maps.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -9,7 +16,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -46,6 +55,7 @@ import edu.rpi.shuttletracker.ui.maps.utils.StopTimeInfo
 import edu.rpi.shuttletracker.ui.maps.utils.consolidatedTimes
 import edu.rpi.shuttletracker.ui.maps.utils.routesForDay
 import java.util.Calendar
+import kotlin.text.lowercase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -276,11 +286,6 @@ private fun RouteSelector(
     ) {
         routes.forEach { dir ->
             RouteTab(
-                label =
-                    stringResource(
-                        R.string.route_label_format,
-                        dir.lowercase().replaceFirstChar { it.titlecase() },
-                    ),
                 route = dir,
                 selectedRoute = selectedRoute,
                 onRouteSelected = onSelect,
@@ -295,7 +300,6 @@ private fun RouteSelector(
 
 @Composable
 private fun RouteTab(
-    label: String,
     route: String,
     selectedRoute: String?,
     onRouteSelected: (String) -> Unit,
@@ -303,20 +307,31 @@ private fun RouteTab(
 ) {
     val selected = route == selectedRoute
 
+    val selectedColor =
+        when {
+            "north" in route.lowercase() -> Color(0xFFD32F2F)
+            "west" in route.lowercase() -> Color(0xFF1976D2)
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
+        }
+
     Surface(
         onClick = { onRouteSelected(route) },
         shape = RoundedCornerShape(12.dp),
         tonalElevation = if (selected) 2.dp else 0.dp,
         color =
             if (selected) {
-                MaterialTheme.colorScheme.primaryContainer
+                selectedColor.copy(alpha = 0.30f)
             } else {
                 MaterialTheme.colorScheme.surfaceVariant
             },
         modifier = modifier,
     ) {
         Text(
-            text = label,
+            text =
+                stringResource(
+                    R.string.route_label_format,
+                    route.lowercase().replaceFirstChar { it.titlecase() },
+                ),
             modifier =
                 Modifier
                     .fillMaxWidth()
@@ -341,6 +356,13 @@ private fun ScheduleTimeRow(
     stopTimes: List<StopTimeInfo>,
     onToggleExpanded: () -> Unit,
 ) {
+    val tagColor =
+        when {
+            "north" in vehicleName.lowercase() -> Color(0xFFD32F2F)
+            "west" in vehicleName.lowercase() -> Color(0xFF1976D2)
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
+        }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier =
@@ -355,8 +377,6 @@ private fun ScheduleTimeRow(
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.weight(1f),
             )
-
-            val tagColor = vehicleTagColor(vehicleName, MaterialTheme.colorScheme.onSurfaceVariant)
 
             Surface(
                 color = tagColor.copy(alpha = 0.15f),
@@ -379,43 +399,91 @@ private fun ScheduleTimeRow(
         }
 
         if (expanded) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                thickness = 0.5.dp,
+            )
+        }
+
+        AnimatedVisibility(
+            visible = expanded,
+            enter =
+                expandVertically(
+                    animationSpec = tween(durationMillis = 220),
+                ) +
+                    fadeIn(
+                        animationSpec = tween(durationMillis = 180),
+                    ),
+            exit =
+                shrinkVertically(
+                    animationSpec = tween(durationMillis = 200),
+                ) +
+                    fadeOut(
+                        animationSpec = tween(durationMillis = 150),
+                    ),
+        ) {
             if (stopTimes.isEmpty()) {
                 Text(
-                    text = "No stop times available",
+                    text = stringResource(R.string.no_stop_times),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                 )
             } else {
                 Column(
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     stopTimes.forEach { stopTime ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = stopTime.stopName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.weight(1f),
-                            )
-
-                            Text(
-                                text = stopTime.time,
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        }
+                        StopTimeItem(
+                            stopName = stopTime.stopName,
+                            time = stopTime.time,
+                            accentColor = tagColor,
+                        )
                     }
                 }
             }
         }
 
         HorizontalDivider(
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             thickness = 0.5.dp,
+        )
+    }
+}
+
+@Composable
+private fun StopTimeItem(
+    stopName: String,
+    time: String,
+    accentColor: Color,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .width(2.dp)
+                    .height(28.dp)
+                    .background(accentColor, RoundedCornerShape(999.dp)),
+        )
+
+        Text(
+            text = stopName,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(start = 10.dp),
+        )
+
+        Text(
+            text = time,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 12.dp),
         )
     }
 }
@@ -430,17 +498,5 @@ private fun EmptyState(textRes: Int) {
         contentAlignment = Alignment.Center,
     ) {
         Text(text = stringResource(textRes))
-    }
-}
-
-private fun vehicleTagColor(
-    vehicleName: String,
-    defaultColor: Color,
-): Color {
-    val n = vehicleName.lowercase()
-    return when {
-        "north" in n -> Color(0xFFD32F2F)
-        "west" in n -> Color(0xFF1976D2)
-        else -> defaultColor
     }
 }

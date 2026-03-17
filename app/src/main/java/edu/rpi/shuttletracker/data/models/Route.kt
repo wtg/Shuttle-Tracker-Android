@@ -5,6 +5,7 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 
 data class Route(
@@ -38,19 +39,19 @@ class RouteDeserializer : JsonDeserializer<Route> {
         val stops: List<String> =
             context.deserialize(
                 obj["STOPS"],
-                object : com.google.gson.reflect.TypeToken<List<String>>() {}.type,
+                object : TypeToken<List<String>>() {}.type,
             )
 
         val polylineStops: List<String> =
             context.deserialize(
                 obj["POLYLINE_STOPS"],
-                object : com.google.gson.reflect.TypeToken<List<String>>() {}.type,
+                object : TypeToken<List<String>>() {}.type,
             )
 
         val coordinates: List<List<List<Double>>> =
             context.deserialize(
                 obj["ROUTES"],
-                object : com.google.gson.reflect.TypeToken<List<List<List<Double>>>>() {}.type,
+                object : TypeToken<List<List<List<Double>>>>() {}.type,
             )
 
         // Decode dynamic stop keys, but only those listed in STOPS

@@ -113,9 +113,10 @@
     <string name="route_label_format">%1$s Route</string>
 
     <!-- Schedule bottom sheet -->
-    <string name="schedule_title">Student Union Schedule</string>
+    <string name="schedule_title">Schedule</string>
     <string name="schedule_subtitle">Times are based on departures from the Student Union.
         Arrival times at other stops are estimated using fixed offsets and may not be exact.</string>
+    <string name="no_stop_times">No stop times available</string>
 
     <!-- Errors -->
     <string name="understand">I understand</string>

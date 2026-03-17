@@ -25,6 +25,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -79,6 +80,7 @@ import edu.rpi.shuttletracker.ui.maps.components.ScheduleSheet
 import edu.rpi.shuttletracker.ui.maps.components.getVehicleMarkerDescriptor
 import edu.rpi.shuttletracker.ui.theme.VehicleColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -271,9 +273,6 @@ private fun ShuttleMap(
     }
 }
 
-/**
- * Creates a marker for a stop
- * */
 @Composable
 private fun StopMarker(
     stop: Stop,
@@ -310,9 +309,6 @@ private fun StopMarker(
     )
 }
 
-/**
- * Creates a marker for a vehicle
- * */
 @Composable
 private fun VehicleMarker(vehicle: Vehicle) {
     val context = LocalContext.current
@@ -323,16 +319,31 @@ private fun VehicleMarker(vehicle: Vehicle) {
         markerState.position = vehicle.latLng()
     }
 
-    val vehicleColor =
+    val resolvedColor =
         when (vehicle.routeName) {
             "NORTH" -> VehicleColors.North
             "WEST" -> VehicleColors.West
-            else -> VehicleColors.Default
+            else -> null
         }
 
+    var vehicleColor by remember { mutableStateOf(resolvedColor) }
+
+    LaunchedEffect(resolvedColor) {
+        if (resolvedColor != null) {
+            vehicleColor = resolvedColor
+        } else {
+            delay(30_000)
+            if (vehicleColor == null) {
+                vehicleColor = VehicleColors.Default
+            }
+        }
+    }
+
+    val finalColor = resolvedColor ?: vehicleColor ?: VehicleColors.Default
+
     val icon =
-        remember(vehicleColor) {
-            getVehicleMarkerDescriptor(context, 25f, vehicleColor.toArgb())
+        remember(finalColor) {
+            getVehicleMarkerDescriptor(context, 25f, finalColor.toArgb())
         }
 
     // gets vehicle speed and last time it updated
@@ -386,9 +397,6 @@ private fun MapButtonsOverlay(
             ActionButton(icon = Icons.Outlined.Settings) {
                 onSettingsClick()
             }
-            ActionButton(icon = Icons.Outlined.Schedule) {
-                onScheduleClick()
-            }
         }
         // Right side
         Column(
@@ -410,6 +418,21 @@ private fun MapButtonsOverlay(
             ActionButton(icon = mapTypeIcon) {
                 onToggleMapTypeClick()
             }
+        }
+
+        FloatingActionButton(
+            onClick = onScheduleClick,
+            modifier =
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Schedule,
+                contentDescription = "Open schedule",
+            )
         }
     }
 }
