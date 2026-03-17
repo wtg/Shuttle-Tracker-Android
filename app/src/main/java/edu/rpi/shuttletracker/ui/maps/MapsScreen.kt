@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.outlined.Layers
@@ -21,7 +20,6 @@ import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.StopCircle
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -29,12 +27,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -64,7 +59,6 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -82,10 +76,7 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.Vehicle
 import edu.rpi.shuttletracker.ui.maps.components.ScheduleSheet
-import edu.rpi.shuttletracker.ui.maps.components.StopEtaCard
-import edu.rpi.shuttletracker.ui.maps.components.StopSheet
 import edu.rpi.shuttletracker.ui.maps.components.getVehicleMarkerDescriptor
-import edu.rpi.shuttletracker.ui.maps.utils.VehicleEtaUi
 import edu.rpi.shuttletracker.ui.theme.VehicleColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.launch
@@ -100,46 +91,13 @@ fun MapsScreen(
     val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var selectedStop by remember { mutableStateOf<Stop?>(null) }
-    var selectedVehicleId by remember { mutableStateOf<String?>(null) }
     var selectedScheduleRoute by rememberSaveable { mutableStateOf<String?>(null) }
 
-    var showSheet by rememberSaveable { mutableStateOf(false) }
     var showScheduleSheet by rememberSaveable { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scheduleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    val cameraPositionState =
-        rememberCameraPositionState {
-            position =
-                CameraPosition.fromLatLngZoom(
-                    LatLng(42.73068146020498, -73.67619731950525),
-                    14.3f,
-                )
-        }
-
-    val scope = rememberCoroutineScope()
-
     Scaffold(
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { showSheet = true },
-                    icon = { Icon(Icons.Outlined.StopCircle, contentDescription = null) },
-                    label = { Text("Stops") },
-                )
-
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { showScheduleSheet = true },
-                    icon = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
-                    label = { Text("Schedule") },
-                )
-            }
-        },
         snackbarHost = {
-            // finds errors when requesting data to server
             CheckResponseError(
                 mapsUiState.networkError,
                 mapsUiState.serverError,
@@ -155,79 +113,10 @@ fun MapsScreen(
                 mapsUiState = mapsUiState,
                 padding = padding,
                 onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
+                onScheduleClick = { showScheduleSheet = true },
                 onToggleMapTypeClick = { viewModel.toggleMapType() },
-                cameraPositionState = cameraPositionState,
-                selectedStopKey = mapsUiState.selectedStopKey,
-                selectedStop = selectedStop,
-                selectedVehicleId = selectedVehicleId,
-                onStopSelected = { stopKey, stop ->
-                    viewModel.setSelectedStop(stopKey)
-                    selectedStop = stop
-                },
             )
 
-            EtaOverlayCard(
-                modifier =
-                    Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(padding)
-                        .padding(horizontal = 12.dp, vertical = 27.dp),
-                title = selectedStop?.name ?: stringResource(R.string.tap_indicator),
-                selectedStopEtas = mapsUiState.selectedStopEtas,
-                lastEtasUpdatedAt = mapsUiState.lastEtasUpdatedAt,
-                stopSelected = selectedStop != null,
-                onClearStop = {
-                    viewModel.setSelectedStop(null)
-                    selectedStop = null
-                    selectedVehicleId = null
-                },
-                onEtaChipClick = { vehicleId ->
-                    selectedVehicleId = vehicleId
-                    val vehicle = mapsUiState.vehicles.firstOrNull { it.id == vehicleId } ?: return@EtaOverlayCard
-                    scope.launch {
-                        cameraPositionState.animate(
-                            CameraUpdateFactory.newCameraPosition(
-                                CameraPosition
-                                    .Builder()
-                                    .target(vehicle.latLng())
-                                    .zoom(maxOf(cameraPositionState.position.zoom, 16f))
-                                    .tilt(0f)
-                                    .build(),
-                            ),
-                            700,
-                        )
-                    }
-                },
-            )
-            StopSheet(
-                show = showSheet,
-                sheetState = sheetState,
-                routeKeys = mapsUiState.allowedRouteKeys,
-                selectedRouteKey = mapsUiState.selectedRouteKey,
-                stopRows = mapsUiState.stopRows,
-                onDismiss = { showSheet = false },
-                onRouteSelected = { routeKey ->
-                    viewModel.setSelectedRoute(routeKey)
-                },
-                onStopClick = { stopKey, stop ->
-                    viewModel.setSelectedStop(stopKey)
-                    selectedStop = stop
-                    showSheet = false
-                    scope.launch {
-                        cameraPositionState.animate(
-                            CameraUpdateFactory.newCameraPosition(
-                                CameraPosition
-                                    .Builder()
-                                    .target(stop.latLng())
-                                    .zoom(maxOf(cameraPositionState.position.zoom, 16f))
-                                    .tilt(0f)
-                                    .build(),
-                            ),
-                            1000,
-                        )
-                    }
-                },
-            )
             ScheduleSheet(
                 show = showScheduleSheet,
                 sheetState = scheduleSheetState,
@@ -246,17 +135,12 @@ private fun ShuttleMap(
     mapsUiState: MapsUiState,
     padding: PaddingValues,
     onSettingsClick: () -> Unit,
+    onScheduleClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
-    cameraPositionState: CameraPositionState,
-    selectedStopKey: String?,
-    selectedStop: Stop?,
-    selectedVehicleId: String?,
-    onStopSelected: (stopKey: String, stop: Stop) -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // can't show current location without location
     val isLocationPermissionGranted by remember {
         mutableStateOf(
             ActivityCompat.checkSelfPermission(
@@ -266,12 +150,21 @@ private fun ShuttleMap(
         )
     }
 
+    val cameraPositionState =
+        rememberCameraPositionState {
+            position =
+                CameraPosition.fromLatLngZoom(
+                    LatLng(42.73068146020498, -73.67619731950525),
+                    14.3f,
+                )
+        }
+
+    var selectedStop by remember { mutableStateOf<Stop?>(null) }
     val isDark = mapsUiState.themeMode.isDarkTheme(isSystemInDarkTheme())
 
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
-            // makes sure the items drawn (current location and compass) are clickable
             contentPadding = padding,
             cameraPositionState = cameraPositionState,
             properties =
@@ -292,33 +185,28 @@ private fun ShuttleMap(
                             null
                         },
                 ),
-            // removes the zoom control which was covered by the FAB
             uiSettings =
                 MapUiSettings(
                     zoomControlsEnabled = false,
                     myLocationButtonEnabled = false,
                 ),
         ) {
-            // creates the stops
             mapsUiState.routes.forEach { (_, route) ->
-                route.stopDetails.forEach { (stopKey, stop) ->
+                route.stopDetails.forEach { (_, stop) ->
                     StopMarker(
                         stop = stop,
-                        selected = stopKey == selectedStopKey || stop.name == selectedStop?.name,
-                        onSelected = { onStopSelected(stopKey, stop) },
+                        selected = stop.name == selectedStop?.name,
+                        onSelected = { selectedStop = it },
                     )
                 }
             }
 
-            // creates the vehicle markers
             mapsUiState.vehicles.forEach { vehicle ->
                 VehicleMarker(
                     vehicle = vehicle,
-                    selected = vehicle.id == selectedVehicleId,
                 )
             }
 
-            // draws the paths
             mapsUiState.routes.forEach { (_, route) ->
                 val points = route.latLng()
                 if (points.isNotEmpty()) {
@@ -327,9 +215,8 @@ private fun ShuttleMap(
                         color =
                             Color(
                                 android.graphics.Color
-                                    .valueOf(
-                                        route.color.toColorInt(),
-                                    ).toArgb(),
+                                    .valueOf(route.color.toColorInt())
+                                    .toArgb(),
                             ),
                     )
                 }
@@ -351,6 +238,7 @@ private fun ShuttleMap(
             isMyLocationEnabled = isLocationPermissionGranted,
             mapTypeIcon = mapTypeIcon,
             onSettingsClick = onSettingsClick,
+            onScheduleClick = onScheduleClick,
             onRecenterClick = {
                 LocationServices
                     .getFusedLocationProviderClient(context)
@@ -426,24 +314,13 @@ private fun StopMarker(
  * Creates a marker for a vehicle
  * */
 @Composable
-private fun VehicleMarker(
-    vehicle: Vehicle,
-    selected: Boolean,
-) {
+private fun VehicleMarker(vehicle: Vehicle) {
     val context = LocalContext.current
     val markerState = rememberUpdatedMarkerState(position = vehicle.latLng())
 
     // every time the vehicle changes, update the position of the marker
     LaunchedEffect(vehicle) {
         markerState.position = vehicle.latLng()
-    }
-
-    LaunchedEffect(selected) {
-        if (selected) {
-            markerState.showInfoWindow()
-        } else {
-            markerState.hideInfoWindow()
-        }
     }
 
     val vehicleColor =
@@ -492,6 +369,7 @@ private fun MapButtonsOverlay(
     isMyLocationEnabled: Boolean,
     mapTypeIcon: ImageVector,
     onSettingsClick: () -> Unit,
+    onScheduleClick: () -> Unit,
     onRecenterClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
 ) {
@@ -507,6 +385,9 @@ private fun MapButtonsOverlay(
         ) {
             ActionButton(icon = Icons.Outlined.Settings) {
                 onSettingsClick()
+            }
+            ActionButton(icon = Icons.Outlined.Schedule) {
+                onScheduleClick()
             }
         }
         // Right side
@@ -570,34 +451,5 @@ private fun ActionButton(
         ) {
             Icon(icon, icon.name)
         }
-    }
-}
-
-@Composable
-fun EtaOverlayCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    selectedStopEtas: List<VehicleEtaUi>,
-    lastEtasUpdatedAt: java.time.Instant?,
-    stopSelected: Boolean,
-    onClearStop: () -> Unit,
-    onEtaChipClick: (vehicleId: String) -> Unit,
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(18.dp),
-        tonalElevation = 2.dp,
-        shadowElevation = 8.dp,
-        color = MaterialTheme.colorScheme.surface,
-    ) {
-        StopEtaCard(
-            modifier = Modifier.padding(vertical = 2.dp),
-            title = title,
-            selectedStopEtas = selectedStopEtas,
-            lastEtasUpdatedAt = lastEtasUpdatedAt,
-            stopSelected = stopSelected,
-            onClearStop = onClearStop,
-            onEtaChipClick = onEtaChipClick,
-        )
     }
 }

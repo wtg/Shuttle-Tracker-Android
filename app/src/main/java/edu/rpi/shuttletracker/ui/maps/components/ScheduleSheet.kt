@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.ui.maps.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -416,6 +417,19 @@ private fun ScheduleTimeRow(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp),
             thickness = 0.5.dp,
         )
+    }
+}
+
+@Composable
+private fun EmptyState(textRes: Int) {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text = stringResource(textRes))
     }
 }
 

@@ -112,23 +112,10 @@
     <string name="schedule_none_running">No shuttles running</string>
     <string name="route_label_format">%1$s Route</string>
 
-
     <!-- Schedule bottom sheet -->
     <string name="schedule_title">Student Union Schedule</string>
     <string name="schedule_subtitle">Times are based on departures from the Student Union.
         Arrival times at other stops are estimated using fixed offsets and may not be exact.</string>
-
-    <!-- Eta content -->
-    <string name="tap_indicator">Tap a stop to see etas</string>
-    <string name="eta_note">Note: ETAs may be off by a few minutes.</string>
-    <string name="no_etas">No ETAs found</string>
-    <string name="shuttle_eta_chip">Shuttle %1$s • %2$s</string>
-
-    <!-- Eta stop bottom sheet -->
-    <string name="stop_etas_title">Stop ETAs</string>
-    <string name="stop_etas_subtitle">Chasan stop available M–F, 7:00 AM – 5:30 PM.
-        ETAs are still in development and may be inaccurate.</string>
-
 
     <!-- Errors -->
     <string name="understand">I understand</string>
