@@ -205,4 +205,11 @@ class UserPreferencesRepository
                 it[SHUTTLE_ANIMATIONS] ?:
         true
             }
+
+        suspend fun saveShuttleAnimations(animationsEnable: Boolean) {
+            dataStore.edit {
+                it[SHUTTLE_ANIMATIONS] = animationsEnable
+            }
+        }
+        
     }
