@@ -199,4 +199,10 @@ class UserPreferencesRepository
                 }
             }
         }
+
+        fun getShuttleAnimations(): Flow<Boolean> = 
+            dataStore.data.map {
+                it[SHUTTLE_ANIMATIONS] ?:
+        true
+            }
     }
