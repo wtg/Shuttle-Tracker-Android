@@ -164,6 +164,15 @@ class MapsViewModel
             updateMapType(next)
         }
 
+        fun setShuttleAnimations(animationsEnable: Boolean) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveShuttleAnimations(animationsEnable)
+
+            }
+
+        }
+
+
         /**
          * Reads the network response and maps it to correct place
          * */
