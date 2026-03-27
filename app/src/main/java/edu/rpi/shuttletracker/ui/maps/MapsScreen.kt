@@ -234,6 +234,7 @@ private fun ShuttleMap(
             mapsUiState.vehicleLocations.values.forEach {
                 VehicleMarker(
                     vehicleLocation = it,
+                    animationsEnabled = mapsUiState.shuttleAnimationsEnabled,
                 )
             }
 
