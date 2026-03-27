@@ -128,6 +128,14 @@ fun SettingsScreen(
                     onClick = { navigator.navigate(AboutScreenDestination()) },
                 )
             }
+
+            item {
+                ShuttleAnimationSettingItem(
+                    animationsEnabled = mapsUiState.shuttleAnimationsEnabled,
+                    updateAnimations = mapsViewModel::setShuttleAnimations,
+                    )
+            }
+            
         }
     }
 }
