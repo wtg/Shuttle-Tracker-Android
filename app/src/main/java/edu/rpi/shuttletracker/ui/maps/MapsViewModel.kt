@@ -133,6 +133,15 @@ class MapsViewModel
                         it.copy(mapType = mapType)
                     }
                 }.launchIn(viewModelScope)
+
+            userPreferencesRepository
+                .getShuttleAnimations()
+                .flowOn(Dispatchers.Default)
+                .onEach { animationsEnable ->
+                    _mapsUiState.update {
+                        it.copy(shuttleAnimationsEnabled = animationsEnable)
+                    }
+                }.launchIn(viewModelScope)
         }
 
         fun updateMapType(mapType: MapType) {
