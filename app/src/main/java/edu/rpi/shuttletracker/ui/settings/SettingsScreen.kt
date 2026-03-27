@@ -52,6 +52,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     navigator: DestinationsNavigator,
     viewModel: SettingsViewModel = hiltViewModel(),
+    mapsViewModel: MapsViewModel = hiltViewModel(),
 ) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
