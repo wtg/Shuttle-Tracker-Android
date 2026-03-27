@@ -41,6 +41,7 @@ import com.ramcosta.composedestinations.generated.destinations.DevMenuScreenDest
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.ui.maps.MapsViewModel
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 import kotlinx.coroutines.launch
