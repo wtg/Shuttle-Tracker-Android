@@ -65,6 +65,8 @@ fun SettingsScreen(
 
     val scope = rememberCoroutineScope()
 
+    val mapsUiState = mapsViewModel.mapsUiState.collectAsStateWithLifecycle().value
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
