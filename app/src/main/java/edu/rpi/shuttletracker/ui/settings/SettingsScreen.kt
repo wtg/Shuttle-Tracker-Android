@@ -179,3 +179,19 @@ fun ThemeModeSettingItem(
         }
     }
 }
+
+@Composable
+fun ShuttleAnimationSettingItem(
+    animationsEnabled: Boolean,
+    updateAnimations: (Boolean) -> Unit,) {
+    SettingsItem(
+        icon = Icons.Outlined.Contrast,
+        title = "Shuttle Animations",)
+    {
+        Switch(
+            checked = animationsEnabled,
+            onCheckedChange = {updateAnimations(it)},
+        )
+    }
+
+}
