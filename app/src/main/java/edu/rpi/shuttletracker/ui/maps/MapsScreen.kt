@@ -359,20 +359,31 @@ private fun VehicleMarker(vehicleLocation: VehicleLocation, animationsEnabled: B
         position = LatLng(lat.value.toDouble(), lng.value.toDouble())
     )
 
-    LaunchedEffect(target) {
-        launch {
-            lat.animateTo(
-                target.latitude.toFloat(),
-                animationSpec = tween(durationMillis = 2000)
-            )
+    LaunchedEffect(target,animationsEnabled) {
+        if (animationsEnabled) {
+            launch {
+                lat.animateTo(
+                    target.latitude.toFloat(),
+                    animationSpec = tween(durationMillis = 2000),
+                )
+            }
+
+            launch {
+                lng.animateTo(
+                    target.longitude.toFloat(),
+                    animationSpec = tween(durationMillis = 2000),
+                )
+            }
         }
 
-        launch {
-            lng.animateTo(
-                target.longitude.toFloat(),
-                animationSpec = tween(durationMillis = 2000)
-            )
+        else {
+
+            lat.snapTo(target.latitude.toFloat())
+            lng.snapTo(target.longitude.toFloat())
+
         }
+
+
     }
 
     val vehicleColor =
