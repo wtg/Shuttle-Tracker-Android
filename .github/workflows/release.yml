@@ -93,4 +93,3 @@ jobs:
       - name: Cleanup secrets
         if: always()
         run: rm -f local.properties
-        run: rm -f local.properties
