@@ -3,8 +3,8 @@ name: Build & Publish Signed Release
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*.*.*"
+    branches:
+      - release-test
 
 permissions:
   contents: write
