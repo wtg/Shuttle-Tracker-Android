@@ -27,6 +27,12 @@ jobs:
           java-version: "17"
           cache: gradle
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install required Android build-tools
+        run: sdkmanager "build-tools;34.0.0" "platform-tools"
+
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
@@ -41,6 +47,8 @@ jobs:
       - name: Sign release APK
         id: sign_apk
         uses: r0adkll/sign-android-release@v1
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
         with:
           releaseDirectory: ${{ env.MAIN_MODULE }}/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
@@ -51,6 +59,8 @@ jobs:
       - name: Sign release AAB
         id: sign_aab
         uses: r0adkll/sign-android-release@v1
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
         with:
           releaseDirectory: ${{ env.MAIN_MODULE }}/build/outputs/bundle/release
           signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
@@ -67,9 +77,12 @@ jobs:
             ${{ steps.sign_aab.outputs.signedReleaseFile }}
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref == 'refs/heads/release-test'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: release-test-${{ github.run_number }}
+          name: Test Release ${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
           files: |
             ${{ steps.sign_apk.outputs.signedReleaseFile }}
             ${{ steps.sign_aab.outputs.signedReleaseFile }}
@@ -79,4 +92,5 @@ jobs:
 
       - name: Cleanup secrets
         if: always()
+        run: rm -f local.properties
         run: rm -f local.properties
