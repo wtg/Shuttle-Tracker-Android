@@ -3,8 +3,8 @@ name: Build & Publish Signed Release
 on:
   workflow_dispatch:
   push:
-    branches:
-      - release-test
+    tags:
+      - "v*.*.*"
 
 permissions:
   contents: write
@@ -77,12 +77,9 @@ jobs:
             ${{ steps.sign_aab.outputs.signedReleaseFile }}
 
       - name: Create GitHub Release
-        if: github.ref == 'refs/heads/release-test'
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: release-test-${{ github.run_number }}
-          name: Test Release ${{ github.run_number }}
-          target_commitish: ${{ github.sha }}
           files: |
             ${{ steps.sign_apk.outputs.signedReleaseFile }}
             ${{ steps.sign_aab.outputs.signedReleaseFile }}
