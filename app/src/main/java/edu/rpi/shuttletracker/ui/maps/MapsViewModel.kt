@@ -181,6 +181,12 @@ class MapsViewModel
 
         }
 
+        fun setShuttleRotation(rotationEnable: Boolean) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveShuttleRotations(rotationEnable)
+            }
+        }
+
 
         /**
          * Reads the network response and maps it to correct place
