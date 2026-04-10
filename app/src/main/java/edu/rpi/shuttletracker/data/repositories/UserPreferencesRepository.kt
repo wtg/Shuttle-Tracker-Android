@@ -212,5 +212,10 @@ class UserPreferencesRepository
                 it[SHUTTLE_ANIMATIONS] = animationsEnable
             }
         }
+
+        fun getShuttleRotation(): Flow<Boolean> =
+            dataStore.data.map {
+                it[SHUTTLE_ROTATION] ?: false
+        }
         
     }
