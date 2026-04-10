@@ -217,5 +217,11 @@ class UserPreferencesRepository
             dataStore.data.map {
                 it[SHUTTLE_ROTATION] ?: false
         }
+
+        suspend fun saveShuttleRotations(rotationsEnable: Boolean) {
+            dataStore.edit {
+                it[SHUTTLE_ROTATION] = rotationsEnable
+        }
+    }
         
     }
