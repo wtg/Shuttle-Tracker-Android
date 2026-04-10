@@ -349,7 +349,7 @@ private fun StopMarker(
  * Creates a marker for a vehicle
  * */
 @Composable
-private fun VehicleMarker(vehicleLocation: VehicleLocation, animationsEnabled: Boolean) {
+private fun VehicleMarker(vehicleLocation: VehicleLocation, animationsEnabled: Boolean, rotationEnabled: Boolean,) {
     val context = LocalContext.current
     val target = vehicleLocation.latLng()
 
