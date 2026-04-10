@@ -18,6 +18,7 @@ data class VehicleLocation(
     @SerializedName("speed_mph") val speedMph: Double,
     @SerializedName("route_name") val routeName: String,
     @SerializedName("timestamp") val date: String,
+    @SerializedName("heading_degrees") val headingDegrees: Int?,
 ) {
     /**
      * Turns the date stored into a time of a generalized time ago from current
