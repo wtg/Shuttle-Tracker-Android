@@ -352,6 +352,7 @@ private fun StopMarker(
 private fun VehicleMarker(vehicleLocation: VehicleLocation, animationsEnabled: Boolean, rotationEnabled: Boolean,) {
     val context = LocalContext.current
     val target = vehicleLocation.latLng()
+    val heading = vehicleLocation.headingDegrees?.toFloat() ?: 0f
 
     val lat = remember { androidx.compose.animation.core.Animatable(target.latitude.toFloat()) }
     val lng = remember { androidx.compose.animation.core.Animatable(target.longitude.toFloat()) }
