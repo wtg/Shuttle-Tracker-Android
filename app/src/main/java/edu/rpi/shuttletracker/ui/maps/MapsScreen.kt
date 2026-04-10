@@ -418,6 +418,8 @@ private fun VehicleMarker(vehicleLocation: VehicleLocation, animationsEnabled: B
         snippet = snippetText,
         anchor = Offset(0.5f, 0.5f),
         zIndex = 3f,
+        rotation = if (rotationEnabled) heading else 0f,
+        flat = rotationEnabled,
         onClick = {
             it.showInfoWindow()
             true
