@@ -142,6 +142,15 @@ class MapsViewModel
                         it.copy(shuttleAnimationsEnabled = animationsEnable)
                     }
                 }.launchIn(viewModelScope)
+
+            userPreferencesRepository
+                .getShuttleRotation()
+                .flowOn(Dispatchers.Default)
+                .onEach { rotationEnable ->
+                    _mapsUiState.update {
+                        it.copy(shuttleRotationEnabled = rotationEnable)
+                    }
+                }.launchIn(viewModelScope)
         }
 
         fun updateMapType(mapType: MapType) {
