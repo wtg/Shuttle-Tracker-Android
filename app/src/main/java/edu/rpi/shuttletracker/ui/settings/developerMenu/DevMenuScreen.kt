@@ -46,6 +46,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.MainActivity
+import edu.rpi.shuttletracker.ui.maps.MapsViewModel
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 
 @OptIn(ExperimentalMaterial3Api::class)
