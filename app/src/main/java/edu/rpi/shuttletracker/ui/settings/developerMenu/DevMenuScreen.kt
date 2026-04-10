@@ -90,6 +90,17 @@ fun DevMenuScreen(
                 })
             }
 
+            SettingsItem(
+                icon = Icons.Outlined.Code,
+                title = "Shuttle Rotation",
+                description = "Rotate shuttle based on heading",
+            ) {
+                Switch(
+                    checked = mapsUiState.shuttleRotationEnabled,
+                    onCheckedChange = { mapsViewModel.setShuttleRotation(it) },
+                )
+            }
+
 //            MinStopDistItem(
 //                maxStopDist = devMenuUiState.maxStopDist,
 //                updateMaxStopDist = viewModel::updateMinStopDist,
