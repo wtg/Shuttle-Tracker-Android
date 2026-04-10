@@ -46,6 +46,7 @@ class UserPreferencesRepository
             private val THEME_MODE = stringPreferencesKey("theme_mode")
             private val MAP_TYPE = stringPreferencesKey("map_type")
             private val SHUTTLE_ANIMATIONS = booleanPreferencesKey("shuttle-animations")
+            private val SHUTTLE_ROTATION = booleanPreferencesKey("shuttle_rotation")
         }
 
         suspend fun getUserId(): String =
