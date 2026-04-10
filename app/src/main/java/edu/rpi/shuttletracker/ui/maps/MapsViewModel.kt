@@ -217,4 +217,5 @@ data class MapsUiState(
     val themeMode: ThemeMode = ThemeMode.System,
     val mapType: MapType = MapType.NORMAL,
     val shuttleAnimationsEnabled: Boolean = true,
+    val shuttleRotationEnabled: Boolean = false,
 )
