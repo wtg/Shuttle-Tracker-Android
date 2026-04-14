@@ -59,12 +59,16 @@ jobs:
           keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
           keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
+      - name: Rename APK
+        run: |
+          mv "${{ steps.sign_apk.outputs.signedReleaseFile }}" app-release.apk
+
       - name: Upload artifacts (Actions)
         uses: actions/upload-artifact@v4
         with:
           name: release-build
           path: |
-            ${{ steps.sign_apk.outputs.signedReleaseFile }}
+            app-release.apk
             ${{ steps.sign_aab.outputs.signedReleaseFile }}
 
       - name: Create GitHub Release
@@ -72,11 +76,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ steps.sign_apk.outputs.signedReleaseFile }}
+            app-release.apk
             ${{ steps.sign_aab.outputs.signedReleaseFile }}
           generate_release_notes: true
           draft: true
-          prerelease: true
+          prerelease: false
 
       - name: Cleanup secrets
         if: always()
