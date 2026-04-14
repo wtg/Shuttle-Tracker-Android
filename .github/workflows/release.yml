@@ -28,12 +28,6 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install required Android build-tools
-        run: sdkmanager "build-tools;34.0.0" "platform-tools"
-
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
@@ -48,8 +42,6 @@ jobs:
       - name: Sign release APK
         id: sign_apk
         uses: r0adkll/sign-android-release@v1
-        env:
-          BUILD_TOOLS_VERSION: "34.0.0"
         with:
           releaseDirectory: ${{ env.MAIN_MODULE }}/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
@@ -60,8 +52,6 @@ jobs:
       - name: Sign release AAB
         id: sign_aab
         uses: r0adkll/sign-android-release@v1
-        env:
-          BUILD_TOOLS_VERSION: "34.0.0"
         with:
           releaseDirectory: ${{ env.MAIN_MODULE }}/build/outputs/bundle/release
           signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
