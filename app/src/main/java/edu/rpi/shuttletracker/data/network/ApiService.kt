@@ -7,8 +7,9 @@ import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.VehicleLocation
+import edu.rpi.shuttletracker.data.models.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.VehicleVelocities
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -19,6 +20,9 @@ interface ApiService {
 
     @GET("etas")
     suspend fun getVehicleEtas(): NetworkResponse<Map<String, VehicleStopEta>, ErrorResponse>
+
+    @GET("velocities")
+    suspend fun getVehicleVelocities(): NetworkResponse<Map<String, VehicleVelocities>, ErrorResponse>
 
     @GET("routes")
     suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse>
