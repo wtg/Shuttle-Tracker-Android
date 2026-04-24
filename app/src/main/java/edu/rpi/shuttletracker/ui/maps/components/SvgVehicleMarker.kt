@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.maps
+package edu.rpi.shuttletracker.ui.maps.components
 
 import android.content.Context
 import android.graphics.Bitmap

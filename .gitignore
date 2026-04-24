@@ -2,6 +2,7 @@
 /.idea/
 /local.properties
 google_maps_api.xml
+/build/
 /app/src/.DS_Store
 /app/src/debug/.DS_Store
 /app/src/debug/res/.DS_Store
@@ -18,3 +19,4 @@ google_maps_api.xml
 /build/intermediates/lint-cache/maven.google/com/google/.DS_Store
 /app/src/main/res/values/.DS_Store
 /build/intermediates/lint-cache/maven.google/com/google/android/.DS_Store
+/build/reports/

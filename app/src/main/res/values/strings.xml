@@ -91,7 +91,7 @@
     <string name="to_settings_explanation">Go to settings to enable permissions</string>
     <string name="to_settings">To settings</string>
     <string name="not_now">Not now</string>
-    
+
     <string name="permission_denied">Permission denied.</string>
     <string name="permission_granted">Permission granted.</string>
     <string name="grant_permissions">Grant permissions</string>
@@ -107,12 +107,16 @@
     <string name="vehicle_number">Shuttle %1$s</string>
     <string name="vehicle_speed">%.1f mph</string>
     <string name="no_location_warning">Unable to determine your location</string>
-    <string name="bottom_sheet_peek_title">"Student Union Shuttle Arrivals"</string>
-    <string name="bottom_sheet_peek_subtitle">"Chasan stop available M–F, 7:00 AM – 5:30 PM"</string>
     <string name="schedule_select_route">Select a route</string>
     <string name="no_schedule_found">No schedule found</string>
     <string name="schedule_none_running">No shuttles running</string>
     <string name="route_label_format">%1$s Route</string>
+
+    <!-- Schedule bottom sheet -->
+    <string name="schedule_title">Schedule</string>
+    <string name="schedule_subtitle">Times are based on departures from the Student Union.
+        Arrival times at other stops are estimated using fixed offsets and may not be exact.</string>
+    <string name="no_stop_times">No stop times available</string>
 
     <!-- Errors -->
     <string name="understand">I understand</string>
@@ -129,8 +133,6 @@
     <string name="base_url">Base URL</string>
     <string name="change_url_warning">Changing the URL will restart the app and stop all running services</string>
     <string name="invalid_url">Invalid URL</string>
-    <string name="color_blind_description">More accessible shuttle icons</string>
-    <string name="color_blind_mode">Colorblind mode</string>
     <string name="current_meters">%1$d meters</string>
     <string name="libraries_used">Libraries used</string>
     <string name="dev_options_activated">Dev options activated</string>
@@ -138,6 +140,7 @@
     <string name="dev_options">Developer Options</string>
     <string name="app_theme">App Theme</string>
     <string name="redo_setup">Redo Setup</string>
+    <string name="open_app_settings">Open app settings</string>
 
     <!-- Analytics -->
     <string name="analytics">Analytics</string>
@@ -149,18 +152,5 @@
     <!-- Dev menu -->
     <string name="max_stop_dist">Maximum stop distance</string>
 
-
-
-    <!-- Schedule -->
     <string name="effective_from">Effective from %1$s to %2$s</string>
-    <string name="monday">Monday</string>
-    <string name="tuesday">Tuesday</string>
-    <string name="wednesday">Wednesday</string>
-    <string name="thursday">Thursday</string>
-    <string name="friday">Friday</string>
-    <string name="saturday">Saturday</string>
-    <string name="sunday">Sunday</string>
-    <string name="time_estimated_reliable">Estimated Time</string>
-    <string name="time_estimated_unreliable">Estimated Time (do not rely on)</string>
-
 </resources>

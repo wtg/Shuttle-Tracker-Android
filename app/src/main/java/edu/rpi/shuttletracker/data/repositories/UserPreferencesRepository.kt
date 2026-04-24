@@ -201,10 +201,10 @@ class UserPreferencesRepository
             }
         }
 
-        fun getShuttleAnimations(): Flow<Boolean> = 
+        fun getShuttleAnimations(): Flow<Boolean> =
             dataStore.data.map {
-                it[SHUTTLE_ANIMATIONS] ?:
-        true
+                it[SHUTTLE_ANIMATIONS]
+                    ?: true
             }
 
         suspend fun saveShuttleAnimations(animationsEnable: Boolean) {
@@ -216,12 +216,11 @@ class UserPreferencesRepository
         fun getShuttleRotation(): Flow<Boolean> =
             dataStore.data.map {
                 it[SHUTTLE_ROTATION] ?: false
-        }
+            }
 
         suspend fun saveShuttleRotations(rotationsEnable: Boolean) {
             dataStore.edit {
                 it[SHUTTLE_ROTATION] = rotationsEnable
+            }
         }
-    }
-        
     }

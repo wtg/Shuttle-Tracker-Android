@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.ui.maps
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -13,36 +14,34 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationDisabled
 import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,14 +73,16 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.ScheduleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
+import edu.rpi.shuttletracker.data.models.Vehicle
+import edu.rpi.shuttletracker.ui.maps.components.ScheduleSheet
+import edu.rpi.shuttletracker.ui.maps.components.getVehicleMarkerDescriptor
 import edu.rpi.shuttletracker.ui.theme.VehicleColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,36 +93,15 @@ fun MapsScreen(
     viewModel: MapsViewModel = hiltViewModel(),
 ) {
     val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
-
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val sheetState =
-        rememberStandardBottomSheetState(
-            initialValue = SheetValue.PartiallyExpanded,
-        )
-    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
+    var selectedScheduleRoute by rememberSaveable { mutableStateOf<String?>(null) }
 
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = 160.dp,
-        sheetDragHandle = { BottomSheetDefaults.DragHandle() },
-        sheetContainerColor = MaterialTheme.colorScheme.surface,
-        sheetShadowElevation = 10.dp,
-        sheetContent = {
-            val showDetails by remember(scaffoldState.bottomSheetState) {
-                derivedStateOf {
-                    scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded ||
-                        scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-                }
-            }
+    var showScheduleSheet by rememberSaveable { mutableStateOf(false) }
+    val scheduleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-            ScheduleSheetContent(
-                schedule = mapsUiState.schedule,
-                showDetails = showDetails,
-            )
-        },
+    Scaffold(
         snackbarHost = {
-            // finds errors when requesting data to server
             CheckResponseError(
                 mapsUiState.networkError,
                 mapsUiState.serverError,
@@ -132,40 +112,39 @@ fun MapsScreen(
             SnackbarHost(hostState = snackbarHostState)
         },
     ) { padding ->
+        Box(Modifier.fillMaxSize()) {
+            ShuttleMap(
+                mapsUiState = mapsUiState,
+                padding = padding,
+                onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
+                onScheduleClick = { showScheduleSheet = true },
+                onToggleMapTypeClick = { viewModel.toggleMapType() },
+            )
 
-        ShuttleMap(
-            mapsUiState = mapsUiState,
-            padding = padding,
-            onScheduleClick = { navigator.navigate(ScheduleScreenDestination()) },
-            onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
-            onToggleMapTypeClick = { viewModel.toggleMapType() },
-        )
+            ScheduleSheet(
+                show = showScheduleSheet,
+                sheetState = scheduleSheetState,
+                schedule = mapsUiState.schedule,
+                routesByName = mapsUiState.routes,
+                selectedRoute = selectedScheduleRoute,
+                onSelectedRouteChange = { selectedScheduleRoute = it },
+                onDismiss = { showScheduleSheet = false },
+            )
+        }
     }
 }
 
-/**
- * Creates the map displaying everything
- *
- * @param mapsUiState: The UI state of the view from the view-model
- * @param padding: Padding needed for the map content padding
- * to close/open the stop bottom sheet
- * @param onScheduleClick: Callback invoked when the user taps the Schedule button
- * @param onSettingsClick: Callback invoked when the user taps the Settings button
- * @param onToggleMapTypeClick: Callback invoked when user taps the MapType button
- *
- * */
 @Composable
 private fun ShuttleMap(
     mapsUiState: MapsUiState,
     padding: PaddingValues,
-    onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onScheduleClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // can't show current location without location
     val isLocationPermissionGranted by remember {
         mutableStateOf(
             ActivityCompat.checkSelfPermission(
@@ -175,7 +154,6 @@ private fun ShuttleMap(
         )
     }
 
-    // keeps track of where the camera currently is
     val cameraPositionState =
         rememberCameraPositionState {
             position =
@@ -191,7 +169,6 @@ private fun ShuttleMap(
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
-            // makes sure the items drawn (current location and compass) are clickable
             contentPadding = padding,
             cameraPositionState = cameraPositionState,
             properties =
@@ -212,14 +189,12 @@ private fun ShuttleMap(
                             null
                         },
                 ),
-            // removes the zoom control which was covered by the FAB
             uiSettings =
                 MapUiSettings(
                     zoomControlsEnabled = false,
                     myLocationButtonEnabled = false,
                 ),
         ) {
-            // creates the stops
             mapsUiState.routes.forEach { (_, route) ->
                 route.stopDetails.forEach { (_, stop) ->
                     StopMarker(
@@ -230,16 +205,14 @@ private fun ShuttleMap(
                 }
             }
 
-            // creates the vehicle markers
-            mapsUiState.vehicleLocations.values.forEach {
+            mapsUiState.vehicles.forEach { vehicle ->
                 VehicleMarker(
-                    vehicleLocation = it,
+                    vehicle = vehicle,
                     animationsEnabled = mapsUiState.shuttleAnimationsEnabled,
                     rotationEnabled = mapsUiState.shuttleRotationEnabled,
                 )
             }
 
-            // draws the paths
             mapsUiState.routes.forEach { (_, route) ->
                 val points = route.latLng()
                 if (points.isNotEmpty()) {
@@ -248,9 +221,8 @@ private fun ShuttleMap(
                         color =
                             Color(
                                 android.graphics.Color
-                                    .valueOf(
-                                        route.color.toColorInt(),
-                                    ).toArgb(),
+                                    .valueOf(route.color.toColorInt())
+                                    .toArgb(),
                             ),
                     )
                 }
@@ -267,13 +239,12 @@ private fun ShuttleMap(
         MapButtonsOverlay(
             modifier =
                 Modifier
-                    .statusBarsPadding()
                     .padding(padding)
                     .padding(horizontal = 10.dp),
             isMyLocationEnabled = isLocationPermissionGranted,
             mapTypeIcon = mapTypeIcon,
-            onScheduleClick = onScheduleClick,
             onSettingsClick = onSettingsClick,
+            onScheduleClick = onScheduleClick,
             onRecenterClick = {
                 LocationServices
                     .getFusedLocationProviderClient(context)
@@ -306,9 +277,6 @@ private fun ShuttleMap(
     }
 }
 
-/**
- * Creates a marker for a stop
- * */
 @Composable
 private fun StopMarker(
     stop: Stop,
@@ -345,23 +313,26 @@ private fun StopMarker(
     )
 }
 
-/**
- * Creates a marker for a vehicle
- * */
 @Composable
-private fun VehicleMarker(vehicleLocation: VehicleLocation, animationsEnabled: Boolean, rotationEnabled: Boolean,) {
+private fun VehicleMarker(
+    vehicle: Vehicle,
+    animationsEnabled: Boolean,
+    rotationEnabled: Boolean,
+) {
     val context = LocalContext.current
-    val target = vehicleLocation.latLng()
-    val heading = vehicleLocation.headingDegrees?.toFloat() ?: 0f
+    val target = vehicle.latLng()
+    val heading = vehicle.headingDegrees?.toFloat() ?: 0f
 
-    val lat = remember { androidx.compose.animation.core.Animatable(target.latitude.toFloat()) }
-    val lng = remember { androidx.compose.animation.core.Animatable(target.longitude.toFloat()) }
+    val lat = remember { Animatable(target.latitude.toFloat()) }
+    val lng = remember { Animatable(target.longitude.toFloat()) }
 
-    val markerState = rememberUpdatedMarkerState(
-        position = LatLng(lat.value.toDouble(), lng.value.toDouble())
-    )
+    val markerState =
+        rememberUpdatedMarkerState(
+            position = LatLng(lat.value.toDouble(), lng.value.toDouble()),
+        )
 
-    LaunchedEffect(target,animationsEnabled) {
+    // Animate movement
+    LaunchedEffect(target, animationsEnabled) {
         if (animationsEnabled) {
             launch {
                 lat.animateTo(
@@ -369,42 +340,57 @@ private fun VehicleMarker(vehicleLocation: VehicleLocation, animationsEnabled: B
                     animationSpec = tween(durationMillis = 2000),
                 )
             }
-
             launch {
                 lng.animateTo(
                     target.longitude.toFloat(),
                     animationSpec = tween(durationMillis = 2000),
                 )
             }
-        }
-
-        else {
-
+        } else {
             lat.snapTo(target.latitude.toFloat())
             lng.snapTo(target.longitude.toFloat())
-
         }
-
-
     }
 
-    val vehicleColor =
-        when (vehicleLocation.routeName) {
+    // Update marker position when animation values change
+    LaunchedEffect(lat.value, lng.value) {
+        markerState.position = LatLng(lat.value.toDouble(), lng.value.toDouble())
+    }
+
+    val resolvedColor =
+        when (vehicle.routeName) {
             "NORTH" -> VehicleColors.North
             "WEST" -> VehicleColors.West
-            else -> VehicleColors.Default
+            else -> null
         }
+
+    var vehicleColor by remember { mutableStateOf(resolvedColor) }
+
+    LaunchedEffect(resolvedColor) {
+        if (resolvedColor != null) {
+            vehicleColor = resolvedColor
+        } else {
+            delay(30_000)
+            if (vehicleColor == null) {
+                vehicleColor = VehicleColors.Default
+            }
+        }
+    }
+
+    val finalColor = resolvedColor ?: vehicleColor ?: VehicleColors.Default
 
     val icon =
-        remember(vehicleColor) {
-            getVehicleMarkerDescriptor(context, 25f, vehicleColor.toArgb())
+        remember(finalColor) {
+            getVehicleMarkerDescriptor(context, 25f, finalColor.toArgb())
         }
 
-    // gets vehicle speed and last time it updated
-    val lastUpdatedAgoText = vehicleLocation.getTimeAgo().collectAsStateWithLifecycle(initialValue = "").value
+    val timeAgoFlow = remember(vehicle.timestamp) { vehicle.getTimeAgo() }
+    val lastUpdatedAgoText =
+        timeAgoFlow.collectAsStateWithLifecycle(initialValue = "").value
+
     val snippetText =
         buildString {
-            append(stringResource(R.string.vehicle_speed, vehicleLocation.speedMph))
+            append(stringResource(R.string.vehicle_speed, vehicle.speedMph))
             if (lastUpdatedAgoText.isNotBlank()) {
                 append(" • ")
                 append(lastUpdatedAgoText)
@@ -413,7 +399,7 @@ private fun VehicleMarker(vehicleLocation: VehicleLocation, animationsEnabled: B
 
     Marker(
         state = markerState,
-        title = stringResource(R.string.vehicle_number, vehicleLocation.name),
+        title = stringResource(R.string.vehicle_number, vehicle.name),
         icon = icon,
         snippet = snippetText,
         anchor = Offset(0.5f, 0.5f),
@@ -432,8 +418,8 @@ private fun MapButtonsOverlay(
     modifier: Modifier = Modifier,
     isMyLocationEnabled: Boolean,
     mapTypeIcon: ImageVector,
-    onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onScheduleClick: () -> Unit,
     onRecenterClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
 ) {
@@ -447,10 +433,6 @@ private fun MapButtonsOverlay(
                     .align(Alignment.TopStart),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-//            ActionButton(icon = Icons.Outlined.Schedule) {
-//                onScheduleClick()
-//            }
-
             ActionButton(icon = Icons.Outlined.Settings) {
                 onSettingsClick()
             }
@@ -475,6 +457,21 @@ private fun MapButtonsOverlay(
             ActionButton(icon = mapTypeIcon) {
                 onToggleMapTypeClick()
             }
+        }
+
+        FloatingActionButton(
+            onClick = onScheduleClick,
+            modifier =
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Schedule,
+                contentDescription = "Open schedule",
+            )
         }
     }
 }

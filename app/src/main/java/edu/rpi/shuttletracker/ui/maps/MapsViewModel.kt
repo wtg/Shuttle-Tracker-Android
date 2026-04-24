@@ -9,14 +9,18 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.Vehicle
+import edu.rpi.shuttletracker.data.models.VehicleLocation
+import edu.rpi.shuttletracker.data.models.VehicleMerger
+import edu.rpi.shuttletracker.data.models.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.VehicleVelocities
 import edu.rpi.shuttletracker.data.repositories.ApiRepository
 import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -26,19 +30,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MapsViewModel
+    // represents the ui state of the view
     @Inject
     constructor(
         private val apiRepository: ApiRepository,
         private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
-        // represents the ui state of the view
         private val _mapsUiState = MutableStateFlow(MapsUiState())
         val mapsUiState: StateFlow<MapsUiState> = _mapsUiState
 
         init {
             loadAll()
-            observeVehicleLocations()
-//            observeVehicleEtas()
+            observeVehicles()
             loadPreferences()
         }
 
@@ -47,9 +50,6 @@ class MapsViewModel
             if (mapsUiState.value.schedule == null) loadSchedule()
         }
 
-        /**
-         * sets all the errors to none
-         * */
         fun clearErrors() {
             _mapsUiState.update {
                 it.copy(
@@ -65,35 +65,38 @@ class MapsViewModel
             loadAll()
         }
 
-        private fun observeVehicleLocations() {
-            apiRepository
-                .observeVehicleLocations(pollMs = 5_000L)
-                .flowOn(Dispatchers.IO)
-                .onEach { response ->
-                    readApiResponse(response) { buses ->
-                        _mapsUiState.update {
-                            it.copy(vehicleLocations = buses)
-                        }
+        private fun observeVehicles() {
+            combine(
+                apiRepository.observeVehicleLocations(pollMs = 5_000L),
+                apiRepository.observeVehicleEtas(pollMs = 5_000L),
+                apiRepository.observeVehicleVelocities(pollMs = 5_000L),
+            ) { locationsResponse, etasResponse, velocitiesResponse ->
+                Triple(locationsResponse, etasResponse, velocitiesResponse)
+            }.flowOn(Dispatchers.IO)
+                .onEach { (locationsResponse, etasResponse, velocitiesResponse) ->
+                    var locations: Map<String, VehicleLocation> = emptyMap()
+                    var etas: Map<String, VehicleStopEta> = emptyMap()
+                    var velocities: Map<String, VehicleVelocities> = emptyMap()
+
+                    readApiResponse(locationsResponse) { locations = it }
+                    readApiResponse(etasResponse) { etas = it }
+                    readApiResponse(velocitiesResponse) { velocities = it }
+
+                    val vehicles =
+                        VehicleMerger.merge(
+                            locations = locations,
+                            velocities = velocities,
+                            etas = etas,
+                        )
+
+                    _mapsUiState.update {
+                        it.copy(
+                            vehicles = vehicles,
+                        )
                     }
                 }.launchIn(viewModelScope)
         }
 
-        private fun observeVehicleEtas() {
-            apiRepository
-                .observeVehicleEtas(pollMs = 30_000L)
-                .flowOn(Dispatchers.IO)
-                .onEach { response ->
-                    readApiResponse(response) { etas ->
-                        _mapsUiState.update {
-                            it.copy(vehicleStopEtas = etas)
-                        }
-                    }
-                }.launchIn(viewModelScope)
-        }
-
-        /**
-         * Loads all possible routes and maps the API response
-         * */
         private fun loadRoutes() {
             viewModelScope.launch {
                 readApiResponse(apiRepository.getRoutes()) { routes ->
@@ -115,7 +118,6 @@ class MapsViewModel
         }
 
         private fun loadPreferences() {
-            // gets user preference for dark mode
             userPreferencesRepository
                 .getThemeMode()
                 .flowOn(Dispatchers.Default)
@@ -176,9 +178,7 @@ class MapsViewModel
         fun setShuttleAnimations(animationsEnable: Boolean) {
             viewModelScope.launch {
                 userPreferencesRepository.saveShuttleAnimations(animationsEnable)
-
             }
-
         }
 
         fun setShuttleRotation(rotationEnable: Boolean) {
@@ -186,7 +186,6 @@ class MapsViewModel
                 userPreferencesRepository.saveShuttleRotations(rotationEnable)
             }
         }
-
 
         /**
          * Reads the network response and maps it to correct place
@@ -215,13 +214,9 @@ class MapsViewModel
         }
     }
 
-/**
- * Representation of the screen
- * */
 @Immutable
 data class MapsUiState(
-    val vehicleLocations: Map<String, VehicleLocation> = emptyMap(),
-    val vehicleStopEtas: Map<String, VehicleStopEta> = emptyMap(),
+    val vehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
     val schedule: Schedule? = null,
     val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,

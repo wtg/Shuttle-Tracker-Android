@@ -7,13 +7,16 @@ import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleLocation
-import edu.rpi.shuttletracker.data.models.vehicle.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.VehicleLocation
+import edu.rpi.shuttletracker.data.models.VehicleStopEta
+import edu.rpi.shuttletracker.data.models.VehicleVelocities
 
 interface ApiHelper {
     suspend fun getVehicleLocations(): NetworkResponse<Map<String, VehicleLocation>, ErrorResponse>
 
     suspend fun getVehicleEtas(): NetworkResponse<Map<String, VehicleStopEta>, ErrorResponse>
+
+    suspend fun getVehicleVelocities(): NetworkResponse<Map<String, VehicleVelocities>, ErrorResponse>
 
     suspend fun getRoutes(): NetworkResponse<Map<String, Route>, ErrorResponse>
 

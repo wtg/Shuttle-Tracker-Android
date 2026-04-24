@@ -7,6 +7,7 @@ plugins {
     id("com.mikepenz.aboutlibraries.plugin")
     id("com.google.gms.google-services")
     id("org.jlleitschuh.gradle.ktlint")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)
@@ -45,8 +46,8 @@ android {
         applicationId = "edu.rpi.shuttletracker"
         minSdk = 26
         targetSdk = 36
-        versionCode = 14
-        versionName = "2.3.0"
+        versionCode = 15
+        versionName = "2.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
