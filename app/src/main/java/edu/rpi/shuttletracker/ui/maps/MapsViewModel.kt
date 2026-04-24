@@ -30,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MapsViewModel
-    // represents the ui state of the view
+// represents the ui state of the view
     @Inject
     constructor(
         private val apiRepository: ApiRepository,
@@ -226,6 +226,6 @@ data class MapsUiState(
     val totalAnnouncements: Int = -1,
     val themeMode: ThemeMode = ThemeMode.System,
     val mapType: MapType = MapType.NORMAL,
-    val shuttleAnimationsEnabled: Boolean = true,
-    val shuttleRotationEnabled: Boolean = false,
+    val shuttleAnimationsEnabled: Boolean = false,
+    val shuttleRotationEnabled: Boolean = true,
 )

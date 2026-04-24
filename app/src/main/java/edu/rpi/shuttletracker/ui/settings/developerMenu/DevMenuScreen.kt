@@ -46,7 +46,6 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.ui.MainActivity
-import edu.rpi.shuttletracker.ui.maps.MapsViewModel
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,8 +59,6 @@ fun DevMenuScreen(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     val devMenuUiState = viewModel.devMenuUiState.collectAsStateWithLifecycle().value
-    val mapsViewModel: MapsViewModel = hiltViewModel()
-    val mapsUiState = mapsViewModel.mapsUiState.collectAsStateWithLifecycle().value
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -89,22 +86,6 @@ fun DevMenuScreen(
                     navigator.popBackStack()
                 })
             }
-
-            SettingsItem(
-                icon = Icons.Outlined.Code,
-                title = "Shuttle Rotation",
-                description = "Rotate shuttle based on heading",
-            ) {
-                Switch(
-                    checked = mapsUiState.shuttleRotationEnabled,
-                    onCheckedChange = { mapsViewModel.setShuttleRotation(it) },
-                )
-            }
-
-//            MinStopDistItem(
-//                maxStopDist = devMenuUiState.maxStopDist,
-//                updateMaxStopDist = viewModel::updateMinStopDist,
-//            )
 
             BaseUrlSettingItem(
                 currentUrl = devMenuUiState.baseUrl,

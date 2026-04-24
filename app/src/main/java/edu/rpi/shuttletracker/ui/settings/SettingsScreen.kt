@@ -12,6 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Contrast
+import androidx.compose.material.icons.outlined.DirectionsBus
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material.icons.outlined.Settings
@@ -45,7 +47,6 @@ import com.ramcosta.composedestinations.generated.destinations.DevMenuScreenDest
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.ui.maps.MapsViewModel
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.ui.util.SettingsItem
 import kotlinx.coroutines.launch
@@ -56,7 +57,6 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     navigator: DestinationsNavigator,
     viewModel: SettingsViewModel = hiltViewModel(),
-    mapsViewModel: MapsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
 
@@ -78,8 +78,6 @@ fun SettingsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val scope = rememberCoroutineScope()
-
-    val mapsUiState = mapsViewModel.mapsUiState.collectAsStateWithLifecycle().value
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -108,6 +106,32 @@ fun SettingsScreen(
 
             item {
                 SettingsItem(
+                    icon = Icons.Outlined.Explore,
+                    title = stringResource(R.string.rotation),
+                    description = stringResource(R.string.rotation_description),
+                ) {
+                    Switch(
+                        checked = settingsUiState.rotationEnabled,
+                        onCheckedChange = { viewModel.updateShuttleRotation(it) },
+                    )
+                }
+            }
+
+            item {
+                SettingsItem(
+                    icon = Icons.Outlined.DirectionsBus,
+                    title = stringResource(R.string.animation),
+                    description = stringResource(R.string.animation_description),
+                ) {
+                    Switch(
+                        checked = settingsUiState.animationsEnabled,
+                        onCheckedChange = { viewModel.updateShuttleAnimations(it) },
+                    )
+                }
+            }
+
+            item {
+                SettingsItem(
                     Icons.Outlined.RestartAlt,
                     stringResource(R.string.redo_setup),
                     onClick = {
@@ -124,13 +148,6 @@ fun SettingsScreen(
                     Icons.Outlined.Info,
                     stringResource(R.string.about),
                     onClick = { navigator.navigate(AboutScreenDestination()) },
-                )
-            }
-
-            item {
-                ShuttleAnimationSettingItem(
-                    animationsEnabled = mapsUiState.shuttleAnimationsEnabled,
-                    updateAnimations = mapsViewModel::setShuttleAnimations,
                 )
             }
 
@@ -183,21 +200,5 @@ fun ThemeModeSettingItem(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ShuttleAnimationSettingItem(
-    animationsEnabled: Boolean,
-    updateAnimations: (Boolean) -> Unit,
-) {
-    SettingsItem(
-        icon = Icons.Outlined.Contrast,
-        title = "Shuttle Animations",
-    ) {
-        Switch(
-            checked = animationsEnabled,
-            onCheckedChange = { updateAnimations(it) },
-        )
     }
 }
