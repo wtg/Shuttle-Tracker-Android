@@ -20,6 +20,7 @@ data class Vehicle(
     val longitude: Double,
     val speedMph: Double,
     val timestamp: String,
+    val headingDegrees: Int?,
     // from velocities
     val routeName: String?,
     val isAtStop: Boolean?,
@@ -70,6 +71,7 @@ data class VehicleLocation(
     val longitude: Double,
     @SerializedName("speed_mph") val speedMph: Double,
     val timestamp: String,
+    @SerializedName("heading_degrees") val headingDegrees: Int?,
 )
 
 data class VehicleStopEta(
@@ -101,6 +103,7 @@ object VehicleMerger {
                     longitude = location.longitude,
                     speedMph = location.speedMph,
                     timestamp = location.timestamp,
+                    headingDegrees = location.headingDegrees,
                     routeName = velocity?.routeName,
                     isAtStop = velocity?.isAtStop,
                     currentStop = velocity?.currentStop,

@@ -3,6 +3,8 @@ package edu.rpi.shuttletracker.ui.maps
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -206,6 +208,8 @@ private fun ShuttleMap(
             mapsUiState.vehicles.forEach { vehicle ->
                 VehicleMarker(
                     vehicle = vehicle,
+                    animationsEnabled = mapsUiState.shuttleAnimationsEnabled,
+                    rotationEnabled = mapsUiState.shuttleRotationEnabled,
                 )
             }
 
@@ -310,13 +314,47 @@ private fun StopMarker(
 }
 
 @Composable
-private fun VehicleMarker(vehicle: Vehicle) {
+private fun VehicleMarker(
+    vehicle: Vehicle,
+    animationsEnabled: Boolean,
+    rotationEnabled: Boolean,
+) {
     val context = LocalContext.current
-    val markerState = rememberUpdatedMarkerState(position = vehicle.latLng())
+    val target = vehicle.latLng()
+    val heading = vehicle.headingDegrees?.toFloat() ?: 0f
 
-    // every time the vehicle changes, update the position of the marker
-    LaunchedEffect(vehicle) {
-        markerState.position = vehicle.latLng()
+    val lat = remember { Animatable(target.latitude.toFloat()) }
+    val lng = remember { Animatable(target.longitude.toFloat()) }
+
+    val markerState =
+        rememberUpdatedMarkerState(
+            position = LatLng(lat.value.toDouble(), lng.value.toDouble()),
+        )
+
+    // Animate movement
+    LaunchedEffect(target, animationsEnabled) {
+        if (animationsEnabled) {
+            launch {
+                lat.animateTo(
+                    target.latitude.toFloat(),
+                    animationSpec = tween(durationMillis = 2000),
+                )
+            }
+            launch {
+                lng.animateTo(
+                    target.longitude.toFloat(),
+                    animationSpec = tween(durationMillis = 2000),
+                )
+            }
+        } else {
+            lat.snapTo(target.latitude.toFloat())
+            lng.snapTo(target.longitude.toFloat())
+        }
+    }
+
+    // Update marker position when animation values change
+    LaunchedEffect(lat.value, lng.value) {
+        markerState.position = LatLng(lat.value.toDouble(), lng.value.toDouble())
     }
 
     val resolvedColor =
@@ -346,7 +384,6 @@ private fun VehicleMarker(vehicle: Vehicle) {
             getVehicleMarkerDescriptor(context, 25f, finalColor.toArgb())
         }
 
-    // gets vehicle speed and last time it updated
     val timeAgoFlow = remember(vehicle.timestamp) { vehicle.getTimeAgo() }
     val lastUpdatedAgoText =
         timeAgoFlow.collectAsStateWithLifecycle(initialValue = "").value
@@ -367,6 +404,8 @@ private fun VehicleMarker(vehicle: Vehicle) {
         snippet = snippetText,
         anchor = Offset(0.5f, 0.5f),
         zIndex = 3f,
+        rotation = if (rotationEnabled) heading else 0f,
+        flat = rotationEnabled,
         onClick = {
             it.showInfoWindow()
             true

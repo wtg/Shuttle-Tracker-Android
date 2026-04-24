@@ -12,6 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Contrast
+import androidx.compose.material.icons.outlined.DirectionsBus
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material.icons.outlined.Settings
@@ -24,6 +26,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -99,6 +102,32 @@ fun SettingsScreen(
                     themeMode = settingsUiState.themeMode,
                     updateThemeMode = viewModel::updateThemeMode,
                 )
+            }
+
+            item {
+                SettingsItem(
+                    icon = Icons.Outlined.Explore,
+                    title = stringResource(R.string.rotation),
+                    description = stringResource(R.string.rotation_description),
+                ) {
+                    Switch(
+                        checked = settingsUiState.rotationEnabled,
+                        onCheckedChange = { viewModel.updateShuttleRotation(it) },
+                    )
+                }
+            }
+
+            item {
+                SettingsItem(
+                    icon = Icons.Outlined.DirectionsBus,
+                    title = stringResource(R.string.animation),
+                    description = stringResource(R.string.animation_description),
+                ) {
+                    Switch(
+                        checked = settingsUiState.animationsEnabled,
+                        onCheckedChange = { viewModel.updateShuttleAnimations(it) },
+                    )
+                }
             }
 
             item {

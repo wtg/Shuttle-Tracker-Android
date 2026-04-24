@@ -30,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MapsViewModel
-    // represents the ui state of the view
+// represents the ui state of the view
     @Inject
     constructor(
         private val apiRepository: ApiRepository,
@@ -135,6 +135,24 @@ class MapsViewModel
                         it.copy(mapType = mapType)
                     }
                 }.launchIn(viewModelScope)
+
+            userPreferencesRepository
+                .getShuttleAnimations()
+                .flowOn(Dispatchers.Default)
+                .onEach { animationsEnable ->
+                    _mapsUiState.update {
+                        it.copy(shuttleAnimationsEnabled = animationsEnable)
+                    }
+                }.launchIn(viewModelScope)
+
+            userPreferencesRepository
+                .getShuttleRotation()
+                .flowOn(Dispatchers.Default)
+                .onEach { rotationEnable ->
+                    _mapsUiState.update {
+                        it.copy(shuttleRotationEnabled = rotationEnable)
+                    }
+                }.launchIn(viewModelScope)
         }
 
         fun updateMapType(mapType: MapType) {
@@ -157,6 +175,21 @@ class MapsViewModel
             updateMapType(next)
         }
 
+        fun setShuttleAnimations(animationsEnable: Boolean) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveShuttleAnimations(animationsEnable)
+            }
+        }
+
+        fun setShuttleRotation(rotationEnable: Boolean) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveShuttleRotations(rotationEnable)
+            }
+        }
+
+        /**
+         * Reads the network response and maps it to correct place
+         * */
         private fun <T> readApiResponse(
             response: NetworkResponse<T, ErrorResponse>,
             success: (body: T) -> Unit,
@@ -193,4 +226,6 @@ data class MapsUiState(
     val totalAnnouncements: Int = -1,
     val themeMode: ThemeMode = ThemeMode.System,
     val mapType: MapType = MapType.NORMAL,
+    val shuttleAnimationsEnabled: Boolean = false,
+    val shuttleRotationEnabled: Boolean = true,
 )

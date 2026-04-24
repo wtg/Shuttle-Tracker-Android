@@ -45,6 +45,8 @@ class UserPreferencesRepository
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
             private val THEME_MODE = stringPreferencesKey("theme_mode")
             private val MAP_TYPE = stringPreferencesKey("map_type")
+            private val SHUTTLE_ANIMATIONS = booleanPreferencesKey("shuttle-animations")
+            private val SHUTTLE_ROTATION = booleanPreferencesKey("shuttle_rotation")
         }
 
         suspend fun getUserId(): String =
@@ -196,6 +198,29 @@ class UserPreferencesRepository
                 if (userId != null) {
                     prefs[USER_ID] = userId
                 }
+            }
+        }
+
+        fun getShuttleAnimations(): Flow<Boolean> =
+            dataStore.data.map {
+                it[SHUTTLE_ANIMATIONS]
+                    ?: false
+            }
+
+        suspend fun saveShuttleAnimations(animationsEnable: Boolean) {
+            dataStore.edit {
+                it[SHUTTLE_ANIMATIONS] = animationsEnable
+            }
+        }
+
+        fun getShuttleRotation(): Flow<Boolean> =
+            dataStore.data.map {
+                it[SHUTTLE_ROTATION] ?: true
+            }
+
+        suspend fun saveShuttleRotations(rotationsEnable: Boolean) {
+            dataStore.edit {
+                it[SHUTTLE_ROTATION] = rotationsEnable
             }
         }
     }
