@@ -58,6 +58,10 @@ fun AboutScreen(
         )
 
     val context = LocalContext.current
+    val repositoryUrl = stringResource(R.string.url_repository)
+    val repositoryIssuesUrl = stringResource(R.string.url_repository_issues)
+    val privacyPolicyUrl = stringResource(R.string.url_private_policy)
+    val devOptionsActivatedMessage = stringResource(R.string.dev_options_activated)
 
     Scaffold(
         topBar = {
@@ -90,19 +94,19 @@ fun AboutScreen(
             SettingsItem(
                 icon = Icons.Outlined.Code,
                 title = stringResource(R.string.check_out_repository),
-                onClick = { uriHandler.openUri(context.getString(R.string.url_repository)) },
+                onClick = { uriHandler.openUri(repositoryUrl) },
             )
 
             SettingsItem(
                 icon = Icons.Outlined.BugReport,
                 title = stringResource(R.string.report_problem),
-                onClick = { uriHandler.openUri(context.getString(R.string.url_repository_issues)) },
+                onClick = { uriHandler.openUri(repositoryIssuesUrl) },
             )
 
             SettingsItem(
                 icon = Icons.Outlined.Shield,
                 title = stringResource(R.string.view_privacy_policy),
-                onClick = { uriHandler.openUri(context.getString(R.string.url_private_policy)) },
+                onClick = { uriHandler.openUri(privacyPolicyUrl) },
             )
 
             SettingsItem(
@@ -113,6 +117,7 @@ fun AboutScreen(
 
             var timesClicked by remember { mutableIntStateOf(10) }
             var toast: Toast? = null
+            val devOptionsStateMessage = stringResource(R.string.dev_options_state, timesClicked - 1)
             SettingsItem(
                 icon = Icons.Outlined.Info,
                 title = stringResource(R.string.version),
@@ -127,7 +132,7 @@ fun AboutScreen(
                         toast =
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.dev_options_activated),
+                                devOptionsActivatedMessage,
                                 Toast.LENGTH_SHORT,
                             )
                         viewModel.activateDevOptions()
@@ -135,7 +140,7 @@ fun AboutScreen(
                         toast =
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.dev_options_state, timesClicked),
+                                devOptionsStateMessage,
                                 Toast.LENGTH_SHORT,
                             )
                     }

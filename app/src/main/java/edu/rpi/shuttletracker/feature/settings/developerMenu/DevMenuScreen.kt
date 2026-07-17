@@ -124,6 +124,7 @@ fun BaseUrlSettingItem(
     var textFieldUrl by remember { mutableStateOf(currentUrl) }
 
     val context = LocalContext.current
+    val invalidUrlMessage = stringResource(R.string.invalid_url)
 
     // updates to the current url whenever the dialog is shown
     LaunchedEffect(key1 = showDialog) {
@@ -179,7 +180,7 @@ fun BaseUrlSettingItem(
                         Toast
                             .makeText(
                                 context,
-                                context.getString(R.string.invalid_url),
+                                invalidUrlMessage,
                                 Toast.LENGTH_SHORT,
                             ).show()
                     }

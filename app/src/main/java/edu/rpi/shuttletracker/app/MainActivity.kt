@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.DestinationsNavHost
@@ -31,13 +32,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+            val setupCompletedFlow =
+                remember(userPreferencesRepository) {
+                    userPreferencesRepository
+                        .getSetupCompleted()
+                        .map { it as Boolean? }
+                }
+
             val themeMode by userPreferencesRepository
                 .getThemeMode()
                 .collectAsStateWithLifecycle(initialValue = ThemeMode.System)
 
-            val setupCompleted by userPreferencesRepository
-                .getSetupCompleted()
-                .map { it as Boolean? }
+            val setupCompleted by setupCompletedFlow
                 .collectAsStateWithLifecycle(initialValue = null)
 
             ShuttleTrackerTheme(themeMode = themeMode) {
