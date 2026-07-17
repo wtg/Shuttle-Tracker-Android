@@ -1,8 +1,6 @@
 package edu.rpi.shuttletracker.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
-import edu.rpi.shuttletracker.data.models.Event
-import edu.rpi.shuttletracker.util.Flatten
 
 data class AnnouncementDto(
     @SerializedName("subject") val subject: String,
@@ -41,8 +39,48 @@ data class AnalyticsDto(
     @SerializedName("clientPlatform") val clientPlatform: String,
     @SerializedName("clientPlatformVersion") val clientPlatformVersion: String,
     @SerializedName("appVersion") val appVersion: String,
-    @Flatten("userSettings::colorBlindMode") val colorBlindMode: Boolean,
-    @Flatten("userSettings::logging") val logging: Boolean,
-    @Flatten("userSettings::serverBaseURL") val serverBaseURL: String,
-    @SerializedName("eventType") val event: Event?,
+    @SerializedName("userSettings") val userSettings: UserSettingsDto,
+    @SerializedName("eventType") val event: EventDto?,
 )
+
+data class UserSettingsDto(
+    @SerializedName("colorBlindMode") val colorBlindMode: Boolean,
+    @SerializedName("logging") val logging: Boolean,
+    @SerializedName("serverBaseURL") val serverBaseURL: String,
+)
+
+data class EventDto(
+    @SerializedName("colorBlindModeToggled") val colorBlindModeToggled: EnabledEventDto? = null,
+    @SerializedName("announcementViewed") val announcementViewed: AnnouncementViewedEventDto? = null,
+    @SerializedName("debugModeToggled") val debugModeToggled: EnabledEventDto? = null,
+    @SerializedName("serverBaseURLChanged") val serverBaseURLChanged: ServerBaseUrlChangedEventDto? = null,
+    @SerializedName("locationAuthorizationStatusDidChange")
+    val locationAuthorizationStatusDidChange: LocationAuthorizationStatusEventDto? = null,
+    @SerializedName("locationAccuracyAuthorizationDidChange")
+    val locationAccuracyAuthorizationDidChange: LocationAccuracyAuthorizationEventDto? = null,
+    @SerializedName("coldLaunch") val coldLaunch: EmptyEventDto? = null,
+    @SerializedName("announcementsListOpened") val announcementsListOpened: EmptyEventDto? = null,
+    @SerializedName("permissionsSheetOpened") val permissionsSheetOpened: EmptyEventDto? = null,
+)
+
+data class EnabledEventDto(
+    @SerializedName("enabled") val enabled: Boolean,
+)
+
+data class AnnouncementViewedEventDto(
+    @SerializedName("id") val id: String,
+)
+
+data class ServerBaseUrlChangedEventDto(
+    @SerializedName("url") val url: String,
+)
+
+data class LocationAuthorizationStatusEventDto(
+    @SerializedName("authorizationStatus") val authorizationStatus: Int,
+)
+
+data class LocationAccuracyAuthorizationEventDto(
+    @SerializedName("accuracyAuthorization") val accuracyAuthorization: Int,
+)
+
+class EmptyEventDto

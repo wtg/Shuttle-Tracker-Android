@@ -20,7 +20,6 @@ import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
 import edu.rpi.shuttletracker.data.remote.ShuttleApi
 import edu.rpi.shuttletracker.data.remote.dto.RouteDto
 import edu.rpi.shuttletracker.data.remote.dto.RouteDtoDeserializer
-import edu.rpi.shuttletracker.util.FlattenTypeAdapterFactory
 import edu.rpi.shuttletracker.util.hasNetwork
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -97,7 +96,6 @@ object ShuttleTrackerModule {
     ): Retrofit {
         val gson =
             GsonBuilder()
-                .registerTypeAdapterFactory(FlattenTypeAdapterFactory())
                 .registerTypeAdapter(RouteDto::class.java, RouteDtoDeserializer())
                 .create()
 

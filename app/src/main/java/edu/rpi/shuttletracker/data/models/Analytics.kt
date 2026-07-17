@@ -3,7 +3,6 @@ package edu.rpi.shuttletracker.data.models
 import com.google.gson.annotations.SerializedName
 import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
-import edu.rpi.shuttletracker.util.Flatten
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
@@ -26,11 +25,8 @@ data class Analytics(
     val clientPlatformVersion: String,
     @SerializedName("appVersion")
     val appVersion: String,
-    @Flatten("userSettings::colorBlindMode")
     val colorBlindMode: Boolean,
-    @Flatten("userSettings::logging")
     val logging: Boolean,
-    @Flatten("userSettings::serverBaseURL")
     val serverBaseURL: String,
     @SerializedName("eventType")
     val event: Event?,
@@ -40,28 +36,19 @@ data class Analytics(
  * https://github.com/wtg/Shuttle-Tracker-Server/wiki/Analytics#android
  * */
 data class Event(
-    @Flatten("colorBlindModeToggled::enabled")
     val colorBlindModeToggled: Boolean? = null,
     // THIS IS NOT PLANNED ON BEING USED
-    @Flatten("announcementViewed::id")
     val announcementViewed: String? = null,
     // THIS IS NOT PLANNED ON BEING USED
-    @Flatten("debugModeToggled::enabled")
     val debugModeTogged: Boolean? = null,
-    @Flatten("serverBaseURLChanged::url")
     val serverBaseURL: String? = null,
     // THIS IS NOT PLANNED ON BEING USED
-    @Flatten("locationAuthorizationStatusDidChange::authorizationStatus")
     val locationAuthorizationStatusChanged: Int? = null,
     // THIS IS NOT PLANNED ON BEING USED
-    @Flatten("locationAccuracyAuthorizationDidChange::accuracyAuthorization")
     val locationAccuracyAuthorizationDidChange: Int? = null,
-    @Flatten("coldLaunch")
     val coldLaunch: EmptyEvent? = null,
-    @Flatten("announcementsListOpened")
     val announcementsListOpened: EmptyEvent? = null,
     // THIS IS NOT PLANNED ON BEING USED
-    @Flatten("permissionsSheetOpened")
     val permissionsSheetOpened: EmptyEvent? = null,
 )
 
