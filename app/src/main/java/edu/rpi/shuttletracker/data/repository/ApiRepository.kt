@@ -1,14 +1,8 @@
 package edu.rpi.shuttletracker.data.repository
 
-import dagger.Lazy
-import edu.rpi.shuttletracker.core.network.NetworkResult
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
-import edu.rpi.shuttletracker.data.models.AnalyticsFactory
-import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.remote.RemoteShuttleDataSource
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import javax.inject.Inject
@@ -17,8 +11,6 @@ class ApiRepository
     @Inject
     constructor(
         private val remoteShuttleDataSource: RemoteShuttleDataSource,
-        private val userPreferencesRepository: Lazy<UserPreferencesRepository>,
-        private val analyticsFactory: AnalyticsFactory,
     ) {
         fun observeVehicleLocations(pollMs: Long = 5_000L) =
             flow {
@@ -51,13 +43,6 @@ class ApiRepository
         suspend fun getSchedule() = remoteShuttleDataSource.getSchedule()
 
         suspend fun getAggregatedSchedule() = remoteShuttleDataSource.getAggregatedSchedule()
-
-        suspend fun sendAnalytics(event: Event): NetworkResult<Unit>? {
-            if (!userPreferencesRepository.get().getAllowAnalytics().first()) return null
-
-            val analytics = analyticsFactory.build(event)
-            return remoteShuttleDataSource.addAnalytics(analytics)
-        }
 
         suspend fun sendRegistrationToken(token: String) = remoteShuttleDataSource.sendRegistrationToken(token)
     }

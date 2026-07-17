@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
-import edu.rpi.shuttletracker.data.models.Event
-import edu.rpi.shuttletracker.data.repository.ApiRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -19,7 +17,6 @@ class DevMenuViewModel
     @Inject
     constructor(
         private val userPreferencesRepository: UserPreferencesRepository,
-        private val apiRepository: ApiRepository,
     ) : ViewModel() {
         val devMenuUiState =
             combine(
@@ -46,10 +43,6 @@ class DevMenuViewModel
          * MAKE SURE THIS IS BLOCKING OR ELSE STUFF BREAKS
          * */
         fun updateBaseUrl(baseUrl: String) {
-            viewModelScope.launch {
-                apiRepository.sendAnalytics(Event(serverBaseURL = baseUrl))
-            }
-
             runBlocking {
                 userPreferencesRepository.saveBaseUrl(baseUrl)
             }

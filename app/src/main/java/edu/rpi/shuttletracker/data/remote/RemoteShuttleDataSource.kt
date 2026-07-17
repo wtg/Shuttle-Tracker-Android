@@ -3,9 +3,7 @@ package edu.rpi.shuttletracker.data.remote
 import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
-import edu.rpi.shuttletracker.data.mapper.toDto
 import edu.rpi.shuttletracker.data.mapper.toModel
-import edu.rpi.shuttletracker.data.models.Analytics
 import edu.rpi.shuttletracker.data.remote.dto.ErrorResponse
 import java.net.SocketTimeoutException
 import javax.inject.Inject
@@ -46,9 +44,6 @@ class RemoteShuttleDataSource
             shuttleApi.getAggregatedSchedule().toNetworkResult { schedules ->
                 schedules.map { it.toModel() }
             }
-
-        suspend fun addAnalytics(analytics: Analytics) =
-            shuttleApi.addAnalytics(analytics.toDto()).toNetworkResult { Unit }
 
         suspend fun sendRegistrationToken(token: String) =
             shuttleApi.sendRegistrationToken(token).toNetworkResult { Unit }

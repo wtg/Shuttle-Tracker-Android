@@ -29,15 +29,6 @@ sealed class SetupPages(
             { acceptPrivatePolicy() },
         )
 
-    data class Analytics(
-        val allowAnalytics: () -> Unit,
-        val analyticsEnabled: Boolean,
-    ) : SetupPages(
-            "Analytics",
-            "Next",
-            { AnalyticsPage(allowAnalytics, analyticsEnabled) },
-        )
-
     data object Permissions : SetupPages(
         "Permissions",
         "Finish",

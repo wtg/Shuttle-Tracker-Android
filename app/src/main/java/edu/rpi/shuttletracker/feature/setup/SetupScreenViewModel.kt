@@ -13,8 +13,6 @@ class SetupScreenViewModel
     constructor(
         private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
-        fun getAnalyticsEnabled() = userPreferencesRepository.getAllowAnalytics()
-
         fun updatePrivacyPolicyAccepted() {
             viewModelScope.launch {
                 userPreferencesRepository.savePrivacyPolicyAccepted(true)
@@ -24,12 +22,6 @@ class SetupScreenViewModel
         fun updateAboutAccepted() {
             viewModelScope.launch {
                 userPreferencesRepository.saveAboutAccepted(true)
-            }
-        }
-
-        fun updateAllowAnalytics() {
-            viewModelScope.launch {
-                userPreferencesRepository.saveAllowAnalytics(true)
             }
         }
 

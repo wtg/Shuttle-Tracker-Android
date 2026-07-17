@@ -9,12 +9,9 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.maps.android.compose.MapType
-import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
-import edu.rpi.shuttletracker.data.models.Event
-import edu.rpi.shuttletracker.data.repository.ApiRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -30,7 +27,6 @@ class UserPreferencesRepository
     @Inject
     constructor(
         private val dataStore: DataStore<Preferences>,
-        private val apiRepository: Lazy<ApiRepository>,
         @param:ApplicationContext private val context: Context,
     ) {
         companion object {
@@ -82,8 +78,6 @@ class UserPreferencesRepository
             dataStore.edit {
                 it[COLOR_BLIND_MODE] = colorBlindMode
             }
-
-            apiRepository.get().sendAnalytics(Event(colorBlindModeToggled = colorBlindMode))
         }
 
         fun getMapType(): Flow<MapType> =

@@ -64,12 +64,6 @@ fun SetupScreen(
         listOf(
             SetupPages.About(viewModel::updateAboutAccepted),
             SetupPages.PrivacyPolicy(viewModel::updatePrivacyPolicyAccepted),
-//            SetupPages.Analytics(
-//                viewModel::updateAllowAnalytics,
-//                viewModel.getAnalyticsEnabled().collectAsStateWithLifecycle(
-//                    initialValue = false,
-//                ).value,
-//            ),
             SetupPages.Permissions,
         )
 
@@ -150,29 +144,6 @@ fun AboutPage() {
 @Composable
 fun PrivacyPolicyPage() {
     Box(modifier = Modifier.fillMaxSize()) { Text(text = stringResource(R.string.privacy_page)) }
-}
-
-@Composable
-fun AnalyticsPage(
-    allowAnalytics: () -> Unit,
-    analyticsEnabled: Boolean,
-) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(text = stringResource(R.string.analytics_policy))
-
-        Spacer(modifier = Modifier.padding(30.dp))
-
-        if (!analyticsEnabled) {
-            Button(onClick = { allowAnalytics() }) {
-                Text(text = "Enable analytics")
-            }
-        } else {
-            Text(text = "Analytics is enabled")
-        }
-    }
 }
 
 @Composable

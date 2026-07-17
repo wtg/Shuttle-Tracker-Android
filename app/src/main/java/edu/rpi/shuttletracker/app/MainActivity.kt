@@ -10,7 +10,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.generated.destinations.MapsScreenDestination
@@ -19,28 +18,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
-import edu.rpi.shuttletracker.data.models.EmptyEvent
-import edu.rpi.shuttletracker.data.models.Event
-import edu.rpi.shuttletracker.data.repository.ApiRepository
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject
-    lateinit var apiRepository: ApiRepository
-
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
-        lifecycleScope.launch {
-            apiRepository.sendAnalytics(Event(coldLaunch = EmptyEvent))
-        }
 
         setContent {
             val themeMode by userPreferencesRepository

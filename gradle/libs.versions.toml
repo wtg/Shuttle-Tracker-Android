@@ -79,7 +79,6 @@ converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref
 destinations = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "destinations" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 
-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
