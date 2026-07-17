@@ -16,12 +16,12 @@ import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.generated.destinations.MapsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import dagger.hilt.android.AndroidEntryPoint
+import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
+import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.repository.ApiRepository
 import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
-import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
-import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject

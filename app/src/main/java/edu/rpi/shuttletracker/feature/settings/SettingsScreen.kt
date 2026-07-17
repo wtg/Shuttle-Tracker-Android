@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.settings
+package edu.rpi.shuttletracker.feature.settings
 
 import android.content.Intent
 import android.net.Uri
@@ -47,8 +47,8 @@ import com.ramcosta.composedestinations.generated.destinations.DevMenuScreenDest
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.ui.theme.ThemeMode
-import edu.rpi.shuttletracker.ui.util.SettingsItem
+import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
+import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

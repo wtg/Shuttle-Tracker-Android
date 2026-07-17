@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.theme
+package edu.rpi.shuttletracker.core.ui.theme
 
 enum class ThemeMode {
     System,

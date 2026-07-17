@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.settings.about
+package edu.rpi.shuttletracker.feature.settings.about
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
@@ -41,7 +41,7 @@ import com.ramcosta.composedestinations.generated.destinations.LibrariesScreenDe
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.ui.util.SettingsItem
+import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>

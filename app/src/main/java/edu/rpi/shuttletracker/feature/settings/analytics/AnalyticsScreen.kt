@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.settings.analytics
+package edu.rpi.shuttletracker.feature.settings.analytics
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -25,7 +25,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.ui.util.SettingsItem
+import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>

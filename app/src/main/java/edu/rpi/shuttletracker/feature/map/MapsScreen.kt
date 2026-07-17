@@ -76,12 +76,12 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.core.ui.CheckResponseError
+import edu.rpi.shuttletracker.core.ui.theme.VehicleColors
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.Vehicle
 import edu.rpi.shuttletracker.feature.map.components.ScheduleSheet
 import edu.rpi.shuttletracker.feature.map.components.getVehicleMarkerDescriptor
-import edu.rpi.shuttletracker.ui.theme.VehicleColors
-import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

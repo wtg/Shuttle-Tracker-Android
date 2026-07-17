@@ -12,8 +12,8 @@ import com.google.maps.android.compose.MapType
 import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.models.Event
-import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

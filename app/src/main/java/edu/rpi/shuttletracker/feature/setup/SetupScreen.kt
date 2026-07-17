@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.setup
+package edu.rpi.shuttletracker.feature.setup
 
 import android.content.pm.PackageManager
 import android.os.Build

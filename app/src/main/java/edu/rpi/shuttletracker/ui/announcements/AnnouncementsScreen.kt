@@ -30,8 +30,8 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.annotation.parameters.DeepLink
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.core.ui.CheckResponseError
 import edu.rpi.shuttletracker.data.models.Announcement
-import edu.rpi.shuttletracker.ui.util.CheckResponseError
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>(

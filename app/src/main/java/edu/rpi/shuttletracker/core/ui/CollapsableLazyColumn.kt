@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.util
+package edu.rpi.shuttletracker.core.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row

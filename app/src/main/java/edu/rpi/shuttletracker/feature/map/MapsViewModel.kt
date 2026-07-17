@@ -7,6 +7,7 @@ import com.google.maps.android.compose.MapType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
+import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Vehicle
@@ -16,7 +17,6 @@ import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
 import edu.rpi.shuttletracker.data.repository.ApiRepository
 import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
-import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.settings.about
+package edu.rpi.shuttletracker.feature.settings.about
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.settings.developerMenu
+package edu.rpi.shuttletracker.feature.settings.developerMenu
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
