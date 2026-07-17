@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker
+package edu.rpi.shuttletracker.app.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -15,6 +15,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.RouteDeserializer
 import edu.rpi.shuttletracker.data.network.ApiHelper

@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker
+package edu.rpi.shuttletracker.app
 
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
