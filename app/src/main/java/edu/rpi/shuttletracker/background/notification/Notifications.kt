@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.util.notifications
+package edu.rpi.shuttletracker.background.notification
 
 import android.content.Context
 import androidx.core.app.NotificationChannelCompat

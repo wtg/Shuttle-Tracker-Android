@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.util.services
+package edu.rpi.shuttletracker.background.service
 
 import android.app.NotificationManager
 import androidx.core.app.NotificationCompat
@@ -7,9 +7,9 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.background.notification.Notifications
+import edu.rpi.shuttletracker.background.receiver.NotificationReceiver
 import edu.rpi.shuttletracker.data.repository.ApiRepository
-import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
-import edu.rpi.shuttletracker.util.notifications.Notifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch

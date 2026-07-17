@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.util.workers
+package edu.rpi.shuttletracker.background.worker
 
 import android.app.NotificationManager
 import android.content.Context
@@ -14,11 +14,11 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.background.notification.Notifications
+import edu.rpi.shuttletracker.background.receiver.NotificationReceiver
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.repository.ApiRepository
-import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
-import edu.rpi.shuttletracker.util.notifications.Notifications
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 

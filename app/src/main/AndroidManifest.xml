@@ -35,7 +35,7 @@
             android:value="${MAPS_API_KEY}" />
 
         <service
-            android:name=".util.services.FirebaseService"
+            android:name=".background.service.FirebaseService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -43,7 +43,7 @@
         </service>
 
         <receiver
-            android:name=".util.notifications.NotificationReceiver"
+            android:name=".background.receiver.NotificationReceiver"
             android:exported="false" />
 
         <provider

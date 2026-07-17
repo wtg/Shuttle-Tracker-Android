@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.util.notifications
+package edu.rpi.shuttletracker.background.receiver
 
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,6 +8,7 @@ import android.content.Intent
 import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.app.MainActivity
+import edu.rpi.shuttletracker.background.notification.Notifications
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
 import edu.rpi.shuttletracker.data.repository.ApiRepository
 import kotlinx.coroutines.CoroutineScope
