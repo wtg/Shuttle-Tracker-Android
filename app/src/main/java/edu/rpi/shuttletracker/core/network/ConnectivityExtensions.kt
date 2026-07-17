@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.util
+package edu.rpi.shuttletracker.core.network
 
 import android.content.Context
 import android.net.ConnectivityManager
