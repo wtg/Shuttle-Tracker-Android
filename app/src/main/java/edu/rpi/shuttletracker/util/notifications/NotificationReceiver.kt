@@ -8,8 +8,8 @@ import android.content.Intent
 import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.app.MainActivity
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
 import edu.rpi.shuttletracker.data.repository.ApiRepository
-import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope

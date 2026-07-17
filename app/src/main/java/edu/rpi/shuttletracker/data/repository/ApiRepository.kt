@@ -2,6 +2,7 @@ package edu.rpi.shuttletracker.data.repository
 
 import dagger.Lazy
 import edu.rpi.shuttletracker.core.network.NetworkResult
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
 import edu.rpi.shuttletracker.data.models.AnalyticsFactory
 import edu.rpi.shuttletracker.data.models.Event
 import edu.rpi.shuttletracker.data.remote.RemoteShuttleDataSource

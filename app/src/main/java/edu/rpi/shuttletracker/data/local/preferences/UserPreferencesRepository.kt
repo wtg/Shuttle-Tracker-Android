@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.data.repository
+package edu.rpi.shuttletracker.data.local.preferences
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -14,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.models.Event
+import edu.rpi.shuttletracker.data.repository.ApiRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

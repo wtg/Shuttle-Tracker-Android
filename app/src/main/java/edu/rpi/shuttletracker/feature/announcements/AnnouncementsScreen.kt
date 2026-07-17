@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.announcements
+package edu.rpi.shuttletracker.feature.announcements
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

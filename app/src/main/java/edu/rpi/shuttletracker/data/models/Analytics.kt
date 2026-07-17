@@ -2,7 +2,7 @@ package edu.rpi.shuttletracker.data.models
 
 import com.google.gson.annotations.SerializedName
 import edu.rpi.shuttletracker.BuildConfig
-import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.Flatten
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
