@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.data.repositories
+package edu.rpi.shuttletracker.data.repository
 
 import android.content.Context
 import androidx.datastore.core.DataStore

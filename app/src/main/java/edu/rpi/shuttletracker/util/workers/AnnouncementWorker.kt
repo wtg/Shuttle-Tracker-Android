@@ -11,12 +11,12 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.data.models.Announcement
-import edu.rpi.shuttletracker.data.repositories.ApiRepository
+import edu.rpi.shuttletracker.data.repository.ApiRepository
 import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
 import edu.rpi.shuttletracker.util.notifications.Notifications
 import java.util.Calendar
@@ -33,11 +33,11 @@ class AnnouncementWorker
         override suspend fun doWork(): Result {
             val announcements = apiRepository.getAnnouncements()
 
-            if (announcements !is NetworkResponse.Success) {
+            if (announcements !is NetworkResult.Success) {
                 return Result.retry()
             }
 
-            with(announcements.body) {
+            with(announcements.data) {
                 if (hasNewAnnouncement(this)) {
                     pushNotification(
                         first().subject,

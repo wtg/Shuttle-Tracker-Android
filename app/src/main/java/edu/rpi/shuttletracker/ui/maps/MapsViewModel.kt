@@ -4,9 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.maps.android.compose.MapType
-import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.rpi.shuttletracker.data.models.ErrorResponse
+import edu.rpi.shuttletracker.core.network.NetworkError
+import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Vehicle
@@ -14,8 +14,8 @@ import edu.rpi.shuttletracker.data.models.VehicleLocation
 import edu.rpi.shuttletracker.data.models.VehicleMerger
 import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
-import edu.rpi.shuttletracker.data.repositories.ApiRepository
-import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.repository.ApiRepository
+import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -191,24 +191,19 @@ class MapsViewModel
          * Reads the network response and maps it to correct place
          * */
         private fun <T> readApiResponse(
-            response: NetworkResponse<T, ErrorResponse>,
+            response: NetworkResult<T>,
             success: (body: T) -> Unit,
         ) {
             when (response) {
-                is NetworkResponse.Success -> success(response.body)
-                is NetworkResponse.ServerError ->
-                    _mapsUiState.update {
-                        it.copy(serverError = response)
-                    }
-
-                is NetworkResponse.NetworkError ->
-                    _mapsUiState.update {
-                        it.copy(networkError = response)
-                    }
-
-                is NetworkResponse.UnknownError ->
-                    _mapsUiState.update {
-                        it.copy(unknownError = response)
+                is NetworkResult.Success -> success(response.data)
+                is NetworkResult.Failure ->
+                    when (val error = response.error) {
+                        is NetworkError.Connectivity ->
+                            _mapsUiState.update { it.copy(networkError = error) }
+                        is NetworkError.Http ->
+                            _mapsUiState.update { it.copy(serverError = error) }
+                        is NetworkError.Unknown ->
+                            _mapsUiState.update { it.copy(unknownError = error) }
                     }
             }
         }
@@ -219,9 +214,9 @@ data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
     val schedule: Schedule? = null,
-    val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
-    val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
-    val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
+    val networkError: NetworkError.Connectivity? = null,
+    val serverError: NetworkError.Http? = null,
+    val unknownError: NetworkError.Unknown? = null,
     val notificationsRead: Int = -1,
     val totalAnnouncements: Int = -1,
     val themeMode: ThemeMode = ThemeMode.System,

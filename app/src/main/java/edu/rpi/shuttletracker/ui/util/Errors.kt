@@ -8,9 +8,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
-import com.haroldadmin.cnradapter.NetworkResponse
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.data.models.ErrorResponse
+import edu.rpi.shuttletracker.core.network.NetworkError
 import kotlinx.coroutines.launch
 
 /**
@@ -23,9 +22,9 @@ import kotlinx.coroutines.launch
  * */
 @Composable
 fun CheckResponseError(
-    networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
-    serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
-    unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
+    networkError: NetworkError.Connectivity? = null,
+    serverError: NetworkError.Http? = null,
+    unknownError: NetworkError.Unknown? = null,
     ignoreErrorRequest: () -> Unit = {},
     retryErrorRequest: () -> Unit = {},
 ) {
@@ -34,7 +33,11 @@ fun CheckResponseError(
             error = networkError,
             onPrimaryRequest = { retryErrorRequest() },
             errorType = stringResource(R.string.error_network),
-            errorBody = networkError.error.toString(),
+            errorBody =
+                when (networkError) {
+                    is NetworkError.NoConnection -> networkError.cause.toString()
+                    is NetworkError.Timeout -> networkError.cause.toString()
+                },
         )
     }
 
@@ -43,6 +46,7 @@ fun CheckResponseError(
             error = serverError,
             onPrimaryRequest = { retryErrorRequest() },
             errorType = stringResource(R.string.error_server),
+            errorBody = serverError.displayMessage,
         )
     }
 
@@ -51,6 +55,7 @@ fun CheckResponseError(
             error = unknownError,
             onPrimaryRequest = { retryErrorRequest() },
             errorType = stringResource(R.string.error_unknown),
+            errorBody = unknownError.displayMessage,
         )
     }
 }

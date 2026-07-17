@@ -3,7 +3,7 @@ package edu.rpi.shuttletracker.ui.setup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine

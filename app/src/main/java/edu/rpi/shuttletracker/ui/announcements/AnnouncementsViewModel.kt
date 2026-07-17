@@ -3,14 +3,14 @@ package edu.rpi.shuttletracker.ui.announcements
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.haroldadmin.cnradapter.NetworkResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.rpi.shuttletracker.core.network.NetworkError
+import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.EmptyEvent
-import edu.rpi.shuttletracker.data.models.ErrorResponse
 import edu.rpi.shuttletracker.data.models.Event
-import edu.rpi.shuttletracker.data.repositories.ApiRepository
-import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.repository.ApiRepository
+import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -85,22 +85,19 @@ class AnnouncementsViewModel
          * Reads the network response and maps it to correct place
          * */
         private fun <T> readApiResponse(
-            response: NetworkResponse<T, ErrorResponse>,
+            response: NetworkResult<T>,
             success: (body: T) -> Unit,
         ) {
             when (response) {
-                is NetworkResponse.Success -> success(response.body)
-                is NetworkResponse.ServerError ->
-                    _announcementsUiState.update {
-                        it.copy(serverError = response)
-                    }
-                is NetworkResponse.NetworkError ->
-                    _announcementsUiState.update {
-                        it.copy(networkError = response)
-                    }
-                is NetworkResponse.UnknownError ->
-                    _announcementsUiState.update {
-                        it.copy(unknownError = response)
+                is NetworkResult.Success -> success(response.data)
+                is NetworkResult.Failure ->
+                    when (val error = response.error) {
+                        is NetworkError.Connectivity ->
+                            _announcementsUiState.update { it.copy(networkError = error) }
+                        is NetworkError.Http ->
+                            _announcementsUiState.update { it.copy(serverError = error) }
+                        is NetworkError.Unknown ->
+                            _announcementsUiState.update { it.copy(unknownError = error) }
                     }
             }
         }
@@ -109,7 +106,7 @@ class AnnouncementsViewModel
 @Immutable
 data class AnnouncementsUIState(
     val announcements: List<Announcement> = listOf(),
-    val networkError: NetworkResponse.NetworkError<*, ErrorResponse>? = null,
-    val serverError: NetworkResponse.ServerError<*, ErrorResponse>? = null,
-    val unknownError: NetworkResponse.UnknownError<*, ErrorResponse>? = null,
+    val networkError: NetworkError.Connectivity? = null,
+    val serverError: NetworkError.Http? = null,
+    val unknownError: NetworkError.Unknown? = null,
 )

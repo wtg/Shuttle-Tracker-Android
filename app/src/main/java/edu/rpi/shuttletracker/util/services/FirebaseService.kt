@@ -7,7 +7,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.data.repositories.ApiRepository
+import edu.rpi.shuttletracker.data.repository.ApiRepository
 import edu.rpi.shuttletracker.util.notifications.NotificationReceiver
 import edu.rpi.shuttletracker.util.notifications.Notifications
 import kotlinx.coroutines.CoroutineScope

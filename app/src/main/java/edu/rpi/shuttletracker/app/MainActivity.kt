@@ -18,8 +18,8 @@ import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestin
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.data.models.EmptyEvent
 import edu.rpi.shuttletracker.data.models.Event
-import edu.rpi.shuttletracker.data.repositories.ApiRepository
-import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.repository.ApiRepository
+import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
 import edu.rpi.shuttletracker.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.map

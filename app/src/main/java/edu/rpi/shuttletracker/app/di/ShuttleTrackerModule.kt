@@ -16,11 +16,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import edu.rpi.shuttletracker.BuildConfig
-import edu.rpi.shuttletracker.data.models.Route
-import edu.rpi.shuttletracker.data.models.RouteDeserializer
-import edu.rpi.shuttletracker.data.network.ApiHelper
-import edu.rpi.shuttletracker.data.network.ApiService
-import edu.rpi.shuttletracker.data.repositories.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.remote.ShuttleApi
+import edu.rpi.shuttletracker.data.remote.dto.RouteDto
+import edu.rpi.shuttletracker.data.remote.dto.RouteDtoDeserializer
+import edu.rpi.shuttletracker.data.repository.UserPreferencesRepository
 import edu.rpi.shuttletracker.util.FlattenTypeAdapterFactory
 import edu.rpi.shuttletracker.util.hasNetwork
 import kotlinx.coroutines.CoroutineScope
@@ -99,7 +98,7 @@ object ShuttleTrackerModule {
         val gson =
             GsonBuilder()
                 .registerTypeAdapterFactory(FlattenTypeAdapterFactory())
-                .registerTypeAdapter(Route::class.java, RouteDeserializer())
+                .registerTypeAdapter(RouteDto::class.java, RouteDtoDeserializer())
                 .create()
 
         val url =
@@ -118,11 +117,7 @@ object ShuttleTrackerModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
-
-    @Provides
-    @Singleton
-    fun provideApiHelper(apiHelper: ApiHelper): ApiHelper = apiHelper
+    fun provideShuttleApi(retrofit: Retrofit): ShuttleApi = retrofit.create(ShuttleApi::class.java)
 
     @Singleton
     @Provides
