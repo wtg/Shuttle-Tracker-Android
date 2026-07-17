@@ -3,7 +3,6 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("com.mikepenz.aboutlibraries.plugin")
     id("com.google.gms.google-services")
     id("org.jlleitschuh.gradle.ktlint")
@@ -20,7 +19,7 @@ kotlin {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = 37
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -30,10 +29,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     packaging {

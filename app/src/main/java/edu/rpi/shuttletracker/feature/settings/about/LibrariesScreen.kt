@@ -17,7 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import com.mikepenz.aboutlibraries.ui.compose.android.rememberLibraries
+import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -47,7 +47,7 @@ fun LibrariesScreen(navigator: DestinationsNavigator) {
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) {
-        val libraries by rememberLibraries(R.raw.aboutlibraries)
+        val libraries by produceLibraries(R.raw.aboutlibraries)
         LibrariesContainer(
             libraries,
             Modifier
