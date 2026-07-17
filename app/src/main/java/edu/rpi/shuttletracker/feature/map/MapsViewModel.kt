@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.maps
+package edu.rpi.shuttletracker.feature.map
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel

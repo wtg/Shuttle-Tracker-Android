@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.maps.components
+package edu.rpi.shuttletracker.feature.map.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -51,9 +51,9 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.ui.maps.utils.StopTimeInfo
-import edu.rpi.shuttletracker.ui.maps.utils.consolidatedTimes
-import edu.rpi.shuttletracker.ui.maps.utils.routesForDay
+import edu.rpi.shuttletracker.feature.map.utils.StopTimeInfo
+import edu.rpi.shuttletracker.feature.map.utils.consolidatedTimes
+import edu.rpi.shuttletracker.feature.map.utils.routesForDay
 import java.util.Calendar
 import kotlin.text.lowercase
 

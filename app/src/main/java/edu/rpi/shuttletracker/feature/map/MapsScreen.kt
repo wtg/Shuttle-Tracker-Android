@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.maps
+package edu.rpi.shuttletracker.feature.map
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -78,8 +78,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.Vehicle
-import edu.rpi.shuttletracker.ui.maps.components.ScheduleSheet
-import edu.rpi.shuttletracker.ui.maps.components.getVehicleMarkerDescriptor
+import edu.rpi.shuttletracker.feature.map.components.ScheduleSheet
+import edu.rpi.shuttletracker.feature.map.components.getVehicleMarkerDescriptor
 import edu.rpi.shuttletracker.ui.theme.VehicleColors
 import edu.rpi.shuttletracker.ui.util.CheckResponseError
 import kotlinx.coroutines.delay

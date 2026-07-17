@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.ui.maps.utils
+package edu.rpi.shuttletracker.feature.map.utils
 
 import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.data.models.Route
