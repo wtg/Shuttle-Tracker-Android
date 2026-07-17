@@ -4,9 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -45,6 +47,16 @@ class MainActivity : ComponentActivity() {
 
             val setupCompleted by setupCompletedFlow
                 .collectAsStateWithLifecycle(initialValue = null)
+
+            LaunchedEffect(themeMode) {
+                AppCompatDelegate.setDefaultNightMode(
+                    when (themeMode) {
+                        ThemeMode.System -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                        ThemeMode.Light -> AppCompatDelegate.MODE_NIGHT_NO
+                        ThemeMode.Dark -> AppCompatDelegate.MODE_NIGHT_YES
+                    },
+                )
+            }
 
             ShuttleTrackerTheme(themeMode = themeMode) {
                 Surface(
