@@ -5,6 +5,7 @@ import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.data.mapper.toModel
 import edu.rpi.shuttletracker.data.remote.dto.ErrorResponse
+import kotlinx.coroutines.CancellationException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
@@ -40,18 +41,20 @@ class RemoteShuttleDataSource
 
         suspend fun getSchedule() = shuttleApi.getSchedule().toNetworkResult { it.toModel() }
 
-        suspend fun getAggregatedSchedule() =
-            shuttleApi.getAggregatedSchedule().toNetworkResult { schedules ->
-                schedules.map { it.toModel() }
-            }
-
         suspend fun sendRegistrationToken(token: String) =
             shuttleApi.sendRegistrationToken(token).toNetworkResult { Unit }
     }
 
 private inline fun <T, R> NetworkResponse<T, ErrorResponse>.toNetworkResult(transform: (T) -> R): NetworkResult<R> =
     when (this) {
-        is NetworkResponse.Success -> NetworkResult.Success(transform(body))
+        is NetworkResponse.Success ->
+            try {
+                NetworkResult.Success(transform(body))
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                NetworkResult.Failure(NetworkError.Unknown(error))
+            }
         is NetworkResponse.ServerError ->
             NetworkResult.Failure(
                 NetworkError.Http(code ?: -1, body?.reason, toString()),

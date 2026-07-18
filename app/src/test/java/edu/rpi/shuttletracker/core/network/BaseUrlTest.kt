@@ -14,16 +14,17 @@ class BaseUrlTest {
     }
 
     @Test
-    fun `accepts an existing valid base URL`() {
+    fun `accepts an existing secure base URL`() {
         assertEquals(
-            "http://localhost:8080/",
-            normalizeBaseUrl("http://localhost:8080/"),
+            "https://example.com/",
+            normalizeBaseUrl("https://example.com/"),
         )
     }
 
     @Test
     fun `rejects unsupported or malformed URLs`() {
         assertNull(normalizeBaseUrl("not a url"))
+        assertNull(normalizeBaseUrl("http://localhost:8080/"))
         assertNull(normalizeBaseUrl("ftp://example.com"))
     }
 

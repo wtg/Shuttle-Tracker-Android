@@ -42,7 +42,5 @@ class ApiRepository
 
         suspend fun getSchedule() = remoteShuttleDataSource.getSchedule()
 
-        suspend fun getAggregatedSchedule() = remoteShuttleDataSource.getAggregatedSchedule()
-
         suspend fun sendRegistrationToken(token: String) = remoteShuttleDataSource.sendRegistrationToken(token)
     }

@@ -1,7 +1,6 @@
 package edu.rpi.shuttletracker.data.remote
 
 import com.haroldadmin.cnradapter.NetworkResponse
-import edu.rpi.shuttletracker.data.remote.dto.AggregatedScheduleDto
 import edu.rpi.shuttletracker.data.remote.dto.AnnouncementDto
 import edu.rpi.shuttletracker.data.remote.dto.ErrorResponse
 import edu.rpi.shuttletracker.data.remote.dto.RouteDto
@@ -31,9 +30,6 @@ interface ShuttleApi {
 
     @GET("schedule")
     suspend fun getSchedule(): NetworkResponse<ScheduleDto, ErrorResponse>
-
-    @GET("aggregated-schedule")
-    suspend fun getAggregatedSchedule(): NetworkResponse<List<AggregatedScheduleDto>, ErrorResponse>
 
     @POST("notifications/fcmdevices")
     suspend fun sendRegistrationToken(

@@ -3,11 +3,11 @@ package edu.rpi.shuttletracker.data.remote.dto
 import com.google.gson.annotations.SerializedName
 
 data class VehicleLocationDto(
-    val name: String,
-    val latitude: Double,
-    val longitude: Double,
+    @SerializedName("name") val name: String,
+    @SerializedName("latitude") val latitude: Double,
+    @SerializedName("longitude") val longitude: Double,
     @SerializedName("speed_mph") val speedMph: Double,
-    val timestamp: String,
+    @SerializedName("timestamp") val timestamp: String,
     @SerializedName("heading_degrees") val headingDegrees: Int?,
 )
 

@@ -9,6 +9,7 @@ fun normalizeBaseUrl(value: String): String? {
     val candidate = if (trimmed.endsWith('/')) trimmed else "$trimmed/"
     val url = candidate.toHttpUrlOrNull() ?: return null
 
+    if (!url.isHttps) return null
     if (url.username.isNotEmpty() || url.password.isNotEmpty()) return null
     if (url.query != null || url.fragment != null) return null
 

@@ -22,11 +22,6 @@ data class ScheduleDto(
     @SerializedName("sunday") val sundaySchedule: Map<String, List<List<String>>>,
 )
 
-data class AggregatedScheduleDto(
-    @SerializedName("NORTH") val north: List<String>,
-    @SerializedName("WEST") val west: List<String>,
-)
-
 data class ErrorResponse(
     @SerializedName("error") val error: Boolean,
     @SerializedName("reason") val reason: String,
