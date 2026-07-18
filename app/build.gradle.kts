@@ -52,7 +52,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -83,7 +84,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.material3.adaptive)
     implementation(libs.androidx.appcompat)
 
     testImplementation(libs.junit)
@@ -124,9 +124,6 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.google.oss.licenses)
 
-    // accompanist
-    implementation(libs.accompanist.systemuicontroller)
-
     // destinations
     implementation(libs.destinations)
     ksp(libs.ksp)
@@ -137,11 +134,6 @@ dependencies {
     // firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
-
-    // room
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.ktx)
 
     // work
     implementation(libs.androidx.work.runtime.ktx)

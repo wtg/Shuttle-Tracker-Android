@@ -23,7 +23,3 @@ tasks.register<Copy>("copyPreCommitHook") {
     into("$rootDir/.git/hooks/")
 }
 
-afterEvaluate {
-    tasks.getByPath(":app:preBuild").dependsOn(":copyPreCommitHook")
-}
-
