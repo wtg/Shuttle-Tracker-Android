@@ -1,19 +1,15 @@
 package edu.rpi.shuttletracker.feature.announcements
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -22,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,7 +28,9 @@ import com.ramcosta.composedestinations.annotation.parameters.DeepLink
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
+import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.data.models.Announcement
+import edu.rpi.shuttletracker.feature.announcements.components.AnnouncementListItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>(
@@ -46,8 +45,24 @@ fun AnnouncementsScreen(
     navigator: DestinationsNavigator,
     viewModel: AnnouncementsViewModel = hiltViewModel(),
 ) {
-    val announcementsUIState = viewModel.announcementsUiState.collectAsStateWithLifecycle().value
+    val uiState = viewModel.announcementsUiState.collectAsStateWithLifecycle().value
 
+    AnnouncementsContent(
+        uiState = uiState,
+        onBack = navigator::popBackStack,
+        onDismissError = viewModel::clearErrors,
+        onRetry = viewModel::retry,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AnnouncementsContent(
+    uiState: AnnouncementsUiState,
+    onBack: () -> Unit,
+    onDismissError: () -> Unit,
+    onRetry: () -> Unit,
+) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             rememberTopAppBarState(),
@@ -56,21 +71,18 @@ fun AnnouncementsScreen(
     Scaffold(
         snackbarHost = {
             CheckResponseError(
-                announcementsUIState.networkError,
-                announcementsUIState.serverError,
-                announcementsUIState.unknownError,
-                ignoreErrorRequest = { viewModel.clearErrors() },
-                retryErrorRequest = {
-                    viewModel.clearErrors()
-                    viewModel.loadAll()
-                },
+                uiState.networkError,
+                uiState.serverError,
+                uiState.unknownError,
+                ignoreErrorRequest = onDismissError,
+                retryErrorRequest = onRetry,
             )
         },
         topBar = {
             LargeTopAppBar(
                 title = { Text(text = stringResource(R.string.announcements)) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.popBackStack() }) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
@@ -86,7 +98,7 @@ fun AnnouncementsScreen(
                     .padding(horizontal = 10.dp),
             verticalArrangement = Arrangement.spacedBy(15.dp),
         ) {
-            itemsIndexed(announcementsUIState.announcements) { _, item ->
+            items(uiState.announcements) { item ->
                 AnnouncementItem(announcement = item)
             }
         }
@@ -95,26 +107,29 @@ fun AnnouncementsScreen(
 
 @Composable
 fun AnnouncementItem(announcement: Announcement) {
-    Column {
-        Text(
-            text = announcement.subject,
-            style = MaterialTheme.typography.headlineLarge,
-        )
+    AnnouncementListItem(announcement)
+}
 
-        Spacer(modifier = Modifier.height(5.dp))
-
-        Text(
-            text =
-                stringResource(
-                    R.string.effective_from,
-                    announcement.startTime,
-                    announcement.endTime,
+@Preview(showBackground = true)
+@Composable
+private fun AnnouncementsContentPreview() {
+    ShuttleTrackerTheme(dynamicColor = false) {
+        AnnouncementsContent(
+            uiState =
+                AnnouncementsUiState(
+                    announcements =
+                        listOf(
+                            Announcement(
+                                subject = "Service update",
+                                body = "Shuttle service will follow the updated schedule.",
+                                rawStartTime = "2026-01-15T08:00:00-05:00",
+                                rawEndTime = "2026-01-15T18:00:00-05:00",
+                            ),
+                        ),
                 ),
-            style = MaterialTheme.typography.titleMedium,
+            onBack = {},
+            onDismissError = {},
+            onRetry = {},
         )
-
-        Spacer(modifier = Modifier.height(5.dp))
-
-        Text(text = announcement.body)
     }
 }

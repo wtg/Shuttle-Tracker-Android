@@ -9,8 +9,10 @@ import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.repository.ApiRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,25 +24,27 @@ class AnnouncementsViewModel
         private val apiRepository: ApiRepository,
         private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
-        // represents the ui state of the view
-        private val _announcementsUiState = MutableStateFlow(AnnouncementsUIState())
-        val announcementsUiState: StateFlow<AnnouncementsUIState> = _announcementsUiState
+        private val _announcementsUiState = MutableStateFlow(AnnouncementsUiState())
+        val announcementsUiState: StateFlow<AnnouncementsUiState> =
+            _announcementsUiState.asStateFlow()
+
+        private var loadJob: Job? = null
 
         init {
             loadAll()
         }
 
         fun loadAll() {
-            if (announcementsUiState.value.announcements.isEmpty()) {
-                getAnnouncements()
-            }
+            if (announcementsUiState.value.announcements.isNotEmpty()) return
+            if (loadJob?.isActive == true) return
+
+            loadJob = loadAnnouncements()
         }
 
         /**
          * sets all the errors to none
          * */
         fun clearErrors() {
-            loadAll()
             _announcementsUiState.update {
                 it.copy(
                     unknownError = null,
@@ -50,60 +54,58 @@ class AnnouncementsViewModel
             }
         }
 
+        fun retry() {
+            clearErrors()
+            loadAll()
+        }
+
         /**
          * gets all the announcements and updates the amount the user has "read"
          * */
-        private fun getAnnouncements() {
+        private fun loadAnnouncements(): Job =
             viewModelScope.launch {
-                readApiResponse(apiRepository.getAnnouncements()) { response ->
-                    _announcementsUiState.update {
-                        it.copy(announcements = response.reversed())
+                _announcementsUiState.update { it.copy(isLoading = true) }
+
+                when (val response = apiRepository.getAnnouncements()) {
+                    is NetworkResult.Success -> {
+                        val announcements = response.data.reversed()
+                        _announcementsUiState.update {
+                            it.copy(
+                                announcements = announcements,
+                                isLoading = false,
+                            )
+                        }
+                        userPreferencesRepository.saveNotificationsRead(announcements.size)
                     }
 
-                    updateNotificationsRead()
+                    is NetworkResult.Failure -> {
+                        updateError(response.error)
+                        _announcementsUiState.update { it.copy(isLoading = false) }
+                    }
                 }
             }
-        }
-
-        /**
-         * updates the number of notifications "read" with the amount of notifications there are
-         * */
-        private fun updateNotificationsRead() {
-            // updates the amount of notifications read
-            viewModelScope.launch {
-                userPreferencesRepository
-                    .saveNotificationsRead(
-                        announcementsUiState.value.announcements.size,
-                    )
-            }
-        }
 
         /**
          * Reads the network response and maps it to correct place
          * */
-        private fun <T> readApiResponse(
-            response: NetworkResult<T>,
-            success: (body: T) -> Unit,
-        ) {
-            when (response) {
-                is NetworkResult.Success -> success(response.data)
-                is NetworkResult.Failure ->
-                    when (val error = response.error) {
-                        is NetworkError.Connectivity ->
-                            _announcementsUiState.update { it.copy(networkError = error) }
-                        is NetworkError.Http ->
-                            _announcementsUiState.update { it.copy(serverError = error) }
-                        is NetworkError.Unknown ->
-                            _announcementsUiState.update { it.copy(unknownError = error) }
-                    }
+        private fun updateError(error: NetworkError) {
+            _announcementsUiState.update { state ->
+                when (error) {
+                    is NetworkError.Connectivity -> state.copy(networkError = error)
+                    is NetworkError.Http -> state.copy(serverError = error)
+                    is NetworkError.Unknown -> state.copy(unknownError = error)
+                }
             }
         }
     }
 
 @Immutable
-data class AnnouncementsUIState(
-    val announcements: List<Announcement> = listOf(),
+data class AnnouncementsUiState(
+    val announcements: List<Announcement> = emptyList(),
+    val isLoading: Boolean = false,
     val networkError: NetworkError.Connectivity? = null,
     val serverError: NetworkError.Http? = null,
     val unknownError: NetworkError.Unknown? = null,
 )
+
+typealias AnnouncementsUIState = AnnouncementsUiState
