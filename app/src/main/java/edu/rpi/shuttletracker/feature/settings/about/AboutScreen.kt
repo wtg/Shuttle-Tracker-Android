@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BugReport
@@ -25,6 +27,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -80,7 +83,8 @@ fun AboutScreen(
         Column(
             modifier =
                 Modifier
-                    .padding(padding),
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState()),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -116,7 +120,7 @@ fun AboutScreen(
             )
 
             var timesClicked by remember { mutableIntStateOf(10) }
-            var toast: Toast? = null
+            var toast by remember { mutableStateOf<Toast?>(null) }
             val devOptionsStateMessage = stringResource(R.string.dev_options_state, timesClicked - 1)
             SettingsItem(
                 icon = Icons.Outlined.Info,

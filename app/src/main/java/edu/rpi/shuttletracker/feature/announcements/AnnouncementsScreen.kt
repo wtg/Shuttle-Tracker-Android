@@ -1,11 +1,14 @@
 package edu.rpi.shuttletracker.feature.announcements
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -91,16 +94,33 @@ private fun AnnouncementsContent(
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
-        LazyColumn(
-            modifier =
-                Modifier
-                    .padding(padding)
-                    .padding(horizontal = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(15.dp),
-        ) {
-            items(uiState.announcements) { item ->
-                AnnouncementItem(announcement = item)
-            }
+        when {
+            uiState.isLoading ->
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
+            uiState.announcements.isEmpty() ->
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                ) {
+                    Text(stringResource(R.string.no_announcements))
+                }
+            else ->
+                LazyColumn(
+                    modifier =
+                        Modifier
+                            .padding(padding)
+                            .padding(horizontal = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(15.dp),
+                ) {
+                    items(uiState.announcements) { item ->
+                        AnnouncementItem(announcement = item)
+                    }
+                }
         }
     }
 }
@@ -126,6 +146,7 @@ private fun AnnouncementsContentPreview() {
                                 rawEndTime = "2026-01-15T18:00:00-05:00",
                             ),
                         ),
+                    isLoading = false,
                 ),
             onBack = {},
             onDismissError = {},

@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -31,6 +32,11 @@ fun MapsScreen(
     var selectedScheduleRoute by rememberSaveable { mutableStateOf<String?>(null) }
     var isScheduleVisible by rememberSaveable { mutableStateOf(false) }
     val scheduleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LifecycleStartEffect(viewModel) {
+        viewModel.startVehiclePolling()
+        onStopOrDispose { viewModel.stopVehiclePolling() }
+    }
 
     Scaffold(
         snackbarHost = {
@@ -56,6 +62,7 @@ fun MapsScreen(
                 show = isScheduleVisible,
                 sheetState = scheduleSheetState,
                 schedule = uiState.schedule,
+                isLoading = uiState.isScheduleLoading,
                 routesByName = uiState.routes,
                 selectedRoute = selectedScheduleRoute,
                 onSelectedRouteChange = { selectedScheduleRoute = it },

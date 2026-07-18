@@ -16,56 +16,25 @@
     <string name="about">About</string>
     <string name="error">Error</string>
     <string name="retry">Retry</string>
-    <string name="ignore">Ignore</string>
-    <string name="refresh">Refresh</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="permissions">Permissions</string>
     <string name="announcements">Announcements</string>
-    <string name="schedule">Schedule</string>
+    <string name="no_announcements">No announcements</string>
     <string name="settings">Settings</string>
-    <string name="select">Select</string>
-    <string name="fix">Fix</string>
-    <string name="skip">Skip</string>
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
     <string name="url">URL</string>
     <string name="save">Save</string>
-    <string name="delete">Delete</string>
-    <string name="delete_all">Delete all</string>
 
     <!-- Notifications -->
     <string name="bus_tracker">Shuttle Tracker</string>
     <string name="tracker">Tracker</string>
     <string name="mark_as_read">Mark as read</string>
 
-    <!-- Departures -->
-    <string name="error_getting">Unable to get approaching buses</string>
-    <string name="no_tracked">There are no tracked busses approaching %1$s</string>
-    <string name="buses_approaching">Buses approaching %1$s</string>
-    <string name="number_buses_approaching">%1$d buses are approaching</string>
-    <string name="number_buses_approaching_listed">%1$d buses are approaching\n\n%2$s</string>
-    <string name="departure_fetching">Fetching buses approaching n%1$s…</string>
-    <string name="departure_new">New departure</string>
-    <string name="departure_about">Departures let you schedule notifications to let you know what
-        buses are approaching a stop. Press the \"+\" to schedule one!</string>
-    <string name="departures">Departures</string>
-    <string name="enable_alarms">Enable alarms for Shuttle Tracker</string>
-    <string name="departure_set_time">Set a departure time</string>
-    <string name="departure_delete">Delete departures</string>
-    <string name="departure_delete_warning">Delete all departures?</string>
-    <string name="departure_delete_warning_serious">Are you sure you want to delete all departures? You can\'t undo this</string>
-
-
-    <!-- Explanations-->
-    <string name="info_intro">
-        Shuttle Tracker shows you the real-time locations of the RPI campus shuttles.
-        The bus color matches the route color.
-    </string>
-
     <!--  Formatting broken when using enter so it has to be a one liner  -->
-    <string name="privacy_page">Privacy Policy\nEffective Date: 10-03-2025\n\nShubble (“the App”) respects your privacy. This Privacy Policy explains how we handle your information.\n\nInformation We Collect\nThe App may access your device location in order to:\n\nShow you the closest shuttle stop.\nCalculate how far you are from that stop.\n\nWe do not collect, store, or transmit your location data or any other personal information. All processing happens locally on your device.\n\nUse of Information\nLocation data is used only in real time to display shuttle stop information.\n\nYour location data is never stored, logged, or sent to our servers.\n\nSharing of Information\nWe do not share your location or any other personal information with third parties.\n\nChildren’s Privacy\nShubble does not knowingly collect, store, or share personal information from children.\n\nChanges to This Policy\nIf we make changes to this Privacy Policy, we will update it here and revise the “Effective Date” above.\n\nContact Us\nIf you have any questions or concerns about this Privacy Policy, you can contact us at:\nJoel McCandless\nmail@joelmccandless.com</string>
+    <string name="privacy_page">Privacy Policy\nEffective Date: October 3, 2025\n\nShuttle Tracker (“the App”) respects your privacy. This Privacy Policy explains how we handle your information.\n\nInformation We Collect\nThe App may access your device location in order to:\n\nShow you the closest shuttle stop.\nCalculate how far you are from that stop.\n\nWe do not collect, store, or transmit your location data or any other personal information. All processing happens locally on your device.\n\nUse of Information\nLocation data is used only in real time to display shuttle stop information.\n\nYour location data is never stored, logged, or sent to our servers.\n\nSharing of Information\nWe do not share your location or any other personal information with third parties.\n\nChildren’s Privacy\nShuttle Tracker does not knowingly collect, store, or share personal information from children.\n\nChanges to This Policy\nIf we make changes to this Privacy Policy, we will update it here and revise the “Effective Date” above.\n\nContact Us\nIf you have any questions or concerns about this Privacy Policy, you can contact us at:\nJoel McCandless\nmail@joelmccandless.com</string>
 
-    <string name="about_page">Shubble is developed by the Rensselaer Center for Open Source
+    <string name="about_page">Shuttle Tracker is developed by the Rensselaer Center for Open Source
         by your fellow RPI students. As an open source application, anyone can help develop the RPI Shuttle Tracker
         regardless of experience! Any contributions are welcome, as well as feedback for our current team.
         If you would like to view our source code, click the button below and open our GitHub page, and you can
@@ -78,29 +47,9 @@
     <string name="setup_granted">Granted</string>
     <string name="setup_notification_description">Receive announcements and more.</string>
     <string name="setup_location_description">Access your location to display your position on the map.</string>
-    <string name="acknowledged">%1$s prompt acknowledged.</string>
-    <string name="accept">Accept %1$s</string>
 
     <string name="notifications">Notifications</string>
     <string name="location">Location</string>
-
-    <string name="notification_rational">Notifications allow you to know whether or not any shuttle tracking services are running</string>
-    <string name="location_rational">Location is required to show your current location on the map</string>
-
-    <string name="to_settings_explanation">Go to settings to enable permissions</string>
-    <string name="to_settings">To settings</string>
-    <string name="not_now">Not now</string>
-
-    <string name="permission_denied">Permission denied.</string>
-    <string name="permission_granted">Permission granted.</string>
-    <string name="grant_permissions">Grant permissions</string>
-
-    <string name="complete_setup">Complete setup</string>
-    <string name="next_page">Next page</string>
-    <string name="skip_setup">Skip setup</string>
-
-    <string name="skip_confirmation">Are you sure you want to skip the setup?</string>
-
 
     <!-- Maps screen -->
     <string name="map_open_settings">Open settings</string>
@@ -110,8 +59,6 @@
     <string name="map_open_schedule">Open schedule</string>
     <string name="vehicle_number">Shuttle %1$s</string>
     <string name="vehicle_speed">%.1f mph</string>
-    <string name="no_location_warning">Unable to determine your location</string>
-    <string name="schedule_select_route">Select a route</string>
     <string name="no_schedule_found">No schedule found</string>
     <string name="schedule_none_running">No shuttles running</string>
     <string name="route_label_format">%1$s Route</string>
@@ -121,9 +68,11 @@
     <string name="schedule_subtitle">Times are based on departures from the Student Union.
         Arrival times at other stops are estimated using fixed offsets and may not be exact.</string>
     <string name="no_stop_times">No stop times available</string>
+    <string name="schedule_row_expanded">Expanded</string>
+    <string name="schedule_row_collapsed">Collapsed</string>
+    <string name="schedule_toggle_row">Show or hide stop times</string>
 
     <!-- Errors -->
-    <string name="understand">I understand</string>
     <string name="error_network">Network error</string>
     <string name="error_server">Server error</string>
     <string name="error_unknown">Unknown error</string>

@@ -18,6 +18,7 @@ import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
 import edu.rpi.shuttletracker.data.repository.ApiRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,10 +40,12 @@ class MapsViewModel
     ) : ViewModel() {
         private val _mapsUiState = MutableStateFlow(MapsUiState())
         val mapsUiState: StateFlow<MapsUiState> = _mapsUiState.asStateFlow()
+        private var vehiclePollingJob: Job? = null
+        private var routesJob: Job? = null
+        private var scheduleJob: Job? = null
 
         init {
             loadAll()
-            observeVehicles()
             loadPreferences()
         }
 
@@ -66,56 +69,68 @@ class MapsViewModel
             loadAll()
         }
 
-        private fun observeVehicles() {
-            combine(
-                apiRepository.observeVehicleLocations(pollMs = 5_000L),
-                apiRepository.observeVehicleEtas(pollMs = 5_000L),
-                apiRepository.observeVehicleVelocities(pollMs = 5_000L),
-            ) { locationsResponse, etasResponse, velocitiesResponse ->
-                Triple(locationsResponse, etasResponse, velocitiesResponse)
-            }.flowOn(Dispatchers.IO)
-                .onEach { (locationsResponse, etasResponse, velocitiesResponse) ->
-                    var locations: Map<String, VehicleLocation> = emptyMap()
-                    var etas: Map<String, VehicleStopEta> = emptyMap()
-                    var velocities: Map<String, VehicleVelocities> = emptyMap()
+        fun startVehiclePolling() {
+            if (vehiclePollingJob?.isActive == true) return
 
-                    readApiResponse(locationsResponse) { locations = it }
-                    readApiResponse(etasResponse) { etas = it }
-                    readApiResponse(velocitiesResponse) { velocities = it }
+            vehiclePollingJob =
+                combine(
+                    apiRepository.observeVehicleLocations(pollMs = 5_000L),
+                    apiRepository.observeVehicleEtas(pollMs = 5_000L),
+                    apiRepository.observeVehicleVelocities(pollMs = 5_000L),
+                ) { locationsResponse, etasResponse, velocitiesResponse ->
+                    Triple(locationsResponse, etasResponse, velocitiesResponse)
+                }.flowOn(Dispatchers.IO)
+                    .onEach { (locationsResponse, etasResponse, velocitiesResponse) ->
+                        var locations: Map<String, VehicleLocation> = emptyMap()
+                        var etas: Map<String, VehicleStopEta> = emptyMap()
+                        var velocities: Map<String, VehicleVelocities> = emptyMap()
 
-                    val vehicles =
-                        VehicleMerger.merge(
-                            locations = locations,
-                            velocities = velocities,
-                            etas = etas,
-                        )
+                        readApiResponse(locationsResponse) { locations = it }
+                        readApiResponse(etasResponse) { etas = it }
+                        readApiResponse(velocitiesResponse) { velocities = it }
 
-                    _mapsUiState.update {
-                        it.copy(
-                            vehicles = vehicles,
-                        )
-                    }
-                }.launchIn(viewModelScope)
+                        _mapsUiState.update {
+                            it.copy(
+                                vehicles =
+                                    VehicleMerger.merge(
+                                        locations = locations,
+                                        velocities = velocities,
+                                        etas = etas,
+                                    ),
+                            )
+                        }
+                    }.launchIn(viewModelScope)
+        }
+
+        fun stopVehiclePolling() {
+            vehiclePollingJob?.cancel()
+            vehiclePollingJob = null
         }
 
         private fun loadRoutes() {
-            viewModelScope.launch {
-                readApiResponse(apiRepository.getRoutes()) { routes ->
-                    _mapsUiState.update {
-                        it.copy(routes = routes)
+            if (routesJob?.isActive == true) return
+            routesJob =
+                viewModelScope.launch {
+                    readApiResponse(apiRepository.getRoutes()) { routes ->
+                        _mapsUiState.update {
+                            it.copy(routes = routes)
+                        }
                     }
                 }
-            }
         }
 
         private fun loadSchedule() {
-            viewModelScope.launch {
-                readApiResponse(apiRepository.getSchedule()) { response ->
-                    _mapsUiState.update {
-                        it.copy(schedule = response)
+            if (scheduleJob?.isActive == true) return
+            _mapsUiState.update { it.copy(isScheduleLoading = true) }
+            scheduleJob =
+                viewModelScope.launch {
+                    readApiResponse(apiRepository.getSchedule()) { response ->
+                        _mapsUiState.update {
+                            it.copy(schedule = response, isScheduleLoading = false)
+                        }
                     }
+                    _mapsUiState.update { it.copy(isScheduleLoading = false) }
                 }
-            }
         }
 
         private fun loadPreferences() {
@@ -203,6 +218,7 @@ data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
     val schedule: Schedule? = null,
+    val isScheduleLoading: Boolean = true,
     val networkError: NetworkError.Connectivity? = null,
     val serverError: NetworkError.Http? = null,
     val unknownError: NetworkError.Unknown? = null,

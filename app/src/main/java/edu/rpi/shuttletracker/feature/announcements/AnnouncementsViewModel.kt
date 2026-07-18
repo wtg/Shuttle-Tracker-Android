@@ -102,7 +102,7 @@ class AnnouncementsViewModel
 @Immutable
 data class AnnouncementsUiState(
     val announcements: List<Announcement> = emptyList(),
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val networkError: NetworkError.Connectivity? = null,
     val serverError: NetworkError.Http? = null,
     val unknownError: NetworkError.Unknown? = null,

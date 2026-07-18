@@ -6,11 +6,10 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.res.stringResource
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.network.NetworkError
-import kotlinx.coroutines.launch
 
 /**
  * @param networkError: a network error, null if none
@@ -28,37 +27,39 @@ fun CheckResponseError(
     ignoreErrorRequest: () -> Unit = {},
     retryErrorRequest: () -> Unit = {},
 ) {
-    if (networkError != null) {
-        Error(
-            error = networkError,
-            onPrimaryRequest = { retryErrorRequest() },
-            errorType = stringResource(R.string.error_network),
-            errorBody =
-                when (networkError) {
-                    is NetworkError.NoConnection -> networkError.cause.toString()
-                    is NetworkError.Timeout -> networkError.cause.toString()
-                },
-        )
-    }
+    val networkMessage = stringResource(R.string.error_network)
+    val serverMessage = stringResource(R.string.error_server)
+    val unknownMessage = stringResource(R.string.error_unknown)
+    val activeError =
+        when {
+            networkError != null ->
+                ErrorContent(
+                    networkError,
+                    networkMessage,
+                    when (networkError) {
+                        is NetworkError.NoConnection -> networkError.cause?.message.orEmpty()
+                        is NetworkError.Timeout -> networkError.cause?.message.orEmpty()
+                    },
+                )
+            serverError != null -> ErrorContent(serverError, serverMessage, serverError.displayMessage)
+            unknownError != null -> ErrorContent(unknownError, unknownMessage, unknownError.displayMessage)
+            else -> null
+        }
 
-    if (serverError != null) {
-        Error(
-            error = serverError,
-            onPrimaryRequest = { retryErrorRequest() },
-            errorType = stringResource(R.string.error_server),
-            errorBody = serverError.displayMessage,
-        )
-    }
-
-    if (unknownError != null) {
-        Error(
-            error = unknownError,
-            onPrimaryRequest = { retryErrorRequest() },
-            errorType = stringResource(R.string.error_unknown),
-            errorBody = unknownError.displayMessage,
-        )
-    }
+    Error(
+        error = activeError?.error,
+        onPrimaryRequest = retryErrorRequest,
+        onDismissRequest = ignoreErrorRequest,
+        errorType = activeError?.type.orEmpty(),
+        errorBody = activeError?.body.orEmpty(),
+    )
 }
+
+private data class ErrorContent(
+    val error: Any,
+    val type: String,
+    val body: String,
+)
 
 /**
  * @param error: the error you want to display
@@ -70,32 +71,27 @@ fun CheckResponseError(
 fun Error(
     error: Any?,
     onPrimaryRequest: () -> Unit,
+    onDismissRequest: () -> Unit = {},
     errorType: String = stringResource(R.string.error),
     errorBody: String = error?.toString() ?: "",
     primaryButtonText: String = stringResource(R.string.retry),
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    val currentPrimaryRequest = rememberUpdatedState(onPrimaryRequest)
+    val currentDismissRequest = rememberUpdatedState(onDismissRequest)
 
     SnackbarHost(hostState = snackbarHostState)
     LaunchedEffect(error) {
         if (error != null) {
-            scope.launch {
-                val result =
-                    snackbarHostState.showSnackbar(
-                        "$errorType: $errorBody",
-                        actionLabel = primaryButtonText,
-                    )
+            val result =
+                snackbarHostState.showSnackbar(
+                    "$errorType: $errorBody",
+                    actionLabel = primaryButtonText,
+                )
 
-                when (result) {
-                    SnackbarResult.ActionPerformed -> {
-                        onPrimaryRequest()
-                    }
-
-                    SnackbarResult.Dismissed -> {
-                        // ignored
-                    }
-                }
+            when (result) {
+                SnackbarResult.ActionPerformed -> currentPrimaryRequest.value()
+                SnackbarResult.Dismissed -> currentDismissRequest.value()
             }
         }
     }

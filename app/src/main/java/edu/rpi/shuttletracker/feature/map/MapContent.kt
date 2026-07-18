@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import androidx.core.graphics.toColorInt
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -109,15 +111,23 @@ internal fun ShuttleMap(
                     myLocationButtonEnabled = false,
                 ),
         ) {
-            uiState.routes.values.forEach { route ->
-                route.stopDetails.values.forEach { stop ->
+            val uniqueStops =
+                uiState.routes.values
+                    .flatMap { it.stopDetails.values }
+                    .filter { it.coordinates.size >= 2 }
+                    .distinctBy { it.coordinates.take(2) }
+
+            uniqueStops.forEach { stop ->
+                key(stop.coordinates.take(2)) {
                     StopMarker(
                         stop = stop,
                         selected = stop.name == selectedStop?.name,
                         onSelected = { selectedStop = it },
                     )
                 }
+            }
 
+            uiState.routes.values.forEach { route ->
                 route.latLng().takeIf { it.isNotEmpty() }?.let { points ->
                     Polyline(
                         points = points,
@@ -127,11 +137,13 @@ internal fun ShuttleMap(
             }
 
             uiState.vehicles.forEach { vehicle ->
-                VehicleMarker(
-                    vehicle = vehicle,
-                    animationsEnabled = uiState.shuttleAnimationsEnabled,
-                    rotationEnabled = uiState.shuttleRotationEnabled,
-                )
+                key(vehicle.id) {
+                    VehicleMarker(
+                        vehicle = vehicle,
+                        animationsEnabled = uiState.shuttleAnimationsEnabled,
+                        rotationEnabled = uiState.shuttleRotationEnabled,
+                    )
+                }
             }
         }
 
@@ -235,5 +247,4 @@ private fun MapControls(
     }
 }
 
-private fun String.toComposeColorOrNull(): Color? =
-    runCatching { Color(android.graphics.Color.parseColor(this)) }.getOrNull()
+private fun String.toComposeColorOrNull(): Color? = runCatching { Color(toColorInt()) }.getOrNull()

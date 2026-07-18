@@ -24,9 +24,14 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedButton
@@ -45,6 +50,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
@@ -63,6 +71,7 @@ fun ScheduleSheet(
     show: Boolean,
     sheetState: SheetState,
     schedule: Schedule?,
+    isLoading: Boolean,
     routesByName: Map<String, Route>,
     selectedRoute: String?,
     onSelectedRouteChange: (String) -> Unit,
@@ -76,6 +85,7 @@ fun ScheduleSheet(
     ) {
         ScheduleSheetContent(
             schedule = schedule,
+            isLoading = isLoading,
             routesByName = routesByName,
             selectedRoute = selectedRoute,
             onSelectedRouteChange = onSelectedRouteChange,
@@ -86,6 +96,7 @@ fun ScheduleSheet(
 @Composable
 private fun ScheduleSheetContent(
     schedule: Schedule?,
+    isLoading: Boolean,
     routesByName: Map<String, Route>,
     selectedRoute: String?,
     onSelectedRouteChange: (String) -> Unit,
@@ -104,8 +115,9 @@ private fun ScheduleSheetContent(
             thickness = DividerDefaults.Thickness,
         )
 
-        when (schedule) {
-            null -> EmptyState(R.string.no_schedule_found)
+        when {
+            isLoading -> CircularProgressIndicator(modifier = Modifier.padding(24.dp))
+            schedule == null -> EmptyState(R.string.no_schedule_found)
             else ->
                 ScheduleDetailsContent(
                     schedule = schedule,
@@ -354,6 +366,8 @@ private fun ScheduleTimeRow(
     stopTimes: List<StopTimeInfo>,
     onToggleExpanded: () -> Unit,
 ) {
+    val expandedDescription = stringResource(R.string.schedule_row_expanded)
+    val collapsedDescription = stringResource(R.string.schedule_row_collapsed)
     val tagColor =
         when {
             "north" in vehicleName.lowercase() -> Color(0xFFD32F2F)
@@ -366,8 +380,18 @@ private fun ScheduleTimeRow(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .clickable { onToggleExpanded() }
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .clickable(
+                        role = Role.Button,
+                        onClickLabel = stringResource(R.string.schedule_toggle_row),
+                        onClick = onToggleExpanded,
+                    ).semantics {
+                        stateDescription =
+                            if (expanded) {
+                                expandedDescription
+                            } else {
+                                collapsedDescription
+                            }
+                    }.padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -388,10 +412,15 @@ private fun ScheduleTimeRow(
                 )
             }
 
-            Text(
-                text = if (expanded) "∨" else ">",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Icon(
+                imageVector =
+                    if (expanded) {
+                        Icons.Filled.KeyboardArrowDown
+                    } else {
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight
+                    },
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 12.dp),
             )
         }
