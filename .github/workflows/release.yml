@@ -35,6 +35,9 @@ jobs:
         run: |
           echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" > local.properties
 
+      - name: Verify Release Sources
+        run: ./gradlew ktlintCheck lintDebug testDebugUnitTest
+
       - name: Build Release APK + AAB
         run: |
           ./gradlew :${{ env.MAIN_MODULE }}:assembleRelease :${{ env.MAIN_MODULE }}:bundleRelease

@@ -44,6 +44,9 @@ jobs:
       - name: Unit Tests
         run: ./gradlew testDebugUnitTest
 
+      - name: Android Lint
+        run: ./gradlew lintDebug
+
       - name: Cleanup
         if: always()
         run: rm -f local.properties
