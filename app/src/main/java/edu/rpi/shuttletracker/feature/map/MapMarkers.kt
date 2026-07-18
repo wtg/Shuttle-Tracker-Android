@@ -144,6 +144,7 @@ internal fun VehicleMarker(
 @Composable
 internal fun MapActionButton(
     icon: ImageVector,
+    contentDescription: String,
     onClick: () -> Unit,
 ) {
     Button(
@@ -158,6 +159,6 @@ internal fun MapActionButton(
             ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
     ) {
-        Icon(icon, icon.name)
+        Icon(icon, contentDescription)
     }
 }

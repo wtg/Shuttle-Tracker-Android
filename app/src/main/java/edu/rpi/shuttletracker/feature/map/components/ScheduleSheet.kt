@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -196,8 +196,8 @@ private fun ScheduleDetailsContent(
         return
     }
 
-    var expandedRowKey by remember(selectedDay, activeRoute) {
-        mutableStateOf<String?>(null)
+    var expandedRowIndex by remember(selectedDay, activeRoute) {
+        mutableStateOf<Int?>(null)
     }
 
     val listState = rememberLazyListState()
@@ -214,15 +214,10 @@ private fun ScheduleDetailsContent(
 
     LaunchedEffect(times, scrollIndex) {
         if (times.isNotEmpty()) {
-            val autoExpandedItem = times[scrollIndex]
-            expandedRowKey =
-                autoExpandedItem.vehicleName +
-                autoExpandedItem.departureTime +
-                autoExpandedItem.routeName
-
+            expandedRowIndex = scrollIndex
             listState.scrollToItem(scrollIndex)
         } else {
-            expandedRowKey = null
+            expandedRowIndex = null
         }
     }
 
@@ -231,16 +226,19 @@ private fun ScheduleDetailsContent(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(bottom = 24.dp),
     ) {
-        items(times, key = { it.vehicleName + it.departureTime + it.routeName }) { item ->
-            val rowKey = item.vehicleName + item.departureTime + item.routeName
-
+        itemsIndexed(
+            items = times,
+            key = { index, item ->
+                "$index|${item.vehicleName}|${item.departureTime}|${item.routeName}"
+            },
+        ) { index, item ->
             ScheduleTimeRow(
                 time = item.departureTime,
                 vehicleName = item.vehicleName,
-                expanded = expandedRowKey == rowKey,
+                expanded = expandedRowIndex == index,
                 stopTimes = item.stopTimes,
                 onToggleExpanded = {
-                    expandedRowKey = if (expandedRowKey == rowKey) null else rowKey
+                    expandedRowIndex = if (expandedRowIndex == index) null else index
                 },
             )
         }

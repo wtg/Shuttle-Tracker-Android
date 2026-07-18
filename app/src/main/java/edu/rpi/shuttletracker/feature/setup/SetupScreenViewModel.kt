@@ -55,24 +55,6 @@ class SetupScreenViewModel
                     }
                 }
         }
-
-        fun updatePrivacyPolicyAccepted() {
-            viewModelScope.launch {
-                userPreferencesRepository.savePrivacyPolicyAccepted(true)
-            }
-        }
-
-        fun updateAboutAccepted() {
-            viewModelScope.launch {
-                userPreferencesRepository.saveAboutAccepted(true)
-            }
-        }
-
-        fun completeSetup() {
-            viewModelScope.launch {
-                userPreferencesRepository.saveSetupCompleted(true)
-            }
-        }
     }
 
 @Immutable

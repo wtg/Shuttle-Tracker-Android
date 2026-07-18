@@ -58,30 +58,33 @@ fun PermissionsPage() {
 @Composable
 fun PermissionBox(permission: Permission) {
     val context = LocalContext.current
-    var allGranted by remember(permission, context) {
-        mutableStateOf(
-            permission.permissions.all { permissionName ->
-                ContextCompat.checkSelfPermission(
-                    context,
-                    permissionName,
-                ) == PackageManager.PERMISSION_GRANTED
-            },
-        )
+    var isGranted by remember(permission, context) {
+        mutableStateOf(permission.isGranted(context))
     }
 
     val launcher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestMultiplePermissions(),
-        ) { permissions ->
-            allGranted = permissions.values.all { it }
+        ) {
+            isGranted = permission.isGranted(context)
         }
 
     PermissionItem(
         name = stringResource(permission.nameRes),
         description = stringResource(permission.descriptionRes),
-        isGranted = allGranted,
+        isGranted = isGranted,
         grantLabel = stringResource(R.string.setup_grant),
         grantedLabel = stringResource(R.string.setup_granted),
         onRequestPermission = { launcher.launch(permission.permissions) },
     )
+}
+
+private fun Permission.isGranted(context: android.content.Context): Boolean {
+    val grantResults =
+        permissions.map { permissionName ->
+            ContextCompat.checkSelfPermission(context, permissionName) ==
+                PackageManager.PERMISSION_GRANTED
+        }
+
+    return if (requiresAll) grantResults.all { it } else grantResults.any { it }
 }

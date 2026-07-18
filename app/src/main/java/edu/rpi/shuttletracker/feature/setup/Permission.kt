@@ -13,6 +13,7 @@ sealed class Permission(
     @param:StringRes val nameRes: Int,
     @param:StringRes val descriptionRes: Int,
     val permissions: Array<String>,
+    val requiresAll: Boolean,
 ) {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     data object Notification : Permission(
@@ -21,6 +22,7 @@ sealed class Permission(
         arrayOf(
             Manifest.permission.POST_NOTIFICATIONS,
         ),
+        requiresAll = true,
     )
 
     data object Location : Permission(
@@ -30,5 +32,6 @@ sealed class Permission(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
         ),
+        requiresAll = false,
     )
 }

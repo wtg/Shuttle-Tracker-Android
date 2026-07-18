@@ -20,6 +20,7 @@ import edu.rpi.shuttletracker.data.repository.ApiRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -37,7 +38,7 @@ class MapsViewModel
         private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
         private val _mapsUiState = MutableStateFlow(MapsUiState())
-        val mapsUiState: StateFlow<MapsUiState> = _mapsUiState
+        val mapsUiState: StateFlow<MapsUiState> = _mapsUiState.asStateFlow()
 
         init {
             loadAll()

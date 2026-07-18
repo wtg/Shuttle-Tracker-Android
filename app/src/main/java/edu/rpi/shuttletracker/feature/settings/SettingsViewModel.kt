@@ -20,14 +20,12 @@ class SettingsViewModel
     ) : ViewModel() {
         val settingsUiState =
             combine(
-                userPreferencesRepository.getColorBlindMode(),
                 userPreferencesRepository.getDevOptions(),
                 userPreferencesRepository.getThemeMode(),
                 userPreferencesRepository.getShuttleAnimations(),
                 userPreferencesRepository.getShuttleRotation(),
-            ) { colorBindMode, devOptionState, themeMode, animationsEnabled, rotationEnabled ->
+            ) { devOptionState, themeMode, animationsEnabled, rotationEnabled ->
                 return@combine SettingsUiState(
-                    colorBlindMode = colorBindMode,
                     devOptionState = devOptionState,
                     themeMode = themeMode,
                     animationsEnabled = animationsEnabled,
@@ -38,12 +36,6 @@ class SettingsViewModel
                 SharingStarted.WhileSubscribed(),
                 SettingsUiState(),
             )
-
-        fun updateColorBlindMode(colorBlindMode: Boolean) {
-            viewModelScope.launch {
-                userPreferencesRepository.saveColorBlindMode(colorBlindMode)
-            }
-        }
 
         fun updateThemeMode(themeMode: ThemeMode) {
             viewModelScope.launch {
@@ -63,11 +55,6 @@ class SettingsViewModel
             }
         }
 
-        fun clearAllPreferences() =
-            viewModelScope.launch {
-                resetPreferences()
-            }
-
         suspend fun resetPreferences() {
             userPreferencesRepository.clearAllPreferences()
         }
@@ -75,7 +62,6 @@ class SettingsViewModel
 
 @Immutable
 data class SettingsUiState(
-    val colorBlindMode: Boolean = false,
     val devOptionState: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.System,
     val animationsEnabled: Boolean = false,

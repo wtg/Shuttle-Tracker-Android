@@ -34,7 +34,7 @@ class AnnouncementsViewModel
             loadAll()
         }
 
-        fun loadAll() {
+        private fun loadAll() {
             if (announcementsUiState.value.announcements.isNotEmpty()) return
             if (loadJob?.isActive == true) return
 
@@ -107,5 +107,3 @@ data class AnnouncementsUiState(
     val serverError: NetworkError.Http? = null,
     val unknownError: NetworkError.Unknown? = null,
 )
-
-typealias AnnouncementsUIState = AnnouncementsUiState

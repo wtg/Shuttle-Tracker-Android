@@ -29,11 +29,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.core.graphics.toColorInt
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -69,10 +68,13 @@ internal fun ShuttleMap(
     val coroutineScope = rememberCoroutineScope()
     val hasLocationPermission =
         remember {
-            ActivityCompat.checkSelfPermission(
-                context,
+            listOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
-            ) == PackageManager.PERMISSION_GRANTED
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            ).any { permission ->
+                ActivityCompat.checkSelfPermission(context, permission) ==
+                    PackageManager.PERMISSION_GRANTED
+            }
         }
     val cameraPositionState =
         rememberCameraPositionState {
@@ -80,6 +82,7 @@ internal fun ShuttleMap(
         }
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
     val useDarkMap = uiState.themeMode.isDarkTheme(isSystemInDarkTheme())
+    val fallbackRouteColor = MaterialTheme.colorScheme.primary
 
     Box(Modifier.fillMaxSize()) {
         GoogleMap(
@@ -118,12 +121,7 @@ internal fun ShuttleMap(
                 route.latLng().takeIf { it.isNotEmpty() }?.let { points ->
                     Polyline(
                         points = points,
-                        color =
-                            Color(
-                                android.graphics.Color
-                                    .valueOf(route.color.toColorInt())
-                                    .toArgb(),
-                            ),
+                        color = route.color.toComposeColorOrNull() ?: fallbackRouteColor,
                     )
                 }
             }
@@ -146,7 +144,9 @@ internal fun ShuttleMap(
             isNormalMapType = uiState.mapType == MapType.NORMAL,
             onSettingsClick = onSettingsClick,
             onScheduleClick = onScheduleClick,
-            onRecenterClick = {
+            onRecenterClick = recenter@{
+                if (!hasLocationPermission) return@recenter
+
                 LocationServices
                     .getFusedLocationProviderClient(context)
                     .lastLocation
@@ -185,6 +185,7 @@ private fun MapControls(
         ) {
             MapActionButton(
                 icon = Icons.Outlined.Settings,
+                contentDescription = stringResource(R.string.map_open_settings),
                 onClick = onSettingsClick,
             )
         }
@@ -200,10 +201,19 @@ private fun MapControls(
                     } else {
                         Icons.Outlined.LocationDisabled
                     },
+                contentDescription =
+                    stringResource(
+                        if (hasLocationPermission) {
+                            R.string.map_recenter
+                        } else {
+                            R.string.map_location_unavailable
+                        },
+                    ),
                 onClick = onRecenterClick,
             )
             MapActionButton(
                 icon = if (isNormalMapType) Icons.Outlined.Layers else Icons.Filled.Layers,
+                contentDescription = stringResource(R.string.map_toggle_type),
                 onClick = onToggleMapTypeClick,
             )
         }
@@ -219,8 +229,11 @@ private fun MapControls(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Schedule,
-                contentDescription = "Open schedule",
+                contentDescription = stringResource(R.string.map_open_schedule),
             )
         }
     }
 }
+
+private fun String.toComposeColorOrNull(): Color? =
+    runCatching { Color(android.graphics.Color.parseColor(this)) }.getOrNull()
