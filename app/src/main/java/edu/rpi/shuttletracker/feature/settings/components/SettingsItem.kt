@@ -29,14 +29,20 @@ fun SettingsItem(
     title: String,
     description: String = "",
     hasBottomSpacing: Boolean = true,
-    onClick: () -> Unit = {},
+    onClick: (() -> Unit)? = null,
     useLargeAction: Boolean = false,
     actions: @Composable () -> Unit = {},
 ) {
+    val clickModifier =
+        if (onClick != null) {
+            Modifier.clickable(onClick = onClick)
+        } else {
+            Modifier
+        }
+
     Row(
         modifier =
-            Modifier
-                .clickable { onClick() }
+            clickModifier
                 .fillMaxWidth()
                 .padding(
                     top = 10.dp,
@@ -50,7 +56,7 @@ fun SettingsItem(
         if (icon != null) {
             Icon(
                 icon,
-                title,
+                contentDescription = null,
                 modifier = Modifier.padding(vertical = 10.dp),
             )
         }

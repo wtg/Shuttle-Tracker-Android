@@ -1,6 +1,6 @@
 /.gradle/
 /.idea/
-.kotlin/
+/.kotlin/
 /local.properties
 google_maps_api.xml
 /build/

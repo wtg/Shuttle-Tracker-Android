@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,19 +38,24 @@ class DevMenuViewModel
             }
         }
 
-        /**
-         * MAKE SURE THIS IS BLOCKING OR ELSE STUFF BREAKS
-         * */
         fun updateBaseUrl(baseUrl: String) {
-            runBlocking {
-                userPreferencesRepository.saveBaseUrl(baseUrl)
+            viewModelScope.launch {
+                saveBaseUrl(baseUrl)
             }
+        }
+
+        suspend fun saveBaseUrl(baseUrl: String) {
+            userPreferencesRepository.saveBaseUrl(baseUrl)
         }
 
         fun updateDevMenu(devOptions: Boolean) {
             viewModelScope.launch {
-                userPreferencesRepository.activateDevOptions(devOptions)
+                setDeveloperOptions(devOptions)
             }
+        }
+
+        suspend fun setDeveloperOptions(enabled: Boolean) {
+            userPreferencesRepository.activateDevOptions(enabled)
         }
     }
 

@@ -65,8 +65,12 @@ class SettingsViewModel
 
         fun clearAllPreferences() =
             viewModelScope.launch {
-                userPreferencesRepository.clearAllPreferences()
+                resetPreferences()
             }
+
+        suspend fun resetPreferences() {
+            userPreferencesRepository.clearAllPreferences()
+        }
     }
 
 @Immutable
