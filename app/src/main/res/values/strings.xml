@@ -132,7 +132,6 @@
     <string name="base_url">Base URL</string>
     <string name="change_url_warning">Changing the URL will restart the app and stop all running services</string>
     <string name="invalid_url">Invalid URL</string>
-    <string name="current_meters">%1$d meters</string>
     <string name="libraries_used">Libraries used</string>
     <string name="dev_options_activated">Dev options activated</string>
     <string name="dev_options_state">Dev options unlocked in %1$d</string>
@@ -146,7 +145,6 @@
     <string name="animation_description">Smooth movement</string>
 
     <!-- Dev menu -->
-    <string name="max_stop_dist">Maximum stop distance</string>
 
     <string name="effective_from">Effective from %1$s to %2$s</string>
 </resources>

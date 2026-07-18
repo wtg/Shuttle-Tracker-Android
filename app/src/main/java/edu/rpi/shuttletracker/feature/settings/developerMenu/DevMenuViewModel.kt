@@ -4,11 +4,11 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.rpi.shuttletracker.core.network.normalizeBaseUrl
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,40 +18,19 @@ class DevMenuViewModel
         private val userPreferencesRepository: UserPreferencesRepository,
     ) : ViewModel() {
         val devMenuUiState =
-            combine(
-                userPreferencesRepository.getMaxStopDist(),
-                userPreferencesRepository.getBaseUrl(),
-            ) { maxStopDist, baseUrl ->
-                return@combine DevMenuUiState(
-                    maxStopDist = maxStopDist,
-                    baseUrl = baseUrl,
+            userPreferencesRepository
+                .getBaseUrl()
+                .map(::DevMenuUiState)
+                .stateIn(
+                    scope = viewModelScope,
+                    SharingStarted.WhileSubscribed(),
+                    DevMenuUiState(),
                 )
-            }.stateIn(
-                scope = viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                DevMenuUiState(),
-            )
 
-        fun updateMinStopDist(minStopDist: Float) {
-            viewModelScope.launch {
-                userPreferencesRepository.saveMaxStopDist(minStopDist)
-            }
-        }
-
-        fun updateBaseUrl(baseUrl: String) {
-            viewModelScope.launch {
-                saveBaseUrl(baseUrl)
-            }
-        }
-
-        suspend fun saveBaseUrl(baseUrl: String) {
-            userPreferencesRepository.saveBaseUrl(baseUrl)
-        }
-
-        fun updateDevMenu(devOptions: Boolean) {
-            viewModelScope.launch {
-                setDeveloperOptions(devOptions)
-            }
+        suspend fun saveBaseUrl(baseUrl: String): Boolean {
+            val normalizedUrl = normalizeBaseUrl(baseUrl) ?: return false
+            userPreferencesRepository.saveBaseUrl(normalizedUrl)
+            return true
         }
 
         suspend fun setDeveloperOptions(enabled: Boolean) {
@@ -61,6 +40,5 @@ class DevMenuViewModel
 
 @Immutable
 data class DevMenuUiState(
-    val maxStopDist: Float = 20F,
     val baseUrl: String = "",
 )

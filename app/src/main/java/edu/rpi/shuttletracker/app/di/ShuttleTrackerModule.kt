@@ -16,7 +16,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import edu.rpi.shuttletracker.BuildConfig
+import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.network.hasNetwork
+import edu.rpi.shuttletracker.core.network.normalizeBaseUrl
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
 import edu.rpi.shuttletracker.data.remote.ShuttleApi
 import edu.rpi.shuttletracker.data.remote.dto.RouteDto
@@ -93,16 +95,23 @@ object ShuttleTrackerModule {
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
         userPreferencesRepository: UserPreferencesRepository,
+        @ApplicationContext context: Context,
     ): Retrofit {
         val gson =
             GsonBuilder()
                 .registerTypeAdapter(RouteDto::class.java, RouteDtoDeserializer())
                 .create()
 
-        val url =
+        val storedUrl =
             runBlocking {
                 return@runBlocking userPreferencesRepository.getBaseUrl().first()
             }
+
+        val url =
+            normalizeBaseUrl(storedUrl)
+                ?: checkNotNull(normalizeBaseUrl(context.getString(R.string.url_default))) {
+                    "The default API URL must be a valid HTTP(S) base URL"
+                }
 
         return Retrofit
             .Builder()

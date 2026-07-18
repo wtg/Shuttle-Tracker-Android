@@ -5,7 +5,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.maps.android.compose.MapType
@@ -36,7 +35,6 @@ class UserPreferencesRepository
             private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
             private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
             private val SETUP_COMPLETED = booleanPreferencesKey("setup_completed")
-            private val MAX_STOP_DIST = floatPreferencesKey("max_stop_dist")
             private val BASE_URL = stringPreferencesKey("base_url")
             private val ALLOW_ANALYTICS = booleanPreferencesKey("allow_analytics")
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
@@ -124,17 +122,6 @@ class UserPreferencesRepository
         suspend fun saveSetupCompleted(setupCompleted: Boolean) {
             dataStore.edit {
                 it[SETUP_COMPLETED] = setupCompleted
-            }
-        }
-
-        fun getMaxStopDist(): Flow<Float> =
-            dataStore.data.map {
-                it[MAX_STOP_DIST] ?: 20f
-            }
-
-        suspend fun saveMaxStopDist(minStopDist: Float) {
-            dataStore.edit {
-                it[MAX_STOP_DIST] = minStopDist
             }
         }
 

@@ -56,8 +56,9 @@ fun DevMenuScreen(
         },
         onBaseUrlChange = { baseUrl ->
             scope.launch {
-                viewModel.saveBaseUrl(baseUrl)
-                restartApplication(context)
+                if (viewModel.saveBaseUrl(baseUrl)) {
+                    restartApplication(context)
+                }
             }
         },
     )

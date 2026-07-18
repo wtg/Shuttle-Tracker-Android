@@ -1,17 +1,14 @@
 package edu.rpi.shuttletracker.feature.settings.developerMenu
 
-import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,27 +21,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.core.network.normalizeBaseUrl
 import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
-
-@Composable
-fun MinStopDistItem(
-    maxStopDist: Float,
-    updateMaxStopDist: (Float) -> Unit,
-) {
-    SettingsItem(
-        icon = Icons.Outlined.LocationOn,
-        title = stringResource(R.string.max_stop_dist),
-        description = stringResource(R.string.current_meters, maxStopDist.toInt()),
-        useLargeAction = true,
-    ) {
-        Slider(
-            value = maxStopDist,
-            valueRange = 10f..100f,
-            steps = 8,
-            onValueChange = updateMaxStopDist,
-        )
-    }
-}
 
 @Composable
 fun BaseUrlSettingItem(
@@ -85,8 +63,9 @@ fun BaseUrlSettingItem(
             confirmButton = {
                 Button(
                     onClick = {
-                        if (Patterns.WEB_URL.matcher(textFieldUrl).matches()) {
-                            updateBaseUrl(textFieldUrl)
+                        val normalizedUrl = normalizeBaseUrl(textFieldUrl)
+                        if (normalizedUrl != null) {
+                            updateBaseUrl(normalizedUrl)
                             showDialog = false
                         } else {
                             Toast.makeText(context, invalidUrlMessage, Toast.LENGTH_SHORT).show()

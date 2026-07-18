@@ -30,7 +30,6 @@ fun SettingsItem(
     description: String = "",
     hasBottomSpacing: Boolean = true,
     onClick: (() -> Unit)? = null,
-    useLargeAction: Boolean = false,
     actions: @Composable () -> Unit = {},
 ) {
     val clickModifier =
@@ -70,14 +69,8 @@ fun SettingsItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-
-            if (useLargeAction) {
-                actions()
-            }
         }
 
-        if (!useLargeAction) {
-            actions()
-        }
+        actions()
     }
 }
