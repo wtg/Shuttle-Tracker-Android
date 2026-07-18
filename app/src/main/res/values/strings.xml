@@ -72,6 +72,12 @@
         open an \"issue\" to leave feedback for us. View our privacy policy with the button below.</string>
 
     <!-- Setup screen -->
+    <string name="setup_accept">I accept</string>
+    <string name="setup_finish">Finish</string>
+    <string name="setup_grant">Grant</string>
+    <string name="setup_granted">Granted</string>
+    <string name="setup_notification_description">Receive announcements and more.</string>
+    <string name="setup_location_description">Access your location to display your position on the map.</string>
     <string name="acknowledged">%1$s prompt acknowledged.</string>
     <string name="accept">Accept %1$s</string>
 

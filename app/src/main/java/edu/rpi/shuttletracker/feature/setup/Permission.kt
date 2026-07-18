@@ -3,49 +3,32 @@ package edu.rpi.shuttletracker.feature.setup
 import android.Manifest
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
+import edu.rpi.shuttletracker.R
 
 /**
  * Contains all the permissions we need for the setup process
  * */
 sealed class Permission(
-    val name: String,
-    val description: String,
+    @param:StringRes val nameRes: Int,
+    @param:StringRes val descriptionRes: Int,
     val permissions: Array<String>,
 ) {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     data object Notification : Permission(
-        "Notifications",
-        "Receive announcements and more.",
+        R.string.notifications,
+        R.string.setup_notification_description,
         arrayOf(
             Manifest.permission.POST_NOTIFICATIONS,
         ),
     )
 
     data object Location : Permission(
-        "Location",
-        "Access your location to display your position on the map.",
+        R.string.location,
+        R.string.setup_location_description,
         arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-        ),
-    )
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    data object BackgroundLocation : Permission(
-        "Background Location",
-        "Crowd source bus data with the app closed.",
-        arrayOf(
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-        ),
-    )
-
-    @RequiresApi(Build.VERSION_CODES.S)
-    data object Bluetooth : Permission(
-        "Bluetooth",
-        "Detect nearby buses for auto-boarding.",
-        arrayOf(
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN,
         ),
     )
 }
