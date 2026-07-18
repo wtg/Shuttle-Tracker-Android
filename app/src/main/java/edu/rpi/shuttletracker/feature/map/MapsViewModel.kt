@@ -45,7 +45,7 @@ class MapsViewModel
             loadPreferences()
         }
 
-        fun loadAll() {
+        private fun loadAll() {
             if (mapsUiState.value.routes.isEmpty()) loadRoutes()
             if (mapsUiState.value.schedule == null) loadSchedule()
         }
@@ -155,7 +155,7 @@ class MapsViewModel
                 }.launchIn(viewModelScope)
         }
 
-        fun updateMapType(mapType: MapType) {
+        private fun updateMapType(mapType: MapType) {
             viewModelScope.launch {
                 userPreferencesRepository.saveMapType(mapType)
                 _mapsUiState.update {
@@ -173,18 +173,6 @@ class MapsViewModel
                 }
 
             updateMapType(next)
-        }
-
-        fun setShuttleAnimations(animationsEnable: Boolean) {
-            viewModelScope.launch {
-                userPreferencesRepository.saveShuttleAnimations(animationsEnable)
-            }
-        }
-
-        fun setShuttleRotation(rotationEnable: Boolean) {
-            viewModelScope.launch {
-                userPreferencesRepository.saveShuttleRotations(rotationEnable)
-            }
         }
 
         /**
@@ -217,8 +205,6 @@ data class MapsUiState(
     val networkError: NetworkError.Connectivity? = null,
     val serverError: NetworkError.Http? = null,
     val unknownError: NetworkError.Unknown? = null,
-    val notificationsRead: Int = -1,
-    val totalAnnouncements: Int = -1,
     val themeMode: ThemeMode = ThemeMode.System,
     val mapType: MapType = MapType.NORMAL,
     val shuttleAnimationsEnabled: Boolean = false,
