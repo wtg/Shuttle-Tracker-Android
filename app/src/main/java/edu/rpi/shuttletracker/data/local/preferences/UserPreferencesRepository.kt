@@ -12,9 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import java.util.UUID
 import javax.inject.Inject
 
 /**
@@ -29,32 +27,17 @@ class UserPreferencesRepository
         @param:ApplicationContext private val context: Context,
     ) {
         companion object {
-            private val USER_ID = stringPreferencesKey("user_id")
             private val NOTIFICATIONS_READ = intPreferencesKey("notifications_read")
-            private val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
             private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
             private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
             private val SETUP_COMPLETED = booleanPreferencesKey("setup_completed")
             private val BASE_URL = stringPreferencesKey("base_url")
-            private val ALLOW_ANALYTICS = booleanPreferencesKey("allow_analytics")
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
             private val THEME_MODE = stringPreferencesKey("theme_mode")
             private val MAP_TYPE = stringPreferencesKey("map_type")
             private val SHUTTLE_ANIMATIONS = booleanPreferencesKey("shuttle-animations")
             private val SHUTTLE_ROTATION = booleanPreferencesKey("shuttle_rotation")
         }
-
-        suspend fun getUserId(): String =
-            dataStore.data
-                .map { preference ->
-                    if (preference[USER_ID] == null) {
-                        dataStore.edit {
-                            it[USER_ID] = UUID.randomUUID().toString()
-                        }
-                    }
-
-                    preference[USER_ID] ?: UUID.randomUUID().toString()
-                }.first()
 
         fun getNotificationsRead(): Flow<Int> =
             dataStore.data.map {
@@ -64,17 +47,6 @@ class UserPreferencesRepository
         suspend fun saveNotificationsRead(count: Int) {
             dataStore.edit {
                 it[NOTIFICATIONS_READ] = count
-            }
-        }
-
-        fun getColorBlindMode(): Flow<Boolean> =
-            dataStore.data.map {
-                it[COLOR_BLIND_MODE] ?: false
-            }
-
-        suspend fun saveColorBlindMode(colorBlindMode: Boolean) {
-            dataStore.edit {
-                it[COLOR_BLIND_MODE] = colorBlindMode
             }
         }
 
@@ -136,17 +108,6 @@ class UserPreferencesRepository
             }
         }
 
-        fun getAllowAnalytics(): Flow<Boolean> =
-            dataStore.data.map {
-                it[ALLOW_ANALYTICS] ?: false
-            }
-
-        suspend fun saveAllowAnalytics(allowAnalytics: Boolean) {
-            dataStore.edit {
-                it[ALLOW_ANALYTICS] = allowAnalytics
-            }
-        }
-
         suspend fun activateDevOptions(devOptionEnable: Boolean) {
             dataStore.edit {
                 it[DEV_OPTIONS_ACTIVE] = devOptionEnable
@@ -173,13 +134,11 @@ class UserPreferencesRepository
             }
         }
 
-        suspend fun clearAllPreferences() {
-            dataStore.edit { prefs ->
-                val userId = prefs[USER_ID]
-                prefs.clear()
-                if (userId != null) {
-                    prefs[USER_ID] = userId
-                }
+        suspend fun resetSetup() {
+            dataStore.edit { preferences ->
+                preferences.remove(ABOUT_ACCEPTED)
+                preferences.remove(PRIVACY_POLICY_ACCEPTED)
+                preferences.remove(SETUP_COMPLETED)
             }
         }
 

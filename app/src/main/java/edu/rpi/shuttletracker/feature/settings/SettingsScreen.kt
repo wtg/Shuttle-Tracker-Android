@@ -12,6 +12,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.DevMenuScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.MapsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -34,8 +35,13 @@ fun SettingsScreen(
         onAnimationsChange = viewModel::updateShuttleAnimations,
         onRedoSetup = {
             scope.launch {
-                viewModel.resetPreferences()
-                navigator.navigate(SetupScreenDestination())
+                viewModel.resetSetup()
+                navigator.navigate(SetupScreenDestination()) {
+                    popUpTo(MapsScreenDestination) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
             }
         },
         onAbout = { navigator.navigate(AboutScreenDestination()) },

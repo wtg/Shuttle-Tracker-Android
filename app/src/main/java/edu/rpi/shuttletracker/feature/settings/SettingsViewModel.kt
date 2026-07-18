@@ -55,8 +55,8 @@ class SettingsViewModel
             }
         }
 
-        suspend fun resetPreferences() {
-            userPreferencesRepository.clearAllPreferences()
+        suspend fun resetSetup() {
+            userPreferencesRepository.resetSetup()
         }
     }
 
