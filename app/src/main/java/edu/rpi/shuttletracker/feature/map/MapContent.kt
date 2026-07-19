@@ -8,11 +8,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -43,7 +47,7 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.feature.map.components.AnnouncementBanners
+import edu.rpi.shuttletracker.feature.map.components.AnnouncementStrip
 import kotlinx.coroutines.launch
 
 private val CampusCenter = LatLng(42.73068146020498, -73.67619731950525)
@@ -60,6 +64,7 @@ internal fun ShuttleMap(
     onSettingsClick: () -> Unit,
     onScheduleClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
+    onAnnouncementsClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -142,26 +147,70 @@ internal fun ShuttleMap(
             }
         }
 
-        AnnouncementBanners(
-            announcements = uiState.announcements,
+        // Announcements are status info and belong at the very top, first thing seen; settings
+        // and map-type are low-frequency controls that sit below in their own full-width row so
+        // they never collide structurally with the strip above them.
+        Column(
             modifier =
                 Modifier
                     .align(Alignment.TopCenter)
+                    .fillMaxWidth()
                     .padding(contentPadding)
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 64.dp),
-        )
+                    .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            AnnouncementStrip(
+                announcements = uiState.announcements,
+                onClick = onAnnouncementsClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
-        MapControls(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    MapActionButton(
+                        icon = R.drawable.ic_settings,
+                        contentDescription = stringResource(R.string.map_open_settings),
+                        onClick = onSettingsClick,
+                    )
+                    MapActionButton(
+                        icon =
+                            if (uiState.mapType == MapType.NORMAL) {
+                                R.drawable.ic_layers
+                            } else {
+                                R.drawable.ic_layers_filled
+                            },
+                        contentDescription = stringResource(R.string.map_toggle_type),
+                        onClick = onToggleMapTypeClick,
+                    )
+                }
+            }
+        }
+
+        // Pure actions, independently anchored to opposite bottom corners - nothing above them
+        // to measure against now that the strip lives at the top.
+        ExtendedFloatingActionButton(
+            onClick = onScheduleClick,
             modifier =
                 Modifier
+                    .align(Alignment.BottomStart)
                     .padding(contentPadding)
-                    .padding(horizontal = 10.dp),
-            hasLocationPermission = hasLocationPermission,
-            isNormalMapType = uiState.mapType == MapType.NORMAL,
-            onSettingsClick = onSettingsClick,
-            onScheduleClick = onScheduleClick,
-            onRecenterClick = recenter@{
+                    .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_schedule),
+                    contentDescription = null,
+                )
+            },
+            text = { Text(stringResource(R.string.map_open_schedule)) },
+        )
+
+        FloatingActionButton(
+            onClick = recenter@{
                 if (!hasLocationPermission) return@recenter
 
                 LocationServices
@@ -180,44 +229,23 @@ internal fun ShuttleMap(
                         }
                     }
             },
-            onToggleMapTypeClick = onToggleMapTypeClick,
-        )
-    }
-}
-
-@Composable
-private fun MapControls(
-    modifier: Modifier,
-    hasLocationPermission: Boolean,
-    isNormalMapType: Boolean,
-    onSettingsClick: () -> Unit,
-    onScheduleClick: () -> Unit,
-    onRecenterClick: () -> Unit,
-    onToggleMapTypeClick: () -> Unit,
-) {
-    Box(modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.align(Alignment.TopStart),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(contentPadding)
+                    .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
-            MapActionButton(
-                icon = R.drawable.ic_settings,
-                contentDescription = stringResource(R.string.map_open_settings),
-                onClick = onSettingsClick,
-            )
-        }
-
-        Column(
-            modifier = Modifier.align(Alignment.TopEnd),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            MapActionButton(
-                icon =
-                    if (hasLocationPermission) {
-                        R.drawable.ic_my_location
-                    } else {
-                        R.drawable.ic_location_disabled
-                    },
+            Icon(
+                painter =
+                    painterResource(
+                        if (hasLocationPermission) {
+                            R.drawable.ic_my_location
+                        } else {
+                            R.drawable.ic_location_disabled
+                        },
+                    ),
                 contentDescription =
                     stringResource(
                         if (hasLocationPermission) {
@@ -226,27 +254,6 @@ private fun MapControls(
                             R.string.map_location_unavailable
                         },
                     ),
-                onClick = onRecenterClick,
-            )
-            MapActionButton(
-                icon = if (isNormalMapType) R.drawable.ic_layers else R.drawable.ic_layers_filled,
-                contentDescription = stringResource(R.string.map_toggle_type),
-                onClick = onToggleMapTypeClick,
-            )
-        }
-
-        FloatingActionButton(
-            onClick = onScheduleClick,
-            modifier =
-                Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_schedule),
-                contentDescription = stringResource(R.string.map_open_schedule),
             )
         }
     }

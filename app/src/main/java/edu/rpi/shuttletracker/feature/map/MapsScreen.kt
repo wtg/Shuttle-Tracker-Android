@@ -15,6 +15,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
+import edu.rpi.shuttletracker.feature.map.components.AnnouncementSheet
 import edu.rpi.shuttletracker.feature.map.components.ScheduleSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,6 +28,8 @@ fun MapsScreen(
     var selectedScheduleRoute by rememberSaveable { mutableStateOf<String?>(null) }
     var isScheduleVisible by rememberSaveable { mutableStateOf(false) }
     val scheduleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var isAnnouncementsSheetVisible by rememberSaveable { mutableStateOf(false) }
+    val announcementsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LifecycleStartEffect(viewModel) {
         viewModel.startVehiclePolling()
@@ -55,6 +58,7 @@ fun MapsScreen(
                 onSettingsClick = onOpenSettings,
                 onScheduleClick = { isScheduleVisible = true },
                 onToggleMapTypeClick = viewModel::toggleMapType,
+                onAnnouncementsClick = { isAnnouncementsSheetVisible = true },
             )
 
             ScheduleSheet(
@@ -66,6 +70,14 @@ fun MapsScreen(
                 selectedRoute = selectedScheduleRoute,
                 onSelectedRouteChange = { selectedScheduleRoute = it },
                 onDismiss = { isScheduleVisible = false },
+            )
+
+            AnnouncementSheet(
+                show = isAnnouncementsSheetVisible,
+                sheetState = announcementsSheetState,
+                announcements = uiState.announcements,
+                updatedAt = if (uiState.simulateAnnouncements) null else uiState.announcementsUpdatedAt,
+                onDismiss = { isAnnouncementsSheetVisible = false },
             )
         }
     }

@@ -283,6 +283,35 @@ class MapsViewModelTest {
         }
 
     @Test
+    fun `a successful announcement refresh records when it happened`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+
+            assertThat(viewModel.mapsUiState.value.announcementsUpdatedAt).isNull()
+
+            repository.announcements.emit(NetworkResult.Success(listOf(testAnnouncement("first"))))
+            advanceUntilIdle()
+
+            assertThat(viewModel.mapsUiState.value.announcementsUpdatedAt).isNotNull()
+        }
+
+    @Test
+    fun `a failed announcement refresh does not update the timestamp`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+            repository.announcements.emit(NetworkResult.Success(listOf(testAnnouncement("first"))))
+            advanceUntilIdle()
+            val updatedAt = viewModel.mapsUiState.value.announcementsUpdatedAt
+
+            repository.announcements.emit(NetworkResult.Failure(NetworkError.NoConnection()))
+            advanceUntilIdle()
+
+            assertThat(viewModel.mapsUiState.value.announcementsUpdatedAt).isEqualTo(updatedAt)
+        }
+
+    @Test
     fun `toggling map type persists the next value`() =
         runTest {
             val viewModel = createViewModel()

@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -123,7 +124,12 @@ class MapsViewModel
 
                         // A failed refresh must not clear announcements already on screen.
                         readApiResponse(result) { announcements ->
-                            _mapsUiState.update { it.copy(announcements = announcements.displayable()) }
+                            _mapsUiState.update {
+                                it.copy(
+                                    announcements = announcements.displayable(),
+                                    announcementsUpdatedAt = Instant.now(),
+                                )
+                            }
                         }
                     }.launchIn(viewModelScope)
         }
@@ -257,6 +263,7 @@ data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
     val announcements: List<Announcement> = emptyList(),
+    val announcementsUpdatedAt: Instant? = null,
     val simulateAnnouncements: Boolean = false,
     val schedule: Schedule? = null,
     val isScheduleLoading: Boolean = true,

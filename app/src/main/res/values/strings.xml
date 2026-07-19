@@ -48,8 +48,9 @@
     <string name="announcement_type_info">Info</string>
     <string name="announcement_type_warning">Warning</string>
     <string name="announcement_type_error">Error</string>
-    <string name="announcements_show_more">Show %1$d more</string>
-    <string name="announcements_show_less">Show less</string>
+    <string name="announcements_more_count">+%1$d</string>
+    <string name="announcements_sheet_title">Announcements</string>
+    <string name="announcements_updated_at">Updated %1$s</string>
 
     <!-- Maps screen -->
     <string name="map_open_settings">Open settings</string>

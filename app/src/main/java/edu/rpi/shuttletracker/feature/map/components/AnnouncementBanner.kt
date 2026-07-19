@@ -4,25 +4,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -34,6 +28,7 @@ import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,49 +41,121 @@ import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.AnnouncementType
 import edu.rpi.shuttletracker.feature.map.utils.MessageSegment
 import edu.rpi.shuttletracker.feature.map.utils.parseMessageSegments
-
-private const val MAX_COLLAPSED_BANNERS = 1
-private val EXPANDED_MAX_HEIGHT = 260.dp
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 /**
- * Shows all active, unexpired announcements in a compact card stack over the map. Only the most
- * severe banner is shown by default; the rest are revealed with an explicit expand action so the
- * container never grows large enough to block the map underneath it.
+ * A summary of the most severe active announcement, colored to match its severity. Tapping it
+ * opens [AnnouncementSheet] with the full list; the chevron is a pure "there's more" cue, not a
+ * dismiss control - dismissal lives per-card in the sheet, where it's a deliberate action rather
+ * than an easy-to-mis-tap icon on a compact row.
  * */
 @Composable
-fun AnnouncementBanners(
+fun AnnouncementStrip(
     announcements: List<Announcement>,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (announcements.isEmpty()) return
 
-    var expanded by rememberSaveable(announcements.map { it.id }) { mutableStateOf(false) }
-    val visibleAnnouncements = if (expanded) announcements else announcements.take(MAX_COLLAPSED_BANNERS)
-    val hiddenCount = announcements.size - visibleAnnouncements.size
+    val mostSevere = announcements.first()
+    val extraCount = announcements.size - 1
+    val (containerColor, contentColor) = mostSevere.type.colors()
 
-    Column(modifier = modifier.widthIn(max = 480.dp)) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = containerColor,
+        contentColor = contentColor,
+        tonalElevation = 3.dp,
+        shadowElevation = 3.dp,
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 14.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(
+                painter = painterResource(mostSevere.type.iconRes()),
+                contentDescription = stringResource(mostSevere.type.labelRes()),
+                modifier = Modifier.size(20.dp),
+                tint = contentColor,
+            )
+
+            Text(
+                text = mostSevere.message.toPlainSummary(),
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+
+            if (extraCount > 0) {
+                Text(
+                    text = stringResource(R.string.announcements_more_count, extraCount),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            Icon(
+                painter = painterResource(R.drawable.ic_keyboard_arrow_down),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = contentColor,
+            )
+        }
+    }
+}
+
+/**
+ * Full-detail list of every active announcement, opened from [AnnouncementStrip]. Mirrors
+ * ScheduleSheet's show/sheetState/onDismiss shape so both bottom sheets behave identically.
+ *
+ * @param updatedAt when the list was last refreshed from the API; omitted while simulated.
+ * */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AnnouncementSheet(
+    show: Boolean,
+    sheetState: SheetState,
+    announcements: List<Announcement>,
+    updatedAt: Instant?,
+    onDismiss: () -> Unit,
+) {
+    if (!show) return
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
         Column(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .heightIn(max = EXPANDED_MAX_HEIGHT)
-                    .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            visibleAnnouncements.forEach { announcement ->
-                AnnouncementCard(announcement)
-            }
-        }
-
-        if (hiddenCount > 0 || expanded) {
-            TextButton(onClick = { expanded = !expanded }) {
+            Column {
                 Text(
-                    if (expanded) {
-                        stringResource(R.string.announcements_show_less)
-                    } else {
-                        stringResource(R.string.announcements_show_more, hiddenCount)
-                    },
+                    text = stringResource(R.string.announcements_sheet_title),
+                    style = MaterialTheme.typography.titleLarge,
                 )
+                if (updatedAt != null) {
+                    Text(
+                        text = stringResource(R.string.announcements_updated_at, updatedAt.toLocalTimeText()),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            announcements.forEach { announcement ->
+                AnnouncementCard(announcement)
             }
         }
     }
@@ -98,10 +165,11 @@ fun AnnouncementBanners(
 private fun AnnouncementCard(announcement: Announcement) {
     val (containerColor, contentColor) = announcement.type.colors()
 
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor, contentColor = contentColor),
+        color = containerColor,
+        contentColor = contentColor,
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -136,6 +204,18 @@ private fun AnnouncementMessage(
 
     Text(text = annotated, color = color, style = MaterialTheme.typography.bodyMedium)
 }
+
+private val LOCAL_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
+
+private fun Instant.toLocalTimeText(): String = LOCAL_TIME_FORMATTER.withZone(ZoneId.systemDefault()).format(this)
+
+private fun String.toPlainSummary(): String =
+    parseMessageSegments(this).joinToString(separator = "") { segment ->
+        when (segment) {
+            is MessageSegment.PlainText -> segment.text
+            is MessageSegment.Link -> segment.label
+        }
+    }
 
 private fun String.toAnnotatedMessage(color: Color): AnnotatedString =
     buildAnnotatedString {
@@ -207,34 +287,34 @@ private fun Color.isLight(): Boolean = luminance() > 0.5f
 
 private fun Color.luminance(): Float = (0.2126f * red + 0.7152f * green + 0.0722f * blue)
 
+private fun previewAnnouncements() =
+    listOf(
+        Announcement(
+            id = "snow-days",
+            message = "Shuttles will not run or run with limited capacity until the weather improves.",
+            type = AnnouncementType.Error,
+            active = true,
+        ),
+        Announcement(
+            id = "snow-delay",
+            message = "Due to snowy roads, expect delays on West route shuttles.",
+            type = AnnouncementType.Warning,
+            active = true,
+        ),
+        Announcement(
+            id = "chasan-weekday-hours",
+            message =
+                "Chasan stop is only available M-F 7am-5:30pm. " +
+                    "[View RPI Shuttle Info](https://administration.rpi.edu/parking-transportation/rensselaer-shuttle)",
+            type = AnnouncementType.Info,
+            active = true,
+        ),
+    )
+
 @Preview(showBackground = true)
 @Composable
-private fun AnnouncementBannersPreview() {
+private fun AnnouncementStripPreview() {
     ShuttleTrackerTheme(dynamicColor = false) {
-        AnnouncementBanners(
-            announcements =
-                listOf(
-                    Announcement(
-                        id = "snow-days",
-                        message = "Shuttles will not run or run with limited capacity until the weather improves.",
-                        type = AnnouncementType.Error,
-                        active = true,
-                    ),
-                    Announcement(
-                        id = "snow-delay",
-                        message = "Due to snowy roads, expect delays on West route shuttles.",
-                        type = AnnouncementType.Warning,
-                        active = true,
-                    ),
-                    Announcement(
-                        id = "chasan-weekday-hours",
-                        message =
-                            "Chasan stop is only available M-F 7am-5:30pm. " +
-                                "[View RPI Shuttle Info](https://administration.rpi.edu/parking-transportation/rensselaer-shuttle)",
-                        type = AnnouncementType.Info,
-                        active = true,
-                    ),
-                ),
-        )
+        AnnouncementStrip(announcements = previewAnnouncements(), onClick = {})
     }
 }
