@@ -30,10 +30,6 @@ interface UserPreferences {
 
     suspend fun saveSetupCompleted(setupCompleted: Boolean)
 
-    fun getBaseUrl(): Flow<String>
-
-    suspend fun saveBaseUrl(url: String)
-
     suspend fun activateDevOptions(devOptionEnable: Boolean)
 
     fun getDevOptions(): Flow<Boolean>

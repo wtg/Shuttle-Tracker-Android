@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.data.local.preferences
 
-import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -8,8 +7,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.maps.android.compose.MapType
-import dagger.hilt.android.qualifiers.ApplicationContext
-import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -19,14 +16,12 @@ class DataStoreUserPreferences
     @Inject
     constructor(
         private val dataStore: DataStore<Preferences>,
-        @param:ApplicationContext private val context: Context,
     ) : UserPreferences {
         companion object {
             private val NOTIFICATIONS_READ = intPreferencesKey("notifications_read")
             private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
             private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
             private val SETUP_COMPLETED = booleanPreferencesKey("setup_completed")
-            private val BASE_URL = stringPreferencesKey("base_url")
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
             private val THEME_MODE = stringPreferencesKey("theme_mode")
             private val MAP_TYPE = stringPreferencesKey("map_type")
@@ -89,17 +84,6 @@ class DataStoreUserPreferences
         override suspend fun saveSetupCompleted(setupCompleted: Boolean) {
             dataStore.edit {
                 it[SETUP_COMPLETED] = setupCompleted
-            }
-        }
-
-        override fun getBaseUrl(): Flow<String> =
-            dataStore.data.map {
-                it[BASE_URL] ?: context.getString(R.string.url_default)
-            }
-
-        override suspend fun saveBaseUrl(url: String) {
-            dataStore.edit {
-                it[BASE_URL] = url
             }
         }
 

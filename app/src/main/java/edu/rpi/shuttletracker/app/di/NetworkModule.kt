@@ -9,11 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.network.hasNetwork
-import edu.rpi.shuttletracker.core.network.normalizeBaseUrl
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import edu.rpi.shuttletracker.data.remote.ShuttleApi
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okhttp3.Cache
 import okhttp3.Interceptor
@@ -80,26 +76,14 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        userPreferences: UserPreferences,
         @ApplicationContext context: Context,
     ): Retrofit {
         val json = Json { ignoreUnknownKeys = true }
 
-        val storedUrl =
-            runBlocking {
-                return@runBlocking userPreferences.getBaseUrl().first()
-            }
-
-        val url =
-            normalizeBaseUrl(storedUrl)
-                ?: checkNotNull(normalizeBaseUrl(context.getString(R.string.url_default))) {
-                    "The default API URL must be a valid HTTP(S) base URL"
-                }
-
         return Retrofit
             .Builder()
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-            .baseUrl(url)
+            .baseUrl(context.getString(R.string.url_default))
             .client(okHttpClient)
             .build()
     }

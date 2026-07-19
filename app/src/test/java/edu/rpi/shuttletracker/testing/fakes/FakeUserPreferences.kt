@@ -13,7 +13,6 @@ class FakeUserPreferences : UserPreferences {
     val privacyPolicyAccepted = MutableStateFlow(false)
     val aboutAccepted = MutableStateFlow(false)
     val setupCompleted = MutableStateFlow(false)
-    val baseUrl = MutableStateFlow("https://example.com/")
     val devOptions = MutableStateFlow(false)
     val themeMode = MutableStateFlow(ThemeMode.System)
     val shuttleAnimations = MutableStateFlow(false)
@@ -58,12 +57,6 @@ class FakeUserPreferences : UserPreferences {
     override suspend fun saveSetupCompleted(setupCompleted: Boolean) {
         saveSetupCompletedCalls++
         this.setupCompleted.value = setupCompleted
-    }
-
-    override fun getBaseUrl(): Flow<String> = baseUrl
-
-    override suspend fun saveBaseUrl(url: String) {
-        baseUrl.value = url
     }
 
     override suspend fun activateDevOptions(devOptionEnable: Boolean) {

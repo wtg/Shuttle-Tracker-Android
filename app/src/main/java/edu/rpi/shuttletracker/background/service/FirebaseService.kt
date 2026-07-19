@@ -2,7 +2,6 @@ package edu.rpi.shuttletracker.background.service
 
 import android.app.NotificationManager
 import androidx.core.app.NotificationCompat
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
@@ -59,9 +58,5 @@ class FirebaseService : FirebaseMessagingService() {
     override fun onDestroy() {
         job.cancel()
         super.onDestroy()
-    }
-
-    companion object {
-        fun retrieveToken() = FirebaseMessaging.getInstance().getToken()
     }
 }
