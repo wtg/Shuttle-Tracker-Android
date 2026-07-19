@@ -20,14 +20,14 @@ import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestin
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject
-    lateinit var userPreferencesRepository: UserPreferencesRepository
+    lateinit var userPreferences: UserPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -35,13 +35,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val setupCompletedFlow =
-                remember(userPreferencesRepository) {
-                    userPreferencesRepository
+                remember(userPreferences) {
+                    userPreferences
                         .getSetupCompleted()
                         .map { it as Boolean? }
                 }
 
-            val themeMode by userPreferencesRepository
+            val themeMode by userPreferences
                 .getThemeMode()
                 .collectAsStateWithLifecycle(initialValue = ThemeMode.System)
 

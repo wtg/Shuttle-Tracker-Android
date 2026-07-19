@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import edu.rpi.shuttletracker.data.models.Announcement
-import edu.rpi.shuttletracker.data.repository.ApiRepository
+import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,8 +21,8 @@ import javax.inject.Inject
 class AnnouncementsViewModel
     @Inject
     constructor(
-        private val apiRepository: ApiRepository,
-        private val userPreferencesRepository: UserPreferencesRepository,
+        private val shuttleRepository: ShuttleRepository,
+        private val userPreferences: UserPreferences,
     ) : ViewModel() {
         private val _announcementsUiState = MutableStateFlow(AnnouncementsUiState())
         val announcementsUiState: StateFlow<AnnouncementsUiState> =
@@ -66,7 +66,7 @@ class AnnouncementsViewModel
             viewModelScope.launch {
                 _announcementsUiState.update { it.copy(isLoading = true) }
 
-                when (val response = apiRepository.getAnnouncements()) {
+                when (val response = shuttleRepository.getAnnouncements()) {
                     is NetworkResult.Success -> {
                         val announcements = response.data.reversed()
                         _announcementsUiState.update {
@@ -75,7 +75,7 @@ class AnnouncementsViewModel
                                 isLoading = false,
                             )
                         }
-                        userPreferencesRepository.saveNotificationsRead(announcements.size)
+                        userPreferences.saveNotificationsRead(announcements.size)
                     }
 
                     is NetworkResult.Failure -> {

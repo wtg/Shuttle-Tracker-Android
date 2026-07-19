@@ -9,39 +9,39 @@ import kotlinx.coroutines.CancellationException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
-class RemoteShuttleDataSource
+class RetrofitShuttleRemoteDataSource
     @Inject
     constructor(
         private val shuttleApi: ShuttleApi,
-    ) {
-        suspend fun getVehicleLocations() =
+    ) : ShuttleRemoteDataSource {
+        override suspend fun getVehicleLocations() =
             shuttleApi.getVehicleLocations().toNetworkResult { locations ->
                 locations.mapValues { it.value.toModel() }
             }
 
-        suspend fun getVehicleEtas() =
+        override suspend fun getVehicleEtas() =
             shuttleApi.getVehicleEtas().toNetworkResult { etas ->
                 etas.mapValues { it.value.toModel() }
             }
 
-        suspend fun getVehicleVelocities() =
+        override suspend fun getVehicleVelocities() =
             shuttleApi.getVehicleVelocities().toNetworkResult { velocities ->
                 velocities.mapValues { it.value.toModel() }
             }
 
-        suspend fun getRoutes() =
+        override suspend fun getRoutes() =
             shuttleApi.getRoutes().toNetworkResult { routes ->
                 routes.mapValues { it.value.toModel() }
             }
 
-        suspend fun getAnnouncements() =
+        override suspend fun getAnnouncements() =
             shuttleApi.getAnnouncements().toNetworkResult { announcements ->
                 announcements.map { it.toModel() }
             }
 
-        suspend fun getSchedule() = shuttleApi.getSchedule().toNetworkResult { it.toModel() }
+        override suspend fun getSchedule() = shuttleApi.getSchedule().toNetworkResult { it.toModel() }
 
-        suspend fun sendRegistrationToken(token: String) =
+        override suspend fun sendRegistrationToken(token: String) =
             shuttleApi.sendRegistrationToken(token).toNetworkResult { Unit }
     }
 

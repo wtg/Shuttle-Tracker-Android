@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +17,7 @@ import javax.inject.Inject
 class SetupScreenViewModel
     @Inject
     constructor(
-        private val userPreferencesRepository: UserPreferencesRepository,
+        private val userPreferences: UserPreferences,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(SetupUiState())
         val uiState: StateFlow<SetupUiState> = _uiState.asStateFlow()
@@ -39,17 +39,17 @@ class SetupScreenViewModel
                 viewModelScope.launch {
                     when (uiState.value.page) {
                         SetupPage.About -> {
-                            userPreferencesRepository.saveAboutAccepted(true)
+                            userPreferences.saveAboutAccepted(true)
                             _uiState.update { it.copy(page = SetupPage.PrivacyPolicy) }
                         }
 
                         SetupPage.PrivacyPolicy -> {
-                            userPreferencesRepository.savePrivacyPolicyAccepted(true)
+                            userPreferences.savePrivacyPolicyAccepted(true)
                             _uiState.update { it.copy(page = SetupPage.Permissions) }
                         }
 
                         SetupPage.Permissions -> {
-                            userPreferencesRepository.saveSetupCompleted(true)
+                            userPreferences.saveSetupCompleted(true)
                             _uiState.update { it.copy(isComplete = true) }
                         }
                     }

@@ -15,17 +15,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-/**
- * To create a new preference (setting item)
- * add a new static key with the name of the key in snake case
- * Then create a setter and getter for the value, giving it a default value in the getter
- * */
-class UserPreferencesRepository
+class DataStoreUserPreferences
     @Inject
     constructor(
         private val dataStore: DataStore<Preferences>,
         @param:ApplicationContext private val context: Context,
-    ) {
+    ) : UserPreferences {
         companion object {
             private val NOTIFICATIONS_READ = intPreferencesKey("notifications_read")
             private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
@@ -39,18 +34,18 @@ class UserPreferencesRepository
             private val SHUTTLE_ROTATION = booleanPreferencesKey("shuttle_rotation")
         }
 
-        fun getNotificationsRead(): Flow<Int> =
+        override fun getNotificationsRead(): Flow<Int> =
             dataStore.data.map {
                 it[NOTIFICATIONS_READ] ?: 0
             }
 
-        suspend fun saveNotificationsRead(count: Int) {
+        override suspend fun saveNotificationsRead(count: Int) {
             dataStore.edit {
                 it[NOTIFICATIONS_READ] = count
             }
         }
 
-        fun getMapType(): Flow<MapType> =
+        override fun getMapType(): Flow<MapType> =
             dataStore.data.map {
                 when (it[MAP_TYPE]) {
                     MapType.HYBRID.name -> MapType.HYBRID
@@ -58,68 +53,68 @@ class UserPreferencesRepository
                 }
             }
 
-        suspend fun saveMapType(mapType: MapType) {
+        override suspend fun saveMapType(mapType: MapType) {
             dataStore.edit {
                 it[MAP_TYPE] = mapType.name
             }
         }
 
-        fun getPrivacyPolicyAccepted(): Flow<Boolean> =
+        override fun getPrivacyPolicyAccepted(): Flow<Boolean> =
             dataStore.data.map {
                 it[PRIVACY_POLICY_ACCEPTED] ?: false
             }
 
-        suspend fun savePrivacyPolicyAccepted(privacyPolicyAccepted: Boolean) {
+        override suspend fun savePrivacyPolicyAccepted(privacyPolicyAccepted: Boolean) {
             dataStore.edit {
                 it[PRIVACY_POLICY_ACCEPTED] = privacyPolicyAccepted
             }
         }
 
-        fun getAboutAccepted(): Flow<Boolean> =
+        override fun getAboutAccepted(): Flow<Boolean> =
             dataStore.data.map {
                 it[ABOUT_ACCEPTED] ?: false
             }
 
-        suspend fun saveAboutAccepted(aboutAccepted: Boolean) {
+        override suspend fun saveAboutAccepted(aboutAccepted: Boolean) {
             dataStore.edit {
                 it[ABOUT_ACCEPTED] = aboutAccepted
             }
         }
 
-        fun getSetupCompleted(): Flow<Boolean> =
+        override fun getSetupCompleted(): Flow<Boolean> =
             dataStore.data.map {
                 it[SETUP_COMPLETED] ?: false
             }
 
-        suspend fun saveSetupCompleted(setupCompleted: Boolean) {
+        override suspend fun saveSetupCompleted(setupCompleted: Boolean) {
             dataStore.edit {
                 it[SETUP_COMPLETED] = setupCompleted
             }
         }
 
-        fun getBaseUrl(): Flow<String> =
+        override fun getBaseUrl(): Flow<String> =
             dataStore.data.map {
                 it[BASE_URL] ?: context.getString(R.string.url_default)
             }
 
-        suspend fun saveBaseUrl(url: String) {
+        override suspend fun saveBaseUrl(url: String) {
             dataStore.edit {
                 it[BASE_URL] = url
             }
         }
 
-        suspend fun activateDevOptions(devOptionEnable: Boolean) {
+        override suspend fun activateDevOptions(devOptionEnable: Boolean) {
             dataStore.edit {
                 it[DEV_OPTIONS_ACTIVE] = devOptionEnable
             }
         }
 
-        fun getDevOptions(): Flow<Boolean> =
+        override fun getDevOptions(): Flow<Boolean> =
             dataStore.data.map {
                 it[DEV_OPTIONS_ACTIVE] ?: false
             }
 
-        fun getThemeMode(): Flow<ThemeMode> =
+        override fun getThemeMode(): Flow<ThemeMode> =
             dataStore.data.map {
                 when (it[THEME_MODE]) {
                     ThemeMode.Light.name -> ThemeMode.Light
@@ -128,13 +123,13 @@ class UserPreferencesRepository
                 }
             }
 
-        suspend fun saveThemeMode(themeMode: ThemeMode) {
+        override suspend fun saveThemeMode(themeMode: ThemeMode) {
             dataStore.edit {
                 it[THEME_MODE] = themeMode.name
             }
         }
 
-        suspend fun resetSetup() {
+        override suspend fun resetSetup() {
             dataStore.edit { preferences ->
                 preferences.remove(ABOUT_ACCEPTED)
                 preferences.remove(PRIVACY_POLICY_ACCEPTED)
@@ -142,24 +137,24 @@ class UserPreferencesRepository
             }
         }
 
-        fun getShuttleAnimations(): Flow<Boolean> =
+        override fun getShuttleAnimations(): Flow<Boolean> =
             dataStore.data.map {
                 it[SHUTTLE_ANIMATIONS]
                     ?: false
             }
 
-        suspend fun saveShuttleAnimations(animationsEnable: Boolean) {
+        override suspend fun saveShuttleAnimations(animationsEnable: Boolean) {
             dataStore.edit {
                 it[SHUTTLE_ANIMATIONS] = animationsEnable
             }
         }
 
-        fun getShuttleRotation(): Flow<Boolean> =
+        override fun getShuttleRotation(): Flow<Boolean> =
             dataStore.data.map {
                 it[SHUTTLE_ROTATION] ?: true
             }
 
-        suspend fun saveShuttleRotations(rotationsEnable: Boolean) {
+        override suspend fun saveShuttleRotations(rotationsEnable: Boolean) {
             dataStore.edit {
                 it[SHUTTLE_ROTATION] = rotationsEnable
             }

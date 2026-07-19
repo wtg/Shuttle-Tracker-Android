@@ -3,7 +3,7 @@ package edu.rpi.shuttletracker.feature.settings.about
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -11,11 +11,11 @@ import javax.inject.Inject
 class AboutViewModel
     @Inject
     constructor(
-        private val userPreferencesRepository: UserPreferencesRepository,
+        private val userPreferences: UserPreferences,
     ) : ViewModel() {
         fun activateDevOptions() {
             viewModelScope.launch {
-                userPreferencesRepository.activateDevOptions(true)
+                userPreferences.activateDevOptions(true)
             }
         }
     }

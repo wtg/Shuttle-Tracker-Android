@@ -9,8 +9,8 @@ import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.app.MainActivity
 import edu.rpi.shuttletracker.background.notification.Notifications
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
-import edu.rpi.shuttletracker.data.repository.ApiRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
+import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -22,10 +22,10 @@ import kotlin.coroutines.EmptyCoroutineContext
 @AndroidEntryPoint
 class NotificationReceiver : BroadcastReceiver() {
     @Inject
-    lateinit var apiRepository: ApiRepository
+    lateinit var shuttleRepository: ShuttleRepository
 
     @Inject
-    lateinit var userPreferencesRepository: UserPreferencesRepository
+    lateinit var userPreferences: UserPreferences
 
     override fun onReceive(
         context: Context,
@@ -40,7 +40,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
                 notificationManager.cancel(Notifications.ID_ANNOUNCEMENT)
                 goAsync {
-                    userPreferencesRepository.saveNotificationsRead(intent.getIntExtra("count", 0))
+                    userPreferences.saveNotificationsRead(intent.getIntExtra("count", 0))
                 }
             }
         }

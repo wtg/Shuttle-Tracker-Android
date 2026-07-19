@@ -1,13 +1,6 @@
 package edu.rpi.shuttletracker.app.di
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
-import androidx.datastore.preferences.SharedPreferencesMigration
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.preferencesDataStoreFile
 import com.google.gson.GsonBuilder
 import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
 import dagger.Module
@@ -19,13 +12,10 @@ import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.network.hasNetwork
 import edu.rpi.shuttletracker.core.network.normalizeBaseUrl
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import edu.rpi.shuttletracker.data.remote.ShuttleApi
 import edu.rpi.shuttletracker.data.remote.dto.RouteDto
 import edu.rpi.shuttletracker.data.remote.dto.RouteDtoDeserializer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.Cache
@@ -36,13 +26,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
-private const val USER_PREFERENCES = "user_preferences"
-
 @Module
 @InstallIn(SingletonComponent::class)
-object ShuttleTrackerModule {
-    @Singleton
+object NetworkModule {
     @Provides
+    @Singleton
     fun provideCacheInterceptor(
         @ApplicationContext context: Context,
     ): Interceptor =
@@ -61,8 +49,8 @@ object ShuttleTrackerModule {
             chain.proceed(request)
         }
 
-    @Singleton
     @Provides
+    @Singleton
     fun provideOkHttpClient(
         @ApplicationContext context: Context,
         cacheInterceptor: Interceptor,
@@ -90,11 +78,11 @@ object ShuttleTrackerModule {
         }
     }
 
-    @Singleton
     @Provides
+    @Singleton
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        userPreferencesRepository: UserPreferencesRepository,
+        userPreferences: UserPreferences,
         @ApplicationContext context: Context,
     ): Retrofit {
         val gson =
@@ -104,7 +92,7 @@ object ShuttleTrackerModule {
 
         val storedUrl =
             runBlocking {
-                return@runBlocking userPreferencesRepository.getBaseUrl().first()
+                return@runBlocking userPreferences.getBaseUrl().first()
             }
 
         val url =
@@ -125,19 +113,4 @@ object ShuttleTrackerModule {
     @Provides
     @Singleton
     fun provideShuttleApi(retrofit: Retrofit): ShuttleApi = retrofit.create(ShuttleApi::class.java)
-
-    @Singleton
-    @Provides
-    fun providePreferencesDataStore(
-        @ApplicationContext context: Context,
-    ): DataStore<Preferences> =
-        PreferenceDataStoreFactory.create(
-            corruptionHandler =
-                ReplaceFileCorruptionHandler(
-                    produceNewData = { emptyPreferences() },
-                ),
-            migrations = listOf(SharedPreferencesMigration(context, USER_PREFERENCES)),
-            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-            produceFile = { context.preferencesDataStoreFile(USER_PREFERENCES) },
-        )
 }

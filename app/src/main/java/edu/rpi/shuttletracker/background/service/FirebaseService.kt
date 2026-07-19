@@ -9,7 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.background.notification.Notifications
 import edu.rpi.shuttletracker.background.receiver.NotificationReceiver
-import edu.rpi.shuttletracker.data.repository.ApiRepository
+import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -18,13 +18,13 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class FirebaseService : FirebaseMessagingService() {
     @Inject
-    lateinit var apiRepository: ApiRepository
+    lateinit var shuttleRepository: ShuttleRepository
 
     private val job = SupervisorJob()
 
     override fun onNewToken(token: String) {
         CoroutineScope(job).launch {
-            apiRepository.sendRegistrationToken(token)
+            shuttleRepository.sendRegistrationToken(token)
         }
     }
 

@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.core.network.normalizeBaseUrl
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -15,10 +15,10 @@ import javax.inject.Inject
 class DevMenuViewModel
     @Inject
     constructor(
-        private val userPreferencesRepository: UserPreferencesRepository,
+        private val userPreferences: UserPreferences,
     ) : ViewModel() {
         val devMenuUiState =
-            userPreferencesRepository
+            userPreferences
                 .getBaseUrl()
                 .map(::DevMenuUiState)
                 .stateIn(
@@ -29,12 +29,12 @@ class DevMenuViewModel
 
         suspend fun saveBaseUrl(baseUrl: String): Boolean {
             val normalizedUrl = normalizeBaseUrl(baseUrl) ?: return false
-            userPreferencesRepository.saveBaseUrl(normalizedUrl)
+            userPreferences.saveBaseUrl(normalizedUrl)
             return true
         }
 
         suspend fun setDeveloperOptions(enabled: Boolean) {
-            userPreferencesRepository.activateDevOptions(enabled)
+            userPreferences.activateDevOptions(enabled)
         }
     }
 

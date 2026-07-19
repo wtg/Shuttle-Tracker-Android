@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -16,14 +16,14 @@ import javax.inject.Inject
 class SettingsViewModel
     @Inject
     constructor(
-        private val userPreferencesRepository: UserPreferencesRepository,
+        private val userPreferences: UserPreferences,
     ) : ViewModel() {
         val settingsUiState =
             combine(
-                userPreferencesRepository.getDevOptions(),
-                userPreferencesRepository.getThemeMode(),
-                userPreferencesRepository.getShuttleAnimations(),
-                userPreferencesRepository.getShuttleRotation(),
+                userPreferences.getDevOptions(),
+                userPreferences.getThemeMode(),
+                userPreferences.getShuttleAnimations(),
+                userPreferences.getShuttleRotation(),
             ) { devOptionState, themeMode, animationsEnabled, rotationEnabled ->
                 return@combine SettingsUiState(
                     devOptionState = devOptionState,
@@ -39,24 +39,24 @@ class SettingsViewModel
 
         fun updateThemeMode(themeMode: ThemeMode) {
             viewModelScope.launch {
-                userPreferencesRepository.saveThemeMode(themeMode)
+                userPreferences.saveThemeMode(themeMode)
             }
         }
 
         fun updateShuttleAnimations(enabled: Boolean) {
             viewModelScope.launch {
-                userPreferencesRepository.saveShuttleAnimations(enabled)
+                userPreferences.saveShuttleAnimations(enabled)
             }
         }
 
         fun updateShuttleRotation(enabled: Boolean) {
             viewModelScope.launch {
-                userPreferencesRepository.saveShuttleRotations(enabled)
+                userPreferences.saveShuttleRotations(enabled)
             }
         }
 
         suspend fun resetSetup() {
-            userPreferencesRepository.resetSetup()
+            userPreferences.resetSetup()
         }
     }
 

@@ -8,7 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Vehicle
@@ -16,14 +16,12 @@ import edu.rpi.shuttletracker.data.models.VehicleLocation
 import edu.rpi.shuttletracker.data.models.VehicleMerger
 import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
-import edu.rpi.shuttletracker.data.repository.ApiRepository
-import kotlinx.coroutines.Dispatchers
+import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -35,8 +33,8 @@ class MapsViewModel
 // represents the ui state of the view
     @Inject
     constructor(
-        private val apiRepository: ApiRepository,
-        private val userPreferencesRepository: UserPreferencesRepository,
+        private val shuttleRepository: ShuttleRepository,
+        private val userPreferences: UserPreferences,
     ) : ViewModel() {
         private val _mapsUiState = MutableStateFlow(MapsUiState())
         val mapsUiState: StateFlow<MapsUiState> = _mapsUiState.asStateFlow()
@@ -74,32 +72,31 @@ class MapsViewModel
 
             vehiclePollingJob =
                 combine(
-                    apiRepository.observeVehicleLocations(pollMs = 5_000L),
-                    apiRepository.observeVehicleEtas(pollMs = 5_000L),
-                    apiRepository.observeVehicleVelocities(pollMs = 5_000L),
+                    shuttleRepository.observeVehicleLocations(pollMs = 5_000L),
+                    shuttleRepository.observeVehicleEtas(pollMs = 5_000L),
+                    shuttleRepository.observeVehicleVelocities(pollMs = 5_000L),
                 ) { locationsResponse, etasResponse, velocitiesResponse ->
                     Triple(locationsResponse, etasResponse, velocitiesResponse)
-                }.flowOn(Dispatchers.IO)
-                    .onEach { (locationsResponse, etasResponse, velocitiesResponse) ->
-                        var locations: Map<String, VehicleLocation> = emptyMap()
-                        var etas: Map<String, VehicleStopEta> = emptyMap()
-                        var velocities: Map<String, VehicleVelocities> = emptyMap()
+                }.onEach { (locationsResponse, etasResponse, velocitiesResponse) ->
+                    var locations: Map<String, VehicleLocation> = emptyMap()
+                    var etas: Map<String, VehicleStopEta> = emptyMap()
+                    var velocities: Map<String, VehicleVelocities> = emptyMap()
 
-                        readApiResponse(locationsResponse) { locations = it }
-                        readApiResponse(etasResponse) { etas = it }
-                        readApiResponse(velocitiesResponse) { velocities = it }
+                    readApiResponse(locationsResponse) { locations = it }
+                    readApiResponse(etasResponse) { etas = it }
+                    readApiResponse(velocitiesResponse) { velocities = it }
 
-                        _mapsUiState.update {
-                            it.copy(
-                                vehicles =
-                                    VehicleMerger.merge(
-                                        locations = locations,
-                                        velocities = velocities,
-                                        etas = etas,
-                                    ),
-                            )
-                        }
-                    }.launchIn(viewModelScope)
+                    _mapsUiState.update {
+                        it.copy(
+                            vehicles =
+                                VehicleMerger.merge(
+                                    locations = locations,
+                                    velocities = velocities,
+                                    etas = etas,
+                                ),
+                        )
+                    }
+                }.launchIn(viewModelScope)
         }
 
         fun stopVehiclePolling() {
@@ -111,7 +108,7 @@ class MapsViewModel
             if (routesJob?.isActive == true) return
             routesJob =
                 viewModelScope.launch {
-                    readApiResponse(apiRepository.getRoutes()) { routes ->
+                    readApiResponse(shuttleRepository.getRoutes()) { routes ->
                         _mapsUiState.update {
                             it.copy(routes = routes)
                         }
@@ -124,7 +121,7 @@ class MapsViewModel
             _mapsUiState.update { it.copy(isScheduleLoading = true) }
             scheduleJob =
                 viewModelScope.launch {
-                    readApiResponse(apiRepository.getSchedule()) { response ->
+                    readApiResponse(shuttleRepository.getSchedule()) { response ->
                         _mapsUiState.update {
                             it.copy(schedule = response, isScheduleLoading = false)
                         }
@@ -134,36 +131,32 @@ class MapsViewModel
         }
 
         private fun loadPreferences() {
-            userPreferencesRepository
+            userPreferences
                 .getThemeMode()
-                .flowOn(Dispatchers.Default)
                 .onEach { themeMode ->
                     _mapsUiState.update {
                         it.copy(themeMode = themeMode)
                     }
                 }.launchIn(viewModelScope)
 
-            userPreferencesRepository
+            userPreferences
                 .getMapType()
-                .flowOn(Dispatchers.Default)
                 .onEach { mapType ->
                     _mapsUiState.update {
                         it.copy(mapType = mapType)
                     }
                 }.launchIn(viewModelScope)
 
-            userPreferencesRepository
+            userPreferences
                 .getShuttleAnimations()
-                .flowOn(Dispatchers.Default)
                 .onEach { animationsEnable ->
                     _mapsUiState.update {
                         it.copy(shuttleAnimationsEnabled = animationsEnable)
                     }
                 }.launchIn(viewModelScope)
 
-            userPreferencesRepository
+            userPreferences
                 .getShuttleRotation()
-                .flowOn(Dispatchers.Default)
                 .onEach { rotationEnable ->
                     _mapsUiState.update {
                         it.copy(shuttleRotationEnabled = rotationEnable)
@@ -173,7 +166,7 @@ class MapsViewModel
 
         private fun updateMapType(mapType: MapType) {
             viewModelScope.launch {
-                userPreferencesRepository.saveMapType(mapType)
+                userPreferences.saveMapType(mapType)
                 _mapsUiState.update {
                     it.copy(mapType = mapType)
                 }

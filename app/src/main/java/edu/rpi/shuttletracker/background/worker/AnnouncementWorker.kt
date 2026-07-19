@@ -18,7 +18,7 @@ import edu.rpi.shuttletracker.background.notification.Notifications
 import edu.rpi.shuttletracker.background.receiver.NotificationReceiver
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.data.models.Announcement
-import edu.rpi.shuttletracker.data.repository.ApiRepository
+import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
@@ -28,10 +28,10 @@ class AnnouncementWorker
     constructor(
         @Assisted val context: Context,
         @Assisted val workerParams: WorkerParameters,
-        private val apiRepository: ApiRepository,
+        private val shuttleRepository: ShuttleRepository,
     ) : CoroutineWorker(context, workerParams) {
         override suspend fun doWork(): Result {
-            val announcements = apiRepository.getAnnouncements()
+            val announcements = shuttleRepository.getAnnouncements()
 
             if (announcements !is NetworkResult.Success) {
                 return Result.retry()
