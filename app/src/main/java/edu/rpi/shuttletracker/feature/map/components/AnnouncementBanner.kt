@@ -112,8 +112,7 @@ fun AnnouncementStrip(
 }
 
 /**
- * Full-detail list of every active announcement, opened from [AnnouncementStrip]. Mirrors
- * ScheduleSheet's show/sheetState/onDismiss shape so both bottom sheets behave identically.
+ * Full-detail list of every active announcement, opened from [AnnouncementStrip].
  *
  * @param updatedAt when the list was last refreshed from the API; omitted while simulated.
  * */

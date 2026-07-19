@@ -1,9 +1,16 @@
 package edu.rpi.shuttletracker.feature.map
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -11,12 +18,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
 import edu.rpi.shuttletracker.feature.map.components.AnnouncementSheet
-import edu.rpi.shuttletracker.feature.map.components.ScheduleSheet
+import edu.rpi.shuttletracker.feature.map.components.ScheduleContent
+
+/**
+ * Peer destinations of the live tracker experience. Switched with local state rather than a
+ * Navigation3 route since they share one Scaffold and bottom bar. A future tab (e.g. ETAs) is just
+ * another case here plus a NavigationBarItem below.
+ * */
+private enum class MainTab(
+    @StringRes val labelRes: Int,
+    @DrawableRes val iconRes: Int,
+) {
+    Map(R.string.nav_map, R.drawable.ic_explore),
+    Schedule(R.string.schedule_title, R.drawable.ic_schedule),
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,9 +48,8 @@ fun MapsScreen(
     viewModel: MapsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.mapsUiState.collectAsStateWithLifecycle()
+    var selectedTab by rememberSaveable { mutableStateOf(MainTab.Map) }
     var selectedScheduleRoute by rememberSaveable { mutableStateOf<String?>(null) }
-    var isScheduleVisible by rememberSaveable { mutableStateOf(false) }
-    val scheduleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isAnnouncementsSheetVisible by rememberSaveable { mutableStateOf(false) }
     val announcementsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -50,35 +72,53 @@ fun MapsScreen(
                 retryErrorRequest = viewModel::retry,
             )
         },
+        bottomBar = {
+            NavigationBar {
+                MainTab.entries.forEach { tab ->
+                    NavigationBarItem(
+                        selected = selectedTab == tab,
+                        onClick = { selectedTab = tab },
+                        icon = { Icon(painterResource(tab.iconRes), contentDescription = null) },
+                        label = { Text(stringResource(tab.labelRes)) },
+                    )
+                }
+            }
+        },
     ) { contentPadding ->
-        Box(Modifier.fillMaxSize()) {
-            ShuttleMap(
-                uiState = uiState,
-                contentPadding = contentPadding,
-                onSettingsClick = onOpenSettings,
-                onScheduleClick = { isScheduleVisible = true },
-                onToggleMapTypeClick = viewModel::toggleMapType,
-                onAnnouncementsClick = { isAnnouncementsSheetVisible = true },
-            )
+        when (selectedTab) {
+            MainTab.Map ->
+                Box(Modifier.fillMaxSize()) {
+                    ShuttleMap(
+                        uiState = uiState,
+                        contentPadding = contentPadding,
+                        onSettingsClick = onOpenSettings,
+                        onToggleMapTypeClick = viewModel::toggleMapType,
+                        onAnnouncementsClick = { isAnnouncementsSheetVisible = true },
+                    )
 
-            ScheduleSheet(
-                show = isScheduleVisible,
-                sheetState = scheduleSheetState,
-                schedule = uiState.schedule,
-                isLoading = uiState.isScheduleLoading,
-                routesByName = uiState.routes,
-                selectedRoute = selectedScheduleRoute,
-                onSelectedRouteChange = { selectedScheduleRoute = it },
-                onDismiss = { isScheduleVisible = false },
-            )
+                    AnnouncementSheet(
+                        show = isAnnouncementsSheetVisible,
+                        sheetState = announcementsSheetState,
+                        announcements = uiState.announcements,
+                        updatedAt = if (uiState.simulateAnnouncements) null else uiState.announcementsUpdatedAt,
+                        onDismiss = { isAnnouncementsSheetVisible = false },
+                    )
+                }
 
-            AnnouncementSheet(
-                show = isAnnouncementsSheetVisible,
-                sheetState = announcementsSheetState,
-                announcements = uiState.announcements,
-                updatedAt = if (uiState.simulateAnnouncements) null else uiState.announcementsUpdatedAt,
-                onDismiss = { isAnnouncementsSheetVisible = false },
-            )
+            MainTab.Schedule ->
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(contentPadding),
+                ) {
+                    ScheduleContent(
+                        schedule = uiState.schedule,
+                        isLoading = uiState.isScheduleLoading,
+                        routesByName = uiState.routes,
+                        selectedRoute = selectedScheduleRoute,
+                        onSelectedRouteChange = { selectedScheduleRoute = it },
+                    )
+                }
         }
     }
 }

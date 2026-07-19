@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,14 +26,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -63,36 +60,12 @@ import edu.rpi.shuttletracker.feature.map.utils.routesForDay
 import java.util.Calendar
 import kotlin.text.lowercase
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * The full schedule picker + times list, filling whatever container hosts it. Has no
+ * Scaffold/TopAppBar of its own so callers control that chrome.
+ * */
 @Composable
-fun ScheduleSheet(
-    show: Boolean,
-    sheetState: SheetState,
-    schedule: Schedule?,
-    isLoading: Boolean,
-    routesByName: Map<String, Route>,
-    selectedRoute: String?,
-    onSelectedRouteChange: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    if (!show) return
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-    ) {
-        ScheduleSheetContent(
-            schedule = schedule,
-            isLoading = isLoading,
-            routesByName = routesByName,
-            selectedRoute = selectedRoute,
-            onSelectedRouteChange = onSelectedRouteChange,
-        )
-    }
-}
-
-@Composable
-private fun ScheduleSheetContent(
+fun ScheduleContent(
     schedule: Schedule?,
     isLoading: Boolean,
     routesByName: Map<String, Route>,
@@ -100,10 +73,7 @@ private fun ScheduleSheetContent(
     onSelectedRouteChange: (String) -> Unit,
 ) {
     Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(.86f),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ScheduleHeader()

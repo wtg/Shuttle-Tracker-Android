@@ -12,11 +12,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -62,7 +60,6 @@ internal fun ShuttleMap(
     uiState: MapsUiState,
     contentPadding: PaddingValues,
     onSettingsClick: () -> Unit,
-    onScheduleClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
     onAnnouncementsClick: () -> Unit,
 ) {
@@ -189,26 +186,7 @@ internal fun ShuttleMap(
             }
         }
 
-        // Pure actions, independently anchored to opposite bottom corners - nothing above them
-        // to measure against now that the strip lives at the top.
-        ExtendedFloatingActionButton(
-            onClick = onScheduleClick,
-            modifier =
-                Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(contentPadding)
-                    .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            icon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_schedule),
-                    contentDescription = null,
-                )
-            },
-            text = { Text(stringResource(R.string.map_open_schedule)) },
-        )
-
+        // Schedule is reached via the bottom nav bar now, so Recenter is the map's only FAB.
         FloatingActionButton(
             onClick = recenter@{
                 if (!hasLocationPermission) return@recenter

@@ -53,18 +53,18 @@
     <string name="announcements_updated_at">Updated %1$s</string>
 
     <!-- Maps screen -->
+    <string name="nav_map">Map</string>
     <string name="map_open_settings">Open settings</string>
     <string name="map_recenter">Center map on my location</string>
     <string name="map_location_unavailable">Location unavailable</string>
     <string name="map_toggle_type">Change map type</string>
-    <string name="map_open_schedule">Open schedule</string>
     <string name="vehicle_number">Shuttle %1$s</string>
     <string name="vehicle_speed">%.1f mph</string>
     <string name="no_schedule_found">No schedule found</string>
     <string name="schedule_none_running">No shuttles running</string>
     <string name="route_label_format">%1$s Route</string>
 
-    <!-- Schedule bottom sheet -->
+    <!-- Schedule tab -->
     <string name="schedule_title">Schedule</string>
     <string name="schedule_subtitle">Times are based on departures from the Student Union.
         Arrival times at other stops are estimated using fixed offsets and may not be exact.</string>
