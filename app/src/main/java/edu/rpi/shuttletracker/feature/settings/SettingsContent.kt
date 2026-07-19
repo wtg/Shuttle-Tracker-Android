@@ -5,15 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Contrast
-import androidx.compose.material.icons.outlined.DirectionsBus
-import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.RestartAlt
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +20,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import edu.rpi.shuttletracker.R
@@ -60,7 +52,7 @@ fun SettingsContent(
                 title = { Text(text = stringResource(R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
+                        Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -74,7 +66,7 @@ fun SettingsContent(
             }
             item {
                 SettingsItem(
-                    icon = Icons.Outlined.Explore,
+                    icon = R.drawable.ic_explore,
                     title = stringResource(R.string.rotation),
                     description = stringResource(R.string.rotation_description),
                 ) {
@@ -83,7 +75,7 @@ fun SettingsContent(
             }
             item {
                 SettingsItem(
-                    icon = Icons.Outlined.DirectionsBus,
+                    icon = R.drawable.ic_directions_bus,
                     title = stringResource(R.string.animation),
                     description = stringResource(R.string.animation_description),
                 ) {
@@ -92,21 +84,21 @@ fun SettingsContent(
             }
             item {
                 SettingsItem(
-                    Icons.Outlined.RestartAlt,
+                    R.drawable.ic_restart_alt,
                     stringResource(R.string.redo_setup),
                     onClick = onRedoSetup,
                 )
             }
             item {
                 SettingsItem(
-                    Icons.Outlined.Info,
+                    R.drawable.ic_info,
                     stringResource(R.string.about),
                     onClick = onAbout,
                 )
             }
             item {
                 SettingsItem(
-                    Icons.Outlined.Settings,
+                    R.drawable.ic_settings,
                     stringResource(R.string.open_app_settings),
                     onClick = onOpenAppSettings,
                 )
@@ -114,7 +106,7 @@ fun SettingsContent(
             if (uiState.devOptionState) {
                 item {
                     SettingsItem(
-                        Icons.Outlined.Code,
+                        R.drawable.ic_code,
                         stringResource(R.string.dev_options),
                         onClick = onDeveloperOptions,
                     )
@@ -130,7 +122,7 @@ fun ThemeModeSettingItem(
     updateThemeMode: (ThemeMode) -> Unit,
 ) {
     SettingsItem(
-        icon = Icons.Outlined.Contrast,
+        icon = R.drawable.ic_contrast,
         title = stringResource(R.string.app_theme),
         hasBottomSpacing = false,
     )

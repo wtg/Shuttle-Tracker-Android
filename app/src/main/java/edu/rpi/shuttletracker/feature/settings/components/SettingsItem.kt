@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.feature.settings.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
 /**
@@ -25,7 +26,7 @@ import androidx.compose.ui.unit.dp
  * */
 @Composable
 fun SettingsItem(
-    icon: ImageVector? = null,
+    @DrawableRes icon: Int? = null,
     title: String,
     description: String = "",
     hasBottomSpacing: Boolean = true,
@@ -54,7 +55,7 @@ fun SettingsItem(
     ) {
         if (icon != null) {
             Icon(
-                icon,
+                painter = painterResource(icon),
                 contentDescription = null,
                 modifier = Modifier.padding(vertical = 10.dp),
             )

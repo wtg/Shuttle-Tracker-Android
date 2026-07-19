@@ -24,9 +24,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
@@ -413,11 +411,11 @@ private fun ScheduleTimeRow(
             }
 
             Icon(
-                imageVector =
+                painter =
                     if (expanded) {
-                        Icons.Filled.KeyboardArrowDown
+                        painterResource(R.drawable.ic_keyboard_arrow_down)
                     } else {
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight
+                        painterResource(R.drawable.ic_keyboard_arrow_right)
                     },
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -4,8 +4,6 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
@@ -39,7 +37,7 @@ fun BaseUrlSettingItem(
     }
 
     SettingsItem(
-        icon = Icons.Outlined.Link,
+        icon = R.drawable.ic_link,
         title = stringResource(R.string.base_url),
         description = currentUrl,
         onClick = { showDialog = true },

@@ -10,13 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.outlined.Layers
-import androidx.compose.material.icons.outlined.LocationDisabled
-import androidx.compose.material.icons.outlined.MyLocation
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -196,7 +190,7 @@ private fun MapControls(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             MapActionButton(
-                icon = Icons.Outlined.Settings,
+                icon = R.drawable.ic_settings,
                 contentDescription = stringResource(R.string.map_open_settings),
                 onClick = onSettingsClick,
             )
@@ -209,9 +203,9 @@ private fun MapControls(
             MapActionButton(
                 icon =
                     if (hasLocationPermission) {
-                        Icons.Outlined.MyLocation
+                        R.drawable.ic_my_location
                     } else {
-                        Icons.Outlined.LocationDisabled
+                        R.drawable.ic_location_disabled
                     },
                 contentDescription =
                     stringResource(
@@ -224,7 +218,7 @@ private fun MapControls(
                 onClick = onRecenterClick,
             )
             MapActionButton(
-                icon = if (isNormalMapType) Icons.Outlined.Layers else Icons.Filled.Layers,
+                icon = if (isNormalMapType) R.drawable.ic_layers else R.drawable.ic_layers_filled,
                 contentDescription = stringResource(R.string.map_toggle_type),
                 onClick = onToggleMapTypeClick,
             )
@@ -240,7 +234,7 @@ private fun MapControls(
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
             Icon(
-                imageVector = Icons.Outlined.Schedule,
+                painter = painterResource(R.drawable.ic_schedule),
                 contentDescription = stringResource(R.string.map_open_schedule),
             )
         }

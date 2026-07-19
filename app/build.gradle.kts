@@ -124,9 +124,6 @@ dependencies {
     implementation(libs.navigation3.ui)
     implementation(libs.kotlinx.serialization.core)
 
-    // more icons
-    implementation(libs.androidx.material.icons.extended)
-
     // maps
     implementation(libs.maps.compose)
     implementation(libs.play.services.maps)
