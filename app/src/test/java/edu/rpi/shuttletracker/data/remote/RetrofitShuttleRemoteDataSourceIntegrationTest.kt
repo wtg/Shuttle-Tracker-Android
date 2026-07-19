@@ -2,7 +2,6 @@ package edu.rpi.shuttletracker.data.remote
 
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.GsonBuilder
-import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.data.remote.dto.RouteDto
@@ -28,15 +27,14 @@ class RetrofitShuttleRemoteDataSourceIntegrationTest {
             GsonBuilder()
                 .registerTypeAdapter(RouteDto::class.java, RouteDtoDeserializer())
                 .create()
-        val api =
+        val retrofit =
             Retrofit
                 .Builder()
                 .baseUrl(server.url("/"))
                 .addConverterFactory(GsonConverterFactory.create(gson))
-                .addCallAdapterFactory(NetworkResponseAdapterFactory())
                 .build()
-                .create(ShuttleApi::class.java)
-        dataSource = RetrofitShuttleRemoteDataSource(api)
+        val api = retrofit.create(ShuttleApi::class.java)
+        dataSource = RetrofitShuttleRemoteDataSource(api, retrofit)
     }
 
     @After

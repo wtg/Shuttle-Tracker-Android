@@ -2,7 +2,6 @@ package edu.rpi.shuttletracker.app.di
 
 import android.content.Context
 import com.google.gson.GsonBuilder
-import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -104,7 +103,6 @@ object NetworkModule {
         return Retrofit
             .Builder()
             .addConverterFactory(GsonConverterFactory.create(gson))
-            .addCallAdapterFactory(NetworkResponseAdapterFactory())
             .baseUrl(url)
             .client(okHttpClient)
             .build()

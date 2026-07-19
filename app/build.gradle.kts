@@ -111,8 +111,6 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
 
-    implementation(libs.network.reponse)
-
     // okhttp
     implementation(libs.logging.interceptor)
 

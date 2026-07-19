@@ -18,7 +18,6 @@ logging-interceptor = "5.4.0"
 mockwebserver = "5.4.0"
 maps-compose = "8.4.0"
 appcompat = "1.7.1"
-network-respose = "5.0.0"
 play-services-location = "21.4.0"
 play-services-maps = "20.0.0"
 retrofit = "3.0.0"
@@ -88,7 +87,6 @@ maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = 
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "play-services-maps" }
 
-network-reponse = { module = "com.github.haroldadmin:NetworkResponseAdapter", version.ref = "network-respose" }
 navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
