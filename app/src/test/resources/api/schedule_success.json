@@ -1,0 +1,12 @@
+{
+  "MONDAY": "weekday",
+  "TUESDAY": "weekday",
+  "WEDNESDAY": "weekday",
+  "THURSDAY": "weekday",
+  "FRIDAY": "weekday",
+  "SATURDAY": "saturday",
+  "SUNDAY": "sunday",
+  "weekday": {"North Bus": [["7:00 AM", "NORTH"]]},
+  "saturday": {},
+  "sunday": {}
+}

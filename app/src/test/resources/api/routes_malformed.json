@@ -1,0 +1,8 @@
+{
+  "NORTH": {
+    "COLOR": "#D32F2F",
+    "STOPS": ["union"],
+    "POLYLINE_STOPS": [],
+    "ROUTES": "not-a-coordinate-list"
+  }
+}
