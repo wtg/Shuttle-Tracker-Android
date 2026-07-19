@@ -60,7 +60,7 @@ fun AnnouncementsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AnnouncementsContent(
+internal fun AnnouncementsContent(
     uiState: AnnouncementsUiState,
     onBack: () -> Unit,
     onDismissError: () -> Unit,

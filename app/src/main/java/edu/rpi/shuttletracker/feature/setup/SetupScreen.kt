@@ -62,7 +62,7 @@ fun SetupScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SetupContent(
+internal fun SetupContent(
     uiState: SetupUiState,
     onPreviousPage: () -> Unit,
     onCompletePage: () -> Unit,
