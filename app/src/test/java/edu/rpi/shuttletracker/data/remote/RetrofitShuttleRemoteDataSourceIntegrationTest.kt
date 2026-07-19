@@ -30,7 +30,8 @@ class RetrofitShuttleRemoteDataSourceIntegrationTest {
                 .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
                 .build()
         val api = retrofit.create(ShuttleApi::class.java)
-        dataSource = RetrofitShuttleRemoteDataSource(api, retrofit)
+        val apiUrlProvider = ApiUrlProvider { path -> server.url(path).toString() }
+        dataSource = RetrofitShuttleRemoteDataSource(api, apiUrlProvider, retrofit)
     }
 
     @After

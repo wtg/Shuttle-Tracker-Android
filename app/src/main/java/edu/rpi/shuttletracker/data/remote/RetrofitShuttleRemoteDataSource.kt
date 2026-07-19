@@ -17,40 +17,47 @@ class RetrofitShuttleRemoteDataSource
     @Inject
     constructor(
         private val shuttleApi: ShuttleApi,
+        private val apiUrlProvider: ApiUrlProvider,
         retrofit: Retrofit,
     ) : ShuttleRemoteDataSource {
         private val errorConverter: Converter<ResponseBody, ErrorResponse> =
             retrofit.responseBodyConverter(ErrorResponse::class.java, emptyArray())
 
         override suspend fun getVehicleLocations() =
-            execute(shuttleApi::getVehicleLocations) { locations ->
+            execute({ shuttleApi.getVehicleLocations(apiUrlProvider.endpoint("locations")) }) { locations ->
                 locations.mapValues { it.value.toModel() }
             }
 
         override suspend fun getVehicleEtas() =
-            execute(shuttleApi::getVehicleEtas) { etas ->
+            execute({ shuttleApi.getVehicleEtas(apiUrlProvider.endpoint("etas")) }) { etas ->
                 etas.mapValues { it.value.toModel() }
             }
 
         override suspend fun getVehicleVelocities() =
-            execute(shuttleApi::getVehicleVelocities) { velocities ->
+            execute({ shuttleApi.getVehicleVelocities(apiUrlProvider.endpoint("velocities")) }) { velocities ->
                 velocities.mapValues { it.value.toModel() }
             }
 
         override suspend fun getRoutes() =
-            execute(shuttleApi::getRoutes) { routes ->
+            execute({ shuttleApi.getRoutes(apiUrlProvider.endpoint("routes")) }) { routes ->
                 routes.mapValues { it.value.toModel() }
             }
 
         override suspend fun getAnnouncements() =
-            execute(shuttleApi::getAnnouncements) { announcements ->
+            execute({ shuttleApi.getAnnouncements(apiUrlProvider.endpoint("announcements")) }) { announcements ->
                 announcements.map { it.toModel() }
             }
 
-        override suspend fun getSchedule() = execute(shuttleApi::getSchedule) { it.toModel() }
+        override suspend fun getSchedule() =
+            execute({ shuttleApi.getSchedule(apiUrlProvider.endpoint("schedule")) }) { it.toModel() }
 
         override suspend fun sendRegistrationToken(token: String) =
-            execute({ shuttleApi.sendRegistrationToken(token) }) { Unit }
+            execute({
+                shuttleApi.sendRegistrationToken(
+                    apiUrlProvider.endpoint("notifications/fcmdevices"),
+                    token,
+                )
+            }) { Unit }
 
         private suspend inline fun <T, R> execute(
             request: suspend () -> Response<T>,

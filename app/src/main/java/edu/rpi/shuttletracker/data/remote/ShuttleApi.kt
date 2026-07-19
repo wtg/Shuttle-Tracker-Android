@@ -10,28 +10,42 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Url
 
 interface ShuttleApi {
-    @GET("locations")
-    suspend fun getVehicleLocations(): Response<Map<String, VehicleLocationDto>>
+    @GET
+    suspend fun getVehicleLocations(
+        @Url url: String,
+    ): Response<Map<String, VehicleLocationDto>>
 
-    @GET("etas")
-    suspend fun getVehicleEtas(): Response<Map<String, VehicleStopEtaDto>>
+    @GET
+    suspend fun getVehicleEtas(
+        @Url url: String,
+    ): Response<Map<String, VehicleStopEtaDto>>
 
-    @GET("velocities")
-    suspend fun getVehicleVelocities(): Response<Map<String, VehicleVelocitiesDto>>
+    @GET
+    suspend fun getVehicleVelocities(
+        @Url url: String,
+    ): Response<Map<String, VehicleVelocitiesDto>>
 
-    @GET("routes")
-    suspend fun getRoutes(): Response<Map<String, RouteDto>>
+    @GET
+    suspend fun getRoutes(
+        @Url url: String,
+    ): Response<Map<String, RouteDto>>
 
-    @GET("announcements")
-    suspend fun getAnnouncements(): Response<List<AnnouncementDto>>
+    @GET
+    suspend fun getAnnouncements(
+        @Url url: String,
+    ): Response<List<AnnouncementDto>>
 
-    @GET("schedule")
-    suspend fun getSchedule(): Response<ScheduleDto>
+    @GET
+    suspend fun getSchedule(
+        @Url url: String,
+    ): Response<ScheduleDto>
 
-    @POST("notifications/fcmdevices")
+    @POST
     suspend fun sendRegistrationToken(
+        @Url url: String,
         @Body token: String,
     ): Response<Unit>
 }
