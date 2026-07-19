@@ -40,6 +40,15 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
+        <!--
+        Play Services' Maps renderer module still references the legacy Apache HTTP client, which
+        was removed from the platform classpath in API 28+. Without this, some emulator images
+        crash with NoClassDefFoundError: org.apache.http.ProtocolVersion when the map first loads.
+        -->
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
         <service
             android:name=".background.service.FirebaseService"
             android:exported="false">

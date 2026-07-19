@@ -73,6 +73,16 @@ class RetrofitShuttleRemoteDataSourceIntegrationTest {
         }
 
     @Test
+    fun `bare array response - what the live API actually returns - does not fail`() =
+        runTest {
+            server.enqueue(jsonResponse("[]"))
+
+            val result = dataSource.getAnnouncements()
+
+            assertThat((result as NetworkResult.Success).data).isEmpty()
+        }
+
+    @Test
     fun `announcement response unwraps the wrapper object`() =
         runTest {
             server.enqueue(

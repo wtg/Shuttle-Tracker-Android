@@ -91,6 +91,44 @@ class ShuttleMappersTest {
     }
 
     @Test
+    fun `bare empty array response decodes instead of crashing`() {
+        val response = Json.decodeFromString<AnnouncementsResponseDto>("[]")
+
+        assertEquals(0, response.toModel().size)
+    }
+
+    @Test
+    fun `bare non-empty array response decodes like the wrapped shape`() {
+        val json =
+            """
+            [
+              {"id": "snow-delay", "message": "Delays expected", "type": "warning", "active": true}
+            ]
+            """.trimIndent()
+
+        val response = Json.decodeFromString<AnnouncementsResponseDto>(json)
+
+        assertEquals("snow-delay", response.toModel().single().id)
+    }
+
+    @Test
+    fun `one malformed entry in the array does not drop the rest`() {
+        val json =
+            """
+            {
+              "announcements": [
+                {"id": "good", "message": "Fine", "type": "info", "active": true},
+                {"message": "Missing required id field"}
+              ]
+            }
+            """.trimIndent()
+
+        val response = Json.decodeFromString<AnnouncementsResponseDto>(json)
+
+        assertEquals("good", response.toModel().single().id)
+    }
+
+    @Test
     fun `announcement mapping tolerates a missing createdAt`() {
         val dto = AnnouncementDto(id = "a", message = "m", type = "info", active = true, createdAt = null)
 
