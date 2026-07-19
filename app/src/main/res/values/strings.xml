@@ -22,8 +22,6 @@
     <string name="back">Back</string>
 
     <!-- Notifications -->
-    <string name="bus_tracker">Shuttle Tracker</string>
-    <string name="tracker">Tracker</string>
     <string name="push_notifications">Push notifications</string>
 
     <!--  Formatting broken when using enter so it has to be a one liner  -->
