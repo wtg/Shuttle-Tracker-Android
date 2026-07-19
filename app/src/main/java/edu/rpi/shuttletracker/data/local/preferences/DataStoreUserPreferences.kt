@@ -4,7 +4,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.maps.android.compose.MapType
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
@@ -18,7 +17,6 @@ class DataStoreUserPreferences
         private val dataStore: DataStore<Preferences>,
     ) : UserPreferences {
         companion object {
-            private val NOTIFICATIONS_READ = intPreferencesKey("notifications_read")
             private val PRIVACY_POLICY_ACCEPTED = booleanPreferencesKey("privacy_policy_accepted")
             private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
             private val SETUP_COMPLETED = booleanPreferencesKey("setup_completed")
@@ -27,17 +25,6 @@ class DataStoreUserPreferences
             private val MAP_TYPE = stringPreferencesKey("map_type")
             private val SHUTTLE_ANIMATIONS = booleanPreferencesKey("shuttle-animations")
             private val SHUTTLE_ROTATION = booleanPreferencesKey("shuttle_rotation")
-        }
-
-        override fun getNotificationsRead(): Flow<Int> =
-            dataStore.data.map {
-                it[NOTIFICATIONS_READ] ?: 0
-            }
-
-        override suspend fun saveNotificationsRead(count: Int) {
-            dataStore.edit {
-                it[NOTIFICATIONS_READ] = count
-            }
         }
 
         override fun getMapType(): Flow<MapType> =

@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeUserPreferences : UserPreferences {
-    val notificationsRead = MutableStateFlow(0)
     val mapType = MutableStateFlow(MapType.NORMAL)
     val privacyPolicyAccepted = MutableStateFlow(false)
     val aboutAccepted = MutableStateFlow(false)
@@ -18,18 +17,10 @@ class FakeUserPreferences : UserPreferences {
     val shuttleAnimations = MutableStateFlow(false)
     val shuttleRotation = MutableStateFlow(true)
 
-    var saveNotificationsReadCalls = 0
     var saveAboutAcceptedCalls = 0
     var savePrivacyPolicyAcceptedCalls = 0
     var saveSetupCompletedCalls = 0
     var aboutSaveGate: CompletableDeferred<Unit>? = null
-
-    override fun getNotificationsRead(): Flow<Int> = notificationsRead
-
-    override suspend fun saveNotificationsRead(count: Int) {
-        saveNotificationsReadCalls++
-        notificationsRead.value = count
-    }
 
     override fun getMapType(): Flow<MapType> = mapType
 

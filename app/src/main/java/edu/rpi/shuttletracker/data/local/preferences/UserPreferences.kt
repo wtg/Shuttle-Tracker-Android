@@ -10,10 +10,6 @@ import kotlinx.coroutines.flow.Flow
  * The interface lets tests replace DataStore with an in-memory fake.
  */
 interface UserPreferences {
-    fun getNotificationsRead(): Flow<Int>
-
-    suspend fun saveNotificationsRead(count: Int)
-
     fun getMapType(): Flow<MapType>
 
     suspend fun saveMapType(mapType: MapType)

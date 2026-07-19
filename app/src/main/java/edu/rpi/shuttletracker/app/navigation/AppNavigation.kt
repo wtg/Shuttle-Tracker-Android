@@ -1,14 +1,12 @@
 package edu.rpi.shuttletracker.app.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import edu.rpi.shuttletracker.feature.announcements.AnnouncementsScreen
 import edu.rpi.shuttletracker.feature.map.MapsScreen
 import edu.rpi.shuttletracker.feature.settings.SettingsScreen
 import edu.rpi.shuttletracker.feature.settings.about.AboutScreen
@@ -35,9 +33,6 @@ private data object LibrariesRoute : NavKey
 @Serializable
 private data object DeveloperOptionsRoute : NavKey
 
-@Serializable
-private data object AnnouncementsRoute : NavKey
-
 /**
  * Owns the app's complete navigation state and maps route keys to feature screens.
  *
@@ -45,10 +40,7 @@ private data object AnnouncementsRoute : NavKey
  * test, and reuse.
  */
 @Composable
-fun AppNavigation(
-    setupCompleted: Boolean,
-    announcementRequestId: Int,
-) {
+fun AppNavigation(setupCompleted: Boolean) {
     val startRoute: NavKey = if (setupCompleted) MapsRoute else SetupRoute
     val backStack = rememberNavBackStack(startRoute)
 
@@ -67,12 +59,6 @@ fun AppNavigation(
     fun resetTo(route: NavKey) {
         backStack.clear()
         backStack.add(route)
-    }
-
-    LaunchedEffect(announcementRequestId, setupCompleted) {
-        if (announcementRequestId > 0 && setupCompleted) {
-            navigateTo(AnnouncementsRoute)
-        }
     }
 
     NavDisplay(
@@ -114,9 +100,6 @@ fun AppNavigation(
                 }
                 entry<DeveloperOptionsRoute> {
                     DevMenuScreen(onBack = ::navigateBack)
-                }
-                entry<AnnouncementsRoute> {
-                    AnnouncementsScreen(onBack = ::navigateBack)
                 }
             },
     )
