@@ -54,6 +54,7 @@
 
     <!-- Maps screen -->
     <string name="nav_map">Map</string>
+    <string name="nav_etas">ETAs</string>
     <string name="map_open_settings">Open settings</string>
     <string name="map_recenter">Center map on my location</string>
     <string name="map_location_unavailable">Location unavailable</string>

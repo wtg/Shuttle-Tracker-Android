@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.feature.map
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -10,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -25,19 +27,20 @@ import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
+import edu.rpi.shuttletracker.feature.etas.EtasScreen
 import edu.rpi.shuttletracker.feature.map.components.AnnouncementSheet
 import edu.rpi.shuttletracker.feature.map.components.ScheduleContent
 
 /**
  * Peer destinations of the live tracker experience. Switched with local state rather than a
- * Navigation3 route since they share one Scaffold and bottom bar. A future tab (e.g. ETAs) is just
- * another case here plus a NavigationBarItem below.
+ * Navigation3 route since they share one Scaffold and bottom bar.
  * */
 private enum class MainTab(
     @StringRes val labelRes: Int,
     @DrawableRes val iconRes: Int,
 ) {
     Map(R.string.nav_map, R.drawable.ic_explore),
+    Etas(R.string.nav_etas, R.drawable.ic_directions_bus),
     Schedule(R.string.schedule_title, R.drawable.ic_schedule),
 }
 
@@ -52,15 +55,6 @@ fun MapsScreen(
     var selectedScheduleRoute by rememberSaveable { mutableStateOf<String?>(null) }
     var isAnnouncementsSheetVisible by rememberSaveable { mutableStateOf(false) }
     val announcementsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    LifecycleStartEffect(viewModel) {
-        viewModel.startVehiclePolling()
-        viewModel.startAnnouncementRefresh()
-        onStopOrDispose {
-            viewModel.stopVehiclePolling()
-            viewModel.stopAnnouncementRefresh()
-        }
-    }
 
     Scaffold(
         snackbarHost = {
@@ -87,22 +81,23 @@ fun MapsScreen(
     ) { contentPadding ->
         when (selectedTab) {
             MainTab.Map ->
-                Box(Modifier.fillMaxSize()) {
-                    ShuttleMap(
-                        uiState = uiState,
-                        contentPadding = contentPadding,
-                        onSettingsClick = onOpenSettings,
-                        onToggleMapTypeClick = viewModel::toggleMapType,
-                        onAnnouncementsClick = { isAnnouncementsSheetVisible = true },
-                    )
+                MapTab(
+                    viewModel = viewModel,
+                    uiState = uiState,
+                    contentPadding = contentPadding,
+                    onSettingsClick = onOpenSettings,
+                    isAnnouncementsSheetVisible = isAnnouncementsSheetVisible,
+                    onAnnouncementsSheetVisibleChange = { isAnnouncementsSheetVisible = it },
+                    announcementsSheetState = announcementsSheetState,
+                )
 
-                    AnnouncementSheet(
-                        show = isAnnouncementsSheetVisible,
-                        sheetState = announcementsSheetState,
-                        announcements = uiState.announcements,
-                        updatedAt = if (uiState.simulateAnnouncements) null else uiState.announcementsUpdatedAt,
-                        onDismiss = { isAnnouncementsSheetVisible = false },
-                    )
+            MainTab.Etas ->
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(contentPadding),
+                ) {
+                    EtasScreen()
                 }
 
             MainTab.Schedule ->
@@ -120,5 +115,49 @@ fun MapsScreen(
                     )
                 }
         }
+    }
+}
+
+/**
+ * Vehicle and announcement polling are scoped to this composable's own lifetime, not the whole
+ * screen's, so switching to another tab actually stops the live 5-second polling instead of
+ * leaving it running in the background indefinitely.
+ * */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MapTab(
+    viewModel: MapsViewModel,
+    uiState: MapsUiState,
+    contentPadding: PaddingValues,
+    onSettingsClick: () -> Unit,
+    isAnnouncementsSheetVisible: Boolean,
+    onAnnouncementsSheetVisibleChange: (Boolean) -> Unit,
+    announcementsSheetState: SheetState,
+) {
+    LifecycleStartEffect(viewModel) {
+        viewModel.startVehiclePolling()
+        viewModel.startAnnouncementRefresh()
+        onStopOrDispose {
+            viewModel.stopVehiclePolling()
+            viewModel.stopAnnouncementRefresh()
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        ShuttleMap(
+            uiState = uiState,
+            contentPadding = contentPadding,
+            onSettingsClick = onSettingsClick,
+            onToggleMapTypeClick = viewModel::toggleMapType,
+            onAnnouncementsClick = { onAnnouncementsSheetVisibleChange(true) },
+        )
+
+        AnnouncementSheet(
+            show = isAnnouncementsSheetVisible,
+            sheetState = announcementsSheetState,
+            announcements = uiState.announcements,
+            updatedAt = if (uiState.simulateAnnouncements) null else uiState.announcementsUpdatedAt,
+            onDismiss = { onAnnouncementsSheetVisibleChange(false) },
+        )
     }
 }
