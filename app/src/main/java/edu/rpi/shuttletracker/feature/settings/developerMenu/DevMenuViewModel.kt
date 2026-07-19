@@ -21,6 +21,11 @@ class DevMenuViewModel
                 .getSimulateAnnouncements()
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
+        val fakeShuttlesEnabled: StateFlow<Boolean> =
+            userPreferences
+                .getFakeShuttlesEnabled()
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
         suspend fun setDeveloperOptions(enabled: Boolean) {
             userPreferences.activateDevOptions(enabled)
         }
@@ -28,6 +33,12 @@ class DevMenuViewModel
         fun setSimulateAnnouncements(enabled: Boolean) {
             viewModelScope.launch {
                 userPreferences.saveSimulateAnnouncements(enabled)
+            }
+        }
+
+        fun setFakeShuttlesEnabled(enabled: Boolean) {
+            viewModelScope.launch {
+                userPreferences.saveFakeShuttlesEnabled(enabled)
             }
         }
     }

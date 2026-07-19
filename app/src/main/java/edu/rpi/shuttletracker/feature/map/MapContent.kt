@@ -142,6 +142,18 @@ internal fun ShuttleMap(
                     )
                 }
             }
+
+            // Kept in a separate loop over its own uiState field so developer-mode fake shuttles
+            // never mix with real vehicle data from the API.
+            uiState.fakeVehicles.forEach { vehicle ->
+                key(vehicle.id) {
+                    VehicleMarker(
+                        vehicle = vehicle,
+                        animationsEnabled = uiState.shuttleAnimationsEnabled,
+                        rotationEnabled = uiState.shuttleRotationEnabled,
+                    )
+                }
+            }
         }
 
         // Announcements are status info and belong at the very top, first thing seen; settings

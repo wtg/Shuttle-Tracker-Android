@@ -34,6 +34,10 @@ interface UserPreferences {
 
     suspend fun saveSimulateAnnouncements(enabled: Boolean)
 
+    fun getFakeShuttlesEnabled(): Flow<Boolean>
+
+    suspend fun saveFakeShuttlesEnabled(enabled: Boolean)
+
     fun getThemeMode(): Flow<ThemeMode>
 
     suspend fun saveThemeMode(themeMode: ThemeMode)

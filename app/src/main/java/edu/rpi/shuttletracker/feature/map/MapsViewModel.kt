@@ -18,14 +18,19 @@ import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
 import edu.rpi.shuttletracker.data.models.displayable
 import edu.rpi.shuttletracker.data.repository.ShuttleRepository
+import edu.rpi.shuttletracker.feature.map.utils.buildFakeVehicles
+import edu.rpi.shuttletracker.feature.map.utils.pickFakeShuttleRoute
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
@@ -43,6 +48,7 @@ class MapsViewModel
         private var vehiclePollingJob: Job? = null
         private var routesJob: Job? = null
         private var announcementsJob: Job? = null
+        private var fakeVehiclesJob: Job? = null
 
         init {
             loadAll()
@@ -136,6 +142,37 @@ class MapsViewModel
             announcementsJob = null
         }
 
+        /**
+         * Loops two vehicles around whichever route has enough coordinates to form a loop,
+         * publishing them to [MapsUiState.fakeVehicles] so they never mix with real vehicle data
+         * from [MapsUiState.vehicles].
+         * */
+        private fun startFakeVehicles() {
+            if (fakeVehiclesJob?.isActive == true) return
+
+            fakeVehiclesJob =
+                viewModelScope.launch {
+                    var elapsedMs = 0L
+                    while (isActive) {
+                        val fakeVehicles =
+                            pickFakeShuttleRoute(mapsUiState.value.routes)?.let { (routeName, route) ->
+                                buildFakeVehicles(routeName, route, elapsedMs)
+                            } ?: emptyList()
+
+                        _mapsUiState.update { it.copy(fakeVehicles = fakeVehicles) }
+
+                        delay(FAKE_VEHICLE_TICK_MS)
+                        elapsedMs += FAKE_VEHICLE_TICK_MS
+                    }
+                }
+        }
+
+        private fun stopFakeVehicles() {
+            fakeVehiclesJob?.cancel()
+            fakeVehiclesJob = null
+            _mapsUiState.update { it.copy(fakeVehicles = emptyList()) }
+        }
+
         private fun loadRoutes() {
             if (routesJob?.isActive == true) return
             routesJob =
@@ -195,6 +232,15 @@ class MapsViewModel
                         startAnnouncementRefresh()
                     }
                 }.launchIn(viewModelScope)
+
+            combine(
+                userPreferences.getDevOptions(),
+                userPreferences.getFakeShuttlesEnabled(),
+            ) { devOptionsEnabled, fakeShuttlesEnabled -> devOptionsEnabled && fakeShuttlesEnabled }
+                .distinctUntilChanged()
+                .onEach { fakeShuttlesActive ->
+                    if (fakeShuttlesActive) startFakeVehicles() else stopFakeVehicles()
+                }.launchIn(viewModelScope)
         }
 
         private fun updateMapType(mapType: MapType) {
@@ -240,10 +286,12 @@ class MapsViewModel
     }
 
 private const val ANNOUNCEMENT_POLL_MS = 5 * 60 * 1000L
+private const val FAKE_VEHICLE_TICK_MS = 1_000L
 
 @Immutable
 data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),
+    val fakeVehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
     val announcements: List<Announcement> = emptyList(),
     val announcementsUpdatedAt: Instant? = null,

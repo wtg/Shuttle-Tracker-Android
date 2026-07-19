@@ -22,6 +22,7 @@ class DataStoreUserPreferences
             private val SETUP_COMPLETED = booleanPreferencesKey("setup_completed")
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
             private val SIMULATE_ANNOUNCEMENTS = booleanPreferencesKey("simulate_announcements")
+            private val FAKE_SHUTTLES_ENABLED = booleanPreferencesKey("fake_shuttles_enabled")
             private val THEME_MODE = stringPreferencesKey("theme_mode")
             private val MAP_TYPE = stringPreferencesKey("map_type")
             private val SHUTTLE_ANIMATIONS = booleanPreferencesKey("shuttle-animations")
@@ -94,6 +95,17 @@ class DataStoreUserPreferences
         override suspend fun saveSimulateAnnouncements(enabled: Boolean) {
             dataStore.edit {
                 it[SIMULATE_ANNOUNCEMENTS] = enabled
+            }
+        }
+
+        override fun getFakeShuttlesEnabled(): Flow<Boolean> =
+            dataStore.data.map {
+                it[FAKE_SHUTTLES_ENABLED] ?: false
+            }
+
+        override suspend fun saveFakeShuttlesEnabled(enabled: Boolean) {
+            dataStore.edit {
+                it[FAKE_SHUTTLES_ENABLED] = enabled
             }
         }
 

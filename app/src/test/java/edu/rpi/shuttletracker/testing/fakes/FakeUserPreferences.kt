@@ -14,6 +14,7 @@ class FakeUserPreferences : UserPreferences {
     val setupCompleted = MutableStateFlow(false)
     val devOptions = MutableStateFlow(false)
     val simulateAnnouncements = MutableStateFlow(false)
+    val fakeShuttlesEnabled = MutableStateFlow(false)
     val themeMode = MutableStateFlow(ThemeMode.System)
     val shuttleAnimations = MutableStateFlow(false)
     val shuttleRotation = MutableStateFlow(true)
@@ -61,6 +62,12 @@ class FakeUserPreferences : UserPreferences {
 
     override suspend fun saveSimulateAnnouncements(enabled: Boolean) {
         simulateAnnouncements.value = enabled
+    }
+
+    override fun getFakeShuttlesEnabled(): Flow<Boolean> = fakeShuttlesEnabled
+
+    override suspend fun saveFakeShuttlesEnabled(enabled: Boolean) {
+        fakeShuttlesEnabled.value = enabled
     }
 
     override fun getThemeMode(): Flow<ThemeMode> = themeMode

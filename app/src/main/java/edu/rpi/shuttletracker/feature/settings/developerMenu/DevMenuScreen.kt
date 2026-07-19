@@ -33,6 +33,7 @@ fun DevMenuScreen(
 ) {
     val scope = rememberCoroutineScope()
     val simulateAnnouncements by viewModel.simulateAnnouncements.collectAsStateWithLifecycle()
+    val fakeShuttlesEnabled by viewModel.fakeShuttlesEnabled.collectAsStateWithLifecycle()
 
     DevMenuContent(
         onBack = onBack,
@@ -44,6 +45,8 @@ fun DevMenuScreen(
         },
         simulateAnnouncements = simulateAnnouncements,
         onSimulateAnnouncementsChange = viewModel::setSimulateAnnouncements,
+        fakeShuttlesEnabled = fakeShuttlesEnabled,
+        onFakeShuttlesEnabledChange = viewModel::setFakeShuttlesEnabled,
     )
 }
 
@@ -54,6 +57,8 @@ private fun DevMenuContent(
     onDisable: () -> Unit,
     simulateAnnouncements: Boolean,
     onSimulateAnnouncementsChange: (Boolean) -> Unit,
+    fakeShuttlesEnabled: Boolean,
+    onFakeShuttlesEnabledChange: (Boolean) -> Unit,
 ) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -93,6 +98,17 @@ private fun DevMenuContent(
                     onCheckedChange = onSimulateAnnouncementsChange,
                 )
             }
+
+            SettingsItem(
+                icon = R.drawable.ic_directions_bus,
+                title = stringResource(R.string.fake_shuttles),
+                description = stringResource(R.string.fake_shuttles_description),
+            ) {
+                Switch(
+                    checked = fakeShuttlesEnabled,
+                    onCheckedChange = onFakeShuttlesEnabledChange,
+                )
+            }
         }
     }
 }
@@ -106,6 +122,8 @@ private fun DevMenuContentPreview() {
             onDisable = {},
             simulateAnnouncements = false,
             onSimulateAnnouncementsChange = {},
+            fakeShuttlesEnabled = false,
+            onFakeShuttlesEnabledChange = {},
         )
     }
 }

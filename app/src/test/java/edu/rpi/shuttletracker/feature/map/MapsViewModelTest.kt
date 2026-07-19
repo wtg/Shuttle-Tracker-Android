@@ -14,7 +14,9 @@ import edu.rpi.shuttletracker.testing.fixtures.testVehicleEta
 import edu.rpi.shuttletracker.testing.fixtures.testVehicleLocation
 import edu.rpi.shuttletracker.testing.fixtures.testVehicleVelocity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -318,6 +320,76 @@ class MapsViewModelTest {
 
             assertThat(preferences.mapType.value).isEqualTo(MapType.HYBRID)
             assertThat(viewModel.mapsUiState.value.mapType).isEqualTo(MapType.HYBRID)
+        }
+
+    // The fake vehicle ticker loops forever with delay(), so advanceUntilIdle() would hang while
+    // it's running; runCurrent()/advanceTimeBy() step the virtual clock by a bounded amount instead.
+
+    @Test
+    fun `fake vehicles only start once both dev options and the fake shuttle toggle are on`() =
+        runTest {
+            val viewModel = createViewModel()
+            advanceUntilIdle()
+
+            preferences.devOptions.value = true
+            runCurrent()
+            assertThat(viewModel.mapsUiState.value.fakeVehicles).isEmpty()
+
+            preferences.devOptions.value = false
+            preferences.fakeShuttlesEnabled.value = true
+            runCurrent()
+            assertThat(viewModel.mapsUiState.value.fakeVehicles).isEmpty()
+
+            preferences.devOptions.value = true
+            runCurrent()
+            assertThat(viewModel.mapsUiState.value.fakeVehicles).hasSize(2)
+
+            preferences.fakeShuttlesEnabled.value = false
+            runCurrent()
+        }
+
+    @Test
+    fun `fake vehicles are kept out of the real vehicles list and keep moving over time`() =
+        runTest {
+            val viewModel = createViewModel()
+            advanceUntilIdle()
+
+            preferences.devOptions.value = true
+            preferences.fakeShuttlesEnabled.value = true
+            runCurrent()
+
+            val firstTick =
+                viewModel.mapsUiState.value.fakeVehicles
+                    .first()
+            assertThat(viewModel.mapsUiState.value.vehicles).isEmpty()
+
+            advanceTimeBy(30_000)
+            runCurrent()
+
+            val laterTick =
+                viewModel.mapsUiState.value.fakeVehicles
+                    .first()
+            assertThat(laterTick.latitude != firstTick.latitude || laterTick.longitude != firstTick.longitude).isTrue()
+
+            preferences.fakeShuttlesEnabled.value = false
+            runCurrent()
+        }
+
+    @Test
+    fun `turning fake shuttles back off clears them from ui state`() =
+        runTest {
+            val viewModel = createViewModel()
+            advanceUntilIdle()
+
+            preferences.devOptions.value = true
+            preferences.fakeShuttlesEnabled.value = true
+            runCurrent()
+            assertThat(viewModel.mapsUiState.value.fakeVehicles).isNotEmpty()
+
+            preferences.fakeShuttlesEnabled.value = false
+            runCurrent()
+
+            assertThat(viewModel.mapsUiState.value.fakeVehicles).isEmpty()
         }
 
     private fun createViewModel() = MapsViewModel(repository, preferences)
