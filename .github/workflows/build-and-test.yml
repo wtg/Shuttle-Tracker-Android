@@ -35,17 +35,13 @@ jobs:
         run: |
           echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" > local.properties
 
-      - name: Ktlint Check
-        run: ./gradlew ktlintCheck
-
-      - name: Build Debug
-        run: ./gradlew :${{ env.MAIN_MODULE }}:assembleDebug
-
-      - name: Unit Tests
-        run: ./gradlew testDebugUnitTest
-
-      - name: Android Lint
-        run: ./gradlew lintDebug
+      - name: Run Build, Lint, and Test
+        run: >-
+          ./gradlew
+          ktlintCheck
+          :${{ env.MAIN_MODULE }}:assembleDebug
+          :${{ env.MAIN_MODULE }}:testDebugUnitTest
+          :${{ env.MAIN_MODULE }}:lintDebug
 
       - name: Cleanup
         if: always()
