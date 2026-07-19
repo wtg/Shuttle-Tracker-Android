@@ -26,19 +26,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.app.MainActivity
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 import kotlinx.coroutines.launch
 
-@Destination<RootGraph>
 @Composable
 fun DevMenuScreen(
-    navigator: DestinationsNavigator,
+    onBack: () -> Unit,
     viewModel: DevMenuViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -47,11 +43,11 @@ fun DevMenuScreen(
 
     DevMenuContent(
         uiState = uiState,
-        onBack = navigator::popBackStack,
+        onBack = onBack,
         onDisable = {
             scope.launch {
                 viewModel.setDeveloperOptions(false)
-                navigator.popBackStack()
+                onBack()
             }
         },
         onBaseUrlChange = { baseUrl ->

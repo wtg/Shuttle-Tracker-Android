@@ -8,19 +8,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.DevMenuScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.MapsScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 
-@Destination<RootGraph>
 @Composable
 fun SettingsScreen(
-    navigator: DestinationsNavigator,
+    onBack: () -> Unit,
+    onRedoSetup: () -> Unit,
+    onOpenAbout: () -> Unit,
+    onOpenDeveloperOptions: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -29,22 +24,17 @@ fun SettingsScreen(
 
     SettingsContent(
         uiState = uiState,
-        onBack = navigator::popBackStack,
+        onBack = onBack,
         onThemeModeChange = viewModel::updateThemeMode,
         onRotationChange = viewModel::updateShuttleRotation,
         onAnimationsChange = viewModel::updateShuttleAnimations,
         onRedoSetup = {
             scope.launch {
                 viewModel.resetSetup()
-                navigator.navigate(SetupScreenDestination()) {
-                    popUpTo(MapsScreenDestination) {
-                        inclusive = true
-                    }
-                    launchSingleTop = true
-                }
+                onRedoSetup()
             }
         },
-        onAbout = { navigator.navigate(AboutScreenDestination()) },
+        onAbout = onOpenAbout,
         onOpenAppSettings = {
             context.startActivity(
                 Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -52,6 +42,6 @@ fun SettingsScreen(
                 },
             )
         },
-        onDeveloperOptions = { navigator.navigate(DevMenuScreenDestination()) },
+        onDeveloperOptions = onOpenDeveloperOptions,
     )
 }

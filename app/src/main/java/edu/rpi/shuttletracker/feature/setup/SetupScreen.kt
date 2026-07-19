@@ -28,28 +28,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.MapsScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 
-@Destination<RootGraph>
 @Composable
 fun SetupScreen(
-    navigator: DestinationsNavigator,
+    onSetupComplete: () -> Unit,
     viewModel: SetupScreenViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.isComplete) {
         if (uiState.isComplete) {
-            navigator.navigate(MapsScreenDestination) {
-                popUpTo(SetupScreenDestination) {
-                    inclusive = true
-                }
-            }
+            onSetupComplete()
         }
     }
 

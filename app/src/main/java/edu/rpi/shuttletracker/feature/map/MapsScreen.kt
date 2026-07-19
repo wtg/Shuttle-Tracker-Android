@@ -14,18 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
 import edu.rpi.shuttletracker.feature.map.components.ScheduleSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>(start = true)
 @Composable
 fun MapsScreen(
-    navigator: DestinationsNavigator,
+    onOpenSettings: () -> Unit,
     viewModel: MapsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.mapsUiState.collectAsStateWithLifecycle()
@@ -53,7 +48,7 @@ fun MapsScreen(
             ShuttleMap(
                 uiState = uiState,
                 contentPadding = contentPadding,
-                onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
+                onSettingsClick = onOpenSettings,
                 onScheduleClick = { isScheduleVisible = true },
                 onToggleMapTypeClick = viewModel::toggleMapType,
             )

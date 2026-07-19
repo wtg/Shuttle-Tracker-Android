@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.app
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,14 +11,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.generated.NavGraphs
-import com.ramcosta.composedestinations.generated.destinations.MapsScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.SetupScreenDestination
 import dagger.hilt.android.AndroidEntryPoint
+import edu.rpi.shuttletracker.app.navigation.AppNavigation
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
@@ -29,9 +28,12 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var userPreferences: UserPreferences
 
+    private val announcementRequestId = mutableIntStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        handleNavigationIntent(intent)
 
         setContent {
             val setupCompletedFlow =
@@ -64,18 +66,30 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     if (setupCompleted != null) {
-                        DestinationsNavHost(
-                            navGraph = NavGraphs.root,
-                            start =
-                                if (setupCompleted == true) {
-                                    MapsScreenDestination()
-                                } else {
-                                    SetupScreenDestination()
-                                },
+                        AppNavigation(
+                            setupCompleted = setupCompleted == true,
+                            announcementRequestId = announcementRequestId.intValue,
                         )
                     }
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNavigationIntent(intent)
+    }
+
+    private fun handleNavigationIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_OPEN_ANNOUNCEMENTS, false) == true) {
+            announcementRequestId.intValue++
+            intent.removeExtra(EXTRA_OPEN_ANNOUNCEMENTS)
+        }
+    }
+
+    companion object {
+        const val EXTRA_OPEN_ANNOUNCEMENTS = "edu.rpi.shuttletracker.extra.OPEN_ANNOUNCEMENTS"
     }
 }

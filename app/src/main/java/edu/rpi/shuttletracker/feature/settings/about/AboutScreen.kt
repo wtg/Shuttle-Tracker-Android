@@ -38,19 +38,15 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.LibrariesScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>
 @Composable
 fun AboutScreen(
-    navigator: DestinationsNavigator,
+    onBack: () -> Unit,
+    onOpenLibraries: () -> Unit,
     viewModel: AboutViewModel = hiltViewModel(),
 ) {
     val uriHandler = LocalUriHandler.current
@@ -71,7 +67,7 @@ fun AboutScreen(
             TopAppBar(
                 title = { Text(text = stringResource(R.string.about)) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.popBackStack() }) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
@@ -116,7 +112,7 @@ fun AboutScreen(
             SettingsItem(
                 icon = Icons.Outlined.Description,
                 title = stringResource(R.string.libraries_used),
-                onClick = { navigator.navigate(LibrariesScreenDestination()) },
+                onClick = onOpenLibraries,
             )
 
             var timesClicked by remember { mutableIntStateOf(10) }

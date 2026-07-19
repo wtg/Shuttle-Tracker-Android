@@ -6,16 +6,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.Typography
 import edu.rpi.shuttletracker.core.ui.theme.shuttleTrackerColorScheme
 
-@Destination<RootGraph>
 @Composable
-fun LibrariesScreen(navigator: DestinationsNavigator) {
+fun LibrariesScreen(onOpened: () -> Unit) {
     val context = LocalContext.current
     val title = stringResource(R.string.libraries_used)
 
@@ -27,6 +23,6 @@ fun LibrariesScreen(navigator: DestinationsNavigator) {
             Typography,
         )
         context.startActivity(Intent(context, OssLicensesMenuActivity::class.java))
-        navigator.popBackStack()
+        onOpened()
     }
 }

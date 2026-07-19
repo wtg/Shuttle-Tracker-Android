@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.google.service) apply false
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
 }
 
 // pre commit hook to check kotlin style before commits

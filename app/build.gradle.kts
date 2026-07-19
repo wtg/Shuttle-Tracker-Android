@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -102,7 +103,7 @@ dependencies {
     // hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
 
@@ -117,7 +118,13 @@ dependencies {
 
     // compose
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.lifecycle.runtime.compose)
+
+    // navigation
+    implementation(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
+    implementation(libs.kotlinx.serialization.core)
 
     // more icons
     implementation(libs.androidx.material.icons.extended)
@@ -127,10 +134,6 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.google.oss.licenses)
-
-    // destinations
-    implementation(libs.destinations)
-    ksp(libs.ksp)
 
     // datastore (similar to SharedPreferences)
     implementation(libs.androidx.datastore.preferences)
