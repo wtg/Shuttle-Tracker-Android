@@ -39,7 +39,7 @@ class AnnouncementsViewModelTest {
 
             assertThat(
                 viewModel.announcementsUiState.value.announcements
-                    .map { it.subject },
+                    .map { it.id },
             ).containsExactly("New", "Old")
                 .inOrder()
             assertThat(preferences.notificationsRead.value).isEqualTo(2)
@@ -88,7 +88,7 @@ class AnnouncementsViewModelTest {
             assertThat(
                 viewModel.announcementsUiState.value.announcements
                     .single()
-                    .subject,
+                    .id,
             ).isEqualTo("Restored")
             assertThat(repository.announcementsCalls).isEqualTo(2)
         }

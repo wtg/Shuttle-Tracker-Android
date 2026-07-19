@@ -19,7 +19,6 @@ import edu.rpi.shuttletracker.background.receiver.NotificationReceiver
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.repository.ShuttleRepository
-import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
@@ -40,8 +39,8 @@ class AnnouncementWorker
             with(announcements.data) {
                 if (hasNewAnnouncement(this)) {
                     pushNotification(
-                        first().subject,
-                        first().body,
+                        context.getString(R.string.announcements),
+                        first().message,
                         size,
                     )
                 }
@@ -51,14 +50,9 @@ class AnnouncementWorker
         }
 
         /**
-         * Determines if there is a new announcement based on:
-         * - having the current time be between the announcement's start & end time
+         * Determines if there is a new announcement based on the first (most recent) entry being active.
          * */
-        private fun hasNewAnnouncement(announcements: List<Announcement>): Boolean =
-            with(announcements.first()) {
-                val now = Calendar.getInstance()
-                now.after(startCalendar) && now.before(endCalendar)
-            }
+        private fun hasNewAnnouncement(announcements: List<Announcement>): Boolean = announcements.first().active
 
         private fun pushNotification(
             subject: String,

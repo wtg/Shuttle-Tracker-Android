@@ -43,8 +43,8 @@ class RetrofitShuttleRemoteDataSource
             }
 
         override suspend fun getAnnouncements() =
-            execute(shuttleApi::getAnnouncements) { announcements ->
-                announcements.map { it.toModel() }
+            execute(shuttleApi::getAnnouncements) { response ->
+                response.toModel()
             }
 
         override suspend fun getSchedule() = execute(shuttleApi::getSchedule) { it.toModel() }

@@ -64,12 +64,33 @@ class RetrofitShuttleRemoteDataSourceIntegrationTest {
     @Test
     fun `empty announcement response remains successful`() =
         runTest {
-            server.enqueue(jsonResponse("[]"))
+            server.enqueue(jsonResponse("""{"announcements":[]}"""))
 
             val result = dataSource.getAnnouncements()
 
             assertThat(server.takeRequest().path).isEqualTo("/announcements")
             assertThat((result as NetworkResult.Success).data).isEmpty()
+        }
+
+    @Test
+    fun `announcement response unwraps the wrapper object`() =
+        runTest {
+            server.enqueue(
+                jsonResponse(
+                    """
+                    {
+                      "announcements": [
+                        {"id": "snow-delay", "message": "Delays expected", "type": "warning", "active": true}
+                      ]
+                    }
+                    """.trimIndent(),
+                ),
+            )
+
+            val result = dataSource.getAnnouncements()
+
+            val announcements = (result as NetworkResult.Success).data
+            assertThat(announcements.single().id).isEqualTo("snow-delay")
         }
 
     @Test

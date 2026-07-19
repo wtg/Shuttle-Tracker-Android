@@ -1,44 +1,50 @@
 package edu.rpi.shuttletracker.data.models
 
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.time.temporal.ChronoUnit
-import java.util.Calendar
-import java.util.GregorianCalendar
+import java.time.Instant
+
+/**
+ * Severity is ordered so [severityRank] can drive display sorting: errors first, info last.
+ * */
+enum class AnnouncementType(
+    val severityRank: Int,
+) {
+    Error(0),
+    Warning(1),
+    Info(2),
+    ;
+
+    companion object {
+        fun fromApiValue(value: String?): AnnouncementType =
+            when (value?.trim()?.lowercase()) {
+                "error" -> Error
+                "warning" -> Warning
+                else -> Info
+            }
+    }
+}
 
 data class Announcement(
-    val subject: String,
-    val body: String,
-    private val rawStartTime: String,
-    private val rawEndTime: String,
-) {
-    private fun getReadableTime(date: String): String {
-        val outputFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+    val id: String,
+    val message: String,
+    val type: AnnouncementType,
+    val active: Boolean,
+    val expiresAt: Instant? = null,
+    val createdAt: Instant? = null,
+)
 
-        val busDate =
-            ZonedDateTime
-                .parse(date)
-                .truncatedTo(ChronoUnit.SECONDS)
-                .toLocalDate()
+/**
+ * An absent or unparseable [Announcement.expiresAt] must not hide an otherwise active announcement.
+ * */
+fun Announcement.isDisplayable(now: Instant = Instant.now()): Boolean =
+    active && (expiresAt == null || expiresAt.isAfter(now))
 
-        return busDate.format(outputFormatter)
-    }
+/**
+ * Severity first, then newest [Announcement.createdAt]; missing dates sort last within their severity
+ * while staying stable relative to each other.
+ * */
+val AnnouncementDisplayOrder: Comparator<Announcement> =
+    compareBy<Announcement> { it.type.severityRank }
+        .thenByDescending { it.createdAt ?: Instant.MIN }
 
-    private fun getCalendar(date: String): Calendar {
-        val zdt = ZonedDateTime.parse(date)
-        return GregorianCalendar.from(zdt)
-    }
-
-    val startCalendar: Calendar
-        get() = getCalendar(rawStartTime)
-
-    val endCalendar: Calendar
-        get() = getCalendar(rawEndTime)
-
-    val startTime: String
-        get() = getReadableTime(rawStartTime)
-
-    val endTime: String
-        get() = getReadableTime(rawEndTime)
-}
+fun List<Announcement>.displayable(now: Instant = Instant.now()): List<Announcement> =
+    filter { it.isDisplayable(now) }.sortedWith(AnnouncementDisplayOrder)

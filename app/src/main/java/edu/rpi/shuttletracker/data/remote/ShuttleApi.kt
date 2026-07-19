@@ -1,6 +1,6 @@
 package edu.rpi.shuttletracker.data.remote
 
-import edu.rpi.shuttletracker.data.remote.dto.AnnouncementDto
+import edu.rpi.shuttletracker.data.remote.dto.AnnouncementsResponseDto
 import edu.rpi.shuttletracker.data.remote.dto.RouteDto
 import edu.rpi.shuttletracker.data.remote.dto.ScheduleDto
 import edu.rpi.shuttletracker.data.remote.dto.VehicleLocationDto
@@ -25,7 +25,7 @@ interface ShuttleApi {
     suspend fun getRoutes(): Response<Map<String, RouteDto>>
 
     @GET("announcements")
-    suspend fun getAnnouncements(): Response<List<AnnouncementDto>>
+    suspend fun getAnnouncements(): Response<AnnouncementsResponseDto>
 
     @GET("schedule")
     suspend fun getSchedule(): Response<ScheduleDto>

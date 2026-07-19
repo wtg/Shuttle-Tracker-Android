@@ -28,6 +28,7 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.data.models.Announcement
+import edu.rpi.shuttletracker.data.models.AnnouncementType
 import edu.rpi.shuttletracker.feature.announcements.components.AnnouncementListItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -128,10 +129,10 @@ private fun AnnouncementsContentPreview() {
                     announcements =
                         listOf(
                             Announcement(
-                                subject = "Service update",
-                                body = "Shuttle service will follow the updated schedule.",
-                                rawStartTime = "2026-01-15T08:00:00-05:00",
-                                rawEndTime = "2026-01-15T18:00:00-05:00",
+                                id = "service-update",
+                                message = "Shuttle service will follow the updated schedule.",
+                                type = AnnouncementType.Info,
+                                active = true,
                             ),
                         ),
                     isLoading = false,

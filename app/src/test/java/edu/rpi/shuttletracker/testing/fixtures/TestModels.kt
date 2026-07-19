@@ -1,12 +1,14 @@
 package edu.rpi.shuttletracker.testing.fixtures
 
 import edu.rpi.shuttletracker.data.models.Announcement
+import edu.rpi.shuttletracker.data.models.AnnouncementType
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.VehicleLocation
 import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
+import java.time.Instant
 
 fun testRoute() =
     Route(
@@ -43,13 +45,21 @@ fun testSchedule(
     sundaySchedule = emptyMap(),
 )
 
-fun testAnnouncement(subject: String) =
-    Announcement(
-        subject = subject,
-        body = "Service update",
-        rawStartTime = "2026-01-15T08:00:00-05:00",
-        rawEndTime = "2026-01-15T18:00:00-05:00",
-    )
+fun testAnnouncement(
+    id: String,
+    message: String = "Service update",
+    type: AnnouncementType = AnnouncementType.Info,
+    active: Boolean = true,
+    expiresAt: Instant? = null,
+    createdAt: Instant? = Instant.parse("2026-01-15T08:00:00Z"),
+) = Announcement(
+    id = id,
+    message = message,
+    type = type,
+    active = active,
+    expiresAt = expiresAt,
+    createdAt = createdAt,
+)
 
 fun testVehicleLocation(name: String = "North Bus") =
     VehicleLocation(

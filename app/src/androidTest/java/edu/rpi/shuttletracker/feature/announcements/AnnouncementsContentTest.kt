@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.data.models.Announcement
+import edu.rpi.shuttletracker.data.models.AnnouncementType
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,17 +33,16 @@ class AnnouncementsContentTest {
                 announcements =
                     listOf(
                         Announcement(
-                            subject = "Service update",
-                            body = "Normal service",
-                            rawStartTime = "2026-01-15T08:00:00-05:00",
-                            rawEndTime = "2026-01-15T18:00:00-05:00",
+                            id = "service-update",
+                            message = "Normal service",
+                            type = AnnouncementType.Info,
+                            active = true,
                         ),
                     ),
                 isLoading = false,
             ),
         )
 
-        composeRule.onNodeWithText("Service update").assertIsDisplayed()
         composeRule.onNodeWithText("Normal service").assertIsDisplayed()
     }
 

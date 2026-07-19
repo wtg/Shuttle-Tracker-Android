@@ -5,10 +5,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AnnouncementDto(
-    val subject: String,
-    val body: String,
-    @SerialName("start") val rawStartTime: String,
-    @SerialName("end") val rawEndTime: String,
+    val id: String,
+    val message: String,
+    val type: String = "info",
+    val active: Boolean = false,
+    val expiresAt: String? = null,
+    val createdAt: String? = null,
+)
+
+@Serializable
+data class AnnouncementsResponseDto(
+    val announcements: List<AnnouncementDto> = emptyList(),
 )
 
 @Serializable
