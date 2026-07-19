@@ -230,6 +230,59 @@ class MapsViewModelTest {
         }
 
     @Test
+    fun `enabling simulate announcements shows the fake sample set`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+
+            preferences.simulateAnnouncements.value = true
+            advanceUntilIdle()
+
+            assertThat(
+                viewModel.mapsUiState.value.announcements
+                    .map { it.id },
+            ).containsExactly("fake-error", "fake-warning", "fake-info")
+                .inOrder()
+        }
+
+    @Test
+    fun `simulated announcements are not overwritten by a real refresh tick`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+            preferences.simulateAnnouncements.value = true
+            advanceUntilIdle()
+
+            repository.announcements.emit(NetworkResult.Success(listOf(testAnnouncement("real"))))
+            advanceUntilIdle()
+
+            assertThat(
+                viewModel.mapsUiState.value.announcements
+                    .map { it.id },
+            ).containsExactly("fake-error", "fake-warning", "fake-info")
+                .inOrder()
+        }
+
+    @Test
+    fun `disabling simulate announcements triggers a fresh real fetch`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+            preferences.simulateAnnouncements.value = true
+            advanceUntilIdle()
+
+            preferences.simulateAnnouncements.value = false
+            repository.announcements.emit(NetworkResult.Success(listOf(testAnnouncement("real"))))
+            advanceUntilIdle()
+
+            assertThat(
+                viewModel.mapsUiState.value.announcements
+                    .map { it.id },
+            ).containsExactly("real")
+            assertThat(repository.observeAnnouncementsCalls).isEqualTo(2)
+        }
+
+    @Test
     fun `toggling map type persists the next value`() =
         runTest {
             val viewModel = createViewModel()

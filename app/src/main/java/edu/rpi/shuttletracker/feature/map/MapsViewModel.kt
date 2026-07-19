@@ -118,6 +118,9 @@ class MapsViewModel
                 shuttleRepository
                     .observeAnnouncements(pollMs = ANNOUNCEMENT_POLL_MS)
                     .onEach { result ->
+                        // The dev menu's simulated banners take priority until it's turned back off.
+                        if (mapsUiState.value.simulateAnnouncements) return@onEach
+
                         // A failed refresh must not clear announcements already on screen.
                         readApiResponse(result) { announcements ->
                             _mapsUiState.update { it.copy(announcements = announcements.displayable()) }
@@ -188,6 +191,21 @@ class MapsViewModel
                         it.copy(shuttleRotationEnabled = rotationEnable)
                     }
                 }.launchIn(viewModelScope)
+
+            userPreferences
+                .getSimulateAnnouncements()
+                .onEach { simulate ->
+                    val wasSimulating = mapsUiState.value.simulateAnnouncements
+                    _mapsUiState.update { it.copy(simulateAnnouncements = simulate) }
+
+                    if (simulate) {
+                        _mapsUiState.update { it.copy(announcements = FakeAnnouncements.sample().displayable()) }
+                    } else if (wasSimulating) {
+                        // Get a fresh real fetch immediately rather than waiting for the next poll tick.
+                        stopAnnouncementRefresh()
+                        startAnnouncementRefresh()
+                    }
+                }.launchIn(viewModelScope)
         }
 
         private fun updateMapType(mapType: MapType) {
@@ -239,6 +257,7 @@ data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
     val announcements: List<Announcement> = emptyList(),
+    val simulateAnnouncements: Boolean = false,
     val schedule: Schedule? = null,
     val isScheduleLoading: Boolean = true,
     val networkError: NetworkError.Connectivity? = null,

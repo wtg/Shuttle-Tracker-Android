@@ -1,8 +1,13 @@
 package edu.rpi.shuttletracker.feature.settings.developerMenu
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -11,7 +16,18 @@ class DevMenuViewModel
     constructor(
         private val userPreferences: UserPreferences,
     ) : ViewModel() {
+        val simulateAnnouncements: StateFlow<Boolean> =
+            userPreferences
+                .getSimulateAnnouncements()
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
         suspend fun setDeveloperOptions(enabled: Boolean) {
             userPreferences.activateDevOptions(enabled)
+        }
+
+        fun setSimulateAnnouncements(enabled: Boolean) {
+            viewModelScope.launch {
+                userPreferences.saveSimulateAnnouncements(enabled)
+            }
         }
     }

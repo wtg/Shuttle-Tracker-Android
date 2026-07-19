@@ -21,6 +21,7 @@ class DataStoreUserPreferences
             private val ABOUT_ACCEPTED = booleanPreferencesKey("about_accepted")
             private val SETUP_COMPLETED = booleanPreferencesKey("setup_completed")
             private val DEV_OPTIONS_ACTIVE = booleanPreferencesKey("dev_options_active")
+            private val SIMULATE_ANNOUNCEMENTS = booleanPreferencesKey("simulate_announcements")
             private val THEME_MODE = stringPreferencesKey("theme_mode")
             private val MAP_TYPE = stringPreferencesKey("map_type")
             private val SHUTTLE_ANIMATIONS = booleanPreferencesKey("shuttle-animations")
@@ -84,6 +85,17 @@ class DataStoreUserPreferences
             dataStore.data.map {
                 it[DEV_OPTIONS_ACTIVE] ?: false
             }
+
+        override fun getSimulateAnnouncements(): Flow<Boolean> =
+            dataStore.data.map {
+                it[SIMULATE_ANNOUNCEMENTS] ?: false
+            }
+
+        override suspend fun saveSimulateAnnouncements(enabled: Boolean) {
+            dataStore.edit {
+                it[SIMULATE_ANNOUNCEMENTS] = enabled
+            }
+        }
 
         override fun getThemeMode(): Flow<ThemeMode> =
             dataStore.data.map {

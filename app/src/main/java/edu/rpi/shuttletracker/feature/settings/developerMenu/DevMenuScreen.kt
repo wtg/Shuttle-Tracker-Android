@@ -12,6 +12,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -19,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
@@ -30,6 +32,7 @@ fun DevMenuScreen(
     viewModel: DevMenuViewModel = hiltViewModel(),
 ) {
     val scope = rememberCoroutineScope()
+    val simulateAnnouncements by viewModel.simulateAnnouncements.collectAsStateWithLifecycle()
 
     DevMenuContent(
         onBack = onBack,
@@ -39,6 +42,8 @@ fun DevMenuScreen(
                 onBack()
             }
         },
+        simulateAnnouncements = simulateAnnouncements,
+        onSimulateAnnouncementsChange = viewModel::setSimulateAnnouncements,
     )
 }
 
@@ -47,6 +52,8 @@ fun DevMenuScreen(
 private fun DevMenuContent(
     onBack: () -> Unit,
     onDisable: () -> Unit,
+    simulateAnnouncements: Boolean,
+    onSimulateAnnouncementsChange: (Boolean) -> Unit,
 ) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -75,6 +82,17 @@ private fun DevMenuContent(
                     onCheckedChange = { enabled -> if (!enabled) onDisable() },
                 )
             }
+
+            SettingsItem(
+                icon = R.drawable.ic_bug_report,
+                title = stringResource(R.string.simulate_announcements),
+                description = stringResource(R.string.simulate_announcements_description),
+            ) {
+                Switch(
+                    checked = simulateAnnouncements,
+                    onCheckedChange = onSimulateAnnouncementsChange,
+                )
+            }
         }
     }
 }
@@ -86,6 +104,8 @@ private fun DevMenuContentPreview() {
         DevMenuContent(
             onBack = {},
             onDisable = {},
+            simulateAnnouncements = false,
+            onSimulateAnnouncementsChange = {},
         )
     }
 }

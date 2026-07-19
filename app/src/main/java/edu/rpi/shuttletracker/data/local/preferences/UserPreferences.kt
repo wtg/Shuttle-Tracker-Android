@@ -30,6 +30,10 @@ interface UserPreferences {
 
     fun getDevOptions(): Flow<Boolean>
 
+    fun getSimulateAnnouncements(): Flow<Boolean>
+
+    suspend fun saveSimulateAnnouncements(enabled: Boolean)
+
     fun getThemeMode(): Flow<ThemeMode>
 
     suspend fun saveThemeMode(themeMode: ThemeMode)

@@ -3,10 +3,12 @@ package edu.rpi.shuttletracker.background.service
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
+import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.app.MainActivity
 import edu.rpi.shuttletracker.background.notification.Notifications
@@ -18,6 +20,15 @@ import edu.rpi.shuttletracker.background.notification.Notifications
  * */
 @AndroidEntryPoint
 class FirebaseService : FirebaseMessagingService() {
+    /**
+     * Debug-only: prints the registration token so it can be pasted into the Firebase Console's
+     * "Send test message" field, which targets a single device rather than the whole app.
+     * */
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun onNewToken(token: String) {
+        if (BuildConfig.DEBUG) Log.d("FCM_TOKEN", token)
+    }
+
     /**
      * Only fires when the app is in the foreground; Firebase Console notification+data messages
      * are otherwise displayed automatically (using the manifest's default icon/color/channel)
