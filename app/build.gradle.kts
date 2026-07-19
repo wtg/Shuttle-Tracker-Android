@@ -109,7 +109,7 @@ dependencies {
 
     // retrofit
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
+    implementation(libs.converter.kotlinx.serialization)
 
     // okhttp
     implementation(libs.logging.interceptor)
@@ -122,7 +122,7 @@ dependencies {
     // navigation
     implementation(libs.navigation3.runtime)
     implementation(libs.navigation3.ui)
-    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.serialization.json)
 
     // maps
     implementation(libs.maps.compose)

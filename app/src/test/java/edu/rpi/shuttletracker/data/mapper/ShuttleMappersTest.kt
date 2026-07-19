@@ -1,9 +1,9 @@
 package edu.rpi.shuttletracker.data.mapper
 
-import com.google.gson.Gson
 import edu.rpi.shuttletracker.data.remote.dto.AnnouncementDto
 import edu.rpi.shuttletracker.data.remote.dto.StopDto
 import edu.rpi.shuttletracker.data.remote.dto.VehicleLocationDto
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -14,9 +14,8 @@ class ShuttleMappersTest {
     @Test
     fun `vehicle location JSON uses the backend field names`() {
         val dto =
-            Gson().fromJson(
+            Json.decodeFromString<VehicleLocationDto>(
                 """{"name":"North","latitude":42.73,"longitude":-73.68,"speed_mph":5.0,"timestamp":"2026-01-15T08:00:00-05:00","heading_degrees":90}""",
-                VehicleLocationDto::class.java,
             )
 
         val location = dto.toModel()

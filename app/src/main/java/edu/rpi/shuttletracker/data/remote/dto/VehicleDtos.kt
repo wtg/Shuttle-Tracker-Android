@@ -1,23 +1,27 @@
 package edu.rpi.shuttletracker.data.remote.dto
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class VehicleLocationDto(
-    @SerializedName("name") val name: String,
-    @SerializedName("latitude") val latitude: Double,
-    @SerializedName("longitude") val longitude: Double,
-    @SerializedName("speed_mph") val speedMph: Double,
-    @SerializedName("timestamp") val timestamp: String,
-    @SerializedName("heading_degrees") val headingDegrees: Int?,
+    val name: String,
+    val latitude: Double,
+    val longitude: Double,
+    @SerialName("speed_mph") val speedMph: Double,
+    val timestamp: String,
+    @SerialName("heading_degrees") val headingDegrees: Int? = null,
 )
 
+@Serializable
 data class VehicleStopEtaDto(
-    @SerializedName("stop_times") val stopTimes: Map<String, String>,
-    @SerializedName("timestamp") val timestamp: String,
+    @SerialName("stop_times") val stopTimes: Map<String, String>,
+    val timestamp: String,
 )
 
+@Serializable
 data class VehicleVelocitiesDto(
-    @SerializedName("route_name") val routeName: String,
-    @SerializedName("is_at_stop") val isAtStop: Boolean,
-    @SerializedName("current_stop") val currentStop: String?,
+    @SerialName("route_name") val routeName: String,
+    @SerialName("is_at_stop") val isAtStop: Boolean,
+    @SerialName("current_stop") val currentStop: String? = null,
 )

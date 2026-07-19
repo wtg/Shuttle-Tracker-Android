@@ -1,51 +1,95 @@
 package edu.rpi.shuttletracker.data.remote.dto
 
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
-import com.google.gson.annotations.SerializedName
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
 
+@Serializable(with = RouteDtoSerializer::class)
 data class RouteDto(
-    @SerializedName("COLOR") val color: String,
-    @SerializedName("STOPS") val stops: List<String>,
-    @SerializedName("POLYLINE_STOPS") val polylineStops: List<String>,
-    @SerializedName("ROUTES") val coordinates: List<List<List<Double>>>,
+    val color: String,
+    val stops: List<String>,
+    val polylineStops: List<String>,
+    val coordinates: List<List<List<Double>>>,
     val stopDetails: Map<String, StopDto>,
 )
 
+@Serializable
 data class StopDto(
-    @SerializedName("COORDINATES") val coordinates: List<Double>,
-    @SerializedName("OFFSET") val offset: Int,
-    @SerializedName("NAME") val name: String,
+    @SerialName("COORDINATES") val coordinates: List<Double>,
+    @SerialName("OFFSET") val offset: Int,
+    @SerialName("NAME") val name: String,
 )
 
-class RouteDtoDeserializer : JsonDeserializer<RouteDto> {
-    override fun deserialize(
-        json: JsonElement,
-        typeOfT: Type,
-        context: JsonDeserializationContext,
-    ): RouteDto {
-        val obj = json.asJsonObject
-        val color = obj["COLOR"].asString
-        val stops: List<String> = context.deserialize(obj["STOPS"], object : TypeToken<List<String>>() {}.type)
-        val polylineStops: List<String> =
-            context.deserialize(obj["POLYLINE_STOPS"], object : TypeToken<List<String>>() {}.type)
-        val coordinates: List<List<List<Double>>> =
-            context.deserialize(obj["ROUTES"], object : TypeToken<List<List<List<Double>>>>() {}.type)
+object RouteDtoSerializer : KSerializer<RouteDto> {
+    private val fixedKeys = setOf("COLOR", "STOPS", "POLYLINE_STOPS", "ROUTES")
 
-        val fixedKeys = setOf("COLOR", "STOPS", "POLYLINE_STOPS", "ROUTES")
-        val validStops = stops.toSet()
-        val details = mutableMapOf<String, StopDto>()
-        for ((key, value) in obj.entrySet()) {
-            if (key !in fixedKeys && key in validStops) {
-                runCatching {
-                    details[key] = context.deserialize(value, StopDto::class.java)
-                }
+    override val descriptor: SerialDescriptor = RouteFields.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): RouteDto {
+        require(decoder is JsonDecoder) { "RouteDto can only be decoded from JSON" }
+
+        val jsonObject = decoder.decodeJsonElement().jsonObject
+        val fixedFields =
+            decoder.json.decodeFromJsonElement<RouteFields>(
+                JsonObject(jsonObject.filterKeys { it in fixedKeys }),
+            )
+        val validStops = fixedFields.stops.toSet()
+        val stopDetails =
+            jsonObject
+                .filterKeys { it in validStops }
+                .mapNotNull { (name, element) ->
+                    runCatching {
+                        name to decoder.json.decodeFromJsonElement<StopDto>(element)
+                    }.getOrNull()
+                }.toMap()
+
+        return RouteDto(
+            color = fixedFields.color,
+            stops = fixedFields.stops,
+            polylineStops = fixedFields.polylineStops,
+            coordinates = fixedFields.coordinates,
+            stopDetails = stopDetails,
+        )
+    }
+
+    override fun serialize(
+        encoder: Encoder,
+        value: RouteDto,
+    ) {
+        require(encoder is JsonEncoder) { "RouteDto can only be encoded to JSON" }
+
+        val fixedFields =
+            encoder.json
+                .encodeToJsonElement(
+                    RouteFields(
+                        color = value.color,
+                        stops = value.stops,
+                        polylineStops = value.polylineStops,
+                        coordinates = value.coordinates,
+                    ),
+                ).jsonObject
+        val stopDetails =
+            value.stopDetails.mapValues { (_, stop) ->
+                encoder.json.encodeToJsonElement(stop)
             }
-        }
 
-        return RouteDto(color, stops, polylineStops, coordinates, details)
+        encoder.encodeJsonElement(JsonObject(fixedFields + stopDetails))
     }
 }
+
+@Serializable
+private data class RouteFields(
+    @SerialName("COLOR") val color: String,
+    @SerialName("STOPS") val stops: List<String>,
+    @SerialName("POLYLINE_STOPS") val polylineStops: List<String>,
+    @SerialName("ROUTES") val coordinates: List<List<List<Double>>>,
+)

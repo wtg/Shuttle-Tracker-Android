@@ -1,7 +1,6 @@
 package edu.rpi.shuttletracker.app.di
 
 import android.content.Context
-import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,16 +12,16 @@ import edu.rpi.shuttletracker.core.network.hasNetwork
 import edu.rpi.shuttletracker.core.network.normalizeBaseUrl
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import edu.rpi.shuttletracker.data.remote.ShuttleApi
-import edu.rpi.shuttletracker.data.remote.dto.RouteDto
-import edu.rpi.shuttletracker.data.remote.dto.RouteDtoDeserializer
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import okhttp3.Cache
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -84,10 +83,7 @@ object NetworkModule {
         userPreferences: UserPreferences,
         @ApplicationContext context: Context,
     ): Retrofit {
-        val gson =
-            GsonBuilder()
-                .registerTypeAdapter(RouteDto::class.java, RouteDtoDeserializer())
-                .create()
+        val json = Json { ignoreUnknownKeys = true }
 
         val storedUrl =
             runBlocking {
@@ -102,7 +98,7 @@ object NetworkModule {
 
         return Retrofit
             .Builder()
-            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .baseUrl(url)
             .client(okHttpClient)
             .build()

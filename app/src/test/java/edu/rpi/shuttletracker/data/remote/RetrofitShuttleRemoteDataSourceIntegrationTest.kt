@@ -1,19 +1,18 @@
 package edu.rpi.shuttletracker.data.remote
 
 import com.google.common.truth.Truth.assertThat
-import com.google.gson.GsonBuilder
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
-import edu.rpi.shuttletracker.data.remote.dto.RouteDto
-import edu.rpi.shuttletracker.data.remote.dto.RouteDtoDeserializer
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 class RetrofitShuttleRemoteDataSourceIntegrationTest {
     private lateinit var server: MockWebServer
@@ -23,15 +22,12 @@ class RetrofitShuttleRemoteDataSourceIntegrationTest {
     fun setUp() {
         server = MockWebServer()
         server.start()
-        val gson =
-            GsonBuilder()
-                .registerTypeAdapter(RouteDto::class.java, RouteDtoDeserializer())
-                .create()
+        val json = Json { ignoreUnknownKeys = true }
         val retrofit =
             Retrofit
                 .Builder()
                 .baseUrl(server.url("/"))
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
                 .build()
         val api = retrofit.create(ShuttleApi::class.java)
         dataSource = RetrofitShuttleRemoteDataSource(api, retrofit)

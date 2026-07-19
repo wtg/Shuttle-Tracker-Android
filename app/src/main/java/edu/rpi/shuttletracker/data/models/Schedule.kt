@@ -1,21 +1,20 @@
 package edu.rpi.shuttletracker.data.models
 
-import com.google.gson.annotations.SerializedName
 import java.util.Calendar
 
 data class Schedule(
-    @SerializedName("MONDAY") val monday: String,
-    @SerializedName("TUESDAY") val tuesday: String,
-    @SerializedName("WEDNESDAY") val wednesday: String,
-    @SerializedName("THURSDAY") val thursday: String,
-    @SerializedName("FRIDAY") val friday: String,
-    @SerializedName("SATURDAY") val saturday: String,
-    @SerializedName("SUNDAY") val sunday: String,
+    val monday: String,
+    val tuesday: String,
+    val wednesday: String,
+    val thursday: String,
+    val friday: String,
+    val saturday: String,
+    val sunday: String,
     // Map<busName, List<[time, direction]>>
     // ex. AM WEST Bus 1 -> list of ["7:00 AM", "WEST"]
-    @SerializedName("weekday") val weekday: Map<String, List<List<String>>>,
-    @SerializedName("saturday") val saturdaySchedule: Map<String, List<List<String>>>,
-    @SerializedName("sunday") val sundaySchedule: Map<String, List<List<String>>>,
+    val weekday: Map<String, List<List<String>>>,
+    val saturdaySchedule: Map<String, List<List<String>>>,
+    val sundaySchedule: Map<String, List<List<String>>>,
 ) {
     fun scheduleTypeFor(day: DayOfWeek): String =
         when (day) {

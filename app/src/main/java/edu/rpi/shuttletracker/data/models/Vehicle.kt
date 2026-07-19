@@ -1,7 +1,6 @@
 package edu.rpi.shuttletracker.data.models
 
 import com.google.android.gms.maps.model.LatLng
-import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -69,20 +68,20 @@ data class VehicleLocation(
     val name: String,
     val latitude: Double,
     val longitude: Double,
-    @SerializedName("speed_mph") val speedMph: Double,
+    val speedMph: Double,
     val timestamp: String,
-    @SerializedName("heading_degrees") val headingDegrees: Int?,
+    val headingDegrees: Int?,
 )
 
 data class VehicleStopEta(
-    @SerializedName("stop_times") val stopTimes: Map<String, String>,
-    @SerializedName("timestamp") val timestamp: String,
+    val stopTimes: Map<String, String>,
+    val timestamp: String,
 )
 
 data class VehicleVelocities(
-    @SerializedName("route_name") val routeName: String,
-    @SerializedName("is_at_stop") val isAtStop: Boolean,
-    @SerializedName("current_stop") val currentStop: String?,
+    val routeName: String,
+    val isAtStop: Boolean,
+    val currentStop: String?,
 )
 
 object VehicleMerger {

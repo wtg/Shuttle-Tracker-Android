@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.data.models
 
-import com.google.gson.annotations.SerializedName
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -9,13 +8,9 @@ import java.util.Calendar
 import java.util.GregorianCalendar
 
 data class Announcement(
-    @SerializedName("subject")
     val subject: String,
-    @SerializedName("body")
     val body: String,
-    @SerializedName("start")
     private val rawStartTime: String,
-    @SerializedName("end")
     private val rawEndTime: String,
 ) {
     private fun getReadableTime(date: String): String {
