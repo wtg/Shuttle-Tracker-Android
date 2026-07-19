@@ -67,3 +67,14 @@ object VehicleColors {
     val North = Color(0xFFFF0000)
     val West = Color(0xFF0000FF)
 }
+
+/**
+ * Material 3 has no built-in "warning" color role, so announcement banners carry their own
+ * light/dark container colors distinct from the error and info roles they sit alongside.
+ * */
+object AnnouncementWarningColors {
+    val LightContainer = Color(0xFFFFDEA6)
+    val LightOnContainer = Color(0xFF261A00)
+    val DarkContainer = Color(0xFF5C4200)
+    val DarkOnContainer = Color(0xFFFFDEA6)
+}

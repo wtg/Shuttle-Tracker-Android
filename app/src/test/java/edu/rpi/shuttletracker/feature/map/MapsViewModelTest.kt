@@ -4,9 +4,11 @@ import com.google.common.truth.Truth.assertThat
 import com.google.maps.android.compose.MapType
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
+import edu.rpi.shuttletracker.data.models.AnnouncementType
 import edu.rpi.shuttletracker.testing.coroutine.MainDispatcherRule
 import edu.rpi.shuttletracker.testing.fakes.FakeShuttleRepository
 import edu.rpi.shuttletracker.testing.fakes.FakeUserPreferences
+import edu.rpi.shuttletracker.testing.fixtures.testAnnouncement
 import edu.rpi.shuttletracker.testing.fixtures.testRoute
 import edu.rpi.shuttletracker.testing.fixtures.testSchedule
 import edu.rpi.shuttletracker.testing.fixtures.testVehicleEta
@@ -18,6 +20,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapsViewModelTest {
@@ -131,6 +134,99 @@ class MapsViewModelTest {
             assertThat(viewModel.mapsUiState.value.unknownError).isNull()
             assertThat(viewModel.mapsUiState.value.routes).containsKey("NORTH")
             assertThat(repository.routesCalls).isEqualTo(2)
+        }
+
+    @Test
+    fun `announcement refresh loads and filters to active unexpired announcements`() =
+        runTest {
+            val now = Instant.parse("2026-06-01T00:00:00Z")
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+
+            repository.announcements.emit(
+                NetworkResult.Success(
+                    listOf(
+                        testAnnouncement("active", active = true, expiresAt = null),
+                        testAnnouncement("inactive", active = false),
+                        testAnnouncement("expired", active = true, expiresAt = now.minusSeconds(60)),
+                    ),
+                ),
+            )
+            advanceUntilIdle()
+
+            assertThat(
+                viewModel.mapsUiState.value.announcements
+                    .map { it.id },
+            ).containsExactly("active")
+        }
+
+    @Test
+    fun `announcement refresh keeps previously loaded announcements after a failure`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+
+            repository.announcements.emit(NetworkResult.Success(listOf(testAnnouncement("first"))))
+            advanceUntilIdle()
+            repository.announcements.emit(NetworkResult.Failure(NetworkError.NoConnection()))
+            advanceUntilIdle()
+
+            assertThat(
+                viewModel.mapsUiState.value.announcements
+                    .map { it.id },
+            ).containsExactly("first")
+            assertThat(viewModel.mapsUiState.value.networkError).isInstanceOf(NetworkError.NoConnection::class.java)
+        }
+
+    @Test
+    fun `starting announcement refresh twice creates only one stream`() =
+        runTest {
+            val viewModel = createViewModel()
+
+            viewModel.startAnnouncementRefresh()
+            viewModel.startAnnouncementRefresh()
+
+            assertThat(repository.observeAnnouncementsCalls).isEqualTo(1)
+        }
+
+    @Test
+    fun `stopping announcement refresh does not couple to vehicle polling`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+            viewModel.startVehiclePolling()
+
+            viewModel.stopAnnouncementRefresh()
+            repository.vehicleLocations.emit(NetworkResult.Success(mapOf("bus-1" to testVehicleLocation())))
+            repository.vehicleEtas.emit(NetworkResult.Success(emptyMap()))
+            repository.vehicleVelocities.emit(NetworkResult.Success(emptyMap()))
+            advanceUntilIdle()
+
+            assertThat(viewModel.mapsUiState.value.vehicles).isNotEmpty()
+        }
+
+    @Test
+    fun `multiple active announcements are exposed sorted by severity`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+
+            repository.announcements.emit(
+                NetworkResult.Success(
+                    listOf(
+                        testAnnouncement("info", type = AnnouncementType.Info),
+                        testAnnouncement("error", type = AnnouncementType.Error),
+                        testAnnouncement("warning", type = AnnouncementType.Warning),
+                    ),
+                ),
+            )
+            advanceUntilIdle()
+
+            assertThat(
+                viewModel.mapsUiState.value.announcements
+                    .map { it.id },
+            ).containsExactly("error", "warning", "info")
+                .inOrder()
         }
 
     @Test

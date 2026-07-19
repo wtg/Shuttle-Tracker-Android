@@ -36,6 +36,14 @@ class DefaultShuttleRepository
                 }
             }
 
+        override fun observeAnnouncements(pollMs: Long) =
+            flow {
+                while (currentCoroutineContext().isActive) {
+                    emit(remoteDataSource.getAnnouncements())
+                    delay(pollMs)
+                }
+            }
+
         override suspend fun getRoutes() = remoteDataSource.getRoutes()
 
         override suspend fun getAnnouncements() = remoteDataSource.getAnnouncements()

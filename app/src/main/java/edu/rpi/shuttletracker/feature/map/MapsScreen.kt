@@ -30,7 +30,11 @@ fun MapsScreen(
 
     LifecycleStartEffect(viewModel) {
         viewModel.startVehiclePolling()
-        onStopOrDispose { viewModel.stopVehiclePolling() }
+        viewModel.startAnnouncementRefresh()
+        onStopOrDispose {
+            viewModel.stopVehiclePolling()
+            viewModel.stopAnnouncementRefresh()
+        }
     }
 
     Scaffold(

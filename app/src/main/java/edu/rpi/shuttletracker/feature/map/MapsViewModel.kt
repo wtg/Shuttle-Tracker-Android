@@ -9,6 +9,7 @@ import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
+import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Vehicle
@@ -16,6 +17,7 @@ import edu.rpi.shuttletracker.data.models.VehicleLocation
 import edu.rpi.shuttletracker.data.models.VehicleMerger
 import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
+import edu.rpi.shuttletracker.data.models.displayable
 import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,6 +43,7 @@ class MapsViewModel
         private var vehiclePollingJob: Job? = null
         private var routesJob: Job? = null
         private var scheduleJob: Job? = null
+        private var announcementsJob: Job? = null
 
         init {
             loadAll()
@@ -102,6 +105,29 @@ class MapsViewModel
         fun stopVehiclePolling() {
             vehiclePollingJob?.cancel()
             vehiclePollingJob = null
+        }
+
+        /**
+         * Polls announcements on its own low-frequency interval, independent of vehicle polling, so a
+         * banner refresh never has to compete with the 5 second vehicle updates.
+         * */
+        fun startAnnouncementRefresh() {
+            if (announcementsJob?.isActive == true) return
+
+            announcementsJob =
+                shuttleRepository
+                    .observeAnnouncements(pollMs = ANNOUNCEMENT_POLL_MS)
+                    .onEach { result ->
+                        // A failed refresh must not clear announcements already on screen.
+                        readApiResponse(result) { announcements ->
+                            _mapsUiState.update { it.copy(announcements = announcements.displayable()) }
+                        }
+                    }.launchIn(viewModelScope)
+        }
+
+        fun stopAnnouncementRefresh() {
+            announcementsJob?.cancel()
+            announcementsJob = null
         }
 
         private fun loadRoutes() {
@@ -206,10 +232,13 @@ class MapsViewModel
         }
     }
 
+private const val ANNOUNCEMENT_POLL_MS = 5 * 60 * 1000L
+
 @Immutable
 data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
+    val announcements: List<Announcement> = emptyList(),
     val schedule: Schedule? = null,
     val isScheduleLoading: Boolean = true,
     val networkError: NetworkError.Connectivity? = null,

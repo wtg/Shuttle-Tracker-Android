@@ -21,6 +21,8 @@ interface ShuttleRepository {
 
     fun observeVehicleVelocities(pollMs: Long = 30_000L): Flow<NetworkResult<Map<String, VehicleVelocities>>>
 
+    fun observeAnnouncements(pollMs: Long = 300_000L): Flow<NetworkResult<List<Announcement>>>
+
     suspend fun getRoutes(): NetworkResult<Map<String, Route>>
 
     suspend fun getAnnouncements(): NetworkResult<List<Announcement>>

@@ -43,6 +43,7 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.feature.map.components.AnnouncementBanners
 import kotlinx.coroutines.launch
 
 private val CampusCenter = LatLng(42.73068146020498, -73.67619731950525)
@@ -140,6 +141,16 @@ internal fun ShuttleMap(
                 }
             }
         }
+
+        AnnouncementBanners(
+            announcements = uiState.announcements,
+            modifier =
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(contentPadding)
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 64.dp),
+        )
 
         MapControls(
             modifier =

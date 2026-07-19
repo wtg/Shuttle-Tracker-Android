@@ -15,6 +15,7 @@ class FakeShuttleRepository : ShuttleRepository {
     val vehicleLocations = MutableSharedFlow<NetworkResult<Map<String, VehicleLocation>>>(replay = 1)
     val vehicleEtas = MutableSharedFlow<NetworkResult<Map<String, VehicleStopEta>>>(replay = 1)
     val vehicleVelocities = MutableSharedFlow<NetworkResult<Map<String, VehicleVelocities>>>(replay = 1)
+    val announcements = MutableSharedFlow<NetworkResult<List<Announcement>>>(replay = 1)
 
     var routesResult: NetworkResult<Map<String, Route>> = NetworkResult.Success(emptyMap())
     var announcementsResult: NetworkResult<List<Announcement>> = NetworkResult.Success(emptyList())
@@ -23,6 +24,7 @@ class FakeShuttleRepository : ShuttleRepository {
     var observeLocationsCalls = 0
     var observeEtasCalls = 0
     var observeVelocitiesCalls = 0
+    var observeAnnouncementsCalls = 0
     var routesCalls = 0
     var announcementsCalls = 0
     var scheduleCalls = 0
@@ -41,6 +43,11 @@ class FakeShuttleRepository : ShuttleRepository {
     override fun observeVehicleVelocities(pollMs: Long): Flow<NetworkResult<Map<String, VehicleVelocities>>> {
         observeVelocitiesCalls++
         return vehicleVelocities
+    }
+
+    override fun observeAnnouncements(pollMs: Long): Flow<NetworkResult<List<Announcement>>> {
+        observeAnnouncementsCalls++
+        return announcements
     }
 
     override suspend fun getRoutes(): NetworkResult<Map<String, Route>> {

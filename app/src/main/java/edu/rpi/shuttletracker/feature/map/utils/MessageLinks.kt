@@ -1,0 +1,56 @@
+package edu.rpi.shuttletracker.feature.map.utils
+
+import java.net.URI
+import java.net.URISyntaxException
+
+sealed interface MessageSegment {
+    data class PlainText(
+        val text: String,
+    ) : MessageSegment
+
+    data class Link(
+        val label: String,
+        val url: String,
+    ) : MessageSegment
+}
+
+private val MARKDOWN_LINK_REGEX = Regex("""\[([^\[\]]*)]\(([^()\s]+)\)""")
+
+/**
+ * Splits a message on `[label](url)` Markdown links, leaving everything else as plain text.
+ * Malformed brackets/parens (unmatched, nested, empty) simply fail to match and pass through as text.
+ * */
+fun parseMessageSegments(message: String): List<MessageSegment> {
+    val segments = mutableListOf<MessageSegment>()
+    var lastIndex = 0
+
+    for (match in MARKDOWN_LINK_REGEX.findAll(message)) {
+        if (match.range.first > lastIndex) {
+            segments += MessageSegment.PlainText(message.substring(lastIndex, match.range.first))
+        }
+
+        val (label, url) = match.destructured
+        segments += MessageSegment.Link(label.ifEmpty { url }, url)
+        lastIndex = match.range.last + 1
+    }
+
+    if (lastIndex < message.length) {
+        segments += MessageSegment.PlainText(message.substring(lastIndex))
+    }
+
+    return segments
+}
+
+/**
+ * Only `http`/`https` URLs with a host are safe to open; anything else (custom schemes, relative
+ * paths, malformed URIs) is rejected rather than crashing or launching an unintended target.
+ * */
+fun isSafeHttpUrl(url: String): Boolean =
+    try {
+        val uri = URI(url)
+        uri.scheme?.lowercase() in setOf("http", "https") && !uri.host.isNullOrBlank()
+    } catch (_: URISyntaxException) {
+        false
+    } catch (_: IllegalArgumentException) {
+        false
+    }
