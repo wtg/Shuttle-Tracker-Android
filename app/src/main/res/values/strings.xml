@@ -73,6 +73,7 @@
     <string name="schedule_row_expanded">Expanded</string>
     <string name="schedule_row_collapsed">Collapsed</string>
     <string name="schedule_toggle_row">Show or hide stop times</string>
+    <string name="schedule_refresh">Refresh schedule</string>
 
     <!-- Errors -->
     <string name="error_network">Network error</string>

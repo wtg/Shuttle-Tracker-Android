@@ -29,7 +29,8 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
 import edu.rpi.shuttletracker.feature.etas.EtasScreen
 import edu.rpi.shuttletracker.feature.map.components.AnnouncementSheet
-import edu.rpi.shuttletracker.feature.map.components.ScheduleContent
+import edu.rpi.shuttletracker.feature.schedule.ScheduleScreen
+import edu.rpi.shuttletracker.feature.schedule.ScheduleViewModel
 
 /**
  * Peer destinations of the live tracker experience. Switched with local state rather than a
@@ -49,10 +50,10 @@ private enum class MainTab(
 fun MapsScreen(
     onOpenSettings: () -> Unit,
     viewModel: MapsViewModel = hiltViewModel(),
+    scheduleViewModel: ScheduleViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.mapsUiState.collectAsStateWithLifecycle()
     var selectedTab by rememberSaveable { mutableStateOf(MainTab.Map) }
-    var selectedScheduleRoute by rememberSaveable { mutableStateOf<String?>(null) }
     var isAnnouncementsSheetVisible by rememberSaveable { mutableStateOf(false) }
     val announcementsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -106,13 +107,7 @@ fun MapsScreen(
                         .fillMaxSize()
                         .padding(contentPadding),
                 ) {
-                    ScheduleContent(
-                        schedule = uiState.schedule,
-                        isLoading = uiState.isScheduleLoading,
-                        routesByName = uiState.routes,
-                        selectedRoute = selectedScheduleRoute,
-                        onSelectedRouteChange = { selectedScheduleRoute = it },
-                    )
+                    ScheduleScreen(viewModel = scheduleViewModel)
                 }
         }
     }

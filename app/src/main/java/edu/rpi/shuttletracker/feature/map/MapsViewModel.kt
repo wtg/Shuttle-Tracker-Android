@@ -11,7 +11,6 @@ import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.Route
-import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Vehicle
 import edu.rpi.shuttletracker.data.models.VehicleLocation
 import edu.rpi.shuttletracker.data.models.VehicleMerger
@@ -43,7 +42,6 @@ class MapsViewModel
         val mapsUiState: StateFlow<MapsUiState> = _mapsUiState.asStateFlow()
         private var vehiclePollingJob: Job? = null
         private var routesJob: Job? = null
-        private var scheduleJob: Job? = null
         private var announcementsJob: Job? = null
 
         init {
@@ -53,7 +51,6 @@ class MapsViewModel
 
         private fun loadAll() {
             if (mapsUiState.value.routes.isEmpty()) loadRoutes()
-            if (mapsUiState.value.schedule == null) loadSchedule()
         }
 
         fun clearErrors() {
@@ -148,20 +145,6 @@ class MapsViewModel
                             it.copy(routes = routes)
                         }
                     }
-                }
-        }
-
-        private fun loadSchedule() {
-            if (scheduleJob?.isActive == true) return
-            _mapsUiState.update { it.copy(isScheduleLoading = true) }
-            scheduleJob =
-                viewModelScope.launch {
-                    readApiResponse(shuttleRepository.getSchedule()) { response ->
-                        _mapsUiState.update {
-                            it.copy(schedule = response, isScheduleLoading = false)
-                        }
-                    }
-                    _mapsUiState.update { it.copy(isScheduleLoading = false) }
                 }
         }
 
@@ -265,8 +248,6 @@ data class MapsUiState(
     val announcements: List<Announcement> = emptyList(),
     val announcementsUpdatedAt: Instant? = null,
     val simulateAnnouncements: Boolean = false,
-    val schedule: Schedule? = null,
-    val isScheduleLoading: Boolean = true,
     val networkError: NetworkError.Connectivity? = null,
     val serverError: NetworkError.Http? = null,
     val unknownError: NetworkError.Unknown? = null,

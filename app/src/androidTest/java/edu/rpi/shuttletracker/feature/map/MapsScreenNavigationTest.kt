@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
+import edu.rpi.shuttletracker.feature.schedule.ScheduleViewModel
 import edu.rpi.shuttletracker.testing.fakes.FakeShuttleRepository
 import edu.rpi.shuttletracker.testing.fakes.FakeUserPreferences
 import edu.rpi.shuttletracker.testing.fixtures.testSchedule
@@ -78,10 +79,11 @@ class MapsScreenNavigationTest {
             }
         val preferences = FakeUserPreferences()
         val viewModel = MapsViewModel(repository, preferences)
+        val scheduleViewModel = ScheduleViewModel(repository)
 
         composeRule.setContent {
             ShuttleTrackerTheme(dynamicColor = false) {
-                MapsScreen(onOpenSettings = {}, viewModel = viewModel)
+                MapsScreen(onOpenSettings = {}, viewModel = viewModel, scheduleViewModel = scheduleViewModel)
             }
         }
     }

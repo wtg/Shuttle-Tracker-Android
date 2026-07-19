@@ -10,7 +10,6 @@ import edu.rpi.shuttletracker.testing.fakes.FakeShuttleRepository
 import edu.rpi.shuttletracker.testing.fakes.FakeUserPreferences
 import edu.rpi.shuttletracker.testing.fixtures.testAnnouncement
 import edu.rpi.shuttletracker.testing.fixtures.testRoute
-import edu.rpi.shuttletracker.testing.fixtures.testSchedule
 import edu.rpi.shuttletracker.testing.fixtures.testVehicleEta
 import edu.rpi.shuttletracker.testing.fixtures.testVehicleLocation
 import edu.rpi.shuttletracker.testing.fixtures.testVehicleVelocity
@@ -35,13 +34,12 @@ class MapsViewModelTest {
         repository =
             FakeShuttleRepository().apply {
                 routesResult = NetworkResult.Success(mapOf("NORTH" to testRoute()))
-                scheduleResult = NetworkResult.Success(testSchedule())
             }
         preferences = FakeUserPreferences()
     }
 
     @Test
-    fun `initial load exposes routes schedule and preferences`() =
+    fun `initial load exposes routes and preferences`() =
         runTest {
             preferences.mapType.value = MapType.HYBRID
 
@@ -49,9 +47,7 @@ class MapsViewModelTest {
             advanceUntilIdle()
 
             assertThat(viewModel.mapsUiState.value.routes).containsKey("NORTH")
-            assertThat(viewModel.mapsUiState.value.schedule).isNotNull()
             assertThat(viewModel.mapsUiState.value.mapType).isEqualTo(MapType.HYBRID)
-            assertThat(viewModel.mapsUiState.value.isScheduleLoading).isFalse()
         }
 
     @Test

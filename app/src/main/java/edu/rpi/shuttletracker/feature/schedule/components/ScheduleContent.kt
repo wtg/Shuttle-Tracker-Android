@@ -1,4 +1,4 @@
-package edu.rpi.shuttletracker.feature.map.components
+package edu.rpi.shuttletracker.feature.schedule.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -28,6 +28,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -54,9 +55,9 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
-import edu.rpi.shuttletracker.feature.map.utils.StopTimeInfo
-import edu.rpi.shuttletracker.feature.map.utils.consolidatedTimes
-import edu.rpi.shuttletracker.feature.map.utils.routesForDay
+import edu.rpi.shuttletracker.feature.schedule.utils.StopTimeInfo
+import edu.rpi.shuttletracker.feature.schedule.utils.consolidatedTimes
+import edu.rpi.shuttletracker.feature.schedule.utils.routesForDay
 import java.util.Calendar
 import kotlin.text.lowercase
 
@@ -71,12 +72,13 @@ fun ScheduleContent(
     routesByName: Map<String, Route>,
     selectedRoute: String?,
     onSelectedRouteChange: (String) -> Unit,
+    onRefresh: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        ScheduleHeader()
+        ScheduleHeader(onRefresh = onRefresh)
 
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
@@ -98,26 +100,38 @@ fun ScheduleContent(
 }
 
 @Composable
-private fun ScheduleHeader() {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = stringResource(R.string.schedule_title),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
+private fun ScheduleHeader(onRefresh: () -> Unit) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 6.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = stringResource(R.string.schedule_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
 
-        Text(
-            text = stringResource(R.string.schedule_subtitle),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
+            Text(
+                text = stringResource(R.string.schedule_subtitle),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+
+        IconButton(
+            onClick = onRefresh,
+            modifier = Modifier.align(Alignment.TopEnd),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_restart_alt),
+                contentDescription = stringResource(R.string.schedule_refresh),
+            )
+        }
     }
 }
 
