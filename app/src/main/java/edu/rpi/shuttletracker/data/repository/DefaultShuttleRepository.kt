@@ -49,6 +49,4 @@ class DefaultShuttleRepository
         override suspend fun getAnnouncements() = remoteDataSource.getAnnouncements()
 
         override suspend fun getSchedule() = remoteDataSource.getSchedule()
-
-        override suspend fun sendRegistrationToken(token: String) = remoteDataSource.sendRegistrationToken(token)
     }

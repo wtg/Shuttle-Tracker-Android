@@ -48,6 +48,21 @@
             </intent-filter>
         </service>
 
+        <!--
+        Used by Firebase to render notification+data messages it displays automatically while the
+        app is backgrounded or not running, since FirebaseService.onMessageReceived never runs in
+        that case.
+        -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_default" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_color" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="push_channel" />
+
     </application>
 
 </manifest>

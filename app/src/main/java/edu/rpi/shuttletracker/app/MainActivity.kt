@@ -1,5 +1,7 @@
 package edu.rpi.shuttletracker.app
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.app.navigation.AppNavigation
+import edu.rpi.shuttletracker.background.service.FirebaseService
+import edu.rpi.shuttletracker.background.service.NotificationTapDestination
+import edu.rpi.shuttletracker.background.service.resolveNotificationTapDestination
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
@@ -29,6 +34,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        handleNotificationTap(intent)
 
         setContent {
             val setupCompletedFlow =
@@ -65,6 +71,29 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationTap(intent)
+    }
+
+    /**
+     * The map is already the app's home screen, so a tapped push notification needs no
+     * navigation of its own - the only special case is an optional safe `url` to open instead.
+     * Covers both the foreground PendingIntent we build in [FirebaseService] and the intent FCM
+     * builds automatically for background/terminated taps, since both use the same extra name.
+     * */
+    private fun handleNotificationTap(intent: Intent?) {
+        val url = intent?.getStringExtra(FirebaseService.EXTRA_URL) ?: return
+        intent.removeExtra(FirebaseService.EXTRA_URL)
+
+        when (val destination = resolveNotificationTapDestination(url)) {
+            is NotificationTapDestination.ExternalUrl ->
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(destination.url)))
+            NotificationTapDestination.Map -> Unit
         }
     }
 }

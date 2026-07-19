@@ -49,9 +49,6 @@ class RetrofitShuttleRemoteDataSource
 
         override suspend fun getSchedule() = execute(shuttleApi::getSchedule) { it.toModel() }
 
-        override suspend fun sendRegistrationToken(token: String) =
-            execute({ shuttleApi.sendRegistrationToken(token) }) { Unit }
-
         private suspend inline fun <T, R> execute(
             request: suspend () -> Response<T>,
             transform: (T) -> R,

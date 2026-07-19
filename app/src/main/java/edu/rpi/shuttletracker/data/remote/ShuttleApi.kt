@@ -7,9 +7,7 @@ import edu.rpi.shuttletracker.data.remote.dto.VehicleLocationDto
 import edu.rpi.shuttletracker.data.remote.dto.VehicleStopEtaDto
 import edu.rpi.shuttletracker.data.remote.dto.VehicleVelocitiesDto
 import retrofit2.Response
-import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.POST
 
 interface ShuttleApi {
     @GET("locations")
@@ -29,9 +27,4 @@ interface ShuttleApi {
 
     @GET("schedule")
     suspend fun getSchedule(): Response<ScheduleDto>
-
-    @POST("notifications/fcmdevices")
-    suspend fun sendRegistrationToken(
-        @Body token: String,
-    ): Response<Unit>
 }

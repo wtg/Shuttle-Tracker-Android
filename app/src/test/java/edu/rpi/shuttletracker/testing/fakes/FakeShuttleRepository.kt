@@ -28,7 +28,6 @@ class FakeShuttleRepository : ShuttleRepository {
     var routesCalls = 0
     var announcementsCalls = 0
     var scheduleCalls = 0
-    val registrationTokens = mutableListOf<String>()
 
     override fun observeVehicleLocations(pollMs: Long): Flow<NetworkResult<Map<String, VehicleLocation>>> {
         observeLocationsCalls++
@@ -63,10 +62,5 @@ class FakeShuttleRepository : ShuttleRepository {
     override suspend fun getSchedule(): NetworkResult<Schedule> {
         scheduleCalls++
         return checkNotNull(scheduleResult) { "Set scheduleResult before creating MapsViewModel" }
-    }
-
-    override suspend fun sendRegistrationToken(token: String): NetworkResult<Unit> {
-        registrationTokens += token
-        return NetworkResult.Success(Unit)
     }
 }

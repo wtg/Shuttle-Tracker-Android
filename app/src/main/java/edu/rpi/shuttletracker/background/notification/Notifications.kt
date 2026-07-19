@@ -15,9 +15,8 @@ object Notifications {
     const val CHANNEL_TRACKING_BUS = "tracking_bus_channel"
     const val ID_TRACKING_BUS = 1
 
-    private const val GROUP_ANNOUNCEMENTS = "group_announcements"
-    const val CHANNEL_ANNOUNCEMENT = "announcement_channel"
-    const val ID_ANNOUNCEMENT = 11
+    private const val GROUP_PUSH = "group_push"
+    const val CHANNEL_PUSH = "push_channel"
 
     private const val GROUP_DEPARTURES = "group_departures"
     const val CHANNEL_FIRING_DEPARTURES = "departure_alarm_channel"
@@ -26,6 +25,7 @@ object Notifications {
     private val deprecatedChannels =
         listOf(
             "ShuttleTrackerRPI",
+            "announcement_channel",
         )
 
     fun createChannels(context: Context) {
@@ -42,8 +42,8 @@ object Notifications {
                     context.getString(R.string.bus_tracker),
                 ),
                 buildNotificationChannelGroup(
-                    GROUP_ANNOUNCEMENTS,
-                    "Announcements",
+                    GROUP_PUSH,
+                    context.getString(R.string.push_notifications),
                 ),
                 buildNotificationChannelGroup(
                     GROUP_DEPARTURES,
@@ -62,10 +62,10 @@ object Notifications {
                     context.getString(R.string.tracker),
                 ),
                 buildNotificationChannel(
-                    GROUP_ANNOUNCEMENTS,
-                    CHANNEL_ANNOUNCEMENT,
+                    GROUP_PUSH,
+                    CHANNEL_PUSH,
                     IMPORTANCE_DEFAULT,
-                    "Announcement",
+                    context.getString(R.string.push_notifications),
                 ),
                 buildNotificationChannel(
                     GROUP_DEPARTURES,

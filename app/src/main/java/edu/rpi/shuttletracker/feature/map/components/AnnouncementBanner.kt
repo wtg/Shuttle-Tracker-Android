@@ -41,10 +41,10 @@ import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.AnnouncementWarningColors
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
+import edu.rpi.shuttletracker.core.util.isSafeHttpUrl
 import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.AnnouncementType
 import edu.rpi.shuttletracker.feature.map.utils.MessageSegment
-import edu.rpi.shuttletracker.feature.map.utils.isSafeHttpUrl
 import edu.rpi.shuttletracker.feature.map.utils.parseMessageSegments
 
 private const val MAX_COLLAPSED_BANNERS = 1

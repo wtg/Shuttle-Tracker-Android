@@ -67,20 +67,11 @@ class DefaultShuttleRepositoryTest {
             assertThat(remote.scheduleCalls).isEqualTo(1)
         }
 
-    @Test
-    fun `registration token is forwarded unchanged`() =
-        runTest {
-            repository.sendRegistrationToken("legacy-token")
-
-            assertThat(remote.tokens).containsExactly("legacy-token")
-        }
-
     private class FakeRemoteShuttleDataSource : ShuttleRemoteDataSource {
         var locationCalls = 0
         var routesCalls = 0
         var announcementCalls = 0
         var scheduleCalls = 0
-        val tokens = mutableListOf<String>()
 
         override suspend fun getVehicleLocations(): NetworkResult<Map<String, VehicleLocation>> {
             locationCalls++
@@ -106,11 +97,6 @@ class DefaultShuttleRepositoryTest {
         override suspend fun getSchedule(): NetworkResult<Schedule> {
             scheduleCalls++
             return NetworkResult.Success(testSchedule())
-        }
-
-        override suspend fun sendRegistrationToken(token: String): NetworkResult<Unit> {
-            tokens += token
-            return NetworkResult.Success(Unit)
         }
     }
 }

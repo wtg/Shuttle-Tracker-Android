@@ -25,6 +25,4 @@ interface ShuttleRemoteDataSource {
     suspend fun getAnnouncements(): NetworkResult<List<Announcement>>
 
     suspend fun getSchedule(): NetworkResult<Schedule>
-
-    suspend fun sendRegistrationToken(token: String): NetworkResult<Unit>
 }

@@ -3,7 +3,7 @@ package edu.rpi.shuttletracker.feature.map.utils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
-class MessageLinksTest {
+class MessageSegmentTest {
     @Test
     fun `plain message with no markdown is a single text segment`() {
         val segments = parseMessageSegments("Shuttles are running on time.")
@@ -52,25 +52,5 @@ class MessageLinksTest {
         val segments = parseMessageSegments("[](https://example.com)")
 
         assertThat(segments).containsExactly(MessageSegment.Link("https://example.com", "https://example.com"))
-    }
-
-    @Test
-    fun `http and https urls are safe`() {
-        assertThat(isSafeHttpUrl("https://example.com")).isTrue()
-        assertThat(isSafeHttpUrl("http://example.com/path?query=1")).isTrue()
-    }
-
-    @Test
-    fun `non-http schemes are rejected`() {
-        assertThat(isSafeHttpUrl("javascript:alert(1)")).isFalse()
-        assertThat(isSafeHttpUrl("ftp://example.com")).isFalse()
-        assertThat(isSafeHttpUrl("intent://evil")).isFalse()
-    }
-
-    @Test
-    fun `malformed urls are rejected without throwing`() {
-        assertThat(isSafeHttpUrl("not a url at all")).isFalse()
-        assertThat(isSafeHttpUrl("https://")).isFalse()
-        assertThat(isSafeHttpUrl("")).isFalse()
     }
 }
