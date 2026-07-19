@@ -65,6 +65,15 @@
     <string name="schedule_none_running">No shuttles running</string>
     <string name="route_label_format">%1$s Route</string>
 
+    <!-- ETAs tab -->
+    <string name="etas_subtitle">Tap a stop to see every shuttle\'s live arrival time.</string>
+    <string name="etas_route_all">All Routes</string>
+    <string name="etas_no_stops">No stops found</string>
+    <string name="etas_no_live_etas">No live ETAs</string>
+    <string name="eta_now">now</string>
+    <string name="eta_minutes_format">%1$dm</string>
+    <string name="etas_sheet_note">ETAs update automatically and may be off by a few minutes.</string>
+
     <!-- Schedule tab -->
     <string name="schedule_title">Schedule</string>
     <string name="schedule_subtitle">Times are based on departures from the Student Union.

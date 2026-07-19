@@ -1,8 +1,6 @@
 package edu.rpi.shuttletracker.feature.map
 
-import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasProgressBarRangeInfo
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -10,9 +8,11 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
+import edu.rpi.shuttletracker.feature.etas.EtasViewModel
 import edu.rpi.shuttletracker.feature.schedule.ScheduleViewModel
 import edu.rpi.shuttletracker.testing.fakes.FakeShuttleRepository
 import edu.rpi.shuttletracker.testing.fakes.FakeUserPreferences
+import edu.rpi.shuttletracker.testing.fixtures.testRoute
 import edu.rpi.shuttletracker.testing.fixtures.testSchedule
 import org.junit.Rule
 import org.junit.Test
@@ -58,7 +58,7 @@ class MapsScreenNavigationTest {
 
         composeRule.onNodeWithText("ETAs").performClick()
 
-        composeRule.onNode(hasProgressBarRangeInfo(ProgressBarRangeInfo.Indeterminate)).assertIsDisplayed()
+        composeRule.onNodeWithText("Student Union").assertIsDisplayed()
     }
 
     @Test
@@ -74,16 +74,22 @@ class MapsScreenNavigationTest {
     private fun setContent() {
         val repository =
             FakeShuttleRepository().apply {
-                routesResult = NetworkResult.Success(emptyMap())
+                routesResult = NetworkResult.Success(mapOf("NORTH" to testRoute()))
                 scheduleResult = NetworkResult.Success(testSchedule())
             }
         val preferences = FakeUserPreferences()
         val viewModel = MapsViewModel(repository, preferences)
         val scheduleViewModel = ScheduleViewModel(repository)
+        val etasViewModel = EtasViewModel(repository)
 
         composeRule.setContent {
             ShuttleTrackerTheme(dynamicColor = false) {
-                MapsScreen(onOpenSettings = {}, viewModel = viewModel, scheduleViewModel = scheduleViewModel)
+                MapsScreen(
+                    onOpenSettings = {},
+                    viewModel = viewModel,
+                    scheduleViewModel = scheduleViewModel,
+                    etasViewModel = etasViewModel,
+                )
             }
         }
     }

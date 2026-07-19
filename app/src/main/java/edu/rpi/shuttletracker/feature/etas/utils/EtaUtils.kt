@@ -1,0 +1,78 @@
+package edu.rpi.shuttletracker.feature.etas.utils
+
+import edu.rpi.shuttletracker.data.models.Route
+import edu.rpi.shuttletracker.data.models.Stop
+import edu.rpi.shuttletracker.data.models.Vehicle
+import java.time.Duration
+import java.time.Instant
+import java.time.OffsetDateTime
+
+data class VehicleEta(
+    val vehicleId: String,
+    val vehicleName: String,
+    val routeName: String?,
+    val etaInstant: Instant,
+)
+
+data class StopWithEtas(
+    val stopKey: String,
+    val stop: Stop,
+    val routeNames: List<String>,
+    val etas: List<VehicleEta>,
+)
+
+/**
+ * Inverts each vehicle's [Vehicle.stopTimes] (stop key -> eta) into a per-stop view, one entry per
+ * stop across every route (or just [routeFilter] if given), each carrying its own sorted list of
+ * upcoming vehicle etas.
+ * */
+fun buildStopsWithEtas(
+    routes: Map<String, Route>,
+    vehicles: List<Vehicle>,
+    routeFilter: String? = null,
+): List<StopWithEtas> {
+    val stopsByKey = linkedMapOf<String, Pair<Stop, MutableSet<String>>>()
+
+    for ((routeName, route) in routes) {
+        if (routeFilter != null && routeName != routeFilter) continue
+
+        for (stopKey in route.stops) {
+            val stop = route.stopDetails[stopKey] ?: continue
+            val entry = stopsByKey.getOrPut(stopKey) { stop to mutableSetOf() }
+            entry.second += routeName
+        }
+    }
+
+    return stopsByKey
+        .map { (stopKey, stopAndRoutes) ->
+            val (stop, routeNames) = stopAndRoutes
+
+            val etas =
+                vehicles
+                    .mapNotNull { vehicle ->
+                        val rawEta = vehicle.stopTimes[stopKey] ?: return@mapNotNull null
+                        val etaInstant = rawEta.toEtaInstantOrNull() ?: return@mapNotNull null
+
+                        VehicleEta(
+                            vehicleId = vehicle.id,
+                            vehicleName = vehicle.name,
+                            routeName = vehicle.routeName,
+                            etaInstant = etaInstant,
+                        )
+                    }.sortedBy { it.etaInstant }
+
+            StopWithEtas(
+                stopKey = stopKey,
+                stop = stop,
+                routeNames = routeNames.sorted(),
+                etas = etas,
+            )
+        }.sortedBy { it.stop.name }
+}
+
+fun String.toEtaInstantOrNull(): Instant? = runCatching { OffsetDateTime.parse(trim()).toInstant() }.getOrNull()
+
+fun etaMinutesFromNow(
+    etaInstant: Instant,
+    now: Instant = Instant.now(),
+): Long = Duration.between(now, etaInstant).toMinutes()

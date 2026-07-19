@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
 import edu.rpi.shuttletracker.feature.etas.EtasScreen
+import edu.rpi.shuttletracker.feature.etas.EtasViewModel
 import edu.rpi.shuttletracker.feature.map.components.AnnouncementSheet
 import edu.rpi.shuttletracker.feature.schedule.ScheduleScreen
 import edu.rpi.shuttletracker.feature.schedule.ScheduleViewModel
@@ -51,6 +52,7 @@ fun MapsScreen(
     onOpenSettings: () -> Unit,
     viewModel: MapsViewModel = hiltViewModel(),
     scheduleViewModel: ScheduleViewModel = hiltViewModel(),
+    etasViewModel: EtasViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.mapsUiState.collectAsStateWithLifecycle()
     var selectedTab by rememberSaveable { mutableStateOf(MainTab.Map) }
@@ -98,7 +100,7 @@ fun MapsScreen(
                         .fillMaxSize()
                         .padding(contentPadding),
                 ) {
-                    EtasScreen()
+                    EtasScreen(viewModel = etasViewModel)
                 }
 
             MainTab.Schedule ->
