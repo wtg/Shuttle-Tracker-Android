@@ -204,6 +204,7 @@ internal fun ShuttleMap(
         }
 
         // Schedule is reached via the bottom nav bar now, so Recenter is the map's only FAB.
+        val (fabContainerColor, fabContentColor) = mapButtonColors()
         FloatingActionButton(
             onClick = recenter@{
                 if (!hasLocationPermission) return@recenter
@@ -229,8 +230,8 @@ internal fun ShuttleMap(
                     .align(Alignment.BottomEnd)
                     .padding(contentPadding)
                     .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            containerColor = fabContainerColor,
+            contentColor = fabContentColor,
         ) {
             Icon(
                 painter =

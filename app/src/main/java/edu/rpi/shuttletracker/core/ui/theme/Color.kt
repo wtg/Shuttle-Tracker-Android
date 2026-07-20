@@ -75,11 +75,23 @@ object VehicleColors {
 
 /**
  * Material 3 has no built-in "warning" color role, so announcement banners carry their own
- * light/dark container colors distinct from the error and info roles they sit alongside.
+ * light/dark container colors distinct from the error and info roles they sit alongside. The dark
+ * variant is muted rather than a straight dark version of the light one - a vivid amber reads as
+ * too alarming against the app's near-black dark background.
  * */
 object AnnouncementWarningColors {
     val LightContainer = Color(0xFFFFDEA6)
     val LightOnContainer = Color(0xFF261A00)
-    val DarkContainer = Color(0xFF5C4200)
-    val DarkOnContainer = Color(0xFFFFDEA6)
+    val DarkContainer = Color(0xFF4A3D24)
+    val DarkOnContainer = Color(0xFFEAD5A8)
+}
+
+/**
+ * A softer dark-mode red for error announcements than the shared `errorContainer` role - that one
+ * is deliberately vivid to signal danger, which reads as too harsh for a routine service banner.
+ * Light mode still uses `errorContainer` directly.
+ * */
+object AnnouncementErrorColors {
+    val DarkContainer = Color(0xFF4A2C2C)
+    val DarkOnContainer = Color(0xFFF2D6D3)
 }

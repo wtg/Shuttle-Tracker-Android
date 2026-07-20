@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -155,18 +156,29 @@ internal fun MapActionButton(
     contentDescription: String,
     onClick: () -> Unit,
 ) {
+    val (containerColor, contentColor) = mapButtonColors()
+
     Button(
         onClick = onClick,
         modifier = Modifier.size(50.dp),
         shape = CircleShape,
         contentPadding = PaddingValues(0.dp),
-        colors =
-            ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onBackground,
-            ),
+        colors = ButtonDefaults.buttonColors(containerColor = containerColor, contentColor = contentColor),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
     ) {
         Icon(painterResource(icon), contentDescription)
     }
 }
+
+/**
+ * Shared colors for every button that floats over the map (the recenter FAB, [MapActionButton]).
+ * In dark mode this matches the bottom nav bar's lighter tone instead of the near-black
+ * background, so the buttons don't disappear against the map.
+ * */
+@Composable
+internal fun mapButtonColors(): Pair<Color, Color> =
+    if (MaterialTheme.colorScheme.background.luminance() > 0.5f) {
+        MaterialTheme.colorScheme.background to MaterialTheme.colorScheme.onBackground
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
+    }

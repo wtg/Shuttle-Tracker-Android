@@ -34,6 +34,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.core.ui.theme.AnnouncementErrorColors
 import edu.rpi.shuttletracker.core.ui.theme.AnnouncementWarningColors
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.core.util.isSafeHttpUrl
@@ -266,11 +267,21 @@ private fun AnnouncementType.labelRes(): Int =
 @Composable
 private fun AnnouncementType.colors(): Pair<Color, Color> =
     when (this) {
-        AnnouncementType.Error -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        AnnouncementType.Error -> errorColors()
         AnnouncementType.Warning -> warningColors()
         AnnouncementType.Info ->
             MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
     }
+
+@Composable
+private fun errorColors(): Pair<Color, Color> {
+    val isDark = !MaterialTheme.colorScheme.background.isLight()
+    return if (isDark) {
+        AnnouncementErrorColors.DarkContainer to AnnouncementErrorColors.DarkOnContainer
+    } else {
+        MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+    }
+}
 
 @Composable
 private fun warningColors(): Pair<Color, Color> {

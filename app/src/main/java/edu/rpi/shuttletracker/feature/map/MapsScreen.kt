@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -75,7 +78,17 @@ fun MapsScreen(
             )
         },
         bottomBar = {
-            NavigationBar {
+            // Dark mode uses the same lighter tone as the map buttons (see mapButtonColors) so
+            // they read as one consistent piece of chrome instead of two different dark shades.
+            val isDark = MaterialTheme.colorScheme.background.luminance() <= 0.5f
+            NavigationBar(
+                containerColor =
+                    if (isDark) {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    } else {
+                        NavigationBarDefaults.containerColor
+                    },
+            ) {
                 MainTab.entries.forEach { tab ->
                     NavigationBarItem(
                         selected = selectedTab == tab,
