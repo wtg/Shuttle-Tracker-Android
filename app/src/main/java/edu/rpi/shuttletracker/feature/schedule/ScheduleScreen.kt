@@ -44,7 +44,6 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                 routesByName = uiState.routes,
                 selectedRoute = selectedRoute,
                 onSelectedRouteChange = { selectedRoute = it },
-                onRefresh = viewModel::refresh,
             )
         }
     }

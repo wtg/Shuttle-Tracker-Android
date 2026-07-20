@@ -35,7 +35,7 @@ class MapsViewModelTest {
     fun setUp() {
         repository =
             FakeShuttleRepository().apply {
-                routesResult = NetworkResult.Success(mapOf("NORTH" to testRoute()))
+                routesResult = NetworkResult.Success(mapOf("NORTH" to testRoute(), "WEST" to testRoute()))
             }
         preferences = FakeUserPreferences()
     }

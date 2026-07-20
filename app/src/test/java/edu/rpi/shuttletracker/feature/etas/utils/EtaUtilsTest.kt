@@ -82,6 +82,27 @@ class EtaUtilsTest {
     }
 
     @Test
+    fun `routes other than north and west are ignored even if present in the data`() {
+        val academyShuttle =
+            Route(
+                color = "#00FF00",
+                stops = listOf("academy"),
+                polylineStops = emptyList(),
+                coordinates = emptyList(),
+                stopDetails = mapOf("academy" to academy),
+            )
+
+        val stops =
+            buildStopsWithEtas(
+                routes = mapOf("NORTH" to northRoute, "ACADEMY_SHUTTLE" to academyShuttle),
+                vehicles = emptyList(),
+            )
+
+        assertThat(stops.map { it.stopKey }).containsExactly("academy", "union")
+        assertThat(stops.single { it.stopKey == "academy" }.routeNames).containsExactly("NORTH")
+    }
+
+    @Test
     fun `etas for a stop are inverted from each vehicle's stop times and sorted soonest first`() {
         val bus1 = vehicle("bus-1", "North Bus", "NORTH", mapOf("union" to "2026-07-19T12:10:00Z"))
         val bus2 = vehicle("bus-2", "West Bus", "WEST", mapOf("union" to "2026-07-19T12:05:00Z"))

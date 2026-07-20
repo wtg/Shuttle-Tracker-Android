@@ -22,9 +22,15 @@ data class StopWithEtas(
 )
 
 /**
+ * Real routes the ETAs tab shows. Hardcoded so extra or test route entries from the API never
+ * show up as stops or filter options here.
+ * */
+val ETA_VISIBLE_ROUTES = listOf("NORTH", "WEST")
+
+/**
  * Inverts each vehicle's [Vehicle.stopTimes] (stop key -> eta) into a per-stop view, one entry per
- * stop across every route (or just [routeFilter] if given), each carrying its own sorted list of
- * upcoming vehicle etas.
+ * stop across [ETA_VISIBLE_ROUTES] (or just [routeFilter] if given), each carrying its own sorted
+ * list of upcoming vehicle etas.
  * */
 fun buildStopsWithEtas(
     routes: Map<String, Route>,
@@ -34,6 +40,7 @@ fun buildStopsWithEtas(
     val stopsByKey = linkedMapOf<String, Pair<Stop, MutableSet<String>>>()
 
     for ((routeName, route) in routes) {
+        if (routeName !in ETA_VISIBLE_ROUTES) continue
         if (routeFilter != null && routeName != routeFilter) continue
 
         for (stopKey in route.stops) {

@@ -69,62 +69,54 @@ class FakeShuttleUtilsTest {
     }
 
     @Test
-    fun `a route with fewer than two points has no fake vehicles`() {
-        val tooShort =
-            loopRoute.copy(coordinates = listOf(listOf(listOf(0.0, 0.0))))
+    fun `a route with fewer than two points produces no fake vehicle for that route`() {
+        val tooShort = loopRoute.copy(coordinates = listOf(listOf(listOf(0.0, 0.0))))
 
-        assertThat(buildFakeVehicles("NORTH", tooShort, elapsedMs = 0L)).isEmpty()
+        val vehicles = buildFakeVehicles(mapOf("NORTH" to tooShort, "WEST" to loopRoute), elapsedMs = 0L)
+
+        assertThat(vehicles.map { it.routeName }).containsExactly("WEST")
     }
 
     @Test
-    fun `building fake vehicles produces exactly two vehicles offset around the loop`() {
+    fun `routes other than north and west are ignored`() {
+        val vehicles =
+            buildFakeVehicles(mapOf("NORTH" to loopRoute, "ACADEMY_SHUTTLE" to loopRoute), elapsedMs = 0L)
+
+        assertThat(vehicles.map { it.routeName }).containsExactly("NORTH")
+    }
+
+    @Test
+    fun `building fake vehicles produces one vehicle per configured route, each on its own route`() {
         val now = Instant.parse("2026-07-19T12:00:00Z")
 
-        val vehicles = buildFakeVehicles("NORTH", loopRoute, elapsedMs = 0L, now = now)
+        val vehicles = buildFakeVehicles(mapOf("NORTH" to loopRoute, "WEST" to loopRoute), elapsedMs = 0L, now = now)
 
         assertThat(vehicles).hasSize(2)
-        assertThat(vehicles.map { it.id }).containsExactly("fake-shuttle-1", "fake-shuttle-2")
-        assertThat(vehicles.all { it.routeName == "NORTH" }).isTrue()
+        assertThat(vehicles.map { it.id }).containsExactly("fake-shuttle-NORTH", "fake-shuttle-WEST")
+        assertThat(vehicles.map { it.routeName }).containsExactly("NORTH", "WEST")
 
-        val first = vehicles[0]
-        val second = vehicles[1]
-        assertThat(first.latitude).isWithin(1e-9).of(0.0)
-        assertThat(first.longitude).isWithin(1e-9).of(0.0)
-        assertThat(second.latitude).isWithin(1e-9).of(1.0)
-        assertThat(second.longitude).isWithin(1e-9).of(1.0)
+        vehicles.forEach { vehicle ->
+            assertThat(vehicle.latitude).isWithin(1e-9).of(0.0)
+            assertThat(vehicle.longitude).isWithin(1e-9).of(0.0)
+        }
     }
 
     @Test
     fun `fake vehicles keep moving as elapsed time advances`() {
-        val atStart = buildFakeVehicles("NORTH", loopRoute, elapsedMs = 0L).first()
-        val later = buildFakeVehicles("NORTH", loopRoute, elapsedMs = 15_000L).first()
+        val routes = mapOf("NORTH" to loopRoute)
+        val atStart = buildFakeVehicles(routes, elapsedMs = 0L).first()
+        val later = buildFakeVehicles(routes, elapsedMs = 15_000L).first()
 
         assertThat(later.latitude != atStart.latitude || later.longitude != atStart.longitude).isTrue()
     }
 
     @Test
     fun `fake vehicles complete a full loop and return to the start`() {
-        val atStart = buildFakeVehicles("NORTH", loopRoute, elapsedMs = 0L).first()
-        val afterFullLoop = buildFakeVehicles("NORTH", loopRoute, elapsedMs = 60_000L).first()
+        val routes = mapOf("NORTH" to loopRoute)
+        val atStart = buildFakeVehicles(routes, elapsedMs = 0L).first()
+        val afterFullLoop = buildFakeVehicles(routes, elapsedMs = 60_000L).first()
 
         assertThat(afterFullLoop.latitude).isWithin(1e-9).of(atStart.latitude)
         assertThat(afterFullLoop.longitude).isWithin(1e-9).of(atStart.longitude)
-    }
-
-    @Test
-    fun `pick fake shuttle route chooses the alphabetically first route with a loop`() {
-        val short = loopRoute.copy(coordinates = listOf(listOf(listOf(5.0, 5.0))))
-        val routes = mapOf("WEST" to loopRoute, "ACADEMY_SHUTTLE" to short, "NORTH" to loopRoute)
-
-        val picked = pickFakeShuttleRoute(routes)
-
-        assertThat(picked?.first).isEqualTo("NORTH")
-    }
-
-    @Test
-    fun `pick fake shuttle route returns null when no route has a usable loop`() {
-        val short = loopRoute.copy(coordinates = listOf(listOf(listOf(5.0, 5.0))))
-
-        assertThat(pickFakeShuttleRoute(mapOf("NORTH" to short))).isNull()
     }
 }

@@ -12,8 +12,14 @@ data class RoutePoint(
 )
 
 private const val FAKE_LOOP_DURATION_MS = 60_000L
-private const val FAKE_VEHICLE_COUNT = 2
 private const val FAKE_HEADING_LOOKAHEAD = 0.01
+
+/**
+ * Real routes to run fake shuttles on. Hardcoded rather than picked dynamically so each fake
+ * vehicle always follows a real, named route loop instead of whichever route happened to sort
+ * first.
+ * */
+private val FAKE_SHUTTLE_ROUTE_NAMES = listOf("NORTH", "WEST")
 
 /**
  * Flattens a route's raw coordinates into an ordered loop, deliberately avoiding the Android
@@ -56,28 +62,28 @@ fun interpolateAlongLoop(
 }
 
 /**
- * Builds [FAKE_VEHICLE_COUNT] vehicles continuously looping [route], evenly spaced around it, for
- * developer-mode testing. Entirely separate from live vehicle data - the caller is responsible for
- * keeping these out of [Vehicle] lists sourced from the API.
+ * Builds one vehicle per [FAKE_SHUTTLE_ROUTE_NAMES] route present in [routes], each continuously
+ * looping that route's own coordinates, for developer-mode testing. Entirely separate from live
+ * vehicle data - the caller is responsible for keeping these out of [Vehicle] lists sourced from
+ * the API.
  * */
 fun buildFakeVehicles(
-    routeName: String,
-    route: Route,
+    routes: Map<String, Route>,
     elapsedMs: Long,
     now: Instant = Instant.now(),
-): List<Vehicle> {
-    val points = route.toRoutePoints()
-    if (points.size < 2) return emptyList()
+): List<Vehicle> =
+    FAKE_SHUTTLE_ROUTE_NAMES.mapNotNull { routeName ->
+        val route = routes[routeName] ?: return@mapNotNull null
+        val points = route.toRoutePoints()
+        if (points.size < 2) return@mapNotNull null
 
-    return (0 until FAKE_VEHICLE_COUNT).map { index ->
-        val offset = index.toDouble() / FAKE_VEHICLE_COUNT
-        val progress = (elapsedMs.toDouble() / FAKE_LOOP_DURATION_MS) + offset
+        val progress = elapsedMs.toDouble() / FAKE_LOOP_DURATION_MS
         val position = interpolateAlongLoop(points, progress)
         val ahead = interpolateAlongLoop(points, progress + FAKE_HEADING_LOOKAHEAD)
 
         Vehicle(
-            id = "fake-shuttle-${index + 1}",
-            name = "Fake Shuttle ${index + 1}",
+            id = "fake-shuttle-$routeName",
+            name = "Fake $routeName Shuttle",
             latitude = position.latitude,
             longitude = position.longitude,
             speedMph = 12.0,
@@ -89,17 +95,6 @@ fun buildFakeVehicles(
             stopTimes = emptyMap(),
         )
     }
-}
-
-/**
- * Picks the first route (by name, for determinism) with enough coordinates to loop around.
- * */
-fun pickFakeShuttleRoute(routes: Map<String, Route>): Pair<String, Route>? =
-    routes
-        .toSortedMap()
-        .entries
-        .firstOrNull { it.value.toRoutePoints().size >= 2 }
-        ?.let { it.key to it.value }
 
 private fun RoutePoint.distanceTo(other: RoutePoint): Double {
     val dLat = other.latitude - latitude

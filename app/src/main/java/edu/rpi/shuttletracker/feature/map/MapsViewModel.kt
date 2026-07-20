@@ -19,7 +19,6 @@ import edu.rpi.shuttletracker.data.models.VehicleVelocities
 import edu.rpi.shuttletracker.data.models.displayable
 import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import edu.rpi.shuttletracker.feature.map.utils.buildFakeVehicles
-import edu.rpi.shuttletracker.feature.map.utils.pickFakeShuttleRoute
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -154,10 +153,7 @@ class MapsViewModel
                 viewModelScope.launch {
                     var elapsedMs = 0L
                     while (isActive) {
-                        val fakeVehicles =
-                            pickFakeShuttleRoute(mapsUiState.value.routes)?.let { (routeName, route) ->
-                                buildFakeVehicles(routeName, route, elapsedMs)
-                            } ?: emptyList()
+                        val fakeVehicles = buildFakeVehicles(mapsUiState.value.routes, elapsedMs)
 
                         _mapsUiState.update { it.copy(fakeVehicles = fakeVehicles) }
 

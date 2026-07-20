@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Vehicle
+import edu.rpi.shuttletracker.feature.etas.utils.ETA_VISIBLE_ROUTES
 import edu.rpi.shuttletracker.feature.etas.utils.StopWithEtas
 import edu.rpi.shuttletracker.feature.etas.utils.buildStopsWithEtas
 import edu.rpi.shuttletracker.feature.etas.utils.etaMinutesFromNow
@@ -69,7 +70,7 @@ fun StopEtaList(
         }
 
         RouteFilterRow(
-            routeNames = routes.keys.sorted(),
+            routeNames = routes.keys.filter { it in ETA_VISIBLE_ROUTES }.sorted(),
             selectedRoute = selectedRouteFilter,
             onSelect = onRouteFilterChange,
         )
