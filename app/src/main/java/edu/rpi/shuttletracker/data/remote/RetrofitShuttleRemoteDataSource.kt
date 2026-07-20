@@ -13,6 +13,11 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
+/**
+ * The real [ShuttleRemoteDataSource], calling [ShuttleApi] over the network. Every function funnels
+ * through [execute], which converts a Retrofit [Response] (and any thrown exception, including one
+ * from a `toModel()` mapper) into a [NetworkResult] - so nothing here ever throws out to a caller.
+ * */
 class RetrofitShuttleRemoteDataSource
     @Inject
     constructor(

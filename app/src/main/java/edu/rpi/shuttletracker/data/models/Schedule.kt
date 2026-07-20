@@ -2,6 +2,12 @@ package edu.rpi.shuttletracker.data.models
 
 import java.util.Calendar
 
+/**
+ * The weekly shuttle schedule. Each day of the week names a schedule *type* ("weekday",
+ * "saturday", or "sunday" - see [scheduleTypeFor]), and each type maps to its own set of
+ * departures ([weekday]/[saturdaySchedule]/[sundaySchedule]); [scheduleMapFor] resolves a day
+ * straight to its departures in one call.
+ * */
 data class Schedule(
     val monday: String,
     val tuesday: String,
@@ -36,6 +42,7 @@ data class Schedule(
         }
 }
 
+/** Wraps [java.util.Calendar]'s day constants so the rest of the app never has to touch them directly. */
 enum class DayOfWeek(
     val displayName: String,
     val calendarConst: Int,

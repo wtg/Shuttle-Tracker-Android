@@ -12,6 +12,11 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.network.NetworkError
 
 /**
+ * Drop this in a `Scaffold`'s `snackbarHost` slot alongside a ViewModel's error state fields.
+ * Shows a snackbar with a Retry action for whichever error is non-null (at most one is shown at a
+ * time), and calls back so the ViewModel can clear or retry. See `MapsScreen`/`ScheduleScreen` for
+ * how features wire this up.
+ *
  * @param networkError: a network error, null if none
  * @param serverError: a server error, null if none
  * @param unknownError: an unknown error, null if none

@@ -23,6 +23,11 @@ import javax.inject.Singleton
 
 private const val USER_PREFERENCES = "user_preferences"
 
+/**
+ * Provides the single Jetpack DataStore file the app's settings are saved in, and binds
+ * [UserPreferences] to its real [DataStoreUserPreferences] implementation. Migrates from the old
+ * SharedPreferences file automatically the first time this runs.
+ * */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class PreferencesModule {

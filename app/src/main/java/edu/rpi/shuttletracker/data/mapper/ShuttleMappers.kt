@@ -18,6 +18,11 @@ import edu.rpi.shuttletracker.data.remote.dto.VehicleStopEtaDto
 import edu.rpi.shuttletracker.data.remote.dto.VehicleVelocitiesDto
 import java.time.OffsetDateTime
 
+// One `toModel()` extension per DTO, converting the raw network shape (data/remote/dto/) into the
+// app's own model (data/models/). Some also validate the data (e.g. lat/lng ranges) and throw if
+// the API sent something malformed, so a bad response fails fast instead of silently corrupting
+// the UI - callers see this surface as a NetworkError.Unknown via ShuttleRemoteDataSource.
+
 fun VehicleLocationDto.toModel(): VehicleLocation {
     require(latitude.isFinite() && latitude in -90.0..90.0) { "Invalid vehicle latitude" }
     require(longitude.isFinite() && longitude in -180.0..180.0) { "Invalid vehicle longitude" }

@@ -26,6 +26,12 @@ import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+/**
+ * The app's one and only [android.app.Activity]. Every screen you see is Compose content set here
+ * via [setContent] and hosted by [AppNavigation] - there is no second Activity to navigate to.
+ * Also decides whether to show setup or the map first, based on [UserPreferences], and turns a
+ * tapped push notification into either "just open the app" or an external URL.
+ * */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject

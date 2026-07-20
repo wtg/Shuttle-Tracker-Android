@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.feature.map.utils
 
+/** One piece of an announcement message, produced by [parseMessageSegments]: plain text or a link. */
 sealed interface MessageSegment {
     data class PlainText(
         val text: String,

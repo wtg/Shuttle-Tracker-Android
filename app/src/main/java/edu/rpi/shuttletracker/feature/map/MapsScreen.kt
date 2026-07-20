@@ -46,6 +46,11 @@ private enum class MainTab(
     Schedule(R.string.schedule_title, R.drawable.ic_schedule),
 }
 
+/**
+ * The app's home screen: a bottom nav bar switching between Map ([MapTab]), [EtasScreen], and
+ * [ScheduleScreen]. This is the entry point [edu.rpi.shuttletracker.app.navigation.AppNavigation]
+ * routes to, and each tab gets its own ViewModel so switching tabs never loses that tab's state.
+ * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapsScreen(

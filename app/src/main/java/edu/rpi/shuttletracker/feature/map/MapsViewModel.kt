@@ -34,9 +34,14 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
 
+/**
+ * Backs [MapsScreen]'s Map tab: loads [Route]s once, polls vehicle locations/etas/velocities into
+ * [MapsUiState.vehicles] while [startVehiclePolling] is active, polls announcements separately
+ * (its own interval, so it never competes with the 5-second vehicle polling), and mirrors the
+ * user's map/theme/dev-mode preferences into UI state.
+ * */
 @HiltViewModel
 class MapsViewModel
-// represents the ui state of the view
     @Inject
     constructor(
         private val shuttleRepository: ShuttleRepository,
@@ -142,9 +147,10 @@ class MapsViewModel
         }
 
         /**
-         * Loops two vehicles around whichever route has enough coordinates to form a loop,
-         * publishing them to [MapsUiState.fakeVehicles] so they never mix with real vehicle data
-         * from [MapsUiState.vehicles].
+         * Ticks once a second, building fresh fake-shuttle positions from [buildFakeVehicles] and
+         * publishing them to [MapsUiState.fakeVehicles] - a separate field from
+         * [MapsUiState.vehicles] so fake and real vehicles never mix. Only started while developer
+         * options and the "fake shuttles" preference are both on (see [loadPreferences]).
          * */
         private fun startFakeVehicles() {
             if (fakeVehiclesJob?.isActive == true) return
@@ -259,9 +265,7 @@ class MapsViewModel
             updateMapType(next)
         }
 
-        /**
-         * Reads the network response and maps it to correct place
-         * */
+        /** On [NetworkResult.Success] calls [success]; on [NetworkResult.Failure] puts the error into UI state. */
         private fun <T> readApiResponse(
             response: NetworkResult<T>,
             success: (body: T) -> Unit,
@@ -284,6 +288,7 @@ class MapsViewModel
 private const val ANNOUNCEMENT_POLL_MS = 5 * 60 * 1000L
 private const val FAKE_VEHICLE_TICK_MS = 1_000L
 
+/** Everything the Map tab needs to render. See [MapsViewModel] for how each field gets filled in. */
 @Immutable
 data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),

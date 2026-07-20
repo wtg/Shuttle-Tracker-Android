@@ -6,6 +6,7 @@ import java.time.Instant
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
+/** A plain lat/lng pair, used instead of Android's `LatLng` so this file is unit-testable on the JVM. */
 data class RoutePoint(
     val latitude: Double,
     val longitude: Double,

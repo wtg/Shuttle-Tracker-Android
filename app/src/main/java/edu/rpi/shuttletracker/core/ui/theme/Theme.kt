@@ -78,6 +78,10 @@ private val DarkColors =
         scrim = md_theme_dark_scrim,
     )
 
+/**
+ * Picks the [ColorScheme] to use: Android 12+'s wallpaper-based "dynamic color" if enabled and
+ * available, otherwise the app's own [LightColors]/[DarkColors] palette.
+ * */
 fun shuttleTrackerColorScheme(
     context: Context,
     darkTheme: Boolean,
@@ -92,6 +96,11 @@ fun shuttleTrackerColorScheme(
         else -> LightColors
     }
 
+/**
+ * Wraps [content] in the app's [MaterialTheme]. This should sit at the very root of the Compose
+ * tree (see [edu.rpi.shuttletracker.app.MainActivity]) - everything else just reads
+ * `MaterialTheme.colorScheme`/`MaterialTheme.typography` and gets these values automatically.
+ * */
 @Composable
 fun ShuttleTrackerTheme(
     themeMode: ThemeMode = ThemeMode.System,

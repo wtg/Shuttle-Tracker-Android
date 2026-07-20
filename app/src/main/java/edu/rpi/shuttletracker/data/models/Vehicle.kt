@@ -11,6 +11,12 @@ import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.String
 
+/**
+ * A shuttle, assembled by [VehicleMerger] from three separate API endpoints (see the `// from`
+ * comments on each group of fields below) since the backend doesn't return one combined object.
+ * [stopTimes] maps a stop key to that vehicle's live ETA there (an ISO timestamp string), used to
+ * build the ETAs tab (`feature/etas/utils/EtaUtils.kt`).
+ * */
 data class Vehicle(
     val id: String,
     val name: String,
@@ -64,6 +70,7 @@ data class Vehicle(
     fun latLng() = LatLng(latitude, longitude)
 }
 
+/** The `/locations` endpoint's data, one per vehicle, before [VehicleMerger] combines it into a [Vehicle]. */
 data class VehicleLocation(
     val name: String,
     val latitude: Double,
@@ -73,17 +80,25 @@ data class VehicleLocation(
     val headingDegrees: Int?,
 )
 
+/** The `/etas` endpoint's data, one per vehicle: its live ETA at each stop it's approaching. */
 data class VehicleStopEta(
     val stopTimes: Map<String, String>,
     val timestamp: String,
 )
 
+/** The `/velocities` endpoint's data, one per vehicle: which route it's on and its stop status. */
 data class VehicleVelocities(
     val routeName: String,
     val isAtStop: Boolean,
     val currentStop: String?,
 )
 
+/**
+ * Combines the three per-endpoint vehicle types into a full [Vehicle] list, keyed by vehicle ID.
+ * [velocities] and [etas] are optional per vehicle (a vehicle with only a location still shows up,
+ * just without a route/ETA yet); [locations] is required since a vehicle you can't place makes no
+ * sense to show at all.
+ * */
 object VehicleMerger {
     fun merge(
         locations: Map<String, VehicleLocation>,

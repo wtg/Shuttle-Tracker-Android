@@ -17,6 +17,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
 /**
+ * One row in a settings list: an optional icon, a title/description, and either a click target or
+ * a trailing action (switch, etc). The one shared building block behind every settings screen.
+ *
  * @param icon: Icon to show with the setting
  * @param title: Title of the setting
  * @param description: Any subtitle to show with the setting

@@ -15,6 +15,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 
+// DTOs for the announcements, schedule, and generic error-body shapes returned by the API.
+
 @Serializable
 data class AnnouncementDto(
     val id: String,
@@ -75,6 +77,7 @@ object AnnouncementsResponseDtoSerializer : KSerializer<AnnouncementsResponseDto
     }
 }
 
+/** Each day maps to `[[departureTime, routeName], ...]` pairs - see `feature/schedule/utils/`. */
 @Serializable
 data class ScheduleDto(
     @SerialName("MONDAY") val monday: String,
@@ -89,6 +92,7 @@ data class ScheduleDto(
     @SerialName("sunday") val sundaySchedule: Map<String, List<List<String>>>,
 )
 
+/** The body of a non-2xx API response, when the backend sends one. */
 @Serializable
 data class ErrorResponse(
     val error: Boolean = false,

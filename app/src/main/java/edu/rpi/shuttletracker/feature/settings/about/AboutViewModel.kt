@@ -7,6 +7,7 @@ import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/** Backs [AboutScreen]. Just the one action - everything else on that screen is static/links. */
 @HiltViewModel
 class AboutViewModel
     @Inject

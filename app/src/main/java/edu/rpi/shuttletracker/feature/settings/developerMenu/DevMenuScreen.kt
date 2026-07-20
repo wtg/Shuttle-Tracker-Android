@@ -26,6 +26,13 @@ import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 import kotlinx.coroutines.launch
 
+/**
+ * The developer options screen, reachable from Settings only after being unlocked via
+ * [edu.rpi.shuttletracker.feature.settings.about.AboutScreen]. Turning the top switch off here
+ * re-locks dev options and navigates back. To add a new dev toggle: add a preference (see
+ * [edu.rpi.shuttletracker.data.local.preferences.UserPreferences]), expose it from
+ * [DevMenuViewModel], and add a [SettingsItem] + `Switch` for it below.
+ * */
 @Composable
 fun DevMenuScreen(
     onBack: () -> Unit,

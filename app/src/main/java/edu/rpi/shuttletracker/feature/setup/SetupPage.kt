@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.feature.setup
 import androidx.annotation.StringRes
 import edu.rpi.shuttletracker.R
 
+/** One step of the first-run setup flow, in order: [About] -> [PrivacyPolicy] -> [Permissions]. */
 enum class SetupPage(
     @param:StringRes val titleRes: Int,
     @param:StringRes val nextButtonRes: Int,

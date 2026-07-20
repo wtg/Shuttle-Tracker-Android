@@ -8,7 +8,10 @@ import androidx.core.app.NotificationManagerCompat.IMPORTANCE_DEFAULT
 import edu.rpi.shuttletracker.R
 
 /**
- * Based on the notification generator for Tachiyomi
+ * Creates the notification channel(s) the app posts to, and cleans up channels from
+ * removed/never-shipped features so they don't linger in the user's system settings. Called once
+ * from [edu.rpi.shuttletracker.app.ShuttleTrackerApplication] on startup. Based on the
+ * notification generator for Tachiyomi.
  * */
 object Notifications {
     private const val GROUP_PUSH = "group_push"

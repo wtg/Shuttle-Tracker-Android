@@ -24,6 +24,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * Backs [EtasScreen]. Loads [routes] once (like [edu.rpi.shuttletracker.feature.map.MapsViewModel]
+ * does), and polls the same three vehicle endpoints while [startVehiclePolling] is active, merging
+ * them into [EtasUiState.vehicles]. [feature.etas.utils.buildStopsWithEtas] then turns
+ * routes + vehicles into the actual per-stop list the screen shows.
+ * */
 @HiltViewModel
 class EtasViewModel
     @Inject

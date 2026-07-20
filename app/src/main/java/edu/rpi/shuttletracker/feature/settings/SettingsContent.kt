@@ -28,6 +28,11 @@ import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 
+/**
+ * The list of settings rows, each built from [SettingsItem]. Stateless - [SettingsScreen] supplies
+ * the values and callbacks. The "Developer Options" row only shows once dev options have already
+ * been unlocked (see [edu.rpi.shuttletracker.feature.settings.about.AboutScreen]).
+ * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsContent(
@@ -116,6 +121,7 @@ fun SettingsContent(
     }
 }
 
+/** The System/Light/Dark segmented picker row at the top of Settings. */
 @Composable
 fun ThemeModeSettingItem(
     themeMode: ThemeMode,

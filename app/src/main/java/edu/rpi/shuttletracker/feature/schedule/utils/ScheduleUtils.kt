@@ -12,11 +12,13 @@ import kotlin.collections.iterator
 
 private val TIME_FORMATTER = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
 
+/** One stop's expected time for a single departure - a row inside an expanded [TimeInfo]. */
 data class StopTimeInfo(
     val stopName: String,
     val time: String,
 )
 
+/** One scheduled departure: a vehicle leaving at a time, with every stop's estimated time along the way. */
 data class TimeInfo(
     val departureTime: String,
     val routeName: String,
@@ -25,6 +27,7 @@ data class TimeInfo(
     val stopTimes: List<StopTimeInfo>,
 )
 
+/** Every route with at least one scheduled departure on [day], sorted alphabetically. */
 fun routesForDay(
     day: DayOfWeek,
     schedule: Schedule,
@@ -82,6 +85,7 @@ fun consolidatedTimes(
     return out.sortedBy { it.minutesOfDay }
 }
 
+/** Every stop on [routeName], with its estimated time computed as [departureTime] plus that stop's [edu.rpi.shuttletracker.data.models.Stop.offset]. */
 fun buildStopTimesForDeparture(
     routeName: String,
     departureTime: String,
@@ -101,6 +105,7 @@ fun buildStopTimesForDeparture(
     }
 }
 
+/** Minutes since midnight, for sorting departures - after-midnight times (12-3am) sort last, as the next day's early service rather than the earliest. */
 fun parseMinutesOfDay(timeText: String): Int? =
     parseLocalTime(timeText)?.let { time ->
         val minutes = time.hour * 60 + time.minute
@@ -113,9 +118,11 @@ fun parseMinutesOfDay(timeText: String): Int? =
         }
     }
 
+/** Parses a schedule time like "7:00 AM"; returns null instead of throwing on a bad value. */
 fun parseLocalTime(timeText: String): LocalTime? =
     runCatching {
         LocalTime.parse(timeText.trim(), TIME_FORMATTER)
     }.getOrNull()
 
+/** Formats a time back to the schedule's display style, e.g. "7:00 AM". */
 fun formatLocalTime(time: LocalTime): String = time.format(TIME_FORMATTER)

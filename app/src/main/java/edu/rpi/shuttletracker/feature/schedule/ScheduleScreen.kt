@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
 import edu.rpi.shuttletracker.feature.schedule.components.ScheduleContent
 
+/** The Schedule tab: fetches routes/schedule via [ScheduleViewModel] and renders them with [ScheduleContent]. */
 @Composable
 fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
     val uiState by viewModel.scheduleUiState.collectAsStateWithLifecycle()

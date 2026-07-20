@@ -37,6 +37,7 @@ import edu.rpi.shuttletracker.feature.map.components.getVehicleMarkerDescriptor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/** A stop's circle on the map. The actual [Marker] is invisible (`alpha = 0f`) - it only exists to catch taps and show the stop's name in an info window. */
 @Composable
 internal fun StopMarker(
     stop: Stop,
@@ -67,6 +68,11 @@ internal fun StopMarker(
     )
 }
 
+/**
+ * A shuttle's marker, colored by [Vehicle.routeName] (falls back to the last known color for a
+ * while if the route briefly drops out, so the marker doesn't flash gray). Works for real vehicles
+ * and fake ones alike - both are just [Vehicle] instances.
+ * */
 @Composable
 internal fun VehicleMarker(
     vehicle: Vehicle,
@@ -142,6 +148,7 @@ internal fun VehicleMarker(
     )
 }
 
+/** A small round icon button that floats over the map (settings, map-type toggle, etc). */
 @Composable
 internal fun MapActionButton(
     @DrawableRes icon: Int,

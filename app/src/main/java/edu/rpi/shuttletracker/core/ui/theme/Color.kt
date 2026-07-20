@@ -2,6 +2,10 @@ package edu.rpi.shuttletracker.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+// Material 3 color tokens generated from the app's brand color (Material Theme Builder). Used
+// by Theme.kt to build the light/dark ColorScheme - you generally shouldn't need to reference
+// these directly, use MaterialTheme.colorScheme instead.
+
 val md_theme_light_primary = Color(0xFFBF0027)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 val md_theme_light_primaryContainer = Color(0xFFFFDAD8)
@@ -62,6 +66,7 @@ val md_theme_dark_surfaceTint = Color(0xFFFFB3B0)
 val md_theme_dark_outlineVariant = Color(0xFF524342)
 val md_theme_dark_scrim = Color(0xFF000000)
 
+/** Colors used to tint a shuttle marker/chip by its route, so NORTH and WEST are visually distinct. */
 object VehicleColors {
     val Default = Color(0xFF444444)
     val North = Color(0xFFFF0000)

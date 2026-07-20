@@ -11,6 +11,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+/**
+ * The real [UserPreferences], backed by Jetpack DataStore. Each setting is one key in the same
+ * shared `Preferences` file. To add a new setting: add a `*_key`, then a `get`/`save` pair here
+ * and in the [UserPreferences] interface (and its test fakes).
+ * */
 class DataStoreUserPreferences
     @Inject
     constructor(

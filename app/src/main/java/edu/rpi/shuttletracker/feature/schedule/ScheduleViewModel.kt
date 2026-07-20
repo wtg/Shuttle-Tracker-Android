@@ -17,6 +17,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * Backs [ScheduleScreen]. Loads routes and the schedule once each (same load-if-missing pattern as
+ * [edu.rpi.shuttletracker.feature.map.MapsViewModel]'s routes), and [refresh] drops both and
+ * reloads on demand.
+ * */
 @HiltViewModel
 class ScheduleViewModel
     @Inject
@@ -54,7 +59,8 @@ class ScheduleViewModel
 
         /**
          * Drops the cached routes and schedule, then fetches both again, so a stale cache never
-         * survives an explicit user refresh.
+         * survives an explicit user refresh. Not currently wired to any button in [ScheduleScreen] -
+         * it's here (and tested) as the supported way to invalidate the cache when one is added.
          * */
         fun refresh() {
             routesJob?.cancel()
@@ -110,6 +116,7 @@ class ScheduleViewModel
         }
     }
 
+/** Everything the Schedule tab needs to render. See [ScheduleViewModel] for how it's filled in. */
 @Immutable
 data class ScheduleUiState(
     val schedule: Schedule? = null,

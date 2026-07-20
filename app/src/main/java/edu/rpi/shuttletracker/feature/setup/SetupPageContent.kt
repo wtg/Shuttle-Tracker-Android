@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.feature.setup.components.PermissionItem
 
+/** Renders whichever [SetupPage] the user is currently on. */
 @Composable
 fun SetupPageContent(page: SetupPage) {
     when (page) {
@@ -55,6 +56,7 @@ fun PermissionsPage() {
     }
 }
 
+/** One [Permission]'s row: tracks whether it's granted and launches the system permission dialog on tap. */
 @Composable
 fun PermissionBox(permission: Permission) {
     val context = LocalContext.current

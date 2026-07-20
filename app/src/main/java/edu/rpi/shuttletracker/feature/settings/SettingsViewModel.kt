@@ -12,6 +12,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * Backs [SettingsScreen]. Unlike most ViewModels, [settingsUiState] has no local
+ * `MutableStateFlow` - it's derived straight from [UserPreferences] via `combine`, since this
+ * screen has no state of its own beyond what's already saved. Each `update*` function just writes
+ * through to [UserPreferences] and the UI updates automatically when that flow re-emits.
+ * */
 @HiltViewModel
 class SettingsViewModel
     @Inject
@@ -60,6 +66,7 @@ class SettingsViewModel
         }
     }
 
+/** A direct mirror of the settings-related [UserPreferences] values. */
 @Immutable
 data class SettingsUiState(
     val devOptionState: Boolean = false,

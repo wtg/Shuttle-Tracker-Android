@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 
+/** A name/description row with a Grant button that becomes disabled and relabeled once granted. */
 @Composable
 fun PermissionItem(
     name: String,

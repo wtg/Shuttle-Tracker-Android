@@ -23,6 +23,7 @@ enum class AnnouncementType(
     }
 }
 
+/** A service announcement, shown as a banner on the map. See [displayable] for which ones show. */
 data class Announcement(
     val id: String,
     val message: String,

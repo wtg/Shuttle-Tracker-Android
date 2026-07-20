@@ -55,6 +55,11 @@ private val CampusBounds =
         LatLng(42.741173465236876, -73.6543446409232),
     )
 
+/**
+ * The actual Google Map: draws stops ([StopMarker]), route polylines, and vehicles
+ * ([VehicleMarker] - both real and, in dev mode, fake), plus the overlaid announcement strip,
+ * settings/map-type buttons, and a recenter FAB. Used by [MapsScreen]'s Map tab.
+ * */
 @Composable
 internal fun ShuttleMap(
     uiState: MapsUiState,

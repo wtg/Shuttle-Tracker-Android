@@ -30,6 +30,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.rpi.shuttletracker.core.ui.theme.ShuttleTrackerTheme
 
+/**
+ * The first-run flow: About -> Privacy Policy -> Permissions (see [SetupPage]). Calls
+ * [onSetupComplete] once [SetupScreenViewModel] marks the last page done, which is what tells
+ * [edu.rpi.shuttletracker.app.navigation.AppNavigation] to swap over to the map.
+ * */
 @Composable
 fun SetupScreen(
     onSetupComplete: () -> Unit,
@@ -50,6 +55,7 @@ fun SetupScreen(
     )
 }
 
+/** Stateless setup UI: a card with the current page's content, a next/finish button, and back-button support. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SetupContent(

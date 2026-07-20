@@ -10,6 +10,11 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.Typography
 import edu.rpi.shuttletracker.core.ui.theme.shuttleTrackerColorScheme
 
+/**
+ * Not a real screen - the open-source licenses list is a separate Google Play Services `Activity`
+ * ([OssLicensesMenuActivity]), not a Compose destination. This composable just themes and launches
+ * it as a side effect, then immediately calls [onOpened] to pop itself off the back stack.
+ * */
 @Composable
 fun LibrariesScreen(onOpened: () -> Unit) {
     val context = LocalContext.current

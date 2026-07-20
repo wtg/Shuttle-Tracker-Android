@@ -10,6 +10,11 @@ import edu.rpi.shuttletracker.data.repository.DefaultShuttleRepository
 import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import javax.inject.Singleton
 
+/**
+ * Tells Hilt which implementation to hand out for each data-layer interface. `@Binds` just says
+ * "when something asks for [ShuttleRemoteDataSource] or [ShuttleRepository], give it this class" -
+ * this is what lets features and tests depend on the interface only.
+ * */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataModule {

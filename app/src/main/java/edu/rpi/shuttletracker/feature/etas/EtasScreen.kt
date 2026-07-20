@@ -18,6 +18,11 @@ import edu.rpi.shuttletracker.feature.etas.components.StopEtaList
 import edu.rpi.shuttletracker.feature.etas.components.StopEtaSheet
 import edu.rpi.shuttletracker.feature.etas.utils.buildStopsWithEtas
 
+/**
+ * The ETAs tab: a [StopEtaList] of stops with live arrival previews, and a [StopEtaSheet] with the
+ * full details for whichever stop is tapped. Vehicle polling starts/stops with this composable's
+ * own lifecycle via [LifecycleStartEffect], so it only runs while this tab is actually visible.
+ * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EtasScreen(viewModel: EtasViewModel = hiltViewModel()) {

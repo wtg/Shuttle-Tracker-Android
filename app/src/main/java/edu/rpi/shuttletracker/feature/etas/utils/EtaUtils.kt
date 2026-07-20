@@ -7,6 +7,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
 
+/** One vehicle's live ETA at a particular stop - one entry in [StopWithEtas.etas]. */
 data class VehicleEta(
     val vehicleId: String,
     val vehicleName: String,
@@ -14,6 +15,7 @@ data class VehicleEta(
     val etaInstant: Instant,
 )
 
+/** A stop plus every vehicle currently approaching it, soonest first. The list item the ETAs tab shows. */
 data class StopWithEtas(
     val stopKey: String,
     val stop: Stop,

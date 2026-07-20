@@ -20,6 +20,12 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Singleton
 
+/**
+ * Builds the networking stack the app talks to the backend with: an [OkHttpClient] (with a small
+ * disk cache so recent responses are usable offline), a [Retrofit] instance configured for JSON,
+ * and the generated [ShuttleApi] implementation. Everything here is a `@Singleton` - one instance
+ * for the whole app.
+ * */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
