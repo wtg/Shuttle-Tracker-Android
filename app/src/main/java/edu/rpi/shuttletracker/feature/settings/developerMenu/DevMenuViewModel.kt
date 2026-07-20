@@ -1,0 +1,62 @@
+package edu.rpi.shuttletracker.feature.settings.developerMenu
+
+import androidx.compose.runtime.Immutable
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import javax.inject.Inject
+
+@HiltViewModel
+class DevMenuViewModel
+    @Inject
+    constructor(
+        private val userPreferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        val devMenuUiState =
+            combine(
+                userPreferencesRepository.getMaxStopDist(),
+                userPreferencesRepository.getBaseUrl(),
+            ) { maxStopDist, baseUrl ->
+                return@combine DevMenuUiState(
+                    maxStopDist = maxStopDist,
+                    baseUrl = baseUrl,
+                )
+            }.stateIn(
+                scope = viewModelScope,
+                SharingStarted.WhileSubscribed(),
+                DevMenuUiState(),
+            )
+
+        fun updateMinStopDist(minStopDist: Float) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveMaxStopDist(minStopDist)
+            }
+        }
+
+        /**
+         * MAKE SURE THIS IS BLOCKING OR ELSE STUFF BREAKS
+         * */
+        fun updateBaseUrl(baseUrl: String) {
+            runBlocking {
+                userPreferencesRepository.saveBaseUrl(baseUrl)
+            }
+        }
+
+        fun updateDevMenu(devOptions: Boolean) {
+            viewModelScope.launch {
+                userPreferencesRepository.activateDevOptions(devOptions)
+            }
+        }
+    }
+
+@Immutable
+data class DevMenuUiState(
+    val maxStopDist: Float = 20F,
+    val baseUrl: String = "",
+)
