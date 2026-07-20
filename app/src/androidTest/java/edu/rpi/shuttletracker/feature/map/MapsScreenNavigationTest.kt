@@ -82,7 +82,7 @@ class MapsScreenNavigationTest {
         val preferences = FakeUserPreferences()
         val viewModel = MapsViewModel(repository, preferences)
         val scheduleViewModel = ScheduleViewModel(repository)
-        val etasViewModel = EtasViewModel(repository)
+        val etasViewModel = EtasViewModel(repository, preferences)
 
         composeRule.setContent {
             ShuttleTrackerTheme(dynamicColor = false) {

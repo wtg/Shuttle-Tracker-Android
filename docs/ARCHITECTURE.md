@@ -12,6 +12,7 @@ core/           small helpers shared by everything (network results, theme, UI b
 data/           models, the API client, the repository, and saved user settings
 feature/        one folder per screen/flow (map, schedule, etas, settings, setup)
 background/     notifications and Firebase push handling
+widget/         the home screen widget (Jetpack Glance)
 ```
 
 ## How data flows
@@ -113,6 +114,21 @@ data class ExampleUiState(/* ... */)
 
 - **`background/service/FirebaseService.kt`** - receives Firebase Cloud Messaging push notifications and figures out where a tap on one should navigate to.
 - **`background/notification/Notifications.kt`** - sets up notification channels.
+
+## `widget/` - the home screen widget
+
+Built with [Jetpack Glance](https://developer.android.com/jetpack/androidx/releases/glance), which renders to `RemoteViews` in the launcher's process - no `ViewModel`, no `StateFlow`. Data is fetched separately and the widget just renders whatever's already stored.
+
+- **`EtaWidget.kt`** - the widget's UI. Shows either every stop's soonest arrivals ("all routes"), or one configured stop's full status.
+- **`EtaWidgetUpdater.kt`** - fetches live data and saves it into each widget instance's state. Runs on a timer and when the refresh button is tapped.
+- **`EtaWidgetRefreshWorker.kt`** - a `WorkManager` job that calls `EtaWidgetUpdater` every 15 minutes.
+- **`EtaWidgetActions.kt`** - the widget's tap targets: refresh, route filter, and view toggle.
+- **`EtaWidgetConfigureActivity.kt`** - lets a user pick which stop a widget instance shows.
+- **`WidgetEntryPoint.kt`** - a Hilt entry point so the worker and actions (which only get a `Context`, not full DI) can reach `ShuttleRepository`.
+- **`WidgetSnapshot.kt`** - the data stored in each widget instance's state.
+- **`EtaWidgetTheme.kt`** - matches the widget's colors to the app's theme.
+
+Like the map and ETAs tab, the widget shows fake shuttle data in dev mode when there's nothing live to show.
 
 ## `core/` - shared building blocks
 

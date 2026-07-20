@@ -19,6 +19,7 @@ Shuttle Tracker is the Android app for RPI's real-time shuttle tracking system. 
 - **ETAs** - live arrival time predictions per stop
 - **Schedule** - browse the shuttle schedule by day and route
 - **Push notifications** - Firebase Cloud Messaging for service announcements
+- **Home screen widget** - live arrivals for all stops, or configure one stop for its full status, resizable from 2x2 up to 5x5
 
 ## Tech Stack
 
@@ -28,6 +29,7 @@ Shuttle Tracker is the Android app for RPI's real-time shuttle tracking system. 
 - **Networking:** Retrofit + kotlinx.serialization, talking to the [Shubble](https://github.com/Shubble-LLC/shubble) API
 - **Maps:** Google Maps Compose
 - **Local storage:** Jetpack DataStore (user preferences)
+- **Widget:** Jetpack Glance + WorkManager
 
 ## New here?
 

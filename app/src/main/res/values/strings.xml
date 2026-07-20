@@ -101,7 +101,7 @@
     <string name="simulate_announcements">Simulate announcements</string>
     <string name="simulate_announcements_description">Show sample banners on the map instead of the API response</string>
     <string name="fake_shuttles">Fake shuttles</string>
-    <string name="fake_shuttles_description">Show two simulated shuttles moving around a route loop</string>
+    <string name="fake_shuttles_description">Show two simulated shuttles with live etas on the map, ETAs tab, and widget</string>
     <string name="app_theme">App Theme</string>
     <string name="redo_setup">Redo Setup</string>
     <string name="open_app_settings">Open app settings</string>
@@ -109,4 +109,21 @@
     <string name="rotation_description">Show vehicle direction</string>
     <string name="animation">Shuttle Animation</string>
     <string name="animation_description">Smooth movement</string>
+
+    <!-- Home screen widget -->
+    <string name="widget_display_name">Shuttle ETAs</string>
+    <string name="widget_description">Shows the soonest live shuttle arrivals for each stop, or a single stop\'s full live status.</string>
+    <string name="widget_refresh">Refresh</string>
+    <string name="widget_updated_at">Updated %1$s</string>
+    <string name="widget_no_active_shuttles">No active shuttles</string>
+    <string name="widget_load_failed">Couldn\'t load. Tap refresh to retry.</string>
+    <string name="widget_configure_title">Choose a stop</string>
+    <string name="widget_toggle_to_stop">My Stop</string>
+    <string name="widget_no_stop_configured">No stop configured. Tap to choose one.</string>
+    <string name="widget_no_eta">No ETA</string>
+    <string name="widget_eta_now">Now</string>
+    <string name="widget_moving">MOVING</string>
+    <string name="widget_at_stop_format">AT: %1$s</string>
+    <string name="widget_schedule_format">Schedule: %1$s</string>
+    <string name="widget_schedule_none">None</string>
 </resources>

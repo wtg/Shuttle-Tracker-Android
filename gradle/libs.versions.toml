@@ -36,6 +36,9 @@ navigation3 = "1.1.4"
 
 ktlint = "14.2.0"
 
+glance = "1.1.1"
+androidx-work = "2.10.5"
+
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 
@@ -91,6 +94,10 @@ turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secrets-gradle-plugin" }
 ui = { module = "androidx.compose.ui:ui" }
+
+glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
+glance-material3 = { module = "androidx.glance:glance-material3", version.ref = "glance" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-work" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }

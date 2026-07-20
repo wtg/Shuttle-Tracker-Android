@@ -135,4 +135,9 @@ dependencies {
     // firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+
+    // home screen widget
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
+    implementation(libs.androidx.work.runtime.ktx)
 }
