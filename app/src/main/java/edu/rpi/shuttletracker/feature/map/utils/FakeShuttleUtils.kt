@@ -3,6 +3,8 @@ package edu.rpi.shuttletracker.feature.map.utils
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Vehicle
 import java.time.Instant
+import java.time.ZoneOffset
+import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
@@ -84,7 +86,8 @@ fun buildFakeVehicles(
 
         Vehicle(
             id = "fake-shuttle-$routeName",
-            name = "Fake $routeName",
+            // Just the route name ("North"/"West") - the id already marks it as fake.
+            name = routeName.lowercase(Locale.ROOT).replaceFirstChar { it.titlecase(Locale.ROOT) },
             latitude = position.latitude,
             longitude = position.longitude,
             speedMph = 12.0,
@@ -93,9 +96,43 @@ fun buildFakeVehicles(
             routeName = routeName,
             isAtStop = false,
             currentStop = null,
-            stopTimes = emptyMap(),
+            stopTimes = buildFakeStopTimes(route, points, progress, now),
         )
     }
+
+/** Synthesizes an eta for every stop on [route], based on how far the fake vehicle ([vehicleProgress] around [points]) still has to travel to reach it. */
+private fun buildFakeStopTimes(
+    route: Route,
+    points: List<RoutePoint>,
+    vehicleProgress: Double,
+    now: Instant,
+): Map<String, String> =
+    route.stops
+        .mapNotNull { stopKey ->
+            val stop = route.stopDetails[stopKey] ?: return@mapNotNull null
+            if (stop.coordinates.size < 2) return@mapNotNull null
+
+            val stopProgress = progressOfPoint(points, RoutePoint(stop.coordinates[0], stop.coordinates[1]))
+            val remainingProgress = (stopProgress - vehicleProgress).mod(1.0)
+            val etaInstant = now.plusMillis((remainingProgress * FAKE_LOOP_DURATION_MS).toLong())
+
+            stopKey to etaInstant.atOffset(ZoneOffset.UTC).toString()
+        }.toMap()
+
+/** How far around the loop (0.0-1.0, same convention as [interpolateAlongLoop]) the point nearest [target] sits. */
+private fun progressOfPoint(
+    points: List<RoutePoint>,
+    target: RoutePoint,
+): Double {
+    val loop = points + points.first()
+    val segmentLengths = loop.zipWithNext { a, b -> a.distanceTo(b) }
+    val totalLength = segmentLengths.sum()
+    if (totalLength <= 0.0) return 0.0
+
+    val nearestIndex = points.indices.minBy { index -> points[index].distanceTo(target) }
+
+    return segmentLengths.take(nearestIndex).sum() / totalLength
+}
 
 private fun RoutePoint.distanceTo(other: RoutePoint): Double {
     val dLat = other.latitude - latitude

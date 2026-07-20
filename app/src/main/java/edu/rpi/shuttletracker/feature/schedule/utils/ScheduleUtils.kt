@@ -3,6 +3,7 @@ package edu.rpi.shuttletracker.feature.schedule.utils
 import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -103,6 +104,39 @@ fun buildStopTimesForDeparture(
             time = formatLocalTime(stopTime),
         )
     }
+}
+
+/** The soonest scheduled arrival at [stopKey] on [day], across every route that serves it. An after-midnight departure (e.g. 12:30 AM) counts as later tonight, not earlier today. */
+fun nextScheduledArrival(
+    stopKey: String,
+    schedule: Schedule,
+    routesByName: Map<String, Route>,
+    day: DayOfWeek = DayOfWeek.fromToday(),
+    now: LocalDateTime = LocalDateTime.now(),
+): LocalDateTime? {
+    val scheduleMap = schedule.scheduleMapFor(day)
+    var next: LocalDateTime? = null
+
+    for ((_, times) in scheduleMap) {
+        for (pair in times) {
+            if (pair.size < 2) continue
+            val routeName = pair[1]
+            val route = routesByName[routeName] ?: continue
+            val stop = route.stopDetails[stopKey] ?: continue
+            val departureLocalTime = parseLocalTime(pair[0]) ?: continue
+
+            var arrival = now.toLocalDate().atTime(departureLocalTime).plusMinutes(stop.offset.toLong())
+            if (arrival.hour < 4 && now.hour >= 18) {
+                arrival = arrival.plusDays(1)
+            }
+
+            if (arrival.isAfter(now) && (next == null || arrival.isBefore(next))) {
+                next = arrival
+            }
+        }
+    }
+
+    return next
 }
 
 /** Minutes since midnight, for sorting departures - after-midnight times (12-3am) sort last, as the next day's early service rather than the earliest. */

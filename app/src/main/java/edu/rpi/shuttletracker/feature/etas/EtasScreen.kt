@@ -54,17 +54,19 @@ fun EtasScreen(viewModel: EtasViewModel = hiltViewModel()) {
                 .fillMaxSize()
                 .padding(contentPadding),
         ) {
+            val allVehicles = uiState.vehicles + uiState.fakeVehicles
+
             StopEtaList(
                 routes = uiState.routes,
-                vehicles = uiState.vehicles,
+                vehicles = allVehicles,
                 selectedRouteFilter = uiState.selectedRouteFilter,
                 onRouteFilterChange = viewModel::selectRouteFilter,
                 onStopClick = viewModel::selectStop,
             )
 
             val stops =
-                remember(uiState.routes, uiState.vehicles) {
-                    buildStopsWithEtas(uiState.routes, uiState.vehicles)
+                remember(uiState.routes, allVehicles) {
+                    buildStopsWithEtas(uiState.routes, allVehicles)
                 }
             val selectedStop = uiState.selectedStopKey?.let { stopKey -> stops.find { it.stopKey == stopKey } }
 

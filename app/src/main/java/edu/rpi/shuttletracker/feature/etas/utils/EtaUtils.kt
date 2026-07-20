@@ -87,3 +87,20 @@ fun etaMinutesFromNow(
     etaInstant: Instant,
     now: Instant = Instant.now(),
 ): Long = Duration.between(now, etaInstant).toMinutes()
+
+/** How long a vehicle keeps showing for a stop after its own eta has passed - etas can be a little stale. */
+private const val ETA_PAST_TOLERANCE_MINUTES = 2L
+
+/** Vehicles relevant to [stopKey] right now: currently there, or with an eta that hasn't expired past [ETA_PAST_TOLERANCE_MINUTES]. */
+fun vehiclesForStop(
+    vehicles: List<Vehicle>,
+    stopKey: String,
+    now: Instant = Instant.now(),
+): List<Vehicle> =
+    vehicles.filter { vehicle ->
+        val isAtThisStop = vehicle.isAtStop == true && vehicle.currentStop == stopKey
+        val etaInstant = vehicle.stopTimes[stopKey]?.toEtaInstantOrNull()
+        val hasRelevantEta = etaInstant != null && etaMinutesFromNow(etaInstant, now) >= -ETA_PAST_TOLERANCE_MINUTES
+
+        isAtThisStop || hasRelevantEta
+    }

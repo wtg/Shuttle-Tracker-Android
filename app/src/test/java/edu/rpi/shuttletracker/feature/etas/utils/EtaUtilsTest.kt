@@ -34,6 +34,8 @@ class EtaUtilsTest {
         name: String,
         routeName: String?,
         stopTimes: Map<String, String>,
+        isAtStop: Boolean = false,
+        currentStop: String? = null,
     ) = Vehicle(
         id = id,
         name = name,
@@ -43,8 +45,8 @@ class EtaUtilsTest {
         timestamp = "2026-07-19T12:00:00Z",
         headingDegrees = null,
         routeName = routeName,
-        isAtStop = false,
-        currentStop = null,
+        isAtStop = isAtStop,
+        currentStop = currentStop,
         stopTimes = stopTimes,
     )
 
@@ -170,5 +172,45 @@ class EtaUtilsTest {
         val eta = Instant.parse("2026-07-19T12:05:00Z")
 
         assertThat(etaMinutesFromNow(eta, now)).isEqualTo(-5)
+    }
+
+    @Test
+    fun `vehicles for stop includes a vehicle currently sitting there`() {
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+        val bus1 = vehicle("bus-1", "North Bus", "NORTH", emptyMap(), isAtStop = true, currentStop = "union")
+
+        assertThat(vehiclesForStop(listOf(bus1), "union", now).map { it.id }).containsExactly("bus-1")
+    }
+
+    @Test
+    fun `vehicles for stop includes a vehicle with a future eta there`() {
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+        val bus1 = vehicle("bus-1", "North Bus", "NORTH", mapOf("union" to "2026-07-19T12:05:00Z"))
+
+        assertThat(vehiclesForStop(listOf(bus1), "union", now).map { it.id }).containsExactly("bus-1")
+    }
+
+    @Test
+    fun `vehicles for stop keeps an eta that only just passed, within tolerance`() {
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+        val bus1 = vehicle("bus-1", "North Bus", "NORTH", mapOf("union" to "2026-07-19T11:59:00Z"))
+
+        assertThat(vehiclesForStop(listOf(bus1), "union", now).map { it.id }).containsExactly("bus-1")
+    }
+
+    @Test
+    fun `vehicles for stop drops an eta well past its tolerance`() {
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+        val bus1 = vehicle("bus-1", "North Bus", "NORTH", mapOf("union" to "2026-07-19T11:50:00Z"))
+
+        assertThat(vehiclesForStop(listOf(bus1), "union", now)).isEmpty()
+    }
+
+    @Test
+    fun `vehicles for stop excludes a vehicle neither there nor with a relevant eta`() {
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+        val bus1 = vehicle("bus-1", "North Bus", "NORTH", emptyMap(), isAtStop = true, currentStop = "academy")
+
+        assertThat(vehiclesForStop(listOf(bus1), "union", now)).isEmpty()
     }
 }

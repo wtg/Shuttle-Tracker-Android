@@ -2,8 +2,11 @@ package edu.rpi.shuttletracker.feature.map.utils
 
 import com.google.common.truth.Truth.assertThat
 import edu.rpi.shuttletracker.data.models.Route
+import edu.rpi.shuttletracker.data.models.Stop
 import org.junit.Test
+import java.time.Duration
 import java.time.Instant
+import java.time.OffsetDateTime
 
 class FakeShuttleUtilsTest {
     private val squareLoop =
@@ -118,5 +121,47 @@ class FakeShuttleUtilsTest {
 
         assertThat(afterFullLoop.latitude).isWithin(1e-9).of(atStart.latitude)
         assertThat(afterFullLoop.longitude).isWithin(1e-9).of(atStart.longitude)
+    }
+
+    @Test
+    fun `fake vehicles carry a synthesized eta for every stop on their route`() {
+        val routeWithStops =
+            loopRoute.copy(
+                stops = listOf("quarter", "half"),
+                stopDetails =
+                    mapOf(
+                        // A quarter and half of the way around the square loop, respectively.
+                        "quarter" to Stop(coordinates = listOf(0.0, 1.0), offset = 0, name = "Quarter"),
+                        "half" to Stop(coordinates = listOf(1.0, 1.0), offset = 0, name = "Half"),
+                    ),
+            )
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+
+        val vehicle = buildFakeVehicles(mapOf("NORTH" to routeWithStops), elapsedMs = 0L, now = now).first()
+
+        assertThat(vehicle.stopTimes.keys).containsExactly("quarter", "half")
+
+        val etaQuarter = OffsetDateTime.parse(vehicle.stopTimes.getValue("quarter")).toInstant()
+        val etaHalf = OffsetDateTime.parse(vehicle.stopTimes.getValue("half")).toInstant()
+
+        assertThat(Duration.between(now, etaQuarter).toMillis()).isEqualTo(15_000L)
+        assertThat(Duration.between(now, etaHalf).toMillis()).isEqualTo(30_000L)
+    }
+
+    @Test
+    fun `a stop the vehicle just passed gets a full-loop eta rather than a negative one`() {
+        val routeWithStops =
+            loopRoute.copy(
+                stops = listOf("start"),
+                stopDetails = mapOf("start" to Stop(coordinates = listOf(0.0, 0.0), offset = 0, name = "Start")),
+            )
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+
+        // The vehicle is a hair past the stop's own position (progress 0.0), so the stop is
+        // almost a full loop away, not slightly in the past.
+        val vehicle = buildFakeVehicles(mapOf("NORTH" to routeWithStops), elapsedMs = 100L, now = now).first()
+
+        val etaStart = OffsetDateTime.parse(vehicle.stopTimes.getValue("start")).toInstant()
+        assertThat(Duration.between(now, etaStart).toMillis()).isEqualTo(59_900L)
     }
 }

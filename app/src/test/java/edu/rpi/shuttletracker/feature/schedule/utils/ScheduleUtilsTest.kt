@@ -5,6 +5,7 @@ import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.testing.fixtures.testRoute
 import edu.rpi.shuttletracker.testing.fixtures.testSchedule
 import org.junit.Test
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 class ScheduleUtilsTest {
@@ -107,5 +108,75 @@ class ScheduleUtilsTest {
     @Test
     fun `scroll index is zero for an empty schedule`() {
         assertThat(scrollIndexFor(emptyList(), nowMinutes = 500)).isEqualTo(0)
+    }
+
+    @Test
+    fun `next scheduled arrival finds the soonest upcoming departure`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "union",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 6, 0),
+            )
+
+        assertThat(next).isEqualTo(LocalDateTime.of(2026, 7, 20, 7, 0))
+    }
+
+    @Test
+    fun `next scheduled arrival applies the target stop's own offset`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "academy",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 6, 0),
+            )
+
+        assertThat(next).isEqualTo(LocalDateTime.of(2026, 7, 20, 7, 5))
+    }
+
+    @Test
+    fun `next scheduled arrival wraps an after-midnight departure to later tonight`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "union",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 23, 0),
+            )
+
+        assertThat(next).isEqualTo(LocalDateTime.of(2026, 7, 21, 0, 30))
+    }
+
+    @Test
+    fun `next scheduled arrival is null once every departure today has already passed`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "union",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 9, 0),
+            )
+
+        assertThat(next).isNull()
+    }
+
+    @Test
+    fun `next scheduled arrival is null for a stop the route doesn't serve`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "nonexistent",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 6, 0),
+            )
+
+        assertThat(next).isNull()
     }
 }

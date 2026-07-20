@@ -5,12 +5,14 @@ import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
 import edu.rpi.shuttletracker.testing.coroutine.MainDispatcherRule
 import edu.rpi.shuttletracker.testing.fakes.FakeShuttleRepository
+import edu.rpi.shuttletracker.testing.fakes.FakeUserPreferences
 import edu.rpi.shuttletracker.testing.fixtures.testRoute
 import edu.rpi.shuttletracker.testing.fixtures.testVehicleEta
 import edu.rpi.shuttletracker.testing.fixtures.testVehicleLocation
 import edu.rpi.shuttletracker.testing.fixtures.testVehicleVelocity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -22,6 +24,7 @@ class EtasViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var repository: FakeShuttleRepository
+    private lateinit var preferences: FakeUserPreferences
 
     @Before
     fun setUp() {
@@ -29,6 +32,7 @@ class EtasViewModelTest {
             FakeShuttleRepository().apply {
                 routesResult = NetworkResult.Success(mapOf("NORTH" to testRoute()))
             }
+        preferences = FakeUserPreferences()
     }
 
     @Test
@@ -139,5 +143,45 @@ class EtasViewModelTest {
             assertThat(repository.routesCalls).isEqualTo(2)
         }
 
-    private fun createViewModel() = EtasViewModel(repository)
+    // The fake vehicle ticker loops forever with delay(), so advanceUntilIdle() would hang while
+    // it's running; runCurrent() steps the virtual clock by a bounded amount instead.
+
+    @Test
+    fun `fake vehicles only start once both dev options and the fake shuttle toggle are on`() =
+        runTest {
+            val viewModel = createViewModel()
+            advanceUntilIdle()
+
+            preferences.devOptions.value = true
+            runCurrent()
+            assertThat(viewModel.etasUiState.value.fakeVehicles).isEmpty()
+
+            preferences.fakeShuttlesEnabled.value = true
+            runCurrent()
+            assertThat(viewModel.etasUiState.value.fakeVehicles).hasSize(1)
+
+            preferences.fakeShuttlesEnabled.value = false
+            runCurrent()
+        }
+
+    @Test
+    fun `fake vehicles carry synthesized stop etas so the etas tab has something to show`() =
+        runTest {
+            val viewModel = createViewModel()
+            advanceUntilIdle()
+
+            preferences.devOptions.value = true
+            preferences.fakeShuttlesEnabled.value = true
+            runCurrent()
+
+            val fakeVehicle =
+                viewModel.etasUiState.value.fakeVehicles
+                    .single()
+            assertThat(fakeVehicle.stopTimes.keys).containsExactly("union", "academy")
+
+            preferences.fakeShuttlesEnabled.value = false
+            runCurrent()
+        }
+
+    private fun createViewModel() = EtasViewModel(repository, preferences)
 }
