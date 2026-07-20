@@ -220,13 +220,16 @@ class MapsViewModel
                     }
                 }.launchIn(viewModelScope)
 
-            userPreferences
-                .getSimulateAnnouncements()
-                .onEach { simulate ->
+            combine(
+                userPreferences.getDevOptions(),
+                userPreferences.getSimulateAnnouncements(),
+            ) { devOptionsEnabled, simulate -> devOptionsEnabled && simulate }
+                .distinctUntilChanged()
+                .onEach { simulateActive ->
                     val wasSimulating = mapsUiState.value.simulateAnnouncements
-                    _mapsUiState.update { it.copy(simulateAnnouncements = simulate) }
+                    _mapsUiState.update { it.copy(simulateAnnouncements = simulateActive) }
 
-                    if (simulate) {
+                    if (simulateActive) {
                         _mapsUiState.update { it.copy(announcements = FakeAnnouncements.sample().displayable()) }
                     } else if (wasSimulating) {
                         // Get a fresh real fetch immediately rather than waiting for the next poll tick.

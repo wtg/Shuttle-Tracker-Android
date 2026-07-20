@@ -126,3 +126,19 @@ fun parseLocalTime(timeText: String): LocalTime? =
 
 /** Formats a time back to the schedule's display style, e.g. "7:00 AM". */
 fun formatLocalTime(time: LocalTime): String = time.format(TIME_FORMATTER)
+
+/**
+ * Which row of [times] to auto-scroll/expand to: the departure just before the next upcoming one,
+ * so the user sees "you just missed this one, next is this one" context. If every departure is
+ * still upcoming, that's row 0; if every departure has already happened, it's the last row (the
+ * most recent one) rather than looping back to the top of the morning schedule.
+ * */
+fun scrollIndexFor(
+    times: List<TimeInfo>,
+    nowMinutes: Int,
+): Int =
+    when (val index = times.indexOfFirst { it.minutesOfDay >= nowMinutes }) {
+        -1 -> (times.size - 1).coerceAtLeast(0)
+        0 -> 0
+        else -> index - 1
+    }

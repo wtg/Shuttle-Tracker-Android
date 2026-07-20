@@ -118,6 +118,19 @@ class EtaUtilsTest {
     }
 
     @Test
+    fun `a vehicle on a route outside the visible list is excluded from eta chips too`() {
+        val strayBus = vehicle("bus-3", "Test Bus", "ACADEMY_SHUTTLE", mapOf("union" to "2026-07-19T12:01:00Z"))
+
+        val stops =
+            buildStopsWithEtas(
+                routes = mapOf("NORTH" to northRoute),
+                vehicles = listOf(strayBus),
+            )
+
+        assertThat(stops.single { it.stopKey == "union" }.etas).isEmpty()
+    }
+
+    @Test
     fun `a vehicle with no eta for a stop is excluded from that stop's list`() {
         val bus1 = vehicle("bus-1", "North Bus", "NORTH", emptyMap())
 

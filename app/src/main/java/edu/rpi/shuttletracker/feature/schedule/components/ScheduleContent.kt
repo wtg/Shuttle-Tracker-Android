@@ -57,6 +57,7 @@ import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.feature.schedule.utils.StopTimeInfo
 import edu.rpi.shuttletracker.feature.schedule.utils.consolidatedTimes
 import edu.rpi.shuttletracker.feature.schedule.utils.routesForDay
+import edu.rpi.shuttletracker.feature.schedule.utils.scrollIndexFor
 import java.util.Calendar
 import kotlin.text.lowercase
 
@@ -185,12 +186,7 @@ private fun ScheduleDetailsContent(
     val now = Calendar.getInstance()
     val nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
 
-    val scrollIndex =
-        remember(times) {
-            times.indexOfFirst { it.minutesOfDay >= nowMinutes }.let { index ->
-                if (index <= 0) 0 else index - 1
-            }
-        }
+    val scrollIndex = remember(times) { scrollIndexFor(times, nowMinutes) }
 
     LaunchedEffect(times, scrollIndex) {
         if (times.isNotEmpty()) {

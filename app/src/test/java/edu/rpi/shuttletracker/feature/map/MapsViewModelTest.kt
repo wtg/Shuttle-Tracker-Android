@@ -233,6 +233,7 @@ class MapsViewModelTest {
             val viewModel = createViewModel()
             viewModel.startAnnouncementRefresh()
 
+            preferences.devOptions.value = true
             preferences.simulateAnnouncements.value = true
             advanceUntilIdle()
 
@@ -244,10 +245,23 @@ class MapsViewModelTest {
         }
 
     @Test
+    fun `simulate announcements has no effect while dev options are off`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+
+            preferences.simulateAnnouncements.value = true
+            advanceUntilIdle()
+
+            assertThat(viewModel.mapsUiState.value.announcements).isEmpty()
+        }
+
+    @Test
     fun `simulated announcements are not overwritten by a real refresh tick`() =
         runTest {
             val viewModel = createViewModel()
             viewModel.startAnnouncementRefresh()
+            preferences.devOptions.value = true
             preferences.simulateAnnouncements.value = true
             advanceUntilIdle()
 
@@ -266,6 +280,7 @@ class MapsViewModelTest {
         runTest {
             val viewModel = createViewModel()
             viewModel.startAnnouncementRefresh()
+            preferences.devOptions.value = true
             preferences.simulateAnnouncements.value = true
             advanceUntilIdle()
 
@@ -278,6 +293,25 @@ class MapsViewModelTest {
                     .map { it.id },
             ).containsExactly("real")
             assertThat(repository.observeAnnouncementsCalls).isEqualTo(2)
+        }
+
+    @Test
+    fun `turning off dev options reverts simulated announcements to a real fetch`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+            preferences.devOptions.value = true
+            preferences.simulateAnnouncements.value = true
+            advanceUntilIdle()
+
+            preferences.devOptions.value = false
+            repository.announcements.emit(NetworkResult.Success(listOf(testAnnouncement("real"))))
+            advanceUntilIdle()
+
+            assertThat(
+                viewModel.mapsUiState.value.announcements
+                    .map { it.id },
+            ).containsExactly("real")
         }
 
     @Test

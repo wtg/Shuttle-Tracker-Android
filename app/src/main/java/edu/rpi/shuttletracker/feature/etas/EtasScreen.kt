@@ -9,6 +9,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
@@ -61,10 +62,11 @@ fun EtasScreen(viewModel: EtasViewModel = hiltViewModel()) {
                 onStopClick = viewModel::selectStop,
             )
 
-            val selectedStop =
-                uiState.selectedStopKey?.let { stopKey ->
-                    buildStopsWithEtas(uiState.routes, uiState.vehicles).find { it.stopKey == stopKey }
+            val stops =
+                remember(uiState.routes, uiState.vehicles) {
+                    buildStopsWithEtas(uiState.routes, uiState.vehicles)
                 }
+            val selectedStop = uiState.selectedStopKey?.let { stopKey -> stops.find { it.stopKey == stopKey } }
 
             StopEtaSheet(
                 stop = selectedStop,

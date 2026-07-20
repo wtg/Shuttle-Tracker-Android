@@ -25,7 +25,8 @@ data class StopWithEtas(
 
 /**
  * Real routes the ETAs tab shows. Hardcoded so extra or test route entries from the API never
- * show up as stops or filter options here.
+ * show up as stops, filter options, or eta chips here - a vehicle on a route outside this list is
+ * excluded even if it happens to report an eta for a stop a visible route also serves.
  * */
 val ETA_VISIBLE_ROUTES = listOf("NORTH", "WEST")
 
@@ -59,6 +60,7 @@ fun buildStopsWithEtas(
             val etas =
                 vehicles
                     .mapNotNull { vehicle ->
+                        if (vehicle.routeName !in ETA_VISIBLE_ROUTES) return@mapNotNull null
                         val rawEta = vehicle.stopTimes[stopKey] ?: return@mapNotNull null
                         val etaInstant = rawEta.toEtaInstantOrNull() ?: return@mapNotNull null
 

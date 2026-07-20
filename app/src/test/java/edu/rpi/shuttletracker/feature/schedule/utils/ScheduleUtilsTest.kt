@@ -73,4 +73,39 @@ class ScheduleUtilsTest {
     fun `time formatting uses the schedule format`() {
         assertThat(formatLocalTime(LocalTime.of(19, 5))).isEqualTo("7:05 PM")
     }
+
+    private fun timeInfo(minutesOfDay: Int) =
+        TimeInfo(
+            departureTime = "",
+            routeName = "NORTH",
+            vehicleName = "Bus 1",
+            minutesOfDay = minutesOfDay,
+            stopTimes = emptyList(),
+        )
+
+    @Test
+    fun `scroll index lands on the departure just before the next upcoming one`() {
+        val times = listOf(timeInfo(420), timeInfo(480), timeInfo(540))
+
+        assertThat(scrollIndexFor(times, nowMinutes = 500)).isEqualTo(1)
+    }
+
+    @Test
+    fun `scroll index is zero when every departure is still upcoming`() {
+        val times = listOf(timeInfo(420), timeInfo(480))
+
+        assertThat(scrollIndexFor(times, nowMinutes = 0)).isEqualTo(0)
+    }
+
+    @Test
+    fun `scroll index lands on the last departure once every one has already happened`() {
+        val times = listOf(timeInfo(420), timeInfo(480), timeInfo(540))
+
+        assertThat(scrollIndexFor(times, nowMinutes = 600)).isEqualTo(2)
+    }
+
+    @Test
+    fun `scroll index is zero for an empty schedule`() {
+        assertThat(scrollIndexFor(emptyList(), nowMinutes = 500)).isEqualTo(0)
+    }
 }
