@@ -59,6 +59,7 @@ androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = 
 
 
 androidx-material3 = { module = "androidx.compose.material3:material3"}
+androidx-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
 androidx-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
 androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }

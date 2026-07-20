@@ -1,16 +1,17 @@
 # Shuttle Tracker - Android
 
-Shuttle Tracker is the Android app for RPI's real-time shuttle tracking system. It's the Android client for [Shubble](https://github.com/Shubble-LLC/shubble) and talks to the same backend API, showing live shuttle locations, routes, ETAs, and schedules in a native Android app.
+Shuttle Tracker is the Android app for RPI's real-time shuttle tracking system. It's the Android
+client for [Shubble](https://github.com/Shubble-LLC/shubble) and talks to the same backend API,
+showing live shuttle locations, routes, ETAs, and schedules in a native Android app.
 
 ## Screenshots
 
-<table>
-  <tr>
-    <td align="center"><img src="docs/images/map.png" width="250"/></td>
-    <td align="center"><img src="docs/images/etas.png" width="250"/></td>
-    <td align="center"><img src="docs/images/schedule.png" width="250"/></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/images/map.png" width="20%"  alt="Map Screen"/>
+  <img src="docs/images/etas.png" width="20%"  alt="ETAs Screen"/>
+  <img src="docs/images/schedule.png" width="20%"  alt="Schedule Screen"/>
+  <img src="docs/images/widget.png" width="20%"  alt="Widgets Screen"/>
+</p>
 
 ## Features
 
@@ -26,7 +27,8 @@ Shuttle Tracker is the Android app for RPI's real-time shuttle tracking system. 
 - **Language:** Kotlin
 - **UI:** Jetpack Compose (Material 3)
 - **Architecture:** MVVM with Hilt dependency injection
-- **Networking:** Retrofit + kotlinx.serialization, talking to the [Shubble](https://github.com/Shubble-LLC/shubble) API
+- **Networking:** Retrofit + kotlinx.serialization, talking to
+  the [Shubble](https://github.com/Shubble-LLC/shubble) API
 - **Maps:** Google Maps Compose
 - **Local storage:** Jetpack DataStore (user preferences)
 - **Widget:** Jetpack Glance + WorkManager
