@@ -83,7 +83,7 @@ fun buildFakeVehicles(
 
         Vehicle(
             id = "fake-shuttle-$routeName",
-            name = "Fake $routeName Shuttle",
+            name = "Fake $routeName",
             latitude = position.latitude,
             longitude = position.longitude,
             speedMph = 12.0,
