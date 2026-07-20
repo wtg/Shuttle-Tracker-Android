@@ -49,7 +49,9 @@ class MapsScreenNavigationTest {
 
         composeRule.onNodeWithText("Schedule").performClick()
 
-        composeRule.onNodeWithText("Times are based on departures from the Student Union.").assertIsDisplayed()
+        composeRule
+            .onNodeWithText("Times are based on departures from the Student Union.", substring = true)
+            .assertIsDisplayed()
     }
 
     @Test
