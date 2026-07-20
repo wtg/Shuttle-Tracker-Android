@@ -3,8 +3,7 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.mikepenz.aboutlibraries.plugin")
+    id("com.google.android.gms.oss-licenses-plugin")
     id("com.google.gms.google-services")
     id("org.jlleitschuh.gradle.ktlint")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
@@ -20,7 +19,7 @@ kotlin {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = 37
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -30,10 +29,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     packaging {
@@ -127,6 +122,7 @@ dependencies {
     implementation(libs.maps.compose)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.google.oss.licenses)
 
     // accompanist
     implementation(libs.accompanist.systemuicontroller)
@@ -138,14 +134,8 @@ dependencies {
     // datastore (similar to SharedPreferences)
     implementation(libs.androidx.datastore.preferences)
 
-    // about libraries
-    implementation(libs.aboutlibraries.core)
-    implementation(libs.aboutlibraries.compose)
-    implementation(libs.aboutlibraries.compose.m3)
-
     // firebase
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging)
 
     // room

@@ -11,7 +11,7 @@
 
 
     <application
-        android:name=".ShuttleTrackerApplication"
+        android:name=".app.ShuttleTrackerApplication"
         android:allowBackup="true"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
@@ -20,7 +20,7 @@
         android:theme="@style/Theme.ShuttleTracker"
         tools:targetApi="34">
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".app.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.ShuttleTracker">
@@ -30,12 +30,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ShuttleTracker.Licenses"
+            tools:replace="android:theme" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
         <service
-            android:name=".util.services.FirebaseService"
+            android:name=".background.service.FirebaseService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -43,7 +48,7 @@
         </service>
 
         <receiver
-            android:name=".util.notifications.NotificationReceiver"
+            android:name=".background.receiver.NotificationReceiver"
             android:exported="false" />
 
         <provider
