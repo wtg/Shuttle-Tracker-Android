@@ -65,6 +65,13 @@
     <!--  Formatting broken when using enter so it has to be a one liner  -->
     <string name="privacy_page">Privacy Policy\nEffective Date: 10-03-2025\n\nShubble (“the App”) respects your privacy. This Privacy Policy explains how we handle your information.\n\nInformation We Collect\nThe App may access your device location in order to:\n\nShow you the closest shuttle stop.\nCalculate how far you are from that stop.\n\nWe do not collect, store, or transmit your location data or any other personal information. All processing happens locally on your device.\n\nUse of Information\nLocation data is used only in real time to display shuttle stop information.\n\nYour location data is never stored, logged, or sent to our servers.\n\nSharing of Information\nWe do not share your location or any other personal information with third parties.\n\nChildren’s Privacy\nShubble does not knowingly collect, store, or share personal information from children.\n\nChanges to This Policy\nIf we make changes to this Privacy Policy, we will update it here and revise the “Effective Date” above.\n\nContact Us\nIf you have any questions or concerns about this Privacy Policy, you can contact us at:\nJoel McCandless\nmail@joelmccandless.com</string>
 
+    <string name="analytics_policy">
+    If you opt in to analytics, then Shuttle Tracker will send anonymous usage data to our server.
+    These data include your app settings, feature usage frequency, and other similar metrics.
+    No analytics data are ever collected unless you explicitly opt in. You can see a record of
+    recently uploaded analytics reports or opt-in status in Settings > Analytics.
+    </string>
+
     <string name="about_page">Shubble is developed by the Rensselaer Center for Open Source
         by your fellow RPI students. As an open source application, anyone can help develop the RPI Shuttle Tracker
         regardless of experience! Any contributions are welcome, as well as feedback for our current team.
@@ -138,6 +145,13 @@
     <string name="rotation_description">Show vehicle direction</string>
     <string name="animation">Shuttle Animation</string>
     <string name="animation_description">Smooth movement</string>
+
+    <!-- Analytics -->
+    <string name="analytics">Analytics</string>
+    <string name="user_id">User id</string>
+    <string name="android_version">Android version</string>
+    <string name="debug_mode">Debug mode</string>
+
 
     <!-- Dev menu -->
     <string name="max_stop_dist">Maximum stop distance</string>
