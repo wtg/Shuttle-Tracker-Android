@@ -44,6 +44,8 @@ showing live shuttle locations, routes, ETAs, and schedules in a native Android 
   running on an emulator.
 - **[Architecture](docs/ARCHITECTURE.md)** - how the codebase is organized, so you know where to
   look (and where to add) code.
+- **[Notifications](docs/NOTIFICATIONS.md)** - how to test push notifications, and how to swap in
+  your own Firebase project if you need one.
 
 ## Related Projects
 
