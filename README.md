@@ -6,12 +6,16 @@ showing live shuttle locations, routes, ETAs, and schedules in a native Android 
 
 ## Screenshots
 
-<p align="center">
-  <img src="docs/images/map.png" width="35%"  alt="Map Screen"/>
-  <img src="docs/images/etas.png" width="35%"  alt="ETAs Screen"/>
-  <img src="docs/images/schedule.png" width="35%"  alt="Schedule Screen"/>
-  <img src="docs/images/widget.png" width="35%"  alt="Widgets Screen"/>
-</p>
+<details>
+<summary>Show screenshots</summary>
+<br>
+
+| | |
+|---|---|
+| <img src="docs/images/map.png" width="100%" alt="Map Screen"/> | <img src="docs/images/etas.png" width="100%" alt="ETAs Screen"/> |
+| <img src="docs/images/schedule.png" width="100%" alt="Schedule Screen"/> | <img src="docs/images/widget.png" width="100%" alt="Widgets Screen"/> |
+
+</details>
 
 ## Features
 
