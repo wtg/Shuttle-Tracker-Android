@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -52,7 +53,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -83,10 +85,14 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.material3.adaptive)
+    implementation(libs.androidx.material3.windowsizeclass)
     implementation(libs.androidx.appcompat)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockwebserver)
+    testImplementation(libs.truth)
+    testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -98,38 +104,31 @@ dependencies {
     // hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.hilt.work)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     ksp(libs.androidx.hilt.compiler)
 
     // retrofit
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-
-    implementation(libs.network.reponse)
+    implementation(libs.converter.kotlinx.serialization)
 
     // okhttp
     implementation(libs.logging.interceptor)
 
     // compose
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.lifecycle.runtime.compose)
 
-    // more icons
-    implementation(libs.androidx.material.icons.extended)
+    // navigation
+    implementation(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
+    implementation(libs.kotlinx.serialization.json)
 
     // maps
     implementation(libs.maps.compose)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.google.oss.licenses)
-
-    // accompanist
-    implementation(libs.accompanist.systemuicontroller)
-
-    // destinations
-    implementation(libs.destinations)
-    ksp(libs.ksp)
 
     // datastore (similar to SharedPreferences)
     implementation(libs.androidx.datastore.preferences)
@@ -138,11 +137,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
 
-    // room
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.ktx)
-
-    // work
+    // home screen widget
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
     implementation(libs.androidx.work.runtime.ktx)
 }

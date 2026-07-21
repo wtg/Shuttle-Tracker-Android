@@ -6,16 +6,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.Typography
 import edu.rpi.shuttletracker.core.ui.theme.shuttleTrackerColorScheme
 
-@Destination<RootGraph>
+/**
+ * Not a real screen - the open-source licenses list is a separate Google Play Services `Activity`
+ * ([OssLicensesMenuActivity]), not a Compose destination. This composable just themes and launches
+ * it as a side effect, then immediately calls [onOpened] to pop itself off the back stack.
+ * */
 @Composable
-fun LibrariesScreen(navigator: DestinationsNavigator) {
+fun LibrariesScreen(onOpened: () -> Unit) {
     val context = LocalContext.current
     val title = stringResource(R.string.libraries_used)
 
@@ -27,6 +28,6 @@ fun LibrariesScreen(navigator: DestinationsNavigator) {
             Typography,
         )
         context.startActivity(Intent(context, OssLicensesMenuActivity::class.java))
-        navigator.popBackStack()
+        onOpened()
     }
 }

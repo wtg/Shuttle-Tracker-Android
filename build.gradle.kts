@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.google.service) apply false
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
 }
 
 // pre commit hook to check kotlin style before commits
@@ -21,9 +22,5 @@ tasks.register<Copy>("copyPreCommitHook") {
     outputs.upToDateWhen { false }
     from("$rootDir/scripts/pre-commit")
     into("$rootDir/.git/hooks/")
-}
-
-afterEvaluate {
-    tasks.getByPath(":app:preBuild").dependsOn(":copyPreCommitHook")
 }
 

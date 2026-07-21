@@ -1,517 +1,205 @@
 package edu.rpi.shuttletracker.feature.map
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.location.Location
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
+import androidx.activity.compose.LocalActivity
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.outlined.Layers
-import androidx.compose.material.icons.outlined.LocationDisabled
-import androidx.compose.material.icons.outlined.MyLocation
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.core.graphics.toColorInt
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.maps.android.compose.Circle
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapType
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.Polyline
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberUpdatedMarkerState
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
-import edu.rpi.shuttletracker.core.ui.theme.VehicleColors
-import edu.rpi.shuttletracker.data.models.Stop
-import edu.rpi.shuttletracker.data.models.Vehicle
-import edu.rpi.shuttletracker.feature.map.components.ScheduleSheet
-import edu.rpi.shuttletracker.feature.map.components.getVehicleMarkerDescriptor
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import edu.rpi.shuttletracker.feature.etas.EtasScreen
+import edu.rpi.shuttletracker.feature.etas.EtasViewModel
+import edu.rpi.shuttletracker.feature.map.components.AnnouncementSheet
+import edu.rpi.shuttletracker.feature.schedule.ScheduleScreen
+import edu.rpi.shuttletracker.feature.schedule.ScheduleViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>(start = true)
-@Composable
-fun MapsScreen(
-    navigator: DestinationsNavigator,
-    viewModel: MapsViewModel = hiltViewModel(),
+/**
+ * Peer destinations of the live tracker experience. Switched with local state rather than a
+ * Navigation3 route since they share one Scaffold and bottom bar.
+ * */
+private enum class MainTab(
+    @StringRes val labelRes: Int,
+    @DrawableRes val iconRes: Int,
 ) {
-    val mapsUiState = viewModel.mapsUiState.collectAsStateWithLifecycle().value
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    var selectedScheduleRoute by rememberSaveable { mutableStateOf<String?>(null) }
-
-    var showScheduleSheet by rememberSaveable { mutableStateOf(false) }
-    val scheduleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    Scaffold(
-        snackbarHost = {
-            CheckResponseError(
-                mapsUiState.networkError,
-                mapsUiState.serverError,
-                mapsUiState.unknownError,
-                ignoreErrorRequest = { viewModel.clearErrors() },
-                retryErrorRequest = { viewModel.retry() },
-            )
-            SnackbarHost(hostState = snackbarHostState)
-        },
-    ) { padding ->
-        Box(Modifier.fillMaxSize()) {
-            ShuttleMap(
-                mapsUiState = mapsUiState,
-                padding = padding,
-                onSettingsClick = { navigator.navigate(SettingsScreenDestination()) },
-                onScheduleClick = { showScheduleSheet = true },
-                onToggleMapTypeClick = { viewModel.toggleMapType() },
-            )
-
-            ScheduleSheet(
-                show = showScheduleSheet,
-                sheetState = scheduleSheetState,
-                schedule = mapsUiState.schedule,
-                routesByName = mapsUiState.routes,
-                selectedRoute = selectedScheduleRoute,
-                onSelectedRouteChange = { selectedScheduleRoute = it },
-                onDismiss = { showScheduleSheet = false },
-            )
-        }
-    }
+    Map(R.string.nav_map, R.drawable.ic_explore),
+    Etas(R.string.nav_etas, R.drawable.ic_directions_bus),
+    Schedule(R.string.schedule_title, R.drawable.ic_schedule),
 }
 
+/**
+ * The app's home screen: switches between Map ([MapTab]), [EtasScreen], and [ScheduleScreen] with
+ * a bottom nav bar, or a side [NavigationRail] once the window is wide enough (a rotated phone,
+ * a foldable, a tablet) that a bottom bar would waste horizontal space. This is the entry point
+ * [edu.rpi.shuttletracker.app.navigation.AppNavigation] routes to, and each tab gets its own
+ * ViewModel so switching tabs never loses that tab's state.
+ * */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-private fun ShuttleMap(
-    mapsUiState: MapsUiState,
-    padding: PaddingValues,
-    onSettingsClick: () -> Unit,
-    onScheduleClick: () -> Unit,
-    onToggleMapTypeClick: () -> Unit,
+fun MapsScreen(
+    onOpenSettings: () -> Unit,
+    viewModel: MapsViewModel = hiltViewModel(),
+    scheduleViewModel: ScheduleViewModel = hiltViewModel(),
+    etasViewModel: EtasViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+    val uiState by viewModel.mapsUiState.collectAsStateWithLifecycle()
+    var selectedTab by rememberSaveable { mutableStateOf(MainTab.Map) }
+    var isAnnouncementsSheetVisible by rememberSaveable { mutableStateOf(false) }
+    val announcementsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    val isLocationPermissionGranted by remember {
-        mutableStateOf(
-            ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-            ) == PackageManager.PERMISSION_GRANTED,
-        )
-    }
+    // Compact is a phone in portrait; anything wider (a rotated phone, a foldable, a tablet) gets
+    // a side rail instead of a bottom bar so the bar doesn't waste all that horizontal space.
+    val windowSizeClass = calculateWindowSizeClass(requireNotNull(LocalActivity.current))
+    val useNavigationRail = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
 
-    val cameraPositionState =
-        rememberCameraPositionState {
-            position =
-                CameraPosition.fromLatLngZoom(
-                    LatLng(42.73068146020498, -73.67619731950525),
-                    14.3f,
-                )
-        }
+    // Dark mode uses the same lighter tone as the map buttons (see mapButtonColors) so the nav
+    // chrome reads as one consistent piece instead of a different dark shade.
+    val isDark = MaterialTheme.colorScheme.background.luminance() <= 0.5f
+    val navContainerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else null
 
-    var selectedStop by remember { mutableStateOf<Stop?>(null) }
-    val isDark = mapsUiState.themeMode.isDarkTheme(isSystemInDarkTheme())
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = padding,
-            cameraPositionState = cameraPositionState,
-            properties =
-                MapProperties(
-                    latLngBoundsForCameraTarget =
-                        LatLngBounds(
-                            LatLng(42.72095724005504, -73.70196321825452),
-                            LatLng(42.741173465236876, -73.6543446409232),
-                        ),
-                    mapType = mapsUiState.mapType,
-                    isBuildingEnabled = true,
-                    minZoomPreference = 14f,
-                    isMyLocationEnabled = isLocationPermissionGranted,
-                    mapStyleOptions =
-                        if (isDark) {
-                            MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
-                        } else {
-                            null
-                        },
-                ),
-            uiSettings =
-                MapUiSettings(
-                    zoomControlsEnabled = false,
-                    myLocationButtonEnabled = false,
-                ),
-        ) {
-            mapsUiState.routes.forEach { (_, route) ->
-                route.stopDetails.forEach { (_, stop) ->
-                    StopMarker(
-                        stop = stop,
-                        selected = stop.name == selectedStop?.name,
-                        onSelected = { selectedStop = it },
-                    )
-                }
-            }
-
-            mapsUiState.vehicles.forEach { vehicle ->
-                VehicleMarker(
-                    vehicle = vehicle,
-                    animationsEnabled = mapsUiState.shuttleAnimationsEnabled,
-                    rotationEnabled = mapsUiState.shuttleRotationEnabled,
-                )
-            }
-
-            mapsUiState.routes.forEach { (_, route) ->
-                val points = route.latLng()
-                if (points.isNotEmpty()) {
-                    Polyline(
-                        points = points,
-                        color =
-                            Color(
-                                android.graphics.Color
-                                    .valueOf(route.color.toColorInt())
-                                    .toArgb(),
-                            ),
+    Row(Modifier.fillMaxSize()) {
+        if (useNavigationRail) {
+            NavigationRail {
+                MainTab.entries.forEach { tab ->
+                    NavigationRailItem(
+                        selected = selectedTab == tab,
+                        onClick = { selectedTab = tab },
+                        icon = { Icon(painterResource(tab.iconRes), contentDescription = null) },
+                        label = { Text(stringResource(tab.labelRes)) },
                     )
                 }
             }
         }
 
-        val mapTypeIcon =
-            if (mapsUiState.mapType == MapType.NORMAL) {
-                Icons.Outlined.Layers
-            } else {
-                Icons.Filled.Layers
-            }
-
-        MapButtonsOverlay(
-            modifier =
-                Modifier
-                    .padding(padding)
-                    .padding(horizontal = 10.dp),
-            isMyLocationEnabled = isLocationPermissionGranted,
-            mapTypeIcon = mapTypeIcon,
-            onSettingsClick = onSettingsClick,
-            onScheduleClick = onScheduleClick,
-            onRecenterClick = {
-                LocationServices
-                    .getFusedLocationProviderClient(context)
-                    .lastLocation
-                    .addOnSuccessListener { location: Location? ->
-                        if (location == null) return@addOnSuccessListener
-
-                        coroutineScope.launch {
-                            cameraPositionState.animate(
-                                update =
-                                    CameraUpdateFactory.newCameraPosition(
-                                        CameraPosition
-                                            .builder()
-                                            .target(
-                                                LatLng(
-                                                    location.latitude,
-                                                    location.longitude,
-                                                ),
-                                            ).tilt(0f)
-                                            .zoom(cameraPositionState.position.zoom)
-                                            .build(),
-                                    ),
-                                durationMs = 1000,
+        Scaffold(
+            modifier = Modifier.weight(1f),
+            snackbarHost = {
+                CheckResponseError(
+                    uiState.networkError,
+                    uiState.serverError,
+                    uiState.unknownError,
+                    ignoreErrorRequest = viewModel::clearErrors,
+                    retryErrorRequest = viewModel::retry,
+                )
+            },
+            bottomBar = {
+                if (!useNavigationRail) {
+                    NavigationBar(containerColor = navContainerColor ?: NavigationBarDefaults.containerColor) {
+                        MainTab.entries.forEach { tab ->
+                            NavigationBarItem(
+                                selected = selectedTab == tab,
+                                onClick = { selectedTab = tab },
+                                icon = { Icon(painterResource(tab.iconRes), contentDescription = null) },
+                                label = { Text(stringResource(tab.labelRes)) },
                             )
                         }
                     }
+                }
             },
-            onToggleMapTypeClick = onToggleMapTypeClick,
-        )
-    }
-}
+        ) { contentPadding ->
+            when (selectedTab) {
+                MainTab.Map ->
+                    MapTab(
+                        viewModel = viewModel,
+                        uiState = uiState,
+                        contentPadding = contentPadding,
+                        onSettingsClick = onOpenSettings,
+                        isAnnouncementsSheetVisible = isAnnouncementsSheetVisible,
+                        onAnnouncementsSheetVisibleChange = { isAnnouncementsSheetVisible = it },
+                        announcementsSheetState = announcementsSheetState,
+                    )
 
-@Composable
-private fun StopMarker(
-    stop: Stop,
-    selected: Boolean,
-    onSelected: (Stop) -> Unit,
-) {
-    val markerState = rememberUpdatedMarkerState(position = stop.latLng())
+                MainTab.Etas ->
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(contentPadding),
+                    ) {
+                        EtasScreen(viewModel = etasViewModel)
+                    }
 
-    Circle(
-        center = stop.latLng(),
-        radius = 15.0,
-        strokeColor =
-            if (selected) {
-                Color(0xFF6699FF)
-            } else {
-                MaterialTheme.colorScheme.onPrimaryContainer
-            },
-        strokeWidth = 8f,
-        zIndex = 1f,
-        fillColor = Color.Transparent,
-    )
-
-    Marker(
-        state = markerState,
-        title = stop.name,
-        anchor = Offset(0.5f, 0.5f),
-        alpha = 0f,
-        zIndex = 2f,
-        onClick = {
-            onSelected(stop)
-            markerState.showInfoWindow()
-            true
-        },
-    )
-}
-
-@Composable
-private fun VehicleMarker(
-    vehicle: Vehicle,
-    animationsEnabled: Boolean,
-    rotationEnabled: Boolean,
-) {
-    val context = LocalContext.current
-    val target = vehicle.latLng()
-    val heading = vehicle.headingDegrees?.toFloat() ?: 0f
-
-    val lat = remember { Animatable(target.latitude.toFloat()) }
-    val lng = remember { Animatable(target.longitude.toFloat()) }
-
-    val markerState =
-        rememberUpdatedMarkerState(
-            position = LatLng(lat.value.toDouble(), lng.value.toDouble()),
-        )
-
-    // Animate movement
-    LaunchedEffect(target, animationsEnabled) {
-        if (animationsEnabled) {
-            launch {
-                lat.animateTo(
-                    target.latitude.toFloat(),
-                    animationSpec = tween(durationMillis = 2000),
-                )
+                MainTab.Schedule ->
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(contentPadding),
+                    ) {
+                        ScheduleScreen(viewModel = scheduleViewModel)
+                    }
             }
-            launch {
-                lng.animateTo(
-                    target.longitude.toFloat(),
-                    animationSpec = tween(durationMillis = 2000),
-                )
-            }
-        } else {
-            lat.snapTo(target.latitude.toFloat())
-            lng.snapTo(target.longitude.toFloat())
-        }
-    }
-
-    // Update marker position when animation values change
-    LaunchedEffect(lat.value, lng.value) {
-        markerState.position = LatLng(lat.value.toDouble(), lng.value.toDouble())
-    }
-
-    val resolvedColor =
-        when (vehicle.routeName) {
-            "NORTH" -> VehicleColors.North
-            "WEST" -> VehicleColors.West
-            else -> null
-        }
-
-    var vehicleColor by remember { mutableStateOf(resolvedColor) }
-
-    LaunchedEffect(resolvedColor) {
-        if (resolvedColor != null) {
-            vehicleColor = resolvedColor
-        } else {
-            delay(30_000)
-            if (vehicleColor == null) {
-                vehicleColor = VehicleColors.Default
-            }
-        }
-    }
-
-    val finalColor = resolvedColor ?: vehicleColor ?: VehicleColors.Default
-
-    val icon =
-        remember(finalColor) {
-            getVehicleMarkerDescriptor(context, 25f, finalColor.toArgb())
-        }
-
-    val timeAgoFlow = remember(vehicle.timestamp) { vehicle.getTimeAgo() }
-    val lastUpdatedAgoText =
-        timeAgoFlow.collectAsStateWithLifecycle(initialValue = "").value
-
-    val snippetText =
-        buildString {
-            append(stringResource(R.string.vehicle_speed, vehicle.speedMph))
-            if (lastUpdatedAgoText.isNotBlank()) {
-                append(" • ")
-                append(lastUpdatedAgoText)
-            }
-        }
-
-    Marker(
-        state = markerState,
-        title = stringResource(R.string.vehicle_number, vehicle.name),
-        icon = icon,
-        snippet = snippetText,
-        anchor = Offset(0.5f, 0.5f),
-        zIndex = 3f,
-        rotation = if (rotationEnabled) heading else 0f,
-        flat = rotationEnabled,
-        onClick = {
-            it.showInfoWindow()
-            true
-        },
-    )
-}
-
-@Composable
-private fun MapButtonsOverlay(
-    modifier: Modifier = Modifier,
-    isMyLocationEnabled: Boolean,
-    mapTypeIcon: ImageVector,
-    onSettingsClick: () -> Unit,
-    onScheduleClick: () -> Unit,
-    onRecenterClick: () -> Unit,
-    onToggleMapTypeClick: () -> Unit,
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-    ) {
-        // Left side
-        Column(
-            modifier =
-                Modifier
-                    .align(Alignment.TopStart),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            ActionButton(icon = Icons.Outlined.Settings) {
-                onSettingsClick()
-            }
-        }
-        // Right side
-        Column(
-            modifier =
-                Modifier
-                    .align(Alignment.TopEnd),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            ActionButton(
-                icon =
-                    if (isMyLocationEnabled) {
-                        Icons.Outlined.MyLocation
-                    } else {
-                        Icons.Outlined.LocationDisabled
-                    },
-            ) {
-                onRecenterClick()
-            }
-            ActionButton(icon = mapTypeIcon) {
-                onToggleMapTypeClick()
-            }
-        }
-
-        FloatingActionButton(
-            onClick = onScheduleClick,
-            modifier =
-                Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Schedule,
-                contentDescription = "Open schedule",
-            )
         }
     }
 }
 
 /**
- * Buttons that let you do things that is displayed on the map
- * @param badgeCount: if a badge is needed for a item, it will display
- * @param action: what to do on button click
+ * Vehicle and announcement polling are scoped to this composable's own lifetime, not the whole
+ * screen's, so switching to another tab actually stops the live 5-second polling instead of
+ * leaving it running in the background indefinitely.
  * */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ActionButton(
-    icon: ImageVector,
-    badgeCount: Int = 0,
-    action: () -> Unit,
+private fun MapTab(
+    viewModel: MapsViewModel,
+    uiState: MapsUiState,
+    contentPadding: PaddingValues,
+    onSettingsClick: () -> Unit,
+    isAnnouncementsSheetVisible: Boolean,
+    onAnnouncementsSheetVisibleChange: (Boolean) -> Unit,
+    announcementsSheetState: SheetState,
 ) {
-    BadgedBox(
-        badge = {
-            if (badgeCount > 0) {
-                // moves the badge on top of the circle
-                Badge(modifier = Modifier.offset((-11).dp, 11.dp)) {
-                    Text(text = badgeCount.toString())
-                }
-            }
-        },
-    ) {
-        Button(
-            onClick = { action() },
-            modifier =
-                Modifier
-                    .size(50.dp),
-            shape = CircleShape,
-            contentPadding = PaddingValues(0.dp),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground,
-                ),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-        ) {
-            Icon(icon, icon.name)
+    LifecycleStartEffect(viewModel) {
+        viewModel.startVehiclePolling()
+        viewModel.startAnnouncementRefresh()
+        onStopOrDispose {
+            viewModel.stopVehiclePolling()
+            viewModel.stopAnnouncementRefresh()
         }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        ShuttleMap(
+            uiState = uiState,
+            contentPadding = contentPadding,
+            onSettingsClick = onSettingsClick,
+            onToggleMapTypeClick = viewModel::toggleMapType,
+            onAnnouncementsClick = { onAnnouncementsSheetVisibleChange(true) },
+        )
+
+        AnnouncementSheet(
+            show = isAnnouncementsSheetVisible,
+            sheetState = announcementsSheetState,
+            announcements = uiState.announcements,
+            updatedAt = if (uiState.simulateAnnouncements) null else uiState.announcementsUpdatedAt,
+            onDismiss = { onAnnouncementsSheetVisibleChange(false) },
+        )
     }
 }

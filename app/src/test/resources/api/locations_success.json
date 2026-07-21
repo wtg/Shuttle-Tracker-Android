@@ -1,0 +1,10 @@
+{
+  "bus-1": {
+    "name": "North Bus",
+    "latitude": 42.730,
+    "longitude": -73.680,
+    "speed_mph": 12.0,
+    "timestamp": "2026-01-15T08:00:00-05:00",
+    "heading_degrees": 90
+  }
+}

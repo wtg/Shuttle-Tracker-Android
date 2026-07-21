@@ -15,6 +15,7 @@
         android:allowBackup="true"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.ShuttleTracker"
@@ -39,6 +40,42 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
+        <!--
+        Play Services' Maps renderer module still references the legacy Apache HTTP client, which
+        was removed from the platform classpath in API 28+. Without this, some emulator images
+        crash with NoClassDefFoundError: org.apache.http.ProtocolVersion when the map first loads.
+        -->
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
+        <receiver
+            android:name=".widget.EtaWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_display_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/eta_widget_info" />
+        </receiver>
+
+        <!--
+        taskAffinity="" keeps this out of MainActivity's task - otherwise finishing it while the
+        app is already open in the background resurfaces the app instead of the home screen.
+        -->
+        <activity
+            android:name=".widget.EtaWidgetConfigureActivity"
+            android:exported="true"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.ShuttleTracker">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".background.service.FirebaseService"
             android:exported="false">
@@ -47,21 +84,20 @@
             </intent-filter>
         </service>
 
-        <receiver
-            android:name=".background.receiver.NotificationReceiver"
-            android:exported="false" />
-
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
-        </provider>
-
+        <!--
+        Used by Firebase to render notification+data messages it displays automatically while the
+        app is backgrounded or not running, since FirebaseService.onMessageReceived never runs in
+        that case.
+        -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_default" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_color" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="push_channel" />
 
     </application>
 

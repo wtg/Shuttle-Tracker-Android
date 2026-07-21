@@ -1,62 +1,45 @@
 package edu.rpi.shuttletracker.feature.settings.developerMenu
 
-import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import edu.rpi.shuttletracker.data.local.preferences.UserPreferencesRepository
+import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
+/** Backs [DevMenuScreen]. Same "mirror preferences directly" pattern as `SettingsViewModel`. */
 @HiltViewModel
 class DevMenuViewModel
     @Inject
     constructor(
-        private val userPreferencesRepository: UserPreferencesRepository,
+        private val userPreferences: UserPreferences,
     ) : ViewModel() {
-        val devMenuUiState =
-            combine(
-                userPreferencesRepository.getMaxStopDist(),
-                userPreferencesRepository.getBaseUrl(),
-            ) { maxStopDist, baseUrl ->
-                return@combine DevMenuUiState(
-                    maxStopDist = maxStopDist,
-                    baseUrl = baseUrl,
-                )
-            }.stateIn(
-                scope = viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                DevMenuUiState(),
-            )
+        val simulateAnnouncements: StateFlow<Boolean> =
+            userPreferences
+                .getSimulateAnnouncements()
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
-        fun updateMinStopDist(minStopDist: Float) {
+        val fakeShuttlesEnabled: StateFlow<Boolean> =
+            userPreferences
+                .getFakeShuttlesEnabled()
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+        suspend fun setDeveloperOptions(enabled: Boolean) {
+            userPreferences.activateDevOptions(enabled)
+        }
+
+        fun setSimulateAnnouncements(enabled: Boolean) {
             viewModelScope.launch {
-                userPreferencesRepository.saveMaxStopDist(minStopDist)
+                userPreferences.saveSimulateAnnouncements(enabled)
             }
         }
 
-        /**
-         * MAKE SURE THIS IS BLOCKING OR ELSE STUFF BREAKS
-         * */
-        fun updateBaseUrl(baseUrl: String) {
-            runBlocking {
-                userPreferencesRepository.saveBaseUrl(baseUrl)
-            }
-        }
-
-        fun updateDevMenu(devOptions: Boolean) {
+        fun setFakeShuttlesEnabled(enabled: Boolean) {
             viewModelScope.launch {
-                userPreferencesRepository.activateDevOptions(devOptions)
+                userPreferences.saveFakeShuttlesEnabled(enabled)
             }
         }
     }
-
-@Immutable
-data class DevMenuUiState(
-    val maxStopDist: Float = 20F,
-    val baseUrl: String = "",
-)

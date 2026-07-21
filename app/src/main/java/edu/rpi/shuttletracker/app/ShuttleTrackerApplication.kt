@@ -1,34 +1,20 @@
 package edu.rpi.shuttletracker.app
 
 import android.app.Application
-import androidx.hilt.work.HiltWorkerFactory
-import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
 import edu.rpi.shuttletracker.background.notification.Notifications
-import edu.rpi.shuttletracker.background.service.FirebaseService
-import edu.rpi.shuttletracker.background.worker.AnnouncementWorker
-import javax.inject.Inject
 
+/**
+ * The app's [Application] class. Marking it `@HiltAndroidApp` is what turns on Hilt dependency
+ * injection for the whole app - every `@AndroidEntryPoint`/`@HiltViewModel` elsewhere depends on
+ * this. Also does the one-time setup that has to happen before any screen shows, like creating
+ * notification channels.
+ * */
 @HiltAndroidApp
-class ShuttleTrackerApplication :
-    Application(),
-    Configuration.Provider {
-    @Inject lateinit var workerFactory: HiltWorkerFactory
-
+class ShuttleTrackerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
         Notifications.createChannels(this)
-
-        FirebaseService.retrieveToken()
-
-        AnnouncementWorker.startWork(this)
     }
-
-    override val workManagerConfiguration: Configuration
-        get() =
-            Configuration
-                .Builder()
-                .setWorkerFactory(workerFactory)
-                .build()
 }

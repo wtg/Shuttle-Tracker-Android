@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.feature.settings.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,10 +13,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
 /**
+ * One row in a settings list: an optional icon, a title/description, and either a click target or
+ * a trailing action (switch, etc). The one shared building block behind every settings screen.
+ *
  * @param icon: Icon to show with the setting
  * @param title: Title of the setting
  * @param description: Any subtitle to show with the setting
@@ -25,18 +29,23 @@ import androidx.compose.ui.unit.dp
  * */
 @Composable
 fun SettingsItem(
-    icon: ImageVector? = null,
+    @DrawableRes icon: Int? = null,
     title: String,
     description: String = "",
     hasBottomSpacing: Boolean = true,
-    onClick: () -> Unit = {},
-    useLargeAction: Boolean = false,
+    onClick: (() -> Unit)? = null,
     actions: @Composable () -> Unit = {},
 ) {
+    val clickModifier =
+        if (onClick != null) {
+            Modifier.clickable(onClick = onClick)
+        } else {
+            Modifier
+        }
+
     Row(
         modifier =
-            Modifier
-                .clickable { onClick() }
+            clickModifier
                 .fillMaxWidth()
                 .padding(
                     top = 10.dp,
@@ -49,8 +58,8 @@ fun SettingsItem(
     ) {
         if (icon != null) {
             Icon(
-                icon,
-                title,
+                painter = painterResource(icon),
+                contentDescription = null,
                 modifier = Modifier.padding(vertical = 10.dp),
             )
         }
@@ -64,14 +73,8 @@ fun SettingsItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-
-            if (useLargeAction) {
-                actions()
-            }
         }
 
-        if (!useLargeAction) {
-            actions()
-        }
+        actions()
     }
 }

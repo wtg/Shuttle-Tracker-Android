@@ -1,0 +1,182 @@
+package edu.rpi.shuttletracker.feature.schedule.utils
+
+import com.google.common.truth.Truth.assertThat
+import edu.rpi.shuttletracker.data.models.DayOfWeek
+import edu.rpi.shuttletracker.testing.fixtures.testRoute
+import edu.rpi.shuttletracker.testing.fixtures.testSchedule
+import org.junit.Test
+import java.time.LocalDateTime
+import java.time.LocalTime
+
+class ScheduleUtilsTest {
+    @Test
+    fun `routes for day returns distinct sorted route names`() {
+        val schedule =
+            testSchedule(
+                weekday =
+                    mapOf(
+                        "Bus 1" to listOf(listOf("7:00 AM", "WEST"), listOf("8:00 AM", "NORTH")),
+                        "Bus 2" to listOf(listOf("9:00 AM", "WEST"), listOf("invalid")),
+                    ),
+            )
+
+        assertThat(routesForDay(DayOfWeek.MONDAY, schedule)).containsExactly("NORTH", "WEST").inOrder()
+    }
+
+    @Test
+    fun `consolidated times filters route and sorts after-midnight service last`() {
+        val schedule =
+            testSchedule(
+                weekday =
+                    mapOf(
+                        "Bus 1" to
+                            listOf(
+                                listOf("12:30 AM", "NORTH"),
+                                listOf("6:30 AM", "WEST"),
+                                listOf("7:00 AM", "NORTH"),
+                            ),
+                    ),
+            )
+
+        val result = consolidatedTimes("NORTH", DayOfWeek.MONDAY, schedule, mapOf("NORTH" to testRoute()))
+
+        assertThat(result.map { it.departureTime }).containsExactly("7:00 AM", "12:30 AM").inOrder()
+    }
+
+    @Test
+    fun `stop times apply each stop offset`() {
+        val result = buildStopTimesForDeparture("NORTH", "7:00 AM", mapOf("NORTH" to testRoute()))
+
+        assertThat(result.map { it.time }).containsExactly("7:00 AM", "7:05 AM").inOrder()
+    }
+
+    @Test
+    fun `unknown route has no stop times`() {
+        assertThat(buildStopTimesForDeparture("WEST", "7:00 AM", mapOf("NORTH" to testRoute()))).isEmpty()
+    }
+
+    @Test
+    fun `normal departure converts to minutes since midnight`() {
+        assertThat(parseMinutesOfDay("7:15 AM")).isEqualTo(435)
+    }
+
+    @Test
+    fun `after-midnight departure sorts as next service day`() {
+        assertThat(parseMinutesOfDay("12:30 AM")).isEqualTo(1_470)
+    }
+
+    @Test
+    fun `invalid time returns null`() {
+        assertThat(parseLocalTime("25:70 PM")).isNull()
+    }
+
+    @Test
+    fun `time formatting uses the schedule format`() {
+        assertThat(formatLocalTime(LocalTime.of(19, 5))).isEqualTo("7:05 PM")
+    }
+
+    private fun timeInfo(minutesOfDay: Int) =
+        TimeInfo(
+            departureTime = "",
+            routeName = "NORTH",
+            vehicleName = "Bus 1",
+            minutesOfDay = minutesOfDay,
+            stopTimes = emptyList(),
+        )
+
+    @Test
+    fun `scroll index lands on the departure just before the next upcoming one`() {
+        val times = listOf(timeInfo(420), timeInfo(480), timeInfo(540))
+
+        assertThat(scrollIndexFor(times, nowMinutes = 500)).isEqualTo(1)
+    }
+
+    @Test
+    fun `scroll index is zero when every departure is still upcoming`() {
+        val times = listOf(timeInfo(420), timeInfo(480))
+
+        assertThat(scrollIndexFor(times, nowMinutes = 0)).isEqualTo(0)
+    }
+
+    @Test
+    fun `scroll index lands on the last departure once every one has already happened`() {
+        val times = listOf(timeInfo(420), timeInfo(480), timeInfo(540))
+
+        assertThat(scrollIndexFor(times, nowMinutes = 600)).isEqualTo(2)
+    }
+
+    @Test
+    fun `scroll index is zero for an empty schedule`() {
+        assertThat(scrollIndexFor(emptyList(), nowMinutes = 500)).isEqualTo(0)
+    }
+
+    @Test
+    fun `next scheduled arrival finds the soonest upcoming departure`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "union",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 6, 0),
+            )
+
+        assertThat(next).isEqualTo(LocalDateTime.of(2026, 7, 20, 7, 0))
+    }
+
+    @Test
+    fun `next scheduled arrival applies the target stop's own offset`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "academy",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 6, 0),
+            )
+
+        assertThat(next).isEqualTo(LocalDateTime.of(2026, 7, 20, 7, 5))
+    }
+
+    @Test
+    fun `next scheduled arrival wraps an after-midnight departure to later tonight`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "union",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 23, 0),
+            )
+
+        assertThat(next).isEqualTo(LocalDateTime.of(2026, 7, 21, 0, 30))
+    }
+
+    @Test
+    fun `next scheduled arrival is null once every departure today has already passed`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "union",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 9, 0),
+            )
+
+        assertThat(next).isNull()
+    }
+
+    @Test
+    fun `next scheduled arrival is null for a stop the route doesn't serve`() {
+        val next =
+            nextScheduledArrival(
+                stopKey = "nonexistent",
+                schedule = testSchedule(),
+                routesByName = mapOf("NORTH" to testRoute()),
+                day = DayOfWeek.MONDAY,
+                now = LocalDateTime.of(2026, 7, 20, 6, 0),
+            )
+
+        assertThat(next).isNull()
+    }
+}

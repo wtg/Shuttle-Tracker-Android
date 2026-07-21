@@ -6,14 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.BugReport
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.DirectionsBus
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +19,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,22 +27,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.LibrariesScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 
+/**
+ * The About screen: repo/issues/privacy links, the libraries list, and version info. Tapping the
+ * version row 10 times calls [AboutViewModel.activateDevOptions], the classic Android "unlock
+ * developer options" gesture - after that, [SettingsScreen] shows a Developer Options entry.
+ * */
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>
 @Composable
 fun AboutScreen(
-    navigator: DestinationsNavigator,
+    onBack: () -> Unit,
+    onOpenLibraries: () -> Unit,
     viewModel: AboutViewModel = hiltViewModel(),
 ) {
     val uriHandler = LocalUriHandler.current
@@ -68,8 +65,8 @@ fun AboutScreen(
             TopAppBar(
                 title = { Text(text = stringResource(R.string.about)) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
+                    IconButton(onClick = onBack) {
+                        Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.back))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -80,7 +77,8 @@ fun AboutScreen(
         Column(
             modifier =
                 Modifier
-                    .padding(padding),
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState()),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -92,34 +90,34 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             SettingsItem(
-                icon = Icons.Outlined.Code,
+                icon = R.drawable.ic_code,
                 title = stringResource(R.string.check_out_repository),
                 onClick = { uriHandler.openUri(repositoryUrl) },
             )
 
             SettingsItem(
-                icon = Icons.Outlined.BugReport,
+                icon = R.drawable.ic_bug_report,
                 title = stringResource(R.string.report_problem),
                 onClick = { uriHandler.openUri(repositoryIssuesUrl) },
             )
 
             SettingsItem(
-                icon = Icons.Outlined.Shield,
+                icon = R.drawable.ic_shield,
                 title = stringResource(R.string.view_privacy_policy),
                 onClick = { uriHandler.openUri(privacyPolicyUrl) },
             )
 
             SettingsItem(
-                icon = Icons.Outlined.Description,
+                icon = R.drawable.ic_description,
                 title = stringResource(R.string.libraries_used),
-                onClick = { navigator.navigate(LibrariesScreenDestination()) },
+                onClick = onOpenLibraries,
             )
 
             var timesClicked by remember { mutableIntStateOf(10) }
-            var toast: Toast? = null
+            var toast by remember { mutableStateOf<Toast?>(null) }
             val devOptionsStateMessage = stringResource(R.string.dev_options_state, timesClicked - 1)
             SettingsItem(
-                icon = Icons.Outlined.Info,
+                icon = R.drawable.ic_info,
                 title = stringResource(R.string.version),
                 BuildConfig.VERSION_NAME,
                 onClick = {
@@ -150,7 +148,7 @@ fun AboutScreen(
             )
 
             SettingsItem(
-                icon = Icons.Outlined.DirectionsBus,
+                icon = R.drawable.ic_directions_bus,
                 title = stringResource(R.string.shuttle_tracker_version),
                 stringResource(R.string.api_key),
             )

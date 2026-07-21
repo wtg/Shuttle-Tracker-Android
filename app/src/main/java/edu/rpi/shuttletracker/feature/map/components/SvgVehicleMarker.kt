@@ -14,6 +14,12 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import kotlin.math.roundToInt
 
+// Google Maps markers need a Bitmap/BitmapDescriptor, not a Compose Painter, so a bus icon can't
+// just be a vector drawable rendered normally - this draws the circle + bus glyph onto a Canvas by
+// hand instead. getVehicleMarkerDescriptor() is the entry point (used by VehicleMarker); everything
+// else here is a private implementation detail.
+
+/** Draws a colored circle with a white bus icon on top, at [pxSize] pixels square. */
 private fun buildVehicleMarkerBitmap(
     pxSize: Int,
     @ColorInt color: Int,
@@ -70,8 +76,10 @@ private fun buildVehicleMarkerBitmap(
     return bitmap
 }
 
+/** Avoids redrawing the same size+color bitmap on every recomposition/marker. */
 private object VehicleMarkerCache : LruCache<String, BitmapDescriptor>(8)
 
+/** The marker icon for a [edu.rpi.shuttletracker.data.models.Vehicle], cached by size and color. */
 fun getVehicleMarkerDescriptor(
     context: Context,
     dpSize: Float,

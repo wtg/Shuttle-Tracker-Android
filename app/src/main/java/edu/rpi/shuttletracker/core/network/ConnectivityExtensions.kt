@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 
+/** True if the device currently has a working network connection of any kind. */
 fun Context.hasNetwork(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val nw = connectivityManager.activeNetwork ?: return false
