@@ -23,7 +23,6 @@ class FirebaseService : FirebaseMessagingService() {
     private val job = SupervisorJob()
 
     override fun onNewToken(token: String) {
-        super.onNewToken(token)
         CoroutineScope(job).launch {
             apiRepository.sendRegistrationToken(token)
         }
@@ -63,6 +62,6 @@ class FirebaseService : FirebaseMessagingService() {
     }
 
     companion object {
-        fun retrieveToken() = FirebaseMessaging.getInstance().token
+        fun retrieveToken() = FirebaseMessaging.getInstance().getToken()
     }
 }
