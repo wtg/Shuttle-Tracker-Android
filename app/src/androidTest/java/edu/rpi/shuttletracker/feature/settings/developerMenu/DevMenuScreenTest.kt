@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.feature.settings.developerMenu
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.performClick
@@ -63,7 +64,7 @@ class DevMenuScreenTest {
     ) {
         composeRule.setContent {
             ShuttleTrackerTheme(dynamicColor = false) {
-                DevMenuScreen(onBack = onBack, viewModel = DevMenuViewModel(preferences))
+                DevMenuScreen(onBack = onBack, viewModel = remember { DevMenuViewModel(preferences) })
             }
         }
     }

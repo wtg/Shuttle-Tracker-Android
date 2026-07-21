@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.feature.settings.about
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -61,7 +62,7 @@ class AboutScreenTest {
                 AboutScreen(
                     onBack = {},
                     onOpenLibraries = {},
-                    viewModel = AboutViewModel(preferences),
+                    viewModel = remember { AboutViewModel(preferences) },
                 )
             }
         }

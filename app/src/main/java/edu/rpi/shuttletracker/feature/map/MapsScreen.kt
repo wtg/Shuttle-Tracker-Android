@@ -1,6 +1,6 @@
 package edu.rpi.shuttletracker.feature.map
 
-import android.app.Activity
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
@@ -30,7 +30,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -79,7 +78,7 @@ fun MapsScreen(
 
     // Compact is a phone in portrait; anything wider (a rotated phone, a foldable, a tablet) gets
     // a side rail instead of a bottom bar so the bar doesn't waste all that horizontal space.
-    val windowSizeClass = calculateWindowSizeClass(LocalContext.current as Activity)
+    val windowSizeClass = calculateWindowSizeClass(requireNotNull(LocalActivity.current))
     val useNavigationRail = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
 
     // Dark mode uses the same lighter tone as the map buttons (see mapButtonColors) so the nav
