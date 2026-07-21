@@ -6,12 +6,16 @@ showing live shuttle locations, routes, ETAs, and schedules in a native Android 
 
 ## Screenshots
 
-<p align="center">
-  <img src="docs/images/map.png" width="35%"  alt="Map Screen"/>
-  <img src="docs/images/etas.png" width="35%"  alt="ETAs Screen"/>
-  <img src="docs/images/schedule.png" width="35%"  alt="Schedule Screen"/>
-  <img src="docs/images/widget.png" width="35%"  alt="Widgets Screen"/>
-</p>
+<details>
+<summary>Click to open
+</summary>
+  <p align="center">
+    <img src="docs/images/map.png" width="24%"  alt="Map Screen"/>
+    <img src="docs/images/etas.png" width="24%"  alt="ETAs Screen"/>
+    <img src="docs/images/schedule.png" width="24%"  alt="Schedule Screen"/>
+    <img src="docs/images/widget.png" width="24%"  alt="Widgets Screen"/>
+  </p>
+</details>
 
 ## Features
 
@@ -20,7 +24,8 @@ showing live shuttle locations, routes, ETAs, and schedules in a native Android 
 - **ETAs** - live arrival time predictions per stop
 - **Schedule** - browse the shuttle schedule by day and route
 - **Push notifications** - Firebase Cloud Messaging for service announcements
-- **Home screen widget** - live arrivals for all stops, or configure one stop for its full status, resizable from 2x2 up to 5x5
+- **Home screen widget** - live arrivals for all stops, or configure one stop for its full status,
+  resizable from 2x2 up to 5x5
 
 ## Tech Stack
 
@@ -35,10 +40,14 @@ showing live shuttle locations, routes, ETAs, and schedules in a native Android 
 
 ## New here?
 
-- **[Installation](docs/INSTALLATION.md)** - set up Android Studio, clone the repo, and get the app running on an emulator.
-- **[Architecture](docs/ARCHITECTURE.md)** - how the codebase is organized, so you know where to look (and where to add) code.
+- **[Installation](docs/INSTALLATION.md)** - set up Android Studio, clone the repo, and get the app
+  running on an emulator.
+- **[Architecture](docs/ARCHITECTURE.md)** - how the codebase is organized, so you know where to
+  look (and where to add) code.
 
 ## Related Projects
 
-- [Shubble](https://github.com/Shubble-LLC/shubble) - the main project; this app is a client of its API
-- [Shuttle Tracker (iOS)](https://github.com/wtg/Shuttle-Tracker-SwiftUI) - the iOS app, same backend
+- [Shubble](https://github.com/Shubble-LLC/shubble) - the main project; this app is a client of its
+  API
+- [Shuttle Tracker (iOS)](https://github.com/wtg/Shuttle-Tracker-SwiftUI) - the iOS app, same
+  backend
