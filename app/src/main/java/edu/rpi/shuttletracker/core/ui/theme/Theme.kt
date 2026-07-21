@@ -1,7 +1,9 @@
 package edu.rpi.shuttletracker.core.ui.theme
 
+import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -76,6 +78,20 @@ private val DarkColors =
         scrim = md_theme_dark_scrim,
     )
 
+fun shuttleTrackerColorScheme(
+    context: Context,
+    darkTheme: Boolean,
+    dynamicColor: Boolean = true,
+): ColorScheme =
+    when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+
+        darkTheme -> DarkColors
+        else -> LightColors
+    }
+
 @Composable
 fun ShuttleTrackerTheme(
     themeMode: ThemeMode = ThemeMode.System,
@@ -85,16 +101,7 @@ fun ShuttleTrackerTheme(
 ) {
     val isDark = themeMode.isDarkTheme(isSystemInDarkTheme())
 
-    val colorScheme =
-        when {
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                val context = LocalContext.current
-                if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
-
-            isDark -> DarkColors
-            else -> LightColors
-        }
+    val colorScheme = shuttleTrackerColorScheme(LocalContext.current, isDark, dynamicColor)
 
     MaterialTheme(
         colorScheme = colorScheme,
