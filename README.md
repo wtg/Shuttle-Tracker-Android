@@ -44,6 +44,8 @@ showing live shuttle locations, routes, ETAs, and schedules in a native Android 
   running on an emulator.
 - **[Architecture](docs/ARCHITECTURE.md)** - how the codebase is organized, so you know where to
   look (and where to add) code.
+- **[Notifications](docs/NOTIFICATIONS.md)** - how to test push notifications, and how to swap in
+  your own Firebase project if you need one.
 
 ## Related Projects
 
@@ -51,3 +53,8 @@ showing live shuttle locations, routes, ETAs, and schedules in a native Android 
   API
 - [Shuttle Tracker (iOS)](https://github.com/wtg/Shuttle-Tracker-SwiftUI) - the iOS app, same
   backend
+
+## Links
+
+- [Docs site](https://wtg.github.io/Shuttle-Tracker-Android/) - the contents of `docs/`, rendered
+- [Privacy Policy](https://wtg.github.io/Shuttle-Tracker-Android/privacy-policy/)

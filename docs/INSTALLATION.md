@@ -1,3 +1,8 @@
+---
+title: Installation
+permalink: /installation/
+---
+
 # Installation
 
 This guide walks you through setting up the development environment for the RCOS Shuttle Tracker Android app, including Git, Android Studio, and Google Maps API configuration.
@@ -47,8 +52,8 @@ The code will be downloaded into a folder named <b>Shuttle-Tracker-Android</b>.
 ### 3.1 Generate a Google Maps API key
 Get your own custom google maps API key. Here's a guide that details how to get one for yourself: [Here](https://developers.google.com/maps/documentation/javascript/get-api-key).
 
-<details>
-    <summary>If you have trouble obtaining your debug SHA-1 this might help</summary>
+<details markdown="1">
+<summary>If you have trouble obtaining your debug SHA-1 this might help</summary>
 
     Run this in a terminal (WSL users on Windows):
 
@@ -74,7 +79,7 @@ Open the **local.properties** in your project level directory, and then add the 
 After completing these steps, the virtual Android device should launch and Google Maps should load correctly.
 Once that's all done, congrats. You are now ready to start development for the RCOS Shuttle Tracker Android app.
 
-If you're new to the codebase, [Architecture](architecture.md) is a good next read - it maps out where things live before you start changing code.
+If you're new to the codebase, [Architecture](ARCHITECTURE.md) is a good next read - it maps out where things live before you start changing code.
 
 ## 5. Troubleshooting (optional)
 If you complete steps 1 through 4 and you are receiving the build tools is corrupted issue, use this link to Stack Overflow to solve the problem and put yourself back on track because of an error on Google's part: [Here](https://stackoverflow.com/a/68430992).
