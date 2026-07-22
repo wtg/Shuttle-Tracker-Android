@@ -154,7 +154,6 @@ private fun ScheduleDetailsContent(
         // vertical space the stacked layout would otherwise spend on a second row.
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             DaySelector(
@@ -168,7 +167,7 @@ private fun ScheduleDetailsContent(
                     routes = routes,
                     selectedRoute = activeRoute,
                     onSelect = onSelectedRouteChange,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
                 )
             }
         }
