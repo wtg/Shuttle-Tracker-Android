@@ -1,12 +1,15 @@
 package edu.rpi.shuttletracker.feature.setup
 
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,7 +19,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.feature.setup.components.PermissionItem
@@ -34,14 +39,40 @@ fun SetupPageContent(page: SetupPage) {
 @Composable
 fun AboutPage() {
     Box(modifier = Modifier.fillMaxSize()) {
-        Text(text = stringResource(R.string.about_page))
+        Text(
+            text = stringResource(R.string.about_page),
+            style = MaterialTheme.typography.bodyLarge,
+        )
     }
 }
 
+/**
+ * [R.array.privacy_page] is one paragraph per item, so each gets its own [Text] with real spacing
+ * instead of running together. The first item (title + effective date) is de-emphasized since
+ * [SetupPage]'s TopAppBar already shows "Privacy Policy" as the page title.
+ * */
 @Composable
 fun PrivacyPolicyPage() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Text(text = stringResource(R.string.privacy_page))
+    val paragraphs = stringArrayResource(R.array.privacy_page)
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        paragraphs.firstOrNull()?.let { header ->
+            Text(
+                text = header,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        paragraphs.drop(1).forEach { paragraph ->
+            Text(
+                text = paragraph,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }
 
@@ -81,7 +112,7 @@ fun PermissionBox(permission: Permission) {
     )
 }
 
-private fun Permission.isGranted(context: android.content.Context): Boolean {
+private fun Permission.isGranted(context: Context): Boolean {
     val grantResults =
         permissions.map { permissionName ->
             ContextCompat.checkSelfPermission(context, permissionName) ==

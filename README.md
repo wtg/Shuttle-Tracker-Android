@@ -53,3 +53,8 @@ showing live shuttle locations, routes, ETAs, and schedules in a native Android 
   API
 - [Shuttle Tracker (iOS)](https://github.com/wtg/Shuttle-Tracker-SwiftUI) - the iOS app, same
   backend
+
+## Links
+
+- [Docs site](https://wtg.github.io/Shuttle-Tracker-Android/) - the contents of `docs/`, rendered
+- [Privacy Policy](https://wtg.github.io/Shuttle-Tracker-Android/privacy-policy/)
