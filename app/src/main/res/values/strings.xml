@@ -65,6 +65,18 @@
     <string name="schedule_none_running">No shuttles running</string>
     <string name="route_label_format">%1$s Route</string>
 
+    <!-- Dev-mode shuttle inspector -->
+    <string name="dev_shuttle_inspector">Shuttle inspector</string>
+    <string name="dev_shuttles_title">Active Shuttles (%1$d)</string>
+    <string name="dev_no_active_shuttles">No active shuttles</string>
+    <string name="dev_zoom_to_shuttle">Zoom to shuttle</string>
+    <string name="dev_route">Route</string>
+    <string name="dev_speed">Speed</string>
+    <string name="dev_current_stop">Current stop</string>
+    <string name="dev_unknown">Unknown</string>
+    <string name="dev_none">None</string>
+    <string name="close">Close</string>
+
     <!-- ETAs tab -->
     <string name="etas_subtitle">Tap a stop to see every shuttle\'s live arrival time.</string>
     <string name="etas_route_all">All Routes</string>

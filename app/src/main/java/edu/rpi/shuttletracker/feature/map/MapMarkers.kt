@@ -72,13 +72,16 @@ internal fun StopMarker(
 /**
  * A shuttle's marker, colored by [Vehicle.routeName] (falls back to the last known color for a
  * while if the route briefly drops out, so the marker doesn't flash gray). Works for real vehicles
- * and fake ones alike - both are just [Vehicle] instances.
+ * and fake ones alike - both are just [Vehicle] instances. [selected] opens the info window
+ * automatically (used by the dev-mode shuttle inspector to jump to a specific vehicle), separate
+ * from the normal tap-to-open behavior.
  * */
 @Composable
 internal fun VehicleMarker(
     vehicle: Vehicle,
     animationsEnabled: Boolean,
     rotationEnabled: Boolean,
+    selected: Boolean = false,
 ) {
     val context = LocalContext.current
     val target = vehicle.latLng()
@@ -88,6 +91,10 @@ internal fun VehicleMarker(
         rememberUpdatedMarkerState(
             position = LatLng(latitude.value.toDouble(), longitude.value.toDouble()),
         )
+
+    LaunchedEffect(selected) {
+        if (selected) markerState.showInfoWindow()
+    }
 
     LaunchedEffect(target, animationsEnabled) {
         if (animationsEnabled) {

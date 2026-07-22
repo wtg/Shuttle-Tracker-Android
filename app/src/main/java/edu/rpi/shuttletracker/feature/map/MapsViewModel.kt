@@ -220,6 +220,14 @@ class MapsViewModel
                     }
                 }.launchIn(viewModelScope)
 
+            userPreferences
+                .getDevOptions()
+                .onEach { devOptionsEnabled ->
+                    _mapsUiState.update {
+                        it.copy(isDevModeEnabled = devOptionsEnabled)
+                    }
+                }.launchIn(viewModelScope)
+
             combine(
                 userPreferences.getDevOptions(),
                 userPreferences.getSimulateAnnouncements(),
@@ -307,4 +315,5 @@ data class MapsUiState(
     val mapType: MapType = MapType.NORMAL,
     val shuttleAnimationsEnabled: Boolean = false,
     val shuttleRotationEnabled: Boolean = true,
+    val isDevModeEnabled: Boolean = false,
 )
