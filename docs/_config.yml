@@ -1,0 +1,9 @@
+theme: jekyll-theme-minimal
+title: Shuttle Tracker - Android
+description: Documentation for the Shuttle Tracker Android app.
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

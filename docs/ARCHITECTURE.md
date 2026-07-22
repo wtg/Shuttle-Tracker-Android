@@ -1,3 +1,8 @@
+---
+title: Architecture
+permalink: /architecture/
+---
+
 # Architecture
 
 A quick map of the codebase so you know where to look add code. This app is written in Kotlin with [Jetpack Compose](https://developer.android.com/jetpack/compose) for the UI, [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) for dependency injection, and follows an [MVVM](https://developer.android.com/topic/architecture) pattern (Model / View / ViewModel). It's a single-Activity app - everything you see is a Compose screen, not a separate Activity.

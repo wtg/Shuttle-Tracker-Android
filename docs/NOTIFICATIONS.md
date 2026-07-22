@@ -1,3 +1,8 @@
+---
+title: Notifications
+permalink: /notifications/
+---
+
 # Notifications
 
 Push notifications are handled by Firebase Cloud Messaging (FCM) - see `background/service/FirebaseService.kt`
