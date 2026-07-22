@@ -15,10 +15,10 @@ showing live shuttle locations, routes, ETAs, and schedules in a native Android 
 <summary>Click to open
 </summary>
   <p align="center">
-    <img src="images/map.png" width="24%"  alt="Map Screen"/>
-    <img src="images/etas.png" width="24%"  alt="ETAs Screen"/>
-    <img src="images/schedule.png" width="24%"  alt="Schedule Screen"/>
-    <img src="images/widget.png" width="24%"  alt="Widgets Screen"/>
+    <img src="images/map.png" width="48%"  alt="Map Screen"/>
+    <img src="images/etas.png" width="48%"  alt="ETAs Screen"/>
+    <img src="images/schedule.png" width="48%"  alt="Schedule Screen"/>
+    <img src="images/widget.png" width="48%"  alt="Widgets Screen"/>
   </p>
 </details>
 
