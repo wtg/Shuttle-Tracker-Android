@@ -52,12 +52,13 @@ fun StopEtaList(
     selectedRouteFilter: String?,
     onRouteFilterChange: (String?) -> Unit,
     onStopClick: (String) -> Unit,
+    showTitle: Boolean = true,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        EtasHeader()
+        EtasHeader(showTitle = showTitle)
 
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
@@ -99,7 +100,7 @@ fun StopEtaList(
 }
 
 @Composable
-private fun EtasHeader() {
+private fun EtasHeader(showTitle: Boolean) {
     Column(
         modifier =
             Modifier
@@ -107,11 +108,13 @@ private fun EtasHeader() {
                 .padding(horizontal = 20.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = stringResource(R.string.nav_etas),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
+        if (showTitle) {
+            Text(
+                text = stringResource(R.string.nav_etas),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
 
         Text(
             text = stringResource(R.string.etas_subtitle),

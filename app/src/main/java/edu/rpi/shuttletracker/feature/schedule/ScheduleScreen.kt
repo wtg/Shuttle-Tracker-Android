@@ -18,7 +18,10 @@ import edu.rpi.shuttletracker.feature.schedule.components.ScheduleContent
 
 /** The Schedule tab: fetches routes/schedule via [ScheduleViewModel] and renders them with [ScheduleContent]. */
 @Composable
-fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
+fun ScheduleScreen(
+    viewModel: ScheduleViewModel = hiltViewModel(),
+    showTitle: Boolean = true,
+) {
     val uiState by viewModel.scheduleUiState.collectAsStateWithLifecycle()
     var selectedRoute by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -45,6 +48,7 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                 routesByName = uiState.routes,
                 selectedRoute = selectedRoute,
                 onSelectedRouteChange = { selectedRoute = it },
+                showTitle = showTitle,
             )
         }
     }

@@ -72,12 +72,13 @@ fun ScheduleContent(
     routesByName: Map<String, Route>,
     selectedRoute: String?,
     onSelectedRouteChange: (String) -> Unit,
+    showTitle: Boolean = true,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        ScheduleHeader()
+        ScheduleHeader(showTitle = showTitle)
 
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
@@ -99,7 +100,7 @@ fun ScheduleContent(
 }
 
 @Composable
-private fun ScheduleHeader() {
+private fun ScheduleHeader(showTitle: Boolean) {
     Column(
         modifier =
             Modifier
@@ -107,11 +108,13 @@ private fun ScheduleHeader() {
                 .padding(horizontal = 20.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = stringResource(R.string.schedule_title),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
+        if (showTitle) {
+            Text(
+                text = stringResource(R.string.schedule_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
 
         Text(
             text = stringResource(R.string.schedule_subtitle),
