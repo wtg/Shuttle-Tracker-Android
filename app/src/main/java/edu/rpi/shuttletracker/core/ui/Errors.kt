@@ -92,6 +92,7 @@ fun Error(
                 snackbarHostState.showSnackbar(
                     "$errorType: $errorBody",
                     actionLabel = primaryButtonText,
+                    withDismissAction = true,
                 )
 
             when (result) {

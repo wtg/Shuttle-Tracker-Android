@@ -93,6 +93,18 @@ class MapsViewModel
                     var etas: Map<String, VehicleStopEta> = emptyMap()
                     var velocities: Map<String, VehicleVelocities> = emptyMap()
 
+                    // A live response this cycle proves whatever was wrong last cycle isn't
+                    // blocking us now - cleared here (not in readApiResponse) since that's shared
+                    // with the independent announcement/routes loads, which shouldn't affect it.
+                    if (locationsResponse is NetworkResult.Success ||
+                        etasResponse is NetworkResult.Success ||
+                        velocitiesResponse is NetworkResult.Success
+                    ) {
+                        _mapsUiState.update {
+                            it.copy(networkError = null, serverError = null, unknownError = null)
+                        }
+                    }
+
                     readApiResponse(locationsResponse) { locations = it }
                     readApiResponse(etasResponse) { etas = it }
                     readApiResponse(velocitiesResponse) { velocities = it }
