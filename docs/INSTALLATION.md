@@ -52,8 +52,8 @@ The code will be downloaded into a folder named <b>Shuttle-Tracker-Android</b>.
 ### 3.1 Generate a Google Maps API key
 Get your own custom google maps API key. Here's a guide that details how to get one for yourself: [Here](https://developers.google.com/maps/documentation/javascript/get-api-key).
 
-<details>
-    <summary>If you have trouble obtaining your debug SHA-1 this might help</summary>
+<details markdown="1">
+<summary>If you have trouble obtaining your debug SHA-1 this might help</summary>
 
     Run this in a terminal (WSL users on Windows):
 
