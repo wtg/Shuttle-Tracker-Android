@@ -144,7 +144,9 @@ fun MapsScreen(
                             .fillMaxSize()
                             .padding(contentPadding),
                     ) {
-                        EtasScreen(viewModel = etasViewModel)
+                        // The rail already labels the selected tab "ETAs", so the in-content title
+                        // would just repeat it - only show it with a bottom bar instead.
+                        EtasScreen(viewModel = etasViewModel, showTitle = !useNavigationRail)
                     }
 
                 MainTab.Schedule ->
@@ -153,7 +155,11 @@ fun MapsScreen(
                             .fillMaxSize()
                             .padding(contentPadding),
                     ) {
-                        ScheduleScreen(viewModel = scheduleViewModel)
+                        ScheduleScreen(
+                            viewModel = scheduleViewModel,
+                            showTitle = !useNavigationRail,
+                            isWideLayout = useNavigationRail,
+                        )
                     }
             }
         }

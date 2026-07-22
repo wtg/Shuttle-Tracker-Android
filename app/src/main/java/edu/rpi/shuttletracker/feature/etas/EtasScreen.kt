@@ -26,7 +26,10 @@ import edu.rpi.shuttletracker.feature.etas.utils.buildStopsWithEtas
  * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EtasScreen(viewModel: EtasViewModel = hiltViewModel()) {
+fun EtasScreen(
+    viewModel: EtasViewModel = hiltViewModel(),
+    showTitle: Boolean = true,
+) {
     val uiState by viewModel.etasUiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -62,6 +65,7 @@ fun EtasScreen(viewModel: EtasViewModel = hiltViewModel()) {
                 selectedRouteFilter = uiState.selectedRouteFilter,
                 onRouteFilterChange = viewModel::selectRouteFilter,
                 onStopClick = viewModel::selectStop,
+                showTitle = showTitle,
             )
 
             val stops =

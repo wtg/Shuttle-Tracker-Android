@@ -46,6 +46,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.feature.map.components.AnnouncementStrip
+import edu.rpi.shuttletracker.feature.map.components.DeveloperVehicleView
 import kotlinx.coroutines.launch
 
 private val CampusCenter = LatLng(42.73068146020498, -73.67619731950525)
@@ -85,6 +86,8 @@ internal fun ShuttleMap(
             position = CameraPosition.fromLatLngZoom(CampusCenter, 14.3f)
         }
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
+    var isDevPanelOpen by remember { mutableStateOf(false) }
+    var selectedDevVehicleId by remember { mutableStateOf<String?>(null) }
     val useDarkMap = uiState.themeMode.isDarkTheme(isSystemInDarkTheme())
     val fallbackRouteColor = MaterialTheme.colorScheme.primary
 
@@ -144,6 +147,7 @@ internal fun ShuttleMap(
                         vehicle = vehicle,
                         animationsEnabled = uiState.shuttleAnimationsEnabled,
                         rotationEnabled = uiState.shuttleRotationEnabled,
+                        selected = vehicle.id == selectedDevVehicleId,
                     )
                 }
             }
@@ -156,6 +160,7 @@ internal fun ShuttleMap(
                         vehicle = vehicle,
                         animationsEnabled = uiState.shuttleAnimationsEnabled,
                         rotationEnabled = uiState.shuttleRotationEnabled,
+                        selected = vehicle.id == selectedDevVehicleId,
                     )
                 }
             }
@@ -199,8 +204,36 @@ internal fun ShuttleMap(
                         contentDescription = stringResource(R.string.map_toggle_type),
                         onClick = onToggleMapTypeClick,
                     )
+                    if (uiState.isDevModeEnabled) {
+                        MapActionButton(
+                            icon = R.drawable.ic_bug_report,
+                            contentDescription = stringResource(R.string.dev_shuttle_inspector),
+                            onClick = { isDevPanelOpen = !isDevPanelOpen },
+                        )
+                    }
                 }
             }
+        }
+
+        if (uiState.isDevModeEnabled && isDevPanelOpen) {
+            DeveloperVehicleView(
+                vehicles = uiState.vehicles + uiState.fakeVehicles,
+                onClose = { isDevPanelOpen = false },
+                onZoomToVehicle = { vehicle ->
+                    selectedDevVehicleId = vehicle.id
+                    coroutineScope.launch {
+                        cameraPositionState.animate(
+                            CameraUpdateFactory.newLatLngZoom(vehicle.latLng(), 17f),
+                            durationMs = 1000,
+                        )
+                    }
+                },
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(contentPadding)
+                        .padding(16.dp),
+            )
         }
 
         // Schedule is reached via the bottom nav bar now, so Recenter is the map's only FAB.

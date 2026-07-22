@@ -72,12 +72,14 @@ fun ScheduleContent(
     routesByName: Map<String, Route>,
     selectedRoute: String?,
     onSelectedRouteChange: (String) -> Unit,
+    showTitle: Boolean = true,
+    isWideLayout: Boolean = false,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        ScheduleHeader()
+        ScheduleHeader(showTitle = showTitle)
 
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
@@ -93,13 +95,14 @@ fun ScheduleContent(
                     routesByName = routesByName,
                     selectedRoute = selectedRoute,
                     onSelectedRouteChange = onSelectedRouteChange,
+                    isWideLayout = isWideLayout,
                 )
         }
     }
 }
 
 @Composable
-private fun ScheduleHeader() {
+private fun ScheduleHeader(showTitle: Boolean) {
     Column(
         modifier =
             Modifier
@@ -107,11 +110,13 @@ private fun ScheduleHeader() {
                 .padding(horizontal = 20.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = stringResource(R.string.schedule_title),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
+        if (showTitle) {
+            Text(
+                text = stringResource(R.string.schedule_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
 
         Text(
             text = stringResource(R.string.schedule_subtitle),
@@ -128,6 +133,7 @@ private fun ScheduleDetailsContent(
     routesByName: Map<String, Route>,
     selectedRoute: String?,
     onSelectedRouteChange: (String) -> Unit,
+    isWideLayout: Boolean,
 ) {
     var selectedDay by remember { mutableStateOf(DayOfWeek.fromToday()) }
 
@@ -143,21 +149,47 @@ private fun ScheduleDetailsContent(
             else -> null
         }
 
-    DaySelector(
-        selectedDay = selectedDay,
-        onSelect = { selectedDay = it },
-    )
+    if (isWideLayout) {
+        // Wide enough that the two selectors don't need to compete for the same row - saves the
+        // vertical space the stacked layout would otherwise spend on a second row.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            DaySelector(
+                selectedDay = selectedDay,
+                onSelect = { selectedDay = it },
+                modifier = Modifier.weight(1f),
+            )
+
+            if (routes.isNotEmpty()) {
+                RouteSelector(
+                    routes = routes,
+                    selectedRoute = activeRoute,
+                    onSelect = onSelectedRouteChange,
+                    modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
+                )
+            }
+        }
+    } else {
+        DaySelector(
+            selectedDay = selectedDay,
+            onSelect = { selectedDay = it },
+        )
+    }
 
     if (routes.isEmpty()) {
         EmptyState(R.string.schedule_none_running)
         return
     }
 
-    RouteSelector(
-        routes = routes,
-        selectedRoute = activeRoute,
-        onSelect = onSelectedRouteChange,
-    )
+    if (!isWideLayout) {
+        RouteSelector(
+            routes = routes,
+            selectedRoute = activeRoute,
+            onSelect = onSelectedRouteChange,
+        )
+    }
 
     HorizontalDivider(Modifier, DividerDefaults.Thickness)
 
@@ -225,13 +257,14 @@ private fun ScheduleDetailsContent(
 private fun DaySelector(
     selectedDay: DayOfWeek,
     onSelect: (DayOfWeek) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
     val days = DayOfWeek.entries
 
     SingleChoiceSegmentedButtonRow(
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 8.dp)
                 .horizontalScroll(scrollState),
@@ -252,9 +285,10 @@ private fun RouteSelector(
     routes: List<String>,
     selectedRoute: String?,
     onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth(0.9f),
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(0.9f),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
