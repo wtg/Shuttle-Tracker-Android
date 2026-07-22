@@ -155,7 +155,11 @@ fun MapsScreen(
                             .fillMaxSize()
                             .padding(contentPadding),
                     ) {
-                        ScheduleScreen(viewModel = scheduleViewModel, showTitle = !useNavigationRail)
+                        ScheduleScreen(
+                            viewModel = scheduleViewModel,
+                            showTitle = !useNavigationRail,
+                            isWideLayout = useNavigationRail,
+                        )
                     }
             }
         }

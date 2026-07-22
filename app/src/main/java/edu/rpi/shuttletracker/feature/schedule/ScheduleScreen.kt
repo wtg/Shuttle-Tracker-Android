@@ -21,6 +21,7 @@ import edu.rpi.shuttletracker.feature.schedule.components.ScheduleContent
 fun ScheduleScreen(
     viewModel: ScheduleViewModel = hiltViewModel(),
     showTitle: Boolean = true,
+    isWideLayout: Boolean = false,
 ) {
     val uiState by viewModel.scheduleUiState.collectAsStateWithLifecycle()
     var selectedRoute by rememberSaveable { mutableStateOf<String?>(null) }
@@ -49,6 +50,7 @@ fun ScheduleScreen(
                 selectedRoute = selectedRoute,
                 onSelectedRouteChange = { selectedRoute = it },
                 showTitle = showTitle,
+                isWideLayout = isWideLayout,
             )
         }
     }
