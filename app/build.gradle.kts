@@ -13,6 +13,10 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+secrets {
+    defaultPropertiesFileName = "local.defaults.properties"
+}
+
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_17
