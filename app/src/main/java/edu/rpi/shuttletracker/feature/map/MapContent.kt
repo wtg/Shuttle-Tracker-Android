@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -184,11 +183,19 @@ internal fun ShuttleMap(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            // A Box with independently-aligned children, not a Row with Arrangement.SpaceBetween -
+            // the chip can disappear/reappear on its own schedule, and SpaceBetween would shove the
+            // FAB stack over to the start edge whenever it's the Row's only remaining child.
+            Box(modifier = Modifier.fillMaxWidth()) {
+                LastUpdatedChip(
+                    updatedAt = uiState.vehiclesUpdatedAt,
+                    modifier = Modifier.align(Alignment.TopStart),
+                )
+
+                Column(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
                     MapActionButton(
                         icon = R.drawable.ic_settings,
                         contentDescription = stringResource(R.string.map_open_settings),

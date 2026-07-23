@@ -19,8 +19,7 @@ To send yourself a test notification:
 
 1. Run a debug build and let the app start once (this registers the device and generates an FCM token).
 2. Check Logcat for the tag `FCM_TOKEN` - `FirebaseService.onNewToken()` logs it on debug builds only.
-3. In the [Firebase Console](https://console.firebase.google.com/), open this project → **Engage** →
-   **Messaging** → **New campaign** → **Notifications**.
+3. In the [Firebase Console](https://console.firebase.google.com/), open this project → **Messaging** → **New campaign** → **Notifications**.
 4. Under **Target**, choose **Send test message** and paste in the token from step 2. This sends the
    notification to just your device instead of every install.
 5. Send it. If the app is backgrounded or not running, Android displays it automatically using the manifest's
