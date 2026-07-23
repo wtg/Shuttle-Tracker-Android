@@ -95,6 +95,7 @@
     <string name="etas_subtitle">Tap a stop to see every shuttle\'s live arrival time.</string>
     <string name="etas_route_all">All Routes</string>
     <string name="etas_no_stops">No stops found</string>
+    <string name="etas_no_routes">No routes are running right now</string>
     <string name="etas_no_live_etas">No live ETAs</string>
     <string name="eta_now">now</string>
     <string name="eta_minutes_format">%1$dm</string>

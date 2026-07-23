@@ -128,6 +128,17 @@ class EtasViewModelTest {
         }
 
     @Test
+    fun `empty routes response marks routes as loaded instead of leaving ui stuck loading`() =
+        runTest {
+            repository.routesResult = NetworkResult.Success(emptyMap())
+            val viewModel = createViewModel()
+            advanceUntilIdle()
+
+            assertThat(viewModel.etasUiState.value.routesLoaded).isTrue()
+            assertThat(viewModel.etasUiState.value.routes).isEmpty()
+        }
+
+    @Test
     fun `retry clears the error and reloads missing routes`() =
         runTest {
             repository.routesResult = NetworkResult.Failure(NetworkError.Unknown())

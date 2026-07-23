@@ -62,6 +62,7 @@ fun EtasScreen(
             StopEtaList(
                 routes = uiState.routes,
                 vehicles = allVehicles,
+                routesLoaded = uiState.routesLoaded,
                 selectedRouteFilter = uiState.selectedRouteFilter,
                 onRouteFilterChange = viewModel::selectRouteFilter,
                 onStopClick = viewModel::selectStop,
