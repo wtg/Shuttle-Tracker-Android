@@ -37,7 +37,12 @@ object NetworkModule {
         Interceptor { chain ->
             var request = chain.request()
 
-            if (!context.hasNetwork()) {
+            if (request.url.pathSegments.lastOrNull() in LivePolledPaths) {
+                // Vehicle locations/etas/velocities are meaningless once stale - never write them to
+                // the disk cache and never serve them from it, so going offline fails outright
+                // instead of silently replaying old vehicle positions as if they were live.
+                request = request.newBuilder().header("Cache-Control", "no-store").build()
+            } else if (!context.hasNetwork()) {
                 // 2 week cache for offline
                 request =
                     request
@@ -98,3 +103,6 @@ object NetworkModule {
     @Singleton
     fun provideShuttleApi(retrofit: Retrofit): ShuttleApi = retrofit.create(ShuttleApi::class.java)
 }
+
+/** Endpoints that poll live vehicle state - these must never be cached or replayed while stale. */
+private val LivePolledPaths = setOf("locations", "etas", "velocities")

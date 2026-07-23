@@ -72,8 +72,8 @@ Open the **local.properties** in your project level directory, and then add the 
 
 ## 4. Running the Virtual Android Device
 1. In Android Studio, open the **Device Manager**, click the **+** button, and select **Create Virtual Device**.
-2. Choose **Pixel 5**. When prompted to select a system image, choose **API level 31 (Android S)**.
-3. Select the Pixel 5 emulator as your run configuration.
+2. Choose **Pixel 8**. When prompted to select a system image, choose **API level 34 (Android 14)** - specifically the image with the **Play Store** icon next to it, not a plain "Google APIs" image. The app uses Firebase push notifications, which need real Google Play Services to deliver correctly, and only the Play Store images include that.
+3. Select the Pixel 8 emulator as your run configuration.
 4. Click **Run**.
 
 After completing these steps, the virtual Android device should launch and Google Maps should load correctly.

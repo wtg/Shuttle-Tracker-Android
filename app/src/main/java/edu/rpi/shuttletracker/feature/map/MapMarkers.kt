@@ -4,12 +4,16 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,6 +41,8 @@ import edu.rpi.shuttletracker.data.models.Vehicle
 import edu.rpi.shuttletracker.feature.map.components.getVehicleMarkerDescriptor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.Instant
 
 /** A stop's circle on the map. The actual [Marker] is invisible (`alpha = 0f`) - it only exists to catch taps and show the stop's name in an info window. */
 @Composable
@@ -174,6 +180,71 @@ internal fun MapActionButton(
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
     ) {
         Icon(painterResource(icon), contentDescription)
+    }
+}
+
+private val FLASH_WINDOW: Duration = Duration.ofSeconds(3)
+private val STALE_THRESHOLD: Duration = Duration.ofSeconds(30)
+
+/**
+ * A translucent pill floating over the map opposite the [MapActionButton] stack - hidden almost
+ * all the time, and never shown at all as long as polling keeps succeeding. It only appears once
+ * [updatedAt] hasn't advanced in [STALE_THRESHOLD] (timed from first composition if a poll has
+ * never succeeded yet), and then, once a poll finally does succeed again, flashes "Updated" for
+ * [FLASH_WINDOW] before disappearing. A routine successful poll that was never stale never
+ * triggers the flash - only a *recovery* from a stale state does.
+ * */
+@Composable
+internal fun LastUpdatedChip(
+    updatedAt: Instant?,
+    modifier: Modifier = Modifier,
+) {
+    val mountedAt = remember { Instant.now() }
+    var now by remember { mutableStateOf(Instant.now()) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1_000L)
+            now = Instant.now()
+        }
+    }
+
+    val isStale = Duration.between(updatedAt ?: mountedAt, now) >= STALE_THRESHOLD
+    var wasStale by remember { mutableStateOf(false) }
+    var showRecoveryFlash by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isStale) {
+        if (isStale) wasStale = true
+    }
+
+    LaunchedEffect(updatedAt) {
+        if (updatedAt != null && wasStale) {
+            wasStale = false
+            showRecoveryFlash = true
+            delay(FLASH_WINDOW.toMillis())
+            showRecoveryFlash = false
+        }
+    }
+
+    val text =
+        when {
+            showRecoveryFlash -> "Updated"
+            isStale -> "Not updated in ${Duration.between(updatedAt ?: mountedAt, now).seconds}s"
+            else -> null
+        } ?: return
+    val (containerColor, contentColor) = mapButtonColors()
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(50),
+        color = containerColor.copy(alpha = 0.55f),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = contentColor,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+        )
     }
 }
 

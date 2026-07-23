@@ -101,7 +101,12 @@ class MapsViewModel
                         velocitiesResponse is NetworkResult.Success
                     ) {
                         _mapsUiState.update {
-                            it.copy(networkError = null, serverError = null, unknownError = null)
+                            it.copy(
+                                networkError = null,
+                                serverError = null,
+                                unknownError = null,
+                                vehiclesUpdatedAt = Instant.now(),
+                            )
                         }
                     }
 
@@ -319,6 +324,7 @@ data class MapsUiState(
     val routes: Map<String, Route> = emptyMap(),
     val announcements: List<Announcement> = emptyList(),
     val announcementsUpdatedAt: Instant? = null,
+    val vehiclesUpdatedAt: Instant? = null,
     val simulateAnnouncements: Boolean = false,
     val networkError: NetworkError.Connectivity? = null,
     val serverError: NetworkError.Http? = null,
