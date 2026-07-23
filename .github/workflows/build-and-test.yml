@@ -35,8 +35,12 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Create local.properties
+        env:
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
         run: |
-          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" > local.properties
+          if [ -n "$MAPS_API_KEY" ]; then
+            echo "MAPS_API_KEY=$MAPS_API_KEY" > local.properties
+          fi
 
       - name: Run Build, Lint, and Test
         run: >-
