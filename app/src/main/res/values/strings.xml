@@ -71,6 +71,8 @@
     <string name="nav_etas">ETAs</string>
     <string name="map_open_settings">Open settings</string>
     <string name="map_recenter">Center map on my location</string>
+    <string name="map_following">Following your location. Tap to tilt the view</string>
+    <string name="map_following_tilted">Tap to return to a north-up view</string>
     <string name="map_location_unavailable">Location unavailable</string>
     <string name="map_toggle_type">Change map type</string>
     <string name="vehicle_number">Shuttle %1$s</string>
