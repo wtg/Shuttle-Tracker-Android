@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapEffect
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
@@ -47,6 +48,7 @@ import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.feature.map.components.AnnouncementStrip
 import edu.rpi.shuttletracker.feature.map.components.DeveloperVehicleView
 import kotlinx.coroutines.launch
+import com.google.android.gms.maps.GoogleMap as AndroidGoogleMap
 
 private val CampusCenter = LatLng(42.73068146020498, -73.67619731950525)
 private val CampusBounds =
@@ -54,6 +56,26 @@ private val CampusBounds =
         LatLng(42.72095724005504, -73.70196321825452),
         LatLng(42.741173465236876, -73.6543446409232),
     )
+private const val TILTED_DEGREES = 60f
+private const val TILT_ZOOM = 18f
+
+// A pinch-zoom that isn't perfectly centered can nudge the target a little even though the user
+// didn't mean to pan - only treat a gesture as a real pan (and drop out of follow mode) once it
+// moves the target further than incidental zoom/rotate drift would.
+private const val PAN_DETECTION_THRESHOLD_METERS = 20f
+
+/**
+ * Mirrors the stock Google Maps app's location FAB: [NotFollowing] until tapped, then
+ * [Following] the user north-up, then [FollowingTilted] into a 3D perspective on a second tap.
+ * A user gesture that actually re-targets the camera (a pan) drops back to [NotFollowing]; a
+ * gesture that only changes zoom/rotation in place does not (see the `MapEffect` in
+ * [ShuttleMap]) so the button never claims to be following a camera the user just took over.
+ * */
+private enum class LocationFollowMode {
+    NotFollowing,
+    Following,
+    FollowingTilted,
+}
 
 /**
  * The actual Google Map: draws stops ([StopMarker]), route polylines, and vehicles
@@ -87,6 +109,8 @@ internal fun ShuttleMap(
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
     var isDevPanelOpen by remember { mutableStateOf(false) }
     var selectedDevVehicleId by remember { mutableStateOf<String?>(null) }
+    var followMode by remember { mutableStateOf(LocationFollowMode.NotFollowing) }
+    var gestureStartTarget by remember { mutableStateOf<LatLng?>(null) }
     val useDarkMap = uiState.themeMode.isDarkTheme(isSystemInDarkTheme())
     val fallbackRouteColor = MaterialTheme.colorScheme.primary
 
@@ -115,6 +139,33 @@ internal fun ShuttleMap(
                     myLocationButtonEnabled = false,
                 ),
         ) {
+            // Only drop follow mode for a real pan, not an in-place pinch-zoom/rotate - compare
+            // the target when a gesture starts vs. where it lands.
+            MapEffect(Unit) { map ->
+                map.setOnCameraMoveStartedListener { reason ->
+                    if (reason == AndroidGoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
+                        gestureStartTarget = map.cameraPosition.target
+                    }
+                }
+                map.setOnCameraIdleListener {
+                    val start = gestureStartTarget ?: return@setOnCameraIdleListener
+                    gestureStartTarget = null
+
+                    val end = map.cameraPosition.target
+                    val distanceMeters = FloatArray(1)
+                    Location.distanceBetween(
+                        start.latitude,
+                        start.longitude,
+                        end.latitude,
+                        end.longitude,
+                        distanceMeters,
+                    )
+                    if (distanceMeters[0] > PAN_DETECTION_THRESHOLD_METERS) {
+                        followMode = LocationFollowMode.NotFollowing
+                    }
+                }
+            }
+
             val uniqueStops =
                 uiState.routes.values
                     .flatMap { it.stopDetails.values }
@@ -246,24 +297,71 @@ internal fun ShuttleMap(
         // Schedule is reached via the bottom nav bar now, so Recenter is the map's only FAB.
         val (fabContainerColor, fabContentColor) = mapButtonColors()
         FloatingActionButton(
-            onClick = recenter@{
-                if (!hasLocationPermission) return@recenter
+            onClick = handleClick@{
+                if (!hasLocationPermission) return@handleClick
 
-                LocationServices
-                    .getFusedLocationProviderClient(context)
-                    .lastLocation
-                    .addOnSuccessListener { location: Location? ->
-                        location ?: return@addOnSuccessListener
+                when (followMode) {
+                    LocationFollowMode.NotFollowing -> {
+                        LocationServices
+                            .getFusedLocationProviderClient(context)
+                            .lastLocation
+                            .addOnSuccessListener { location: Location? ->
+                                location ?: return@addOnSuccessListener
+                                coroutineScope.launch {
+                                    cameraPositionState.animate(
+                                        CameraUpdateFactory.newCameraPosition(
+                                            CameraPosition(
+                                                LatLng(location.latitude, location.longitude),
+                                                cameraPositionState.position.zoom,
+                                                0f,
+                                                0f,
+                                            ),
+                                        ),
+                                        durationMs = 1000,
+                                    )
+                                }
+                                followMode = LocationFollowMode.Following
+                            }
+                    }
+
+                    // Already centered north-up: tilt into a 3D perspective, like the stock app's
+                    // compass button does on a second tap.
+                    LocationFollowMode.Following -> {
                         coroutineScope.launch {
                             cameraPositionState.animate(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    LatLng(location.latitude, location.longitude),
-                                    cameraPositionState.position.zoom,
+                                CameraUpdateFactory.newCameraPosition(
+                                    CameraPosition(
+                                        cameraPositionState.position.target,
+                                        maxOf(cameraPositionState.position.zoom, TILT_ZOOM),
+                                        TILTED_DEGREES,
+                                        cameraPositionState.position.bearing,
+                                    ),
                                 ),
-                                durationMs = 1000,
+                                durationMs = 500,
                             )
                         }
+                        followMode = LocationFollowMode.FollowingTilted
                     }
+
+                    // Tilted: flatten back to north-up rather than dropping out of follow mode -
+                    // only an actual map drag (the MapEffect above) should do that.
+                    LocationFollowMode.FollowingTilted -> {
+                        coroutineScope.launch {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newCameraPosition(
+                                    CameraPosition(
+                                        cameraPositionState.position.target,
+                                        cameraPositionState.position.zoom,
+                                        0f,
+                                        cameraPositionState.position.bearing,
+                                    ),
+                                ),
+                                durationMs = 500,
+                            )
+                        }
+                        followMode = LocationFollowMode.Following
+                    }
+                }
             },
             modifier =
                 Modifier
@@ -276,18 +374,20 @@ internal fun ShuttleMap(
             Icon(
                 painter =
                     painterResource(
-                        if (hasLocationPermission) {
-                            R.drawable.ic_my_location
-                        } else {
-                            R.drawable.ic_location_disabled
+                        when {
+                            !hasLocationPermission -> R.drawable.ic_location_disabled
+                            followMode == LocationFollowMode.NotFollowing -> R.drawable.ic_near_me
+                            followMode == LocationFollowMode.Following -> R.drawable.ic_near_me_filled
+                            else -> R.drawable.ic_navigation_filled
                         },
                     ),
                 contentDescription =
                     stringResource(
-                        if (hasLocationPermission) {
-                            R.string.map_recenter
-                        } else {
-                            R.string.map_location_unavailable
+                        when {
+                            !hasLocationPermission -> R.string.map_location_unavailable
+                            followMode == LocationFollowMode.NotFollowing -> R.string.map_recenter
+                            followMode == LocationFollowMode.Following -> R.string.map_following
+                            else -> R.string.map_following_tilted
                         },
                     ),
             )

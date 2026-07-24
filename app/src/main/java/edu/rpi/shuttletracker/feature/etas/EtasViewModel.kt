@@ -52,7 +52,7 @@ class EtasViewModel
         private var fakeVehiclesJob: Job? = null
 
         init {
-            if (etasUiState.value.routes.isEmpty()) loadRoutes()
+            if (!etasUiState.value.routesLoaded) loadRoutes()
 
             combine(
                 userPreferences.getDevOptions(),
@@ -157,7 +157,7 @@ class EtasViewModel
 
         fun retry() {
             clearErrors()
-            if (etasUiState.value.routes.isEmpty()) loadRoutes()
+            if (!etasUiState.value.routesLoaded) loadRoutes()
         }
 
         private fun loadRoutes() {
@@ -166,7 +166,7 @@ class EtasViewModel
                 viewModelScope.launch {
                     readApiResponse(shuttleRepository.getRoutes()) { routes ->
                         _etasUiState.update {
-                            it.copy(routes = routes)
+                            it.copy(routes = routes, routesLoaded = true)
                         }
                     }
                 }
@@ -196,6 +196,7 @@ data class EtasUiState(
     val vehicles: List<Vehicle> = emptyList(),
     val fakeVehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
+    val routesLoaded: Boolean = false,
     val selectedRouteFilter: String? = null,
     val selectedStopKey: String? = null,
     val networkError: NetworkError.Connectivity? = null,

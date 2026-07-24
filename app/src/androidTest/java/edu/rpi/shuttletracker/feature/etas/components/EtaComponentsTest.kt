@@ -48,9 +48,16 @@ class EtaComponentsTest {
 
     @Test
     fun loadingShowsASpinnerBeforeRoutesArrive() {
-        setListContent(routes = emptyMap())
+        setListContent(routes = emptyMap(), routesLoaded = false)
 
         composeRule.onNode(hasProgressBarRangeInfo(ProgressBarRangeInfo.Indeterminate)).assertIsDisplayed()
+    }
+
+    @Test
+    fun emptyRoutesOnceLoadedShowsTheNoRoutesMessageInsteadOfSpinningForever() {
+        setListContent(routes = emptyMap(), routesLoaded = true)
+
+        composeRule.onNodeWithText("No routes are running right now").assertIsDisplayed()
     }
 
     @Test
@@ -88,6 +95,7 @@ class EtaComponentsTest {
                 StopEtaList(
                     routes = mapOf("NORTH" to testRoute(), "WEST" to testRoute()),
                     vehicles = emptyList(),
+                    routesLoaded = true,
                     selectedRouteFilter = selectedFilter,
                     onRouteFilterChange = { selectedFilter = it },
                     onStopClick = {},
@@ -108,6 +116,7 @@ class EtaComponentsTest {
                 StopEtaList(
                     routes = mapOf("NORTH" to testRoute()),
                     vehicles = emptyList(),
+                    routesLoaded = true,
                     selectedRouteFilter = null,
                     onRouteFilterChange = {},
                     onStopClick = { clickedStopKey = it },
@@ -171,12 +180,14 @@ class EtaComponentsTest {
     private fun setListContent(
         routes: Map<String, Route>,
         vehicles: List<Vehicle> = emptyList(),
+        routesLoaded: Boolean = true,
     ) {
         composeRule.setContent {
             ShuttleTrackerTheme(dynamicColor = false) {
                 StopEtaList(
                     routes = routes,
                     vehicles = vehicles,
+                    routesLoaded = routesLoaded,
                     selectedRouteFilter = null,
                     onRouteFilterChange = {},
                     onStopClick = {},

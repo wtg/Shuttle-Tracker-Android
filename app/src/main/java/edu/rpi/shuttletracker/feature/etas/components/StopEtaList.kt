@@ -49,6 +49,7 @@ import edu.rpi.shuttletracker.feature.etas.utils.etaMinutesFromNow
 fun StopEtaList(
     routes: Map<String, Route>,
     vehicles: List<Vehicle>,
+    routesLoaded: Boolean,
     selectedRouteFilter: String?,
     onRouteFilterChange: (String?) -> Unit,
     onStopClick: (String) -> Unit,
@@ -65,8 +66,13 @@ fun StopEtaList(
             thickness = DividerDefaults.Thickness,
         )
 
-        if (routes.isEmpty()) {
+        if (!routesLoaded) {
             CircularProgressIndicator(modifier = Modifier.padding(24.dp))
+            return
+        }
+
+        if (routes.isEmpty()) {
+            EmptyState(R.string.etas_no_routes)
             return
         }
 
