@@ -57,14 +57,18 @@ private val CampusBounds =
         LatLng(42.741173465236876, -73.6543446409232),
     )
 private const val TILTED_DEGREES = 60f
+private const val TILT_ZOOM = 18f
 
-// Matches the classic Google-Maps "blue dot" user-location marker color.
-private val LocationDotColor = Color(0xFF4285F4)
+// A pinch-zoom that isn't perfectly centered can nudge the target a little even though the user
+// didn't mean to pan - only treat a gesture as a real pan (and drop out of follow mode) once it
+// moves the target further than incidental zoom/rotate drift would.
+private const val PAN_DETECTION_THRESHOLD_METERS = 20f
 
 /**
  * Mirrors the stock Google Maps app's location FAB: [NotFollowing] until tapped, then
  * [Following] the user north-up, then [FollowingTilted] into a 3D perspective on a second tap.
- * Any user-driven camera gesture drops back to [NotFollowing] (see the `MapEffect` in
+ * A user gesture that actually re-targets the camera (a pan) drops back to [NotFollowing]; a
+ * gesture that only changes zoom/rotation in place does not (see the `MapEffect` in
  * [ShuttleMap]) so the button never claims to be following a camera the user just took over.
  * */
 private enum class LocationFollowMode {
@@ -106,6 +110,7 @@ internal fun ShuttleMap(
     var isDevPanelOpen by remember { mutableStateOf(false) }
     var selectedDevVehicleId by remember { mutableStateOf<String?>(null) }
     var followMode by remember { mutableStateOf(LocationFollowMode.NotFollowing) }
+    var gestureStartTarget by remember { mutableStateOf<LatLng?>(null) }
     val useDarkMap = uiState.themeMode.isDarkTheme(isSystemInDarkTheme())
     val fallbackRouteColor = MaterialTheme.colorScheme.primary
 
@@ -134,12 +139,28 @@ internal fun ShuttleMap(
                     myLocationButtonEnabled = false,
                 ),
         ) {
-            // A user-initiated pan/zoom means they've taken the camera back over, so the FAB
-            // shouldn't keep claiming to follow them - only REASON_GESTURE resets this, not our
-            // own recenter/tilt animations below (REASON_API_ANIMATION/DEVELOPER_ANIMATION).
+            // Only drop follow mode for a real pan, not an in-place pinch-zoom/rotate - compare
+            // the target when a gesture starts vs. where it lands.
             MapEffect(Unit) { map ->
                 map.setOnCameraMoveStartedListener { reason ->
                     if (reason == AndroidGoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
+                        gestureStartTarget = map.cameraPosition.target
+                    }
+                }
+                map.setOnCameraIdleListener {
+                    val start = gestureStartTarget ?: return@setOnCameraIdleListener
+                    gestureStartTarget = null
+
+                    val end = map.cameraPosition.target
+                    val distanceMeters = FloatArray(1)
+                    Location.distanceBetween(
+                        start.latitude,
+                        start.longitude,
+                        end.latitude,
+                        end.longitude,
+                        distanceMeters,
+                    )
+                    if (distanceMeters[0] > PAN_DETECTION_THRESHOLD_METERS) {
                         followMode = LocationFollowMode.NotFollowing
                     }
                 }
@@ -311,7 +332,7 @@ internal fun ShuttleMap(
                                 CameraUpdateFactory.newCameraPosition(
                                     CameraPosition(
                                         cameraPositionState.position.target,
-                                        cameraPositionState.position.zoom,
+                                        maxOf(cameraPositionState.position.zoom, TILT_ZOOM),
                                         TILTED_DEGREES,
                                         cameraPositionState.position.bearing,
                                     ),
@@ -355,16 +376,11 @@ internal fun ShuttleMap(
                     painterResource(
                         when {
                             !hasLocationPermission -> R.drawable.ic_location_disabled
-                            followMode == LocationFollowMode.NotFollowing -> R.drawable.ic_location_dot
-                            else -> R.drawable.ic_explore
+                            followMode == LocationFollowMode.NotFollowing -> R.drawable.ic_near_me
+                            followMode == LocationFollowMode.Following -> R.drawable.ic_near_me_filled
+                            else -> R.drawable.ic_navigation_filled
                         },
                     ),
-                tint =
-                    if (hasLocationPermission && followMode == LocationFollowMode.NotFollowing) {
-                        LocationDotColor
-                    } else {
-                        fabContentColor
-                    },
                 contentDescription =
                     stringResource(
                         when {
