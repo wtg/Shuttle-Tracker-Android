@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -59,8 +61,8 @@ private enum class MainTab(
  * The app's home screen: switches between Map ([MapTab]), [EtasScreen], and [ScheduleScreen] with
  * a bottom nav bar, or a side [NavigationRail] once the window is wide enough (a rotated phone,
  * a foldable, a tablet) that a bottom bar would waste horizontal space. This is the entry point
- * [edu.rpi.shuttletracker.app.navigation.AppNavigation] routes to, and each tab gets its own
- * ViewModel so switching tabs never loses that tab's state.
+ * [edu.rpi.shuttletracker.app.navigation.AppNavigation] routes to. All three pager pages stay
+ * composed so switching tabs preserves the live map and each tab's UI state.
  * */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
@@ -70,7 +72,8 @@ fun MapsScreen(
     scheduleViewModel: ScheduleViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.mapsUiState.collectAsStateWithLifecycle()
-    var selectedTab by rememberSaveable { mutableStateOf(MainTab.Map) }
+    val pagerState = rememberPagerState { MainTab.entries.size }
+    val selectedTab = MainTab.entries[pagerState.currentPage]
     var isAnnouncementsSheetVisible by rememberSaveable { mutableStateOf(false) }
     val announcementsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -99,7 +102,7 @@ fun MapsScreen(
                 MainTab.entries.forEach { tab ->
                     NavigationRailItem(
                         selected = selectedTab == tab,
-                        onClick = { selectedTab = tab },
+                        onClick = { pagerState.requestScrollToPage(tab.ordinal) },
                         icon = { Icon(painterResource(tab.iconRes), contentDescription = null) },
                         label = { Text(stringResource(tab.labelRes)) },
                     )
@@ -122,7 +125,7 @@ fun MapsScreen(
                         MainTab.entries.forEach { tab ->
                             NavigationBarItem(
                                 selected = selectedTab == tab,
-                                onClick = { selectedTab = tab },
+                                onClick = { pagerState.requestScrollToPage(tab.ordinal) },
                                 icon = { Icon(painterResource(tab.iconRes), contentDescription = null) },
                                 label = { Text(stringResource(tab.labelRes)) },
                             )
@@ -131,47 +134,53 @@ fun MapsScreen(
                 }
             },
         ) { contentPadding ->
-            when (selectedTab) {
-                MainTab.Map ->
-                    MapTab(
-                        viewModel = viewModel,
-                        uiState = uiState,
-                        contentPadding = contentPadding,
-                        onSettingsClick = onOpenSettings,
-                        isAnnouncementsSheetVisible = isAnnouncementsSheetVisible,
-                        onAnnouncementsSheetVisibleChange = { isAnnouncementsSheetVisible = it },
-                        announcementsSheetState = announcementsSheetState,
-                    )
-
-                MainTab.Etas ->
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(contentPadding),
-                    ) {
-                        // The rail already labels the selected tab "ETAs", so the in-content title
-                        // would just repeat it - only show it with a bottom bar instead.
-                        EtasScreen(
-                            routes = uiState.routes,
-                            vehicles = uiState.vehicles + uiState.fakeVehicles,
-                            routesLoaded = uiState.routesLoaded,
-                            showTitle = !useNavigationRail,
+            HorizontalPager(
+                state = pagerState,
+                beyondViewportPageCount = MainTab.entries.lastIndex,
+                userScrollEnabled = false,
+            ) { page ->
+                when (MainTab.entries[page]) {
+                    MainTab.Map ->
+                        MapTab(
+                            viewModel = viewModel,
+                            uiState = uiState,
+                            contentPadding = contentPadding,
+                            onSettingsClick = onOpenSettings,
+                            isAnnouncementsSheetVisible = isAnnouncementsSheetVisible,
+                            onAnnouncementsSheetVisibleChange = { isAnnouncementsSheetVisible = it },
+                            announcementsSheetState = announcementsSheetState,
                         )
-                    }
 
-                MainTab.Schedule ->
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(contentPadding),
-                    ) {
-                        ScheduleScreen(
-                            viewModel = scheduleViewModel,
-                            routesByName = uiState.routes,
-                            showTitle = !useNavigationRail,
-                            isWideLayout = useNavigationRail,
-                        )
-                    }
+                    MainTab.Etas ->
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(contentPadding),
+                        ) {
+                            // The rail already labels the selected tab "ETAs", so the in-content title
+                            // would just repeat it - only show it with a bottom bar instead.
+                            EtasScreen(
+                                routes = uiState.routes,
+                                vehicles = uiState.vehicles + uiState.fakeVehicles,
+                                routesLoaded = uiState.routesLoaded,
+                                showTitle = !useNavigationRail,
+                            )
+                        }
+
+                    MainTab.Schedule ->
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(contentPadding),
+                        ) {
+                            ScheduleScreen(
+                                viewModel = scheduleViewModel,
+                                routesByName = uiState.routes,
+                                showTitle = !useNavigationRail,
+                                isWideLayout = useNavigationRail,
+                            )
+                        }
+                }
             }
         }
     }
