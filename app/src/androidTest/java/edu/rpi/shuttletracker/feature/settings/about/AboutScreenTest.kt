@@ -61,7 +61,6 @@ class AboutScreenTest {
             ShuttleTrackerTheme(dynamicColor = false) {
                 AboutScreen(
                     onBack = {},
-                    onOpenLibraries = {},
                     viewModel = remember { AboutViewModel(preferences) },
                 )
             }

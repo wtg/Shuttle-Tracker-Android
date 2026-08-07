@@ -83,7 +83,6 @@ data class VehicleLocation(
 /** The `/etas` endpoint's data, one per vehicle: its live ETA at each stop it's approaching. */
 data class VehicleStopEta(
     val stopTimes: Map<String, String>,
-    val timestamp: String,
 )
 
 /** The `/velocities` endpoint's data, one per vehicle: which route it's on and its stop status. */

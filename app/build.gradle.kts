@@ -109,7 +109,6 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
-    ksp(libs.androidx.hilt.compiler)
 
     // retrofit
     implementation(libs.retrofit)

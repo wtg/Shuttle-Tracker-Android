@@ -64,13 +64,7 @@ class MapsViewModel
         }
 
         fun clearErrors() {
-            _mapsUiState.update {
-                it.copy(
-                    unknownError = null,
-                    networkError = null,
-                    serverError = null,
-                )
-            }
+            _mapsUiState.update { it.copy(error = null) }
         }
 
         fun retry() {
@@ -102,9 +96,7 @@ class MapsViewModel
                     ) {
                         _mapsUiState.update {
                             it.copy(
-                                networkError = null,
-                                serverError = null,
-                                unknownError = null,
+                                error = null,
                                 vehiclesUpdatedAt = Instant.now(),
                             )
                         }
@@ -198,7 +190,7 @@ class MapsViewModel
                 viewModelScope.launch {
                     readApiResponse(shuttleRepository.getRoutes()) { routes ->
                         _mapsUiState.update {
-                            it.copy(routes = routes)
+                            it.copy(routes = routes, routesLoaded = true)
                         }
                     }
                 }
@@ -300,15 +292,7 @@ class MapsViewModel
         ) {
             when (response) {
                 is NetworkResult.Success -> success(response.data)
-                is NetworkResult.Failure ->
-                    when (val error = response.error) {
-                        is NetworkError.Connectivity ->
-                            _mapsUiState.update { it.copy(networkError = error) }
-                        is NetworkError.Http ->
-                            _mapsUiState.update { it.copy(serverError = error) }
-                        is NetworkError.Unknown ->
-                            _mapsUiState.update { it.copy(unknownError = error) }
-                    }
+                is NetworkResult.Failure -> _mapsUiState.update { it.copy(error = response.error) }
             }
         }
     }
@@ -322,13 +306,12 @@ data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),
     val fakeVehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
+    val routesLoaded: Boolean = false,
     val announcements: List<Announcement> = emptyList(),
     val announcementsUpdatedAt: Instant? = null,
     val vehiclesUpdatedAt: Instant? = null,
     val simulateAnnouncements: Boolean = false,
-    val networkError: NetworkError.Connectivity? = null,
-    val serverError: NetworkError.Http? = null,
-    val unknownError: NetworkError.Unknown? = null,
+    val error: NetworkError? = null,
     val themeMode: ThemeMode = ThemeMode.System,
     val mapType: MapType = MapType.NORMAL,
     val shuttleAnimationsEnabled: Boolean = false,

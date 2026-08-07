@@ -10,7 +10,6 @@ import com.google.android.gms.maps.model.LatLng
 data class Route(
     val color: String,
     val stops: List<String>,
-    val polylineStops: List<String>,
     val coordinates: List<List<List<Double>>>,
     val stopDetails: Map<String, Stop>,
 ) {

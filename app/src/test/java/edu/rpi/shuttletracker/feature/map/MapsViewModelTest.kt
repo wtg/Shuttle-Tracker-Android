@@ -115,7 +115,7 @@ class MapsViewModelTest {
             repository.vehicleVelocities.emit(NetworkResult.Success(emptyMap()))
             advanceUntilIdle()
 
-            assertThat(viewModel.mapsUiState.value.networkError).isInstanceOf(NetworkError.NoConnection::class.java)
+            assertThat(viewModel.mapsUiState.value.error).isInstanceOf(NetworkError.NoConnection::class.java)
         }
 
     @Test
@@ -129,7 +129,7 @@ class MapsViewModelTest {
             viewModel.retry()
             advanceUntilIdle()
 
-            assertThat(viewModel.mapsUiState.value.unknownError).isNull()
+            assertThat(viewModel.mapsUiState.value.error).isNull()
             assertThat(viewModel.mapsUiState.value.routes).containsKey("NORTH")
             assertThat(repository.routesCalls).isEqualTo(2)
         }
@@ -173,7 +173,7 @@ class MapsViewModelTest {
                 viewModel.mapsUiState.value.announcements
                     .map { it.id },
             ).containsExactly("first")
-            assertThat(viewModel.mapsUiState.value.networkError).isInstanceOf(NetworkError.NoConnection::class.java)
+            assertThat(viewModel.mapsUiState.value.error).isInstanceOf(NetworkError.NoConnection::class.java)
         }
 
     @Test

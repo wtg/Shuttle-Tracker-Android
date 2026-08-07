@@ -38,7 +38,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
 import edu.rpi.shuttletracker.feature.etas.EtasScreen
-import edu.rpi.shuttletracker.feature.etas.EtasViewModel
 import edu.rpi.shuttletracker.feature.map.components.AnnouncementSheet
 import edu.rpi.shuttletracker.feature.schedule.ScheduleScreen
 import edu.rpi.shuttletracker.feature.schedule.ScheduleViewModel
@@ -69,7 +68,6 @@ fun MapsScreen(
     onOpenSettings: () -> Unit,
     viewModel: MapsViewModel = hiltViewModel(),
     scheduleViewModel: ScheduleViewModel = hiltViewModel(),
-    etasViewModel: EtasViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.mapsUiState.collectAsStateWithLifecycle()
     var selectedTab by rememberSaveable { mutableStateOf(MainTab.Map) }
@@ -85,6 +83,15 @@ fun MapsScreen(
     // chrome reads as one consistent piece instead of a different dark shade.
     val isDark = MaterialTheme.colorScheme.background.luminance() <= 0.5f
     val navContainerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else null
+
+    LifecycleStartEffect(viewModel, selectedTab) {
+        if (selectedTab != MainTab.Schedule) viewModel.startVehiclePolling()
+        if (selectedTab == MainTab.Map) viewModel.startAnnouncementRefresh()
+        onStopOrDispose {
+            viewModel.stopVehiclePolling()
+            viewModel.stopAnnouncementRefresh()
+        }
+    }
 
     Row(Modifier.fillMaxSize()) {
         if (useNavigationRail) {
@@ -104,9 +111,7 @@ fun MapsScreen(
             modifier = Modifier.weight(1f),
             snackbarHost = {
                 CheckResponseError(
-                    uiState.networkError,
-                    uiState.serverError,
-                    uiState.unknownError,
+                    uiState.error,
                     ignoreErrorRequest = viewModel::clearErrors,
                     retryErrorRequest = viewModel::retry,
                 )
@@ -146,7 +151,12 @@ fun MapsScreen(
                     ) {
                         // The rail already labels the selected tab "ETAs", so the in-content title
                         // would just repeat it - only show it with a bottom bar instead.
-                        EtasScreen(viewModel = etasViewModel, showTitle = !useNavigationRail)
+                        EtasScreen(
+                            routes = uiState.routes,
+                            vehicles = uiState.vehicles + uiState.fakeVehicles,
+                            routesLoaded = uiState.routesLoaded,
+                            showTitle = !useNavigationRail,
+                        )
                     }
 
                 MainTab.Schedule ->
@@ -157,6 +167,7 @@ fun MapsScreen(
                     ) {
                         ScheduleScreen(
                             viewModel = scheduleViewModel,
+                            routesByName = uiState.routes,
                             showTitle = !useNavigationRail,
                             isWideLayout = useNavigationRail,
                         )
@@ -167,9 +178,7 @@ fun MapsScreen(
 }
 
 /**
- * Vehicle and announcement polling are scoped to this composable's own lifetime, not the whole
- * screen's, so switching to another tab actually stops the live 5-second polling instead of
- * leaving it running in the background indefinitely.
+ * Map content and announcement sheet.
  * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -182,15 +191,6 @@ private fun MapTab(
     onAnnouncementsSheetVisibleChange: (Boolean) -> Unit,
     announcementsSheetState: SheetState,
 ) {
-    LifecycleStartEffect(viewModel) {
-        viewModel.startVehiclePolling()
-        viewModel.startAnnouncementRefresh()
-        onStopOrDispose {
-            viewModel.stopVehiclePolling()
-            viewModel.stopAnnouncementRefresh()
-        }
-    }
-
     Box(Modifier.fillMaxSize()) {
         ShuttleMap(
             uiState = uiState,

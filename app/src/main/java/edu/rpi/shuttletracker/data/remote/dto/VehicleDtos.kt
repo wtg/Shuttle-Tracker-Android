@@ -20,7 +20,6 @@ data class VehicleLocationDto(
 @Serializable
 data class VehicleStopEtaDto(
     @SerialName("stop_times") val stopTimes: Map<String, String>,
-    val timestamp: String,
 )
 
 @Serializable

@@ -95,6 +95,5 @@ data class ScheduleDto(
 /** The body of a non-2xx API response, when the backend sends one. */
 @Serializable
 data class ErrorResponse(
-    val error: Boolean = false,
     val reason: String? = null,
 )

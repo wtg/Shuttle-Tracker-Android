@@ -52,7 +52,5 @@ class DefaultShuttleRepository
 
         override suspend fun getRoutes() = remoteDataSource.getRoutes()
 
-        override suspend fun getAnnouncements() = remoteDataSource.getAnnouncements()
-
         override suspend fun getSchedule() = remoteDataSource.getSchedule()
     }

@@ -1,10 +1,10 @@
 package edu.rpi.shuttletracker.feature.schedule.utils
 
 import com.google.common.truth.Truth.assertThat
-import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.testing.fixtures.testRoute
 import edu.rpi.shuttletracker.testing.fixtures.testSchedule
 import org.junit.Test
+import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -78,7 +78,6 @@ class ScheduleUtilsTest {
     private fun timeInfo(minutesOfDay: Int) =
         TimeInfo(
             departureTime = "",
-            routeName = "NORTH",
             vehicleName = "Bus 1",
             minutesOfDay = minutesOfDay,
             stopTimes = emptyList(),

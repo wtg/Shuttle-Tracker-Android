@@ -14,7 +14,6 @@ class WidgetSnapshotTest {
         Route(
             color = "#D32F2F",
             stops = listOf("union", "academy"),
-            polylineStops = emptyList(),
             coordinates = emptyList(),
             stopDetails = mapOf("union" to union, "academy" to academy),
         )
@@ -89,7 +88,6 @@ class WidgetSnapshotTest {
                     listOf(
                         WidgetStopSnapshot(
                             stopName = "Student Union",
-                            routeNames = listOf("NORTH", "WEST"),
                             etas =
                                 listOf(
                                     WidgetEtaSnapshot(routeName = "NORTH", etaEpochMillis = 1000L),
@@ -98,7 +96,6 @@ class WidgetSnapshotTest {
                         ),
                         WidgetStopSnapshot(
                             stopName = "Academy Hall",
-                            routeNames = listOf("WEST"),
                             etas = listOf(WidgetEtaSnapshot(routeName = "WEST", etaEpochMillis = 3000L)),
                         ),
                     ),

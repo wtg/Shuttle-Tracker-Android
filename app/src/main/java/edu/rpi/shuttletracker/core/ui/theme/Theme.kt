@@ -114,7 +114,6 @@ fun ShuttleTrackerTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
         content = content,
     )
 }

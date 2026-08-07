@@ -1,8 +1,9 @@
 package edu.rpi.shuttletracker.feature.schedule.utils
 
-import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -22,7 +23,6 @@ data class StopTimeInfo(
 /** One scheduled departure: a vehicle leaving at a time, with every stop's estimated time along the way. */
 data class TimeInfo(
     val departureTime: String,
-    val routeName: String,
     val vehicleName: String,
     val minutesOfDay: Int,
     val stopTimes: List<StopTimeInfo>,
@@ -70,7 +70,6 @@ fun consolidatedTimes(
             out +=
                 TimeInfo(
                     departureTime = departureTime,
-                    routeName = scheduledRouteName,
                     vehicleName = vehicleName,
                     minutesOfDay = minutesOfDay,
                     stopTimes =
@@ -111,7 +110,7 @@ fun nextScheduledArrival(
     stopKey: String,
     schedule: Schedule,
     routesByName: Map<String, Route>,
-    day: DayOfWeek = DayOfWeek.fromToday(),
+    day: DayOfWeek = LocalDate.now().dayOfWeek,
     now: LocalDateTime = LocalDateTime.now(),
 ): LocalDateTime? {
     val scheduleMap = schedule.scheduleMapFor(day)

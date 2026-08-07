@@ -1,5 +1,6 @@
 package edu.rpi.shuttletracker.feature.settings.about
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.Typography
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,8 +33,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
 import edu.rpi.shuttletracker.BuildConfig
 import edu.rpi.shuttletracker.R
+import edu.rpi.shuttletracker.core.ui.theme.shuttleTrackerColorScheme
 import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 
 /**
@@ -44,7 +48,6 @@ import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 @Composable
 fun AboutScreen(
     onBack: () -> Unit,
-    onOpenLibraries: () -> Unit,
     viewModel: AboutViewModel = hiltViewModel(),
 ) {
     val uriHandler = LocalUriHandler.current
@@ -59,6 +62,7 @@ fun AboutScreen(
     val repositoryIssuesUrl = stringResource(R.string.url_repository_issues)
     val privacyPolicyUrl = stringResource(R.string.url_private_policy)
     val devOptionsActivatedMessage = stringResource(R.string.dev_options_activated)
+    val librariesTitle = stringResource(R.string.libraries_used)
 
     Scaffold(
         topBar = {
@@ -109,8 +113,16 @@ fun AboutScreen(
 
             SettingsItem(
                 icon = R.drawable.ic_description,
-                title = stringResource(R.string.libraries_used),
-                onClick = onOpenLibraries,
+                title = librariesTitle,
+                onClick = {
+                    OssLicensesMenuActivity.setActivityTitle(librariesTitle)
+                    OssLicensesMenuActivity.setTheme(
+                        shuttleTrackerColorScheme(context, darkTheme = false),
+                        shuttleTrackerColorScheme(context, darkTheme = true),
+                        Typography(),
+                    )
+                    context.startActivity(Intent(context, OssLicensesMenuActivity::class.java))
+                },
             )
 
             var timesClicked by remember { mutableIntStateOf(10) }
