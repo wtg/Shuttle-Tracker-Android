@@ -18,10 +18,8 @@ class NotificationTapDestinationTest {
     }
 
     @Test
-    fun `a valid http url opens externally`() {
-        val destination = resolveNotificationTapDestination("http://example.com")
-
-        assertThat(destination).isEqualTo(NotificationTapDestination.ExternalUrl("http://example.com"))
+    fun `an unencrypted http url falls back to the map`() {
+        assertThat(resolveNotificationTapDestination("http://example.com")).isEqualTo(NotificationTapDestination.Map)
     }
 
     @Test

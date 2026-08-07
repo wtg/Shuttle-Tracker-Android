@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
+import edu.rpi.shuttletracker.feature.schedule.utils.RPI_ZONE_ID
 import edu.rpi.shuttletracker.feature.schedule.utils.StopTimeInfo
 import edu.rpi.shuttletracker.feature.schedule.utils.consolidatedTimes
 import edu.rpi.shuttletracker.feature.schedule.utils.routesForDay
@@ -138,7 +139,7 @@ private fun ScheduleDetailsContent(
     onSelectedRouteChange: (String) -> Unit,
     isWideLayout: Boolean,
 ) {
-    var selectedDay by remember { mutableStateOf(LocalDate.now().dayOfWeek) }
+    var selectedDay by remember { mutableStateOf(LocalDate.now(RPI_ZONE_ID).dayOfWeek) }
 
     val routes =
         remember(selectedDay, schedule) {
@@ -191,6 +192,7 @@ private fun ScheduleDetailsContent(
             routes = routes,
             selectedRoute = activeRoute,
             onSelect = onSelectedRouteChange,
+            modifier = Modifier.fillMaxWidth(0.9f),
         )
     }
 
@@ -218,7 +220,7 @@ private fun ScheduleDetailsContent(
 
     val listState = rememberLazyListState()
 
-    val now = LocalTime.now()
+    val now = LocalTime.now(RPI_ZONE_ID)
     val nowMinutes = now.hour * 60 + now.minute
 
     val scrollIndex = remember(times) { scrollIndexFor(times, nowMinutes) }
@@ -288,7 +290,7 @@ private fun RouteSelector(
     routes: List<String>,
     selectedRoute: String?,
     onSelect: (String) -> Unit,
-    modifier: Modifier = Modifier.fillMaxWidth(0.9f),
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier,

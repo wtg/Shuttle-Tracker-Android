@@ -135,6 +135,38 @@ class MapsViewModelTest {
         }
 
     @Test
+    fun `retry restarts a failed vehicle refresh immediately`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startVehiclePolling()
+            repository.vehicleLocations.emit(NetworkResult.Failure(NetworkError.NoConnection()))
+            repository.vehicleEtas.emit(NetworkResult.Success(emptyMap()))
+            repository.vehicleVelocities.emit(NetworkResult.Success(emptyMap()))
+            advanceUntilIdle()
+
+            viewModel.retry()
+            runCurrent()
+
+            assertThat(repository.observeLocationsCalls).isEqualTo(2)
+            assertThat(repository.observeEtasCalls).isEqualTo(2)
+            assertThat(repository.observeVelocitiesCalls).isEqualTo(2)
+        }
+
+    @Test
+    fun `retry restarts a failed announcement refresh immediately`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+            repository.announcements.emit(NetworkResult.Failure(NetworkError.NoConnection()))
+            advanceUntilIdle()
+
+            viewModel.retry()
+            runCurrent()
+
+            assertThat(repository.observeAnnouncementsCalls).isEqualTo(2)
+        }
+
+    @Test
     fun `announcement refresh loads and filters to active unexpired announcements`() =
         runTest {
             val now = Instant.parse("2026-06-01T00:00:00Z")

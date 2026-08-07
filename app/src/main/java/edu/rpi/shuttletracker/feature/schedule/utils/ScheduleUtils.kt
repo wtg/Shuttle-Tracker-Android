@@ -6,6 +6,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.collections.component1
@@ -13,6 +14,7 @@ import kotlin.collections.component2
 import kotlin.collections.iterator
 
 private val TIME_FORMATTER = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
+val RPI_ZONE_ID: ZoneId = ZoneId.of("America/New_York")
 
 /** One stop's expected time for a single departure - a row inside an expanded [TimeInfo]. */
 data class StopTimeInfo(
@@ -110,8 +112,8 @@ fun nextScheduledArrival(
     stopKey: String,
     schedule: Schedule,
     routesByName: Map<String, Route>,
-    day: DayOfWeek = LocalDate.now().dayOfWeek,
-    now: LocalDateTime = LocalDateTime.now(),
+    day: DayOfWeek = LocalDate.now(RPI_ZONE_ID).dayOfWeek,
+    now: LocalDateTime = LocalDateTime.now(RPI_ZONE_ID),
 ): LocalDateTime? {
     val scheduleMap = schedule.scheduleMapFor(day)
     var next: LocalDateTime? = null

@@ -45,7 +45,7 @@ android {
     defaultConfig {
         applicationId = "edu.rpi.shuttletracker"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 17
         versionName = "2.5.0"
 

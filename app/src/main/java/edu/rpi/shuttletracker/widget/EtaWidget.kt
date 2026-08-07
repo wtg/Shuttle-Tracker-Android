@@ -51,8 +51,8 @@ import androidx.glance.unit.ColorProvider
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.app.MainActivity
 import edu.rpi.shuttletracker.core.ui.theme.VehicleColors
+import edu.rpi.shuttletracker.feature.schedule.utils.RPI_ZONE_ID
 import java.time.Instant
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import androidx.glance.appwidget.action.actionStartActivity as actionStartActivityIntent
@@ -502,7 +502,7 @@ private fun EmptyMessage(textRes: Int) {
 }
 
 private fun formatTime(epochMillis: Long): String =
-    TIME_FORMATTER.format(Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()))
+    TIME_FORMATTER.format(Instant.ofEpochMilli(epochMillis).atZone(RPI_ZONE_ID))
 
 private fun String.lowercaseTitle(): String = lowercase(Locale.ROOT).replaceFirstChar { it.titlecase(Locale.ROOT) }
 

@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.feature.map
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -30,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.graphics.toColorInt
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -92,16 +94,11 @@ internal fun ShuttleMap(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val hasLocationPermission =
-        remember {
-            listOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-            ).any { permission ->
-                ActivityCompat.checkSelfPermission(context, permission) ==
-                    PackageManager.PERMISSION_GRANTED
-            }
-        }
+    var hasLocationPermission by remember(context) { mutableStateOf(context.hasLocationPermission()) }
+    LifecycleResumeEffect(context) {
+        hasLocationPermission = context.hasLocationPermission()
+        onPauseOrDispose {}
+    }
     val cameraPositionState =
         rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(CampusCenter, 14.3f)
@@ -302,26 +299,30 @@ internal fun ShuttleMap(
 
                 when (followMode) {
                     LocationFollowMode.NotFollowing -> {
-                        LocationServices
-                            .getFusedLocationProviderClient(context)
-                            .lastLocation
-                            .addOnSuccessListener { location: Location? ->
-                                location ?: return@addOnSuccessListener
-                                coroutineScope.launch {
-                                    cameraPositionState.animate(
-                                        CameraUpdateFactory.newCameraPosition(
-                                            CameraPosition(
-                                                LatLng(location.latitude, location.longitude),
-                                                cameraPositionState.position.zoom,
-                                                0f,
-                                                0f,
+                        try {
+                            LocationServices
+                                .getFusedLocationProviderClient(context)
+                                .lastLocation
+                                .addOnSuccessListener { location: Location? ->
+                                    location ?: return@addOnSuccessListener
+                                    coroutineScope.launch {
+                                        cameraPositionState.animate(
+                                            CameraUpdateFactory.newCameraPosition(
+                                                CameraPosition(
+                                                    LatLng(location.latitude, location.longitude),
+                                                    cameraPositionState.position.zoom,
+                                                    0f,
+                                                    0f,
+                                                ),
                                             ),
-                                        ),
-                                        durationMs = 1000,
-                                    )
+                                            durationMs = 1000,
+                                        )
+                                    }
+                                    followMode = LocationFollowMode.Following
                                 }
-                                followMode = LocationFollowMode.Following
-                            }
+                        } catch (_: SecurityException) {
+                            hasLocationPermission = false
+                        }
                     }
 
                     // Already centered north-up: tilt into a 3D perspective, like the stock app's
@@ -396,3 +397,11 @@ internal fun ShuttleMap(
 }
 
 private fun String.toComposeColorOrNull(): Color? = runCatching { Color(toColorInt()) }.getOrNull()
+
+private fun Context.hasLocationPermission(): Boolean =
+    listOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+    ).any { permission ->
+        ActivityCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+    }

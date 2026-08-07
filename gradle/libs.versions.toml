@@ -5,7 +5,7 @@ core-ktx = "1.19.0"
 datastore-preferences = "1.2.1"
 espresso-core = "3.7.0"
 
-firebase-bom = "34.16.0"
+firebase-bom = "34.17.0"
 
 google-services = "4.5.0"
 google-oss-licenses = "17.5.1"
@@ -29,10 +29,10 @@ secrets-gradle-plugin = "2.0.1"
 compose-bom = "2026.06.01"
 
 ksp = "2.3.10"
-android-gradle-plugin = "9.3.0"
+android-gradle-plugin = "9.3.1"
 kotlin = "2.4.10"
 kotlinx-serialization = "1.11.0"
-navigation3 = "1.1.4"
+navigation3 = "1.1.5"
 
 ktlint = "14.2.0"
 
