@@ -5,13 +5,14 @@ import org.junit.Test
 
 class UrlValidationTest {
     @Test
-    fun `http and https urls are safe`() {
+    fun `https urls are safe`() {
         assertThat(isSafeHttpUrl("https://example.com")).isTrue()
-        assertThat(isSafeHttpUrl("http://example.com/path?query=1")).isTrue()
+        assertThat(isSafeHttpUrl("HTTPS://example.com/path?query=1")).isTrue()
     }
 
     @Test
-    fun `non-http schemes are rejected`() {
+    fun `unencrypted and non-web schemes are rejected`() {
+        assertThat(isSafeHttpUrl("http://example.com")).isFalse()
         assertThat(isSafeHttpUrl("javascript:alert(1)")).isFalse()
         assertThat(isSafeHttpUrl("ftp://example.com")).isFalse()
         assertThat(isSafeHttpUrl("intent://evil")).isFalse()

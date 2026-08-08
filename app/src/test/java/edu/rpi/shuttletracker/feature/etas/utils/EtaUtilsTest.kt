@@ -15,7 +15,6 @@ class EtaUtilsTest {
         Route(
             color = "#D32F2F",
             stops = listOf("union", "academy"),
-            polylineStops = emptyList(),
             coordinates = emptyList(),
             stopDetails = mapOf("union" to union, "academy" to academy),
         )
@@ -24,7 +23,6 @@ class EtaUtilsTest {
         Route(
             color = "#1976D2",
             stops = listOf("union"),
-            polylineStops = emptyList(),
             coordinates = emptyList(),
             stopDetails = mapOf("union" to union),
         )
@@ -89,7 +87,6 @@ class EtaUtilsTest {
             Route(
                 color = "#00FF00",
                 stops = listOf("academy"),
-                polylineStops = emptyList(),
                 coordinates = emptyList(),
                 stopDetails = mapOf("academy" to academy),
             )

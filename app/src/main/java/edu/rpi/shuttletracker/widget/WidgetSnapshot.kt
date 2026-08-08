@@ -32,7 +32,6 @@ data class WidgetEtaSnapshot(
 @Serializable
 data class WidgetStopSnapshot(
     val stopName: String,
-    val routeNames: List<String>,
     val etas: List<WidgetEtaSnapshot>,
 )
 
@@ -88,7 +87,6 @@ fun List<StopWithEtas>.toWidgetStopSnapshots(): List<WidgetStopSnapshot> =
         .map { stop ->
             WidgetStopSnapshot(
                 stopName = stop.stop.name,
-                routeNames = stop.routeNames,
                 etas =
                     stop.etas.take(MAX_ETAS_PER_STOP).map { eta ->
                         WidgetEtaSnapshot(

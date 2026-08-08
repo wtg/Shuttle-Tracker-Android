@@ -21,7 +21,6 @@ class FakeShuttleUtilsTest {
         Route(
             color = "#D32F2F",
             stops = emptyList(),
-            polylineStops = emptyList(),
             coordinates =
                 listOf(
                     listOf(

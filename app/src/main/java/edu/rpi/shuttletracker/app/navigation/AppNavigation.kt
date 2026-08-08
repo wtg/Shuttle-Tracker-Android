@@ -10,7 +10,6 @@ import androidx.navigation3.ui.NavDisplay
 import edu.rpi.shuttletracker.feature.map.MapsScreen
 import edu.rpi.shuttletracker.feature.settings.SettingsScreen
 import edu.rpi.shuttletracker.feature.settings.about.AboutScreen
-import edu.rpi.shuttletracker.feature.settings.about.LibrariesScreen
 import edu.rpi.shuttletracker.feature.settings.developerMenu.DevMenuScreen
 import edu.rpi.shuttletracker.feature.setup.SetupScreen
 import kotlinx.serialization.Serializable
@@ -26,9 +25,6 @@ private data object SettingsRoute : NavKey
 
 @Serializable
 private data object AboutRoute : NavKey
-
-@Serializable
-private data object LibrariesRoute : NavKey
 
 @Serializable
 private data object DeveloperOptionsRoute : NavKey
@@ -90,13 +86,7 @@ fun AppNavigation(setupCompleted: Boolean) {
                     )
                 }
                 entry<AboutRoute> {
-                    AboutScreen(
-                        onBack = ::navigateBack,
-                        onOpenLibraries = { navigateTo(LibrariesRoute) },
-                    )
-                }
-                entry<LibrariesRoute> {
-                    LibrariesScreen(onOpened = ::navigateBack)
+                    AboutScreen(onBack = ::navigateBack)
                 }
                 entry<DeveloperOptionsRoute> {
                     DevMenuScreen(onBack = ::navigateBack)

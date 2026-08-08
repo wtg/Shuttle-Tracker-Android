@@ -12,7 +12,6 @@ fun testRoute() =
     Route(
         color = "#D32F2F",
         stops = listOf("union", "academy"),
-        polylineStops = emptyList(),
         coordinates = listOf(listOf(listOf(42.730, -73.680), listOf(42.731, -73.679))),
         stopDetails =
             mapOf(

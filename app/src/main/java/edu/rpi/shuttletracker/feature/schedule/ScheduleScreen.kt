@@ -14,11 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.rpi.shuttletracker.core.ui.CheckResponseError
+import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.feature.schedule.components.ScheduleContent
 
 /** The Schedule tab: fetches routes/schedule via [ScheduleViewModel] and renders them with [ScheduleContent]. */
 @Composable
 fun ScheduleScreen(
+    routesByName: Map<String, Route>,
     viewModel: ScheduleViewModel = hiltViewModel(),
     showTitle: Boolean = true,
     isWideLayout: Boolean = false,
@@ -30,9 +32,7 @@ fun ScheduleScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = {
             CheckResponseError(
-                uiState.networkError,
-                uiState.serverError,
-                uiState.unknownError,
+                uiState.error,
                 ignoreErrorRequest = viewModel::clearErrors,
                 retryErrorRequest = viewModel::retry,
             )
@@ -46,7 +46,7 @@ fun ScheduleScreen(
             ScheduleContent(
                 schedule = uiState.schedule,
                 isLoading = uiState.isScheduleLoading,
-                routesByName = uiState.routes,
+                routesByName = routesByName,
                 selectedRoute = selectedRoute,
                 onSelectedRouteChange = { selectedRoute = it },
                 showTitle = showTitle,

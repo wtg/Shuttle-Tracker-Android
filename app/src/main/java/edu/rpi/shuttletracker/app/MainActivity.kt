@@ -1,7 +1,6 @@
 package edu.rpi.shuttletracker.app
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import edu.rpi.shuttletracker.app.navigation.AppNavigation
@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
 
         when (val destination = resolveNotificationTapDestination(url)) {
             is NotificationTapDestination.ExternalUrl ->
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(destination.url)))
+                startActivity(Intent(Intent.ACTION_VIEW, destination.url.toUri()))
             NotificationTapDestination.Map -> Unit
         }
     }

@@ -17,54 +17,44 @@ import edu.rpi.shuttletracker.core.network.NetworkError
  * time), and calls back so the ViewModel can clear or retry. See `MapsScreen`/`ScheduleScreen` for
  * how features wire this up.
  *
- * @param networkError: a network error, null if none
- * @param serverError: a server error, null if none
- * @param unknownError: an unknown error, null if none
+ * @param error a network error, null if none
  *
  * @param ignoreErrorRequest: what happens when error is ignored
  * @param retryErrorRequest: what happens when you want to retry what caused the error
  * */
 @Composable
 fun CheckResponseError(
-    networkError: NetworkError.Connectivity? = null,
-    serverError: NetworkError.Http? = null,
-    unknownError: NetworkError.Unknown? = null,
+    error: NetworkError? = null,
     ignoreErrorRequest: () -> Unit = {},
     retryErrorRequest: () -> Unit = {},
 ) {
     val networkMessage = stringResource(R.string.error_network)
     val serverMessage = stringResource(R.string.error_server)
     val unknownMessage = stringResource(R.string.error_unknown)
-    val activeError =
-        when {
-            networkError != null ->
-                ErrorContent(
-                    networkError,
-                    networkMessage,
-                    when (networkError) {
-                        is NetworkError.NoConnection -> networkError.cause?.message.orEmpty()
-                        is NetworkError.Timeout -> networkError.cause?.message.orEmpty()
-                    },
-                )
-            serverError != null -> ErrorContent(serverError, serverMessage, serverError.displayMessage)
-            unknownError != null -> ErrorContent(unknownError, unknownMessage, unknownError.displayMessage)
-            else -> null
+    val errorType =
+        when (error) {
+            is NetworkError.Connectivity -> networkMessage
+            is NetworkError.Http -> serverMessage
+            is NetworkError.Unknown -> unknownMessage
+            null -> ""
+        }
+    val errorBody =
+        when (error) {
+            is NetworkError.NoConnection -> error.cause?.message.orEmpty()
+            is NetworkError.Timeout -> error.cause?.message.orEmpty()
+            is NetworkError.Http -> error.displayMessage
+            is NetworkError.Unknown -> error.displayMessage
+            null -> ""
         }
 
     Error(
-        error = activeError?.error,
+        error = error,
         onPrimaryRequest = retryErrorRequest,
         onDismissRequest = ignoreErrorRequest,
-        errorType = activeError?.type.orEmpty(),
-        errorBody = activeError?.body.orEmpty(),
+        errorType = errorType,
+        errorBody = errorBody,
     )
 }
-
-private data class ErrorContent(
-    val error: Any,
-    val type: String,
-    val body: String,
-)
 
 /**
  * @param error: the error you want to display

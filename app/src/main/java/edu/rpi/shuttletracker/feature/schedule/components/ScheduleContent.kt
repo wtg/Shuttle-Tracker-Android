@@ -51,14 +51,18 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
-import edu.rpi.shuttletracker.data.models.DayOfWeek
 import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
+import edu.rpi.shuttletracker.feature.schedule.utils.RPI_ZONE_ID
 import edu.rpi.shuttletracker.feature.schedule.utils.StopTimeInfo
 import edu.rpi.shuttletracker.feature.schedule.utils.consolidatedTimes
 import edu.rpi.shuttletracker.feature.schedule.utils.routesForDay
 import edu.rpi.shuttletracker.feature.schedule.utils.scrollIndexFor
-import java.util.Calendar
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.TextStyle
+import java.util.Locale
 import kotlin.text.lowercase
 
 /**
@@ -135,7 +139,7 @@ private fun ScheduleDetailsContent(
     onSelectedRouteChange: (String) -> Unit,
     isWideLayout: Boolean,
 ) {
-    var selectedDay by remember { mutableStateOf(DayOfWeek.fromToday()) }
+    var selectedDay by remember { mutableStateOf(LocalDate.now(RPI_ZONE_ID).dayOfWeek) }
 
     val routes =
         remember(selectedDay, schedule) {
@@ -188,6 +192,7 @@ private fun ScheduleDetailsContent(
             routes = routes,
             selectedRoute = activeRoute,
             onSelect = onSelectedRouteChange,
+            modifier = Modifier.fillMaxWidth(0.9f),
         )
     }
 
@@ -215,8 +220,8 @@ private fun ScheduleDetailsContent(
 
     val listState = rememberLazyListState()
 
-    val now = Calendar.getInstance()
-    val nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+    val now = LocalTime.now(RPI_ZONE_ID)
+    val nowMinutes = now.hour * 60 + now.minute
 
     val scrollIndex = remember(times) { scrollIndexFor(times, nowMinutes) }
 
@@ -237,7 +242,7 @@ private fun ScheduleDetailsContent(
         itemsIndexed(
             items = times,
             key = { index, item ->
-                "$index|${item.vehicleName}|${item.departureTime}|${item.routeName}"
+                "$index|${item.vehicleName}|${item.departureTime}"
             },
         ) { index, item ->
             ScheduleTimeRow(
@@ -274,7 +279,7 @@ private fun DaySelector(
                 selected = selectedDay == day,
                 onClick = { onSelect(day) },
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = days.size),
-                label = { Text(day.displayName) },
+                label = { Text(day.getDisplayName(TextStyle.SHORT, Locale.US)) },
             )
         }
     }
@@ -285,7 +290,7 @@ private fun RouteSelector(
     routes: List<String>,
     selectedRoute: String?,
     onSelect: (String) -> Unit,
-    modifier: Modifier = Modifier.fillMaxWidth(0.9f),
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier,

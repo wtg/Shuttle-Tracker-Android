@@ -1,6 +1,7 @@
 package edu.rpi.shuttletracker.feature.map
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -15,6 +16,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -30,14 +32,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.graphics.toColorInt
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapEffect
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
@@ -48,7 +51,6 @@ import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.feature.map.components.AnnouncementStrip
 import edu.rpi.shuttletracker.feature.map.components.DeveloperVehicleView
 import kotlinx.coroutines.launch
-import com.google.android.gms.maps.GoogleMap as AndroidGoogleMap
 
 private val CampusCenter = LatLng(42.73068146020498, -73.67619731950525)
 private val CampusBounds =
@@ -68,8 +70,8 @@ private const val PAN_DETECTION_THRESHOLD_METERS = 20f
  * Mirrors the stock Google Maps app's location FAB: [NotFollowing] until tapped, then
  * [Following] the user north-up, then [FollowingTilted] into a 3D perspective on a second tap.
  * A user gesture that actually re-targets the camera (a pan) drops back to [NotFollowing]; a
- * gesture that only changes zoom/rotation in place does not (see the `MapEffect` in
- * [ShuttleMap]) so the button never claims to be following a camera the user just took over.
+ * gesture that only changes zoom/rotation in place does not, so the button never claims to be
+ * following a camera the user just took over.
  * */
 private enum class LocationFollowMode {
     NotFollowing,
@@ -92,16 +94,11 @@ internal fun ShuttleMap(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val hasLocationPermission =
-        remember {
-            listOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-            ).any { permission ->
-                ActivityCompat.checkSelfPermission(context, permission) ==
-                    PackageManager.PERMISSION_GRANTED
-            }
-        }
+    var hasLocationPermission by remember(context) { mutableStateOf(context.hasLocationPermission()) }
+    LifecycleResumeEffect(context) {
+        hasLocationPermission = context.hasLocationPermission()
+        onPauseOrDispose {}
+    }
     val cameraPositionState =
         rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(CampusCenter, 14.3f)
@@ -113,6 +110,30 @@ internal fun ShuttleMap(
     var gestureStartTarget by remember { mutableStateOf<LatLng?>(null) }
     val useDarkMap = uiState.themeMode.isDarkTheme(isSystemInDarkTheme())
     val fallbackRouteColor = MaterialTheme.colorScheme.primary
+
+    LaunchedEffect(cameraPositionState.isMoving) {
+        if (cameraPositionState.isMoving) {
+            if (cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) {
+                gestureStartTarget = cameraPositionState.position.target
+            }
+            return@LaunchedEffect
+        }
+
+        val start = gestureStartTarget ?: return@LaunchedEffect
+        gestureStartTarget = null
+        val end = cameraPositionState.position.target
+        val distanceMeters = FloatArray(1)
+        Location.distanceBetween(
+            start.latitude,
+            start.longitude,
+            end.latitude,
+            end.longitude,
+            distanceMeters,
+        )
+        if (distanceMeters[0] > PAN_DETECTION_THRESHOLD_METERS) {
+            followMode = LocationFollowMode.NotFollowing
+        }
+    }
 
     Box(Modifier.fillMaxSize()) {
         GoogleMap(
@@ -139,33 +160,6 @@ internal fun ShuttleMap(
                     myLocationButtonEnabled = false,
                 ),
         ) {
-            // Only drop follow mode for a real pan, not an in-place pinch-zoom/rotate - compare
-            // the target when a gesture starts vs. where it lands.
-            MapEffect(Unit) { map ->
-                map.setOnCameraMoveStartedListener { reason ->
-                    if (reason == AndroidGoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
-                        gestureStartTarget = map.cameraPosition.target
-                    }
-                }
-                map.setOnCameraIdleListener {
-                    val start = gestureStartTarget ?: return@setOnCameraIdleListener
-                    gestureStartTarget = null
-
-                    val end = map.cameraPosition.target
-                    val distanceMeters = FloatArray(1)
-                    Location.distanceBetween(
-                        start.latitude,
-                        start.longitude,
-                        end.latitude,
-                        end.longitude,
-                        distanceMeters,
-                    )
-                    if (distanceMeters[0] > PAN_DETECTION_THRESHOLD_METERS) {
-                        followMode = LocationFollowMode.NotFollowing
-                    }
-                }
-            }
-
             val uniqueStops =
                 uiState.routes.values
                     .flatMap { it.stopDetails.values }
@@ -302,26 +296,30 @@ internal fun ShuttleMap(
 
                 when (followMode) {
                     LocationFollowMode.NotFollowing -> {
-                        LocationServices
-                            .getFusedLocationProviderClient(context)
-                            .lastLocation
-                            .addOnSuccessListener { location: Location? ->
-                                location ?: return@addOnSuccessListener
-                                coroutineScope.launch {
-                                    cameraPositionState.animate(
-                                        CameraUpdateFactory.newCameraPosition(
-                                            CameraPosition(
-                                                LatLng(location.latitude, location.longitude),
-                                                cameraPositionState.position.zoom,
-                                                0f,
-                                                0f,
+                        try {
+                            LocationServices
+                                .getFusedLocationProviderClient(context)
+                                .lastLocation
+                                .addOnSuccessListener { location: Location? ->
+                                    location ?: return@addOnSuccessListener
+                                    coroutineScope.launch {
+                                        cameraPositionState.animate(
+                                            CameraUpdateFactory.newCameraPosition(
+                                                CameraPosition(
+                                                    LatLng(location.latitude, location.longitude),
+                                                    cameraPositionState.position.zoom,
+                                                    0f,
+                                                    0f,
+                                                ),
                                             ),
-                                        ),
-                                        durationMs = 1000,
-                                    )
+                                            durationMs = 1000,
+                                        )
+                                    }
+                                    followMode = LocationFollowMode.Following
                                 }
-                                followMode = LocationFollowMode.Following
-                            }
+                        } catch (_: SecurityException) {
+                            hasLocationPermission = false
+                        }
                     }
 
                     // Already centered north-up: tilt into a 3D perspective, like the stock app's
@@ -344,7 +342,7 @@ internal fun ShuttleMap(
                     }
 
                     // Tilted: flatten back to north-up rather than dropping out of follow mode -
-                    // only an actual map drag (the MapEffect above) should do that.
+                    // only an actual map drag should do that.
                     LocationFollowMode.FollowingTilted -> {
                         coroutineScope.launch {
                             cameraPositionState.animate(
@@ -396,3 +394,11 @@ internal fun ShuttleMap(
 }
 
 private fun String.toComposeColorOrNull(): Color? = runCatching { Color(toColorInt()) }.getOrNull()
+
+private fun Context.hasLocationPermission(): Boolean =
+    listOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+    ).any { permission ->
+        ActivityCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+    }

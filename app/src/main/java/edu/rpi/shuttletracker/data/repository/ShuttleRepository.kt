@@ -25,7 +25,5 @@ interface ShuttleRepository {
 
     suspend fun getRoutes(): NetworkResult<Map<String, Route>>
 
-    suspend fun getAnnouncements(): NetworkResult<List<Announcement>>
-
     suspend fun getSchedule(): NetworkResult<Schedule>
 }

@@ -115,7 +115,7 @@ class MapsViewModelTest {
             repository.vehicleVelocities.emit(NetworkResult.Success(emptyMap()))
             advanceUntilIdle()
 
-            assertThat(viewModel.mapsUiState.value.networkError).isInstanceOf(NetworkError.NoConnection::class.java)
+            assertThat(viewModel.mapsUiState.value.error).isInstanceOf(NetworkError.NoConnection::class.java)
         }
 
     @Test
@@ -129,9 +129,41 @@ class MapsViewModelTest {
             viewModel.retry()
             advanceUntilIdle()
 
-            assertThat(viewModel.mapsUiState.value.unknownError).isNull()
+            assertThat(viewModel.mapsUiState.value.error).isNull()
             assertThat(viewModel.mapsUiState.value.routes).containsKey("NORTH")
             assertThat(repository.routesCalls).isEqualTo(2)
+        }
+
+    @Test
+    fun `retry restarts a failed vehicle refresh immediately`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startVehiclePolling()
+            repository.vehicleLocations.emit(NetworkResult.Failure(NetworkError.NoConnection()))
+            repository.vehicleEtas.emit(NetworkResult.Success(emptyMap()))
+            repository.vehicleVelocities.emit(NetworkResult.Success(emptyMap()))
+            advanceUntilIdle()
+
+            viewModel.retry()
+            runCurrent()
+
+            assertThat(repository.observeLocationsCalls).isEqualTo(2)
+            assertThat(repository.observeEtasCalls).isEqualTo(2)
+            assertThat(repository.observeVelocitiesCalls).isEqualTo(2)
+        }
+
+    @Test
+    fun `retry restarts a failed announcement refresh immediately`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.startAnnouncementRefresh()
+            repository.announcements.emit(NetworkResult.Failure(NetworkError.NoConnection()))
+            advanceUntilIdle()
+
+            viewModel.retry()
+            runCurrent()
+
+            assertThat(repository.observeAnnouncementsCalls).isEqualTo(2)
         }
 
     @Test
@@ -173,7 +205,7 @@ class MapsViewModelTest {
                 viewModel.mapsUiState.value.announcements
                     .map { it.id },
             ).containsExactly("first")
-            assertThat(viewModel.mapsUiState.value.networkError).isInstanceOf(NetworkError.NoConnection::class.java)
+            assertThat(viewModel.mapsUiState.value.error).isInstanceOf(NetworkError.NoConnection::class.java)
         }
 
     @Test

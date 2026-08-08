@@ -64,23 +64,15 @@ object NetworkModule {
         val cacheSize = (5 * 1024 * 1024).toLong()
         val myCache = Cache(context.cacheDir, cacheSize)
 
-        return if (BuildConfig.DEBUG) {
-            val loggingInterceptor = HttpLoggingInterceptor()
-
-            loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-            OkHttpClient
-                .Builder()
-                .cache(myCache)
-                .addInterceptor(cacheInterceptor)
-                .addInterceptor(loggingInterceptor)
-                .build()
-        } else {
-            OkHttpClient
-                .Builder()
-                .cache(myCache)
-                .addInterceptor(cacheInterceptor)
-                .build()
-        }
+        return OkHttpClient
+            .Builder()
+            .cache(myCache)
+            .addInterceptor(cacheInterceptor)
+            .apply {
+                if (BuildConfig.DEBUG) {
+                    addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+                }
+            }.build()
     }
 
     @Provides

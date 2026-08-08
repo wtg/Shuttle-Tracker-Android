@@ -53,6 +53,7 @@ class MapsViewModel
         private var routesJob: Job? = null
         private var announcementsJob: Job? = null
         private var fakeVehiclesJob: Job? = null
+        private var failedRequest: MapRequest? = null
 
         init {
             loadAll()
@@ -64,18 +65,29 @@ class MapsViewModel
         }
 
         fun clearErrors() {
-            _mapsUiState.update {
-                it.copy(
-                    unknownError = null,
-                    networkError = null,
-                    serverError = null,
-                )
-            }
+            failedRequest = null
+            _mapsUiState.update { it.copy(error = null) }
         }
 
         fun retry() {
+            val request = failedRequest
             clearErrors()
-            loadAll()
+            when (request) {
+                MapRequest.Routes -> loadRoutes()
+                MapRequest.Vehicles -> {
+                    if (vehiclePollingJob != null) {
+                        stopVehiclePolling()
+                        startVehiclePolling()
+                    }
+                }
+                MapRequest.Announcements -> {
+                    if (announcementsJob != null) {
+                        stopAnnouncementRefresh()
+                        startAnnouncementRefresh()
+                    }
+                }
+                null -> loadAll()
+            }
         }
 
         fun startVehiclePolling() {
@@ -100,19 +112,18 @@ class MapsViewModel
                         etasResponse is NetworkResult.Success ||
                         velocitiesResponse is NetworkResult.Success
                     ) {
+                        clearError(MapRequest.Vehicles)
                         _mapsUiState.update {
                             it.copy(
-                                networkError = null,
-                                serverError = null,
-                                unknownError = null,
+                                error = null,
                                 vehiclesUpdatedAt = Instant.now(),
                             )
                         }
                     }
 
-                    readApiResponse(locationsResponse) { locations = it }
-                    readApiResponse(etasResponse) { etas = it }
-                    readApiResponse(velocitiesResponse) { velocities = it }
+                    readApiResponse(locationsResponse, MapRequest.Vehicles) { locations = it }
+                    readApiResponse(etasResponse, MapRequest.Vehicles) { etas = it }
+                    readApiResponse(velocitiesResponse, MapRequest.Vehicles) { velocities = it }
 
                     _mapsUiState.update {
                         it.copy(
@@ -130,6 +141,7 @@ class MapsViewModel
         fun stopVehiclePolling() {
             vehiclePollingJob?.cancel()
             vehiclePollingJob = null
+            clearError(MapRequest.Vehicles)
         }
 
         /**
@@ -147,7 +159,8 @@ class MapsViewModel
                         if (mapsUiState.value.simulateAnnouncements) return@onEach
 
                         // A failed refresh must not clear announcements already on screen.
-                        readApiResponse(result) { announcements ->
+                        readApiResponse(result, MapRequest.Announcements) { announcements ->
+                            clearError(MapRequest.Announcements)
                             _mapsUiState.update {
                                 it.copy(
                                     announcements = announcements.displayable(),
@@ -161,6 +174,7 @@ class MapsViewModel
         fun stopAnnouncementRefresh() {
             announcementsJob?.cancel()
             announcementsJob = null
+            clearError(MapRequest.Announcements)
         }
 
         /**
@@ -196,9 +210,10 @@ class MapsViewModel
             if (routesJob?.isActive == true) return
             routesJob =
                 viewModelScope.launch {
-                    readApiResponse(shuttleRepository.getRoutes()) { routes ->
+                    readApiResponse(shuttleRepository.getRoutes(), MapRequest.Routes) { routes ->
+                        clearError(MapRequest.Routes)
                         _mapsUiState.update {
-                            it.copy(routes = routes)
+                            it.copy(routes = routes, routesLoaded = true)
                         }
                     }
                 }
@@ -296,25 +311,31 @@ class MapsViewModel
         /** On [NetworkResult.Success] calls [success]; on [NetworkResult.Failure] puts the error into UI state. */
         private fun <T> readApiResponse(
             response: NetworkResult<T>,
+            request: MapRequest,
             success: (body: T) -> Unit,
         ) {
             when (response) {
                 is NetworkResult.Success -> success(response.data)
-                is NetworkResult.Failure ->
-                    when (val error = response.error) {
-                        is NetworkError.Connectivity ->
-                            _mapsUiState.update { it.copy(networkError = error) }
-                        is NetworkError.Http ->
-                            _mapsUiState.update { it.copy(serverError = error) }
-                        is NetworkError.Unknown ->
-                            _mapsUiState.update { it.copy(unknownError = error) }
-                    }
+                is NetworkResult.Failure -> {
+                    failedRequest = request
+                    _mapsUiState.update { it.copy(error = response.error) }
+                }
             }
+        }
+
+        private fun clearError(request: MapRequest) {
+            if (failedRequest == request) clearErrors()
         }
     }
 
 private const val ANNOUNCEMENT_POLL_MS = 5 * 60 * 1000L
 private const val FAKE_VEHICLE_TICK_MS = 1_000L
+
+private enum class MapRequest {
+    Routes,
+    Vehicles,
+    Announcements,
+}
 
 /** Everything the Map tab needs to render. See [MapsViewModel] for how each field gets filled in. */
 @Immutable
@@ -322,13 +343,12 @@ data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),
     val fakeVehicles: List<Vehicle> = emptyList(),
     val routes: Map<String, Route> = emptyMap(),
+    val routesLoaded: Boolean = false,
     val announcements: List<Announcement> = emptyList(),
     val announcementsUpdatedAt: Instant? = null,
     val vehiclesUpdatedAt: Instant? = null,
     val simulateAnnouncements: Boolean = false,
-    val networkError: NetworkError.Connectivity? = null,
-    val serverError: NetworkError.Http? = null,
-    val unknownError: NetworkError.Unknown? = null,
+    val error: NetworkError? = null,
     val themeMode: ThemeMode = ThemeMode.System,
     val mapType: MapType = MapType.NORMAL,
     val shuttleAnimationsEnabled: Boolean = false,

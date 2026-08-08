@@ -59,11 +59,9 @@ class DefaultShuttleRepositoryTest {
     fun `one-shot repository calls delegate to the remote data source`() =
         runTest {
             repository.getRoutes()
-            repository.getAnnouncements()
             repository.getSchedule()
 
             assertThat(remote.routesCalls).isEqualTo(1)
-            assertThat(remote.announcementCalls).isEqualTo(1)
             assertThat(remote.scheduleCalls).isEqualTo(1)
         }
 

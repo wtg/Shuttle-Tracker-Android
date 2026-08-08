@@ -14,7 +14,6 @@ fun testRoute() =
     Route(
         color = "#D32F2F",
         stops = listOf("union", "academy"),
-        polylineStops = emptyList(),
         coordinates = listOf(listOf(listOf(42.730, -73.680), listOf(42.731, -73.679))),
         stopDetails =
             mapOf(
@@ -71,6 +70,6 @@ fun testVehicleLocation(name: String = "North Bus") =
         headingDegrees = 90,
     )
 
-fun testVehicleEta() = VehicleStopEta(mapOf("union" to "2 min"), "2026-01-15T08:00:00-05:00")
+fun testVehicleEta() = VehicleStopEta(mapOf("union" to "2 min"))
 
 fun testVehicleVelocity() = VehicleVelocities("NORTH", false, null)

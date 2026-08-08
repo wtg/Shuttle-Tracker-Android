@@ -18,9 +18,9 @@ import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import edu.rpi.shuttletracker.feature.etas.utils.buildStopsWithEtas
 import edu.rpi.shuttletracker.feature.etas.utils.vehiclesForStop
 import edu.rpi.shuttletracker.feature.map.utils.buildFakeVehicles
+import edu.rpi.shuttletracker.feature.schedule.utils.RPI_ZONE_ID
 import edu.rpi.shuttletracker.feature.schedule.utils.nextScheduledArrival
 import kotlinx.coroutines.flow.first
-import java.time.ZoneId
 
 /** Keys into each [EtaWidget] instance's [androidx.glance.state.PreferencesGlanceStateDefinition] state. */
 object EtaWidgetKeys {
@@ -140,7 +140,7 @@ object EtaWidgetUpdater {
         routes: Map<String, Route>,
     ): Long? =
         nextScheduledArrival(stopKey = stopKey, schedule = schedule, routesByName = routes)
-            ?.atZone(ZoneId.systemDefault())
+            ?.atZone(RPI_ZONE_ID)
             ?.toInstant()
             ?.toEpochMilli()
 

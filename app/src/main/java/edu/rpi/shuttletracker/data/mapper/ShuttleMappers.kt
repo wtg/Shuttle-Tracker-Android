@@ -30,7 +30,7 @@ fun VehicleLocationDto.toModel(): VehicleLocation {
     return VehicleLocation(name, latitude, longitude, speedMph, timestamp, headingDegrees)
 }
 
-fun VehicleStopEtaDto.toModel() = VehicleStopEta(stopTimes, timestamp)
+fun VehicleStopEtaDto.toModel() = VehicleStopEta(stopTimes)
 
 fun VehicleVelocitiesDto.toModel() = VehicleVelocities(routeName, isAtStop, currentStop)
 
@@ -41,7 +41,7 @@ fun StopDto.toModel(): Stop {
     return Stop(coordinates, offset, name)
 }
 
-fun RouteDto.toModel() = Route(color, stops, polylineStops, coordinates, stopDetails.mapValues { it.value.toModel() })
+fun RouteDto.toModel() = Route(color, stops, coordinates, stopDetails.mapValues { it.value.toModel() })
 
 fun AnnouncementDto.toModel(): Announcement =
     Announcement(
