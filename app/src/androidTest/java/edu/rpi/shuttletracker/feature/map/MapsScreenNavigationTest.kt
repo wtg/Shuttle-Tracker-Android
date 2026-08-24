@@ -21,10 +21,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.Instant
 
-/**
- * Constructs MapsViewModel directly with fakes (bypassing hiltViewModel()) so the bottom
- * navigation can be exercised without a Hilt test runner.
- * */
+/** Uses a directly constructed ViewModel so navigation tests do not need a Hilt runner. */
 @RunWith(AndroidJUnit4::class)
 class MapsScreenNavigationTest {
     @get:Rule

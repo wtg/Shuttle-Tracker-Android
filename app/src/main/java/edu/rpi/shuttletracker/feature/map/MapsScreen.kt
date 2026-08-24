@@ -45,10 +45,7 @@ import edu.rpi.shuttletracker.feature.map.components.AnnouncementSheet
 import edu.rpi.shuttletracker.feature.schedule.ScheduleScreen
 import edu.rpi.shuttletracker.feature.schedule.ScheduleViewModel
 
-/**
- * Peer destinations of the live tracker experience. Switched with local state rather than a
- * Navigation3 route since they share one Scaffold and bottom bar.
- * */
+/** Home tabs share one scaffold, so they use local pager state instead of navigation routes. */
 private enum class MainTab(
     @StringRes val labelRes: Int,
     @DrawableRes val iconRes: Int,
@@ -58,13 +55,7 @@ private enum class MainTab(
     Schedule(R.string.schedule_title, R.drawable.ic_schedule),
 }
 
-/**
- * The app's home screen: switches between Map ([MapTab]), [EtasScreen], and [ScheduleScreen] with
- * a bottom nav bar, or a side [NavigationRail] once the window is wide enough (a rotated phone,
- * a foldable, a tablet) that a bottom bar would waste horizontal space. This is the entry point
- * [edu.rpi.shuttletracker.app.navigation.AppNavigation] routes to. All three pager pages stay
- * composed so switching tabs preserves the live map and each tab's UI state.
- * */
+/** Hosts the Map, ETA, and Schedule tabs while preserving each tab's UI state. */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun MapsScreen(
@@ -79,13 +70,11 @@ fun MapsScreen(
     var focusedVehicleId by remember { mutableStateOf<String?>(null) }
     val announcementsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    // Compact is a phone in portrait; anything wider (a rotated phone, a foldable, a tablet) gets
-    // a side rail instead of a bottom bar so the bar doesn't waste all that horizontal space.
+    // Wider layouts move navigation to a side rail.
     val windowSizeClass = calculateWindowSizeClass(requireNotNull(LocalActivity.current))
     val useNavigationRail = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
 
-    // Dark mode uses the same lighter tone as the map buttons (see mapButtonColors) so the nav
-    // chrome reads as one consistent piece instead of a different dark shade.
+    // Match dark navigation chrome to the map controls.
     val isDark = MaterialTheme.colorScheme.background.luminance() <= 0.5f
     val navContainerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else null
 
@@ -161,8 +150,7 @@ fun MapsScreen(
                                 .fillMaxSize()
                                 .padding(contentPadding),
                         ) {
-                            // The rail already labels the selected tab "ETAs", so the in-content title
-                            // would just repeat it - only show it with a bottom bar instead.
+                            // A rail already labels the selected tab.
                             EtasScreen(
                                 routes = uiState.routes,
                                 vehicles = uiState.vehicles + uiState.fakeVehicles,
@@ -194,9 +182,6 @@ fun MapsScreen(
     }
 }
 
-/**
- * Map content and announcement sheet.
- * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MapTab(

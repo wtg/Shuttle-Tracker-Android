@@ -12,11 +12,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * Constructs DevMenuViewModel directly with a fake, bypassing hiltViewModel(), the same way
- * MapsScreenNavigationTest does - DevMenuContent itself is private, so the real screen is
- * exercised instead of trying to reach into it.
- * */
+/** Uses a directly constructed ViewModel to test the private-backed screen without Hilt. */
 @RunWith(AndroidJUnit4::class)
 class DevMenuScreenTest {
     @get:Rule

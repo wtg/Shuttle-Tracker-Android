@@ -57,8 +57,7 @@ class ScheduleContentTest {
         setContent()
 
         composeRule.onNodeWithText("Wed").performClick()
-        // The auto-expand LaunchedEffect races the click's own recomposition, so explicitly force
-        // a row open rather than assuming one is already expanded when this assertion runs.
+        // Explicitly open a row because auto-expand and click recomposition can race.
         composeRule.onNodeWithText("7:00 AM").performClick()
         composeRule.waitForIdle()
 

@@ -15,7 +15,7 @@ import java.time.Duration
 private const val UNIQUE_WORK_NAME = "eta_widget_refresh"
 private const val UNIQUE_IMMEDIATE_WORK_NAME = "eta_widget_refresh_immediate"
 
-/** Refreshes every widget instance every 15 minutes, WorkManager's minimum interval. [RefreshAction] covers shorter gaps. */
+/** Refreshes widgets at WorkManager's 15-minute minimum interval. */
 class EtaWidgetRefreshWorker(
     context: Context,
     params: WorkerParameters,
@@ -43,7 +43,7 @@ fun cancelEtaWidgetRefresh(context: Context) {
     WorkManager.getInstance(context).cancelUniqueWork(UNIQUE_WORK_NAME)
 }
 
-/** Fires once immediately, so a newly placed widget doesn't sit empty until the next periodic tick. */
+/** Fills a new widget before its first periodic refresh. */
 fun enqueueImmediateEtaWidgetRefresh(context: Context) {
     val request =
         OneTimeWorkRequestBuilder<EtaWidgetRefreshWorker>()

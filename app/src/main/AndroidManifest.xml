@@ -40,11 +40,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
-        <!--
-        Play Services' Maps renderer module still references the legacy Apache HTTP client, which
-        was removed from the platform classpath in API 28+. Without this, some emulator images
-        crash with NoClassDefFoundError: org.apache.http.ProtocolVersion when the map first loads.
-        -->
+        <!-- Required by the Maps renderer on devices without the legacy HTTP client. -->
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
@@ -61,10 +57,7 @@
                 android:resource="@xml/eta_widget_info" />
         </receiver>
 
-        <!--
-        taskAffinity="" keeps this out of MainActivity's task - otherwise finishing it while the
-        app is already open in the background resurfaces the app instead of the home screen.
-        -->
+        <!-- Keep widget configuration outside MainActivity's task. -->
         <activity
             android:name=".widget.EtaWidgetConfigureActivity"
             android:exported="true"
@@ -84,11 +77,7 @@
             </intent-filter>
         </service>
 
-        <!--
-        Used by Firebase to render notification+data messages it displays automatically while the
-        app is backgrounded or not running, since FirebaseService.onMessageReceived never runs in
-        that case.
-        -->
+        <!-- Defaults for notifications Firebase renders while the app is in the background. -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_stat_default" />

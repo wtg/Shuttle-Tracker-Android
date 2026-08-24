@@ -2,11 +2,7 @@ package edu.rpi.shuttletracker.data.models
 
 import com.google.android.gms.maps.model.LatLng
 
-/**
- * One stop on a route. [coordinates] is `[latitude, longitude]`. [offset] is minutes from that
- * route's departure time until a shuttle is expected here - used to build the printed schedule's
- * per-stop times (see `feature/schedule/utils/buildStopTimesForDeparture`).
- * */
+/** A route stop; [offset] is its minutes after the route's departure time. */
 data class Stop(
     val coordinates: List<Double>,
     val offset: Int,

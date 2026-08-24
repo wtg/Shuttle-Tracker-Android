@@ -65,10 +65,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.text.lowercase
 
-/**
- * The full schedule picker + times list, filling whatever container hosts it. Has no
- * Scaffold/TopAppBar of its own so callers control that chrome.
- * */
+/** Schedule selectors and departure list without screen-level chrome. */
 @Composable
 fun ScheduleContent(
     schedule: Schedule?,
@@ -154,8 +151,7 @@ private fun ScheduleDetailsContent(
         }
 
     if (isWideLayout) {
-        // Wide enough that the two selectors don't need to compete for the same row - saves the
-        // vertical space the stacked layout would otherwise spend on a second row.
+        // Place selectors side by side when space allows.
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,

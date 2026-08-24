@@ -9,11 +9,7 @@ import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Provides shuttle data to the rest of the app.
- *
- * The interface lets tests replace the production repository with a small fake.
- */
+/** Provides shuttle data behind a testable interface. */
 interface ShuttleRepository {
     fun observeVehicleLocations(pollMs: Long = 5_000L): Flow<NetworkResult<Map<String, VehicleLocation>>>
 

@@ -129,7 +129,6 @@ class FakeShuttleUtilsTest {
                 stops = listOf("quarter", "half"),
                 stopDetails =
                     mapOf(
-                        // A quarter and half of the way around the square loop, respectively.
                         "quarter" to Stop(coordinates = listOf(0.0, 1.0), offset = 0, name = "Quarter"),
                         "half" to Stop(coordinates = listOf(1.0, 1.0), offset = 0, name = "Half"),
                     ),
@@ -156,8 +155,7 @@ class FakeShuttleUtilsTest {
             )
         val now = Instant.parse("2026-07-19T12:00:00Z")
 
-        // The vehicle is a hair past the stop's own position (progress 0.0), so the stop is
-        // almost a full loop away, not slightly in the past.
+        // Just past progress 0, the same stop is almost a full loop away.
         val vehicle = buildFakeVehicles(mapOf("NORTH" to routeWithStops), elapsedMs = 100L, now = now).first()
 
         val etaStart = OffsetDateTime.parse(vehicle.stopTimes.getValue("start")).toInstant()

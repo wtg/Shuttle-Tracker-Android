@@ -1,12 +1,10 @@
 <resources>
     <string name="app_name" translatable="false">Shubble</string>
 
-    <!--API Version-->
+    <!-- API -->
     <string name="api_key" translatable="false">3</string>
 
-    <!-- icons -->
-
-    <!-- URLS -->
+    <!-- URLs -->
     <string name="url_default">https://api-shuttles.rpi.edu/api/</string>
     <string name="url_private_policy">https://wtg.github.io/Shuttle-Tracker-Android/privacy-policy/</string>
     <string name="url_repository">https://github.com/wtg/Shuttle-Tracker-Android</string>

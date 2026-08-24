@@ -16,19 +16,13 @@ During setup:
 - Click Next on the setup pages unless you want to change default settings
 - Click Finish and allow the installation to complete (this may take some time)
 
-### 1.2 Set up WSL (Windows only)
-If you are on Windows, install Windows Subsystem for Linux (WSL):
-https://docs.microsoft.com/en-us/windows/wsl/install
+### 1.2 Install Git
+Install [Git](https://git-scm.com/downloads) for your operating system. WSL is optional on Windows; Android Studio and Git work directly in Windows.
 
-### 1.3 Install Git
-Open your Ubuntu / WSL terminal and run:
-```apt-get install git``` or if prompted, use: ```sudo apt-get install git```
-
-Next, sign in to https://www.github.com, or sign up if you do not have an account. Make sure to remember the username you give, this will 
-be important for later.  
+Next, sign in to https://www.github.com, or sign up if you do not have an account. Remember the username you choose; you will use it below.
 
 Configure Git with your username and email:
-```
+```shell
 git config --global user.name "your_username"
 git config --global user.email "your_emailid"
 ```
@@ -39,7 +33,9 @@ These commands will link your username and email to your computer, so GitHub kno
 ### 2.1 Clone the repository
 Run the following command in your terminal:
 
-```git clone https://github.com/wtg/Shuttle-Tracker-Android.git```
+```shell
+git clone https://github.com/wtg/Shuttle-Tracker-Android.git
+```
 
 The code will be downloaded into a folder named <b>Shuttle-Tracker-Android</b>.
 
@@ -50,30 +46,32 @@ The code will be downloaded into a folder named <b>Shuttle-Tracker-Android</b>.
 ## 3. Google Maps API Key Setup
 
 ### 3.1 Generate a Google Maps API key
-Get your own custom google maps API key. Here's a guide that details how to get one for yourself: [Here](https://developers.google.com/maps/documentation/javascript/get-api-key).
+Create a key with the Maps SDK for Android enabled by following Google's [Maps SDK for Android key guide](https://developers.google.com/maps/documentation/android-sdk/get-api-key).
 
 <details markdown="1">
 <summary>If you have trouble obtaining your debug SHA-1 this might help</summary>
 
-    Run this in a terminal (WSL users on Windows):
+Run the Gradle signing report and copy the debug variant's SHA-1:
 
-    keytool -list -v \
-    -keystore /mnt/c/Users/<YOUR_WINDOWS_USERNAME>/.android/debug.keystore \
-    -alias androiddebugkey \
-    -storepass android \
-    -keypass android
+```shell
+./gradlew signingReport
+```
+
+On Windows without WSL, use `gradlew.bat signingReport`.
 </details>
 
 ### 3.2 Insert your API key
 
-Open the **local.properties** in your project level directory, and then add the following code.
+Open `local.properties` in the project root and add:
 
-```MAPS_API_KEY=YOUR_API_KEY```
+```properties
+MAPS_API_KEY=YOUR_API_KEY
+```
 
 ## 4. Running the Virtual Android Device
 1. In Android Studio, open the **Device Manager**, click the **+** button, and select **Create Virtual Device**.
-2. Choose **Pixel 8**. When prompted to select a system image, choose **API level 34 (Android 14)** - specifically the image with the **Play Store** icon next to it, not a plain "Google APIs" image. The app uses Firebase push notifications, which need real Google Play Services to deliver correctly, and only the Play Store images include that.
-3. Select the Pixel 8 emulator as your run configuration.
+2. Choose a recent Pixel and an **API 34 or newer** system image with the **Play Store** icon. The Play Store image includes the Google Play services needed by Maps and Firebase.
+3. Select the emulator as your run configuration.
 4. Click **Run**.
 
 After completing these steps, the virtual Android device should launch and Google Maps should load correctly.
@@ -82,25 +80,5 @@ Once that's all done, congrats. You are now ready to start development for the R
 If you're new to the codebase, [Architecture](ARCHITECTURE.md) is a good next read - it maps out where things live before you start changing code.
 
 ## 5. Troubleshooting (optional)
-If you complete steps 1 through 4 and you are receiving the build tools is corrupted issue, use this link to Stack Overflow to solve the problem and put yourself back on track because of an error on Google's part: [Here](https://stackoverflow.com/a/68430992).
 
-If you have an error that looks like this,
-
-<img width="494" height="131" alt="Screenshot 2026-04-29 165126" src="https://github.com/user-attachments/assets/cdfde006-f502-4464-91f5-130f3af651a4" />
-
-This project is not compatible with higher versions of java.
-Do not click project update recommended popup, it will fix the problem but then no longer be compatible with other branches/main project.
-
-If you have a higher version of JDK installed, manually set JAVA_HOME to be jdk-17(must be at least this).
-
-Can use the following commands to install and set JAVA_HOME to jdk-17(run these in the Ubuntu Terminal):
-```
-sudo apt update 
-sudo apt install -y openjdk-17-jdk t
-readlink -f $(which javac)
-```
-You will see something like this: /usr/lib/jvm/java-17-openjdk-amd64/bin/javac and java home should be: /usr/lib/jvm/java-17-openjdk-amd64
-```
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 
-export PATH=$JAVA_HOME/bin:$PATH
-```
+The project targets JVM 17. If Gradle reports a Java version error, open **Settings → Build, Execution, Deployment → Build Tools → Gradle** in Android Studio and select a JDK 17-compatible Gradle JDK, then sync the project again.

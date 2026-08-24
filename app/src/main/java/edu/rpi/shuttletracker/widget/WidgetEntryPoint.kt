@@ -8,7 +8,7 @@ import dagger.hilt.components.SingletonComponent
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 
-/** Lets classes that only get a plain [Context] (the refresh worker, Glance actions) reach [ShuttleRepository]/[UserPreferences] without full Hilt injection. */
+/** Exposes app dependencies to workers and Glance actions that only receive a [Context]. */
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface WidgetEntryPoint {

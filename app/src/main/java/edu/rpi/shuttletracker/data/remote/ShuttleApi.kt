@@ -9,11 +9,7 @@ import edu.rpi.shuttletracker.data.remote.dto.VehicleVelocitiesDto
 import retrofit2.Response
 import retrofit2.http.GET
 
-/**
- * The Retrofit description of the backend's REST endpoints (the Shubble API, see the repo README).
- * Each function is a raw HTTP call returning raw DTOs - nothing here should be called directly by
- * a feature; go through [edu.rpi.shuttletracker.data.repository.ShuttleRepository] instead.
- * */
+/** Retrofit endpoints for the Shubble API. Features should use `ShuttleRepository`. */
 interface ShuttleApi {
     @GET("locations")
     suspend fun getVehicleLocations(): Response<Map<String, VehicleLocationDto>>

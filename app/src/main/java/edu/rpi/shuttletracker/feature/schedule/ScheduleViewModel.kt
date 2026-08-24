@@ -16,9 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Backs [ScheduleScreen]. Loads the schedule once and exposes retryable error state.
- * */
+/** Loads the schedule and exposes retryable error state. */
 @HiltViewModel
 class ScheduleViewModel
     @Inject
@@ -71,7 +69,6 @@ class ScheduleViewModel
         }
     }
 
-/** Everything the Schedule tab needs to render. See [ScheduleViewModel] for how it's filled in. */
 @Immutable
 data class ScheduleUiState(
     val schedule: Schedule? = null,

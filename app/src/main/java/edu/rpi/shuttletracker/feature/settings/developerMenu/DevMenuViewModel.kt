@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** Backs [DevMenuScreen]. Same "mirror preferences directly" pattern as `SettingsViewModel`. */
 @HiltViewModel
 class DevMenuViewModel
     @Inject

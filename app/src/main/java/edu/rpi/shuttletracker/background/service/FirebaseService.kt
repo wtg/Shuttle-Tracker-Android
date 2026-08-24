@@ -13,27 +13,16 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.app.MainActivity
 import edu.rpi.shuttletracker.background.notification.Notifications
 
-/**
- * Firebase Cloud Messaging is a manually-operated push channel: staff send notifications directly
- * from the Firebase Console, independent of the shuttle API and its announcement banners. This
- * service only has to render what Firebase hands it and route taps back into the app.
- * */
+/** Renders staff-sent Firebase messages independently of API announcement banners. */
 @AndroidEntryPoint
 class FirebaseService : FirebaseMessagingService() {
-    /**
-     * Debug-only: prints the registration token so it can be pasted into the Firebase Console's
-     * "Send test message" field, which targets a single device rather than the whole app.
-     * */
+    /** Logs the registration token in debug builds for Firebase test messages. */
     @Suppress("OVERRIDE_DEPRECATION")
     override fun onNewToken(token: String) {
         if (BuildConfig.DEBUG) Log.d("FCM_TOKEN", token)
     }
 
-    /**
-     * Only fires when the app is in the foreground; Firebase Console notification+data messages
-     * are otherwise displayed automatically (using the manifest's default icon/color/channel)
-     * when the app is backgrounded or not running, and never reach this callback.
-     * */
+    /** Handles foreground messages; Firebase renders background messages from manifest defaults. */
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
@@ -89,17 +78,10 @@ class FirebaseService : FirebaseMessagingService() {
     }
 
     companion object {
-        /**
-         * Matches the raw FCM data key so the same extra name works whether we built the
-         * PendingIntent ourselves (foreground) or Firebase copied its data payload onto the
-         * launcher intent for us (background/terminated).
-         * */
+        /** Shared URL key for intents created here or by Firebase. */
         const val EXTRA_URL = "url"
 
-        /**
-         * A constant ID would silently replace every previous push; the message ID is stable per
-         * notification but unique across them, falling back to the clock only if Firebase omits it.
-         * */
+        /** Uses a stable unique ID so new pushes do not replace older ones. */
         private fun notificationIdFor(message: RemoteMessage): Int =
             message.messageId?.hashCode() ?: System.currentTimeMillis().toInt()
     }

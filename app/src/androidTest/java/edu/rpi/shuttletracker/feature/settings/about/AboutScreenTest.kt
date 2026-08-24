@@ -36,8 +36,7 @@ class AboutScreenTest {
         repeat(10) {
             composeRule.onNodeWithText("Version").performClick()
         }
-        // The 10th tap's unlock write goes through viewModelScope.launch, so it isn't guaranteed
-        // to have landed in the fake preferences the instant performClick() returns.
+        // Wait for the asynchronous preference write from the final tap.
         composeRule.waitForIdle()
 
         assertTrue(preferences.devOptions.value)

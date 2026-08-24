@@ -388,8 +388,7 @@ class MapsViewModelTest {
             assertThat(viewModel.mapsUiState.value.mapType).isEqualTo(MapType.HYBRID)
         }
 
-    // The fake vehicle ticker loops forever with delay(), so advanceUntilIdle() would hang while
-    // it's running; runCurrent()/advanceTimeBy() step the virtual clock by a bounded amount instead.
+    // The fake ticker never ends, so advance its virtual clock by bounded amounts.
 
     @Test
     fun `fake vehicles only start once both dev options and the fake shuttle toggle are on`() =

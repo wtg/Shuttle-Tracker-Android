@@ -98,41 +98,40 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     debugImplementation(libs.androidx.ui.tooling)
 
-    // hilt
+    // Dependency injection
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
-    // retrofit
+    // Networking
     implementation(libs.retrofit)
     implementation(libs.converter.kotlinx.serialization)
 
-    // okhttp
     implementation(libs.logging.interceptor)
 
-    // compose
+    // Compose
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.lifecycle.runtime.compose)
 
-    // navigation
+    // Navigation
     implementation(libs.navigation3.runtime)
     implementation(libs.navigation3.ui)
     implementation(libs.kotlinx.serialization.json)
 
-    // maps
+    // Maps
     implementation(libs.maps.compose)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.google.oss.licenses)
 
-    // datastore (similar to SharedPreferences)
+    // DataStore
     implementation(libs.androidx.datastore.preferences)
 
-    // firebase
+    // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
 
-    // home screen widget
+    // Home-screen widget
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
     implementation(libs.androidx.work.runtime.ktx)

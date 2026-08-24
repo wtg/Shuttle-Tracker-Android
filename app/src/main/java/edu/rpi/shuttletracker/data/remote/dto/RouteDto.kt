@@ -13,12 +13,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 
-/**
- * A route's JSON looks like `{"COLOR": ..., "STOPS": [...], "union": {...}, "academy": {...}}` -
- * fixed route fields and per-stop objects are siblings in the same JSON object, keyed by stop
- * name. That's not something `@Serializable` can express directly, hence [RouteDtoSerializer]
- * below doing it by hand.
- * */
+/** Route fields and stop objects are sibling JSON keys, so this DTO needs a custom serializer. */
 @Serializable(with = RouteDtoSerializer::class)
 data class RouteDto(
     val color: String,
@@ -35,11 +30,7 @@ data class StopDto(
     @SerialName("NAME") val name: String,
 )
 
-/**
- * Splits a route's JSON object into the fixed [RouteFields] (decoded normally) and everything else,
- * treating each remaining key as a stop name mapping to a [StopDto]. Serializing does the reverse:
- * flatten [RouteFields] and the stop map back into one JSON object.
- * */
+/** Separates fixed route fields from dynamically named stop objects and reverses that when encoding. */
 object RouteDtoSerializer : KSerializer<RouteDto> {
     private val fixedKeys = setOf("COLOR", "STOPS", "POLYLINE_STOPS", "ROUTES")
 

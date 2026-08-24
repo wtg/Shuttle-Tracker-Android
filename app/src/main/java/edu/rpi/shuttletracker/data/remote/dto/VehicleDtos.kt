@@ -3,9 +3,7 @@ package edu.rpi.shuttletracker.data.remote.dto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// Raw shapes of the three vehicle-related endpoints (`/locations`, `/etas`, `/velocities`); a
-// vehicle's full data is spread across all three and merged client-side by VehicleMerger. See
-// ShuttleMappers.kt for the toModel() conversion into data/models/Vehicle.kt's plain types.
+// Vehicle data comes from three endpoints and is merged client-side by VehicleMerger.
 
 @Serializable
 data class VehicleLocationDto(

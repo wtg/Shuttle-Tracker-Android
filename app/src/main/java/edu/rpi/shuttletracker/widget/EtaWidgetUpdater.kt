@@ -22,25 +22,19 @@ import edu.rpi.shuttletracker.feature.schedule.utils.RPI_ZONE_ID
 import edu.rpi.shuttletracker.feature.schedule.utils.nextScheduledArrival
 import kotlinx.coroutines.flow.first
 
-/** Keys into each [EtaWidget] instance's [androidx.glance.state.PreferencesGlanceStateDefinition] state. */
+/** Preference keys stored separately for each widget instance. */
 object EtaWidgetKeys {
     val SNAPSHOT_JSON = stringPreferencesKey("snapshot_json")
     val LAST_UPDATED_MILLIS = longPreferencesKey("last_updated_millis")
     val ROUTE_FILTER = stringPreferencesKey("route_filter")
     val LOAD_FAILED = booleanPreferencesKey("load_failed")
 
-    /** The stop key an instance's single-stop view targets, set by [EtaWidgetConfigureActivity]. */
     val CONFIGURED_STOP = stringPreferencesKey("configured_stop")
 
-    /** Whether this instance shows the all-routes view instead of [CONFIGURED_STOP]. Defaults to `true`. */
     val SHOWING_ALL_ROUTES = booleanPreferencesKey("showing_all_routes")
 }
 
-/**
- * Fetches routes + live vehicle etas and refreshes every placed [EtaWidget] instance's state -
- * shared by [EtaWidgetRefreshWorker]'s periodic background refresh and the widget's own manual
- * refresh button ([RefreshAction]), so both paths update state the same way.
- * */
+/** Fetches one snapshot used by both periodic and manual widget refreshes. */
 object EtaWidgetUpdater {
     private const val TAG = "EtaWidgetUpdater"
 
@@ -63,7 +57,7 @@ object EtaWidgetUpdater {
         if (glanceIds.isNotEmpty()) EtaWidget().updateAll(context)
     }
 
-    /** Null only when the routes fetch itself fails - a vehicle-endpoint failure just yields fewer etas, not a hard error, since the widget has no room to show per-endpoint error detail anyway. */
+    /** Route failure aborts refresh; vehicle endpoint failures produce a partial snapshot. */
     private suspend fun fetchSnapshot(
         repository: ShuttleRepository,
         userPreferences: UserPreferences,
@@ -96,7 +90,6 @@ object EtaWidgetUpdater {
         val vehicles = VehicleMerger.merge(locations = locations, velocities = velocities, etas = etas)
         val schedule = repository.getSchedule().dataOrNull()
 
-        // Same dev-mode fallback as the map and ETAs tab.
         val fakeShuttlesActive =
             userPreferences.getDevOptions().first() && userPreferences.getFakeShuttlesEnabled().first()
         val allVehicles =
@@ -106,7 +99,6 @@ object EtaWidgetUpdater {
                 vehicles
             }
 
-        // Every stop, so any instance can find its configured stop below.
         val stopDirectory = buildStopsWithEtas(routes, emptyList())
 
         val perStop =

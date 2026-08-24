@@ -8,7 +8,7 @@ import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-/** A plain lat/lng pair, used instead of Android's `LatLng` so this file is unit-testable on the JVM. */
+/** Platform-independent coordinates keep this simulation JVM-testable. */
 data class RoutePoint(
     val latitude: Double,
     val longitude: Double,
@@ -17,27 +17,16 @@ data class RoutePoint(
 private const val FAKE_LOOP_DURATION_MS = 60_000L
 private const val FAKE_HEADING_LOOKAHEAD = 0.01
 
-/**
- * Real routes to run fake shuttles on. Hardcoded rather than picked dynamically so each fake
- * vehicle always follows a real, named route loop instead of whichever route happened to sort
- * first.
- * */
+/** Stable route names keep simulated vehicles predictable. */
 private val FAKE_SHUTTLE_ROUTE_NAMES = listOf("NORTH", "WEST")
 
-/**
- * Flattens a route's raw coordinates into an ordered loop, deliberately avoiding the Android
- * [com.google.android.gms.maps.model.LatLng] that [Route.latLng] returns so this stays usable
- * from a plain JVM unit test.
- * */
+/** Flattens route coordinates without depending on Android's `LatLng`. */
 fun Route.toRoutePoints(): List<RoutePoint> =
     coordinates.flatMap { polyline ->
         polyline.mapNotNull { pair -> if (pair.size >= 2) RoutePoint(pair[0], pair[1]) else null }
     }
 
-/**
- * Walks the closed loop formed by [points] (implicitly connecting the last point back to the
- * first) and returns the point [progress] of the way around, where progress wraps at 1.0.
- * */
+/** Interpolates around a closed loop, wrapping [progress] at 1.0. */
 fun interpolateAlongLoop(
     points: List<RoutePoint>,
     progress: Double,
@@ -64,12 +53,7 @@ fun interpolateAlongLoop(
     return points.first()
 }
 
-/**
- * Builds one vehicle per [FAKE_SHUTTLE_ROUTE_NAMES] route present in [routes], each continuously
- * looping that route's own coordinates, for developer-mode testing. Entirely separate from live
- * vehicle data - the caller is responsible for keeping these out of [Vehicle] lists sourced from
- * the API.
- * */
+/** Builds one looping developer-mode vehicle for each configured route. */
 fun buildFakeVehicles(
     routes: Map<String, Route>,
     elapsedMs: Long,
@@ -86,7 +70,6 @@ fun buildFakeVehicles(
 
         Vehicle(
             id = "fake-shuttle-$routeName",
-            // Just the route name ("North"/"West") - the id already marks it as fake.
             name = routeName.lowercase(Locale.ROOT).replaceFirstChar { it.titlecase(Locale.ROOT) },
             latitude = position.latitude,
             longitude = position.longitude,
@@ -100,7 +83,7 @@ fun buildFakeVehicles(
         )
     }
 
-/** Synthesizes an eta for every stop on [route], based on how far the fake vehicle ([vehicleProgress] around [points]) still has to travel to reach it. */
+/** Estimates each stop ETA from the fake vehicle's remaining route distance. */
 private fun buildFakeStopTimes(
     route: Route,
     points: List<RoutePoint>,
@@ -119,7 +102,7 @@ private fun buildFakeStopTimes(
             stopKey to etaInstant.atOffset(ZoneOffset.UTC).toString()
         }.toMap()
 
-/** How far around the loop (0.0-1.0, same convention as [interpolateAlongLoop]) the point nearest [target] sits. */
+/** Returns the loop progress nearest [target]. */
 private fun progressOfPoint(
     points: List<RoutePoint>,
     target: RoutePoint,

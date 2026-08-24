@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.feature.map.utils
 
-/** One piece of an announcement message, produced by [parseMessageSegments]: plain text or a link. */
 sealed interface MessageSegment {
     data class PlainText(
         val text: String,
@@ -14,10 +13,7 @@ sealed interface MessageSegment {
 
 private val MARKDOWN_LINK_REGEX = Regex("""\[([^\[\]]*)]\(([^()\s]+)\)""")
 
-/**
- * Splits a message on `[label](url)` Markdown links, leaving everything else as plain text.
- * Malformed brackets/parens (unmatched, nested, empty) simply fail to match and pass through as text.
- * */
+/** Splits Markdown links from plain text; malformed markup remains plain text. */
 fun parseMessageSegments(message: String): List<MessageSegment> {
     val segments = mutableListOf<MessageSegment>()
     var lastIndex = 0

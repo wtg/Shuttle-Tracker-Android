@@ -2,9 +2,7 @@ package edu.rpi.shuttletracker.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Material 3 color tokens generated from the app's brand color (Material Theme Builder). Used
-// by Theme.kt to build the light/dark ColorScheme - you generally shouldn't need to reference
-// these directly, use MaterialTheme.colorScheme instead.
+// Generated brand tokens. UI code should normally use MaterialTheme.colorScheme.
 
 val md_theme_light_primary = Color(0xFFBF0027)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
@@ -66,19 +64,13 @@ val md_theme_dark_surfaceTint = Color(0xFFFFB3B0)
 val md_theme_dark_outlineVariant = Color(0xFF524342)
 val md_theme_dark_scrim = Color(0xFF000000)
 
-/** Colors used to tint a shuttle marker/chip by its route, so NORTH and WEST are visually distinct. */
 object VehicleColors {
     val Default = Color(0xFF444444)
     val North = Color(0xFFFF0000)
     val West = Color(0xFF0000FF)
 }
 
-/**
- * Material 3 has no built-in "warning" color role, so announcement banners carry their own
- * light/dark container colors distinct from the error and info roles they sit alongside. The dark
- * variant is muted rather than a straight dark version of the light one - a vivid amber reads as
- * too alarming against the app's near-black dark background.
- * */
+/** Warning colors are custom because Material 3 has no warning role. */
 object AnnouncementWarningColors {
     val LightContainer = Color(0xFFFFDEA6)
     val LightOnContainer = Color(0xFF261A00)
@@ -86,11 +78,7 @@ object AnnouncementWarningColors {
     val DarkOnContainer = Color(0xFFEAD5A8)
 }
 
-/**
- * A softer dark-mode red for error announcements than the shared `errorContainer` role - that one
- * is deliberately vivid to signal danger, which reads as too harsh for a routine service banner.
- * Light mode still uses `errorContainer` directly.
- * */
+/** A softer dark-mode red for routine service announcements. */
 object AnnouncementErrorColors {
     val DarkContainer = Color(0xFF4A2C2C)
     val DarkOnContainer = Color(0xFFF2D6D3)

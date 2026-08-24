@@ -10,32 +10,26 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.time.Instant
 
-/** How many soonest-arriving stops the "all routes" view keeps - it only has room to show a handful. */
 private const val MAX_STOPS = 8
 
-/** How many upcoming shuttles per stop the "all routes" view keeps. */
 private const val MAX_ETAS_PER_STOP = 3
 
-/** How many vehicles the single-stop view keeps. */
 private const val MAX_VEHICLES_PER_STOP = 6
 
 private val json = Json { ignoreUnknownKeys = true }
 
-/** One upcoming arrival - a serializable stand-in for [edu.rpi.shuttletracker.feature.etas.utils.VehicleEta]. */
 @Serializable
 data class WidgetEtaSnapshot(
     val routeName: String?,
     val etaEpochMillis: Long,
 )
 
-/** One stop plus its soonest upcoming arrivals - the "all routes" view's stand-in for [StopWithEtas]. */
 @Serializable
 data class WidgetStopSnapshot(
     val stopName: String,
     val etas: List<WidgetEtaSnapshot>,
 )
 
-/** One vehicle relevant to a single-stop view's target stop - see [edu.rpi.shuttletracker.feature.etas.utils.vehiclesForStop]. */
 @Serializable
 data class WidgetVehicleSnapshot(
     val name: String,
@@ -46,7 +40,6 @@ data class WidgetVehicleSnapshot(
     val etaEpochMillis: Long?,
 )
 
-/** Everything a single-stop widget instance needs to render one target stop. */
 @Serializable
 data class SingleStopSnapshot(
     val stopName: String,
@@ -54,11 +47,7 @@ data class SingleStopSnapshot(
     val nextScheduledEpochMillis: Long?,
 )
 
-/**
- * Everything the widget shows, as of one successful fetch, stored as JSON in Glance state.
- * [allRoutes] backs the all-routes view; [perStop] holds every stop's own single-stop view (keyed
- * by stop key) so any instance can show whichever stop it's configured for.
- * */
+/** Serializable data shared by all widget instances after one successful fetch. */
 @Serializable
 data class WidgetSnapshot(
     val allRoutes: List<WidgetStopSnapshot> = emptyList(),
@@ -78,7 +67,7 @@ data class WidgetSnapshot(
     }
 }
 
-/** Keeps only the stops with a live eta, soonest first, trimmed to what the widget has room to show. */
+/** Keeps the soonest live stops that fit in the all-routes widget. */
 fun List<StopWithEtas>.toWidgetStopSnapshots(): List<WidgetStopSnapshot> =
     this
         .filter { it.etas.isNotEmpty() }
@@ -97,7 +86,7 @@ fun List<StopWithEtas>.toWidgetStopSnapshots(): List<WidgetStopSnapshot> =
             )
         }
 
-/** Builds the single-stop view for [stopKey]: [vehicles] sorted at-stop-first then soonest eta, trimmed to [MAX_VEHICLES_PER_STOP]. [routesByName] resolves each vehicle's current stop key to a display name. */
+/** Builds a single-stop view with at-stop vehicles first, then by ETA. */
 fun buildSingleStopSnapshot(
     stopKey: String,
     stopName: String,
@@ -134,7 +123,7 @@ fun buildSingleStopSnapshot(
     )
 }
 
-/** [WidgetSnapshot.allRoutes] narrowed to one route, dropping stops left with no matching etas - `null` shows every route, as-is. */
+/** Filters the all-routes snapshot; null keeps every route. */
 fun WidgetSnapshot.allRoutesForRoute(routeFilter: String?): List<WidgetStopSnapshot> =
     if (routeFilter == null) {
         allRoutes

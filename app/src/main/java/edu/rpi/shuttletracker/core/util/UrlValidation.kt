@@ -3,10 +3,7 @@ package edu.rpi.shuttletracker.core.util
 import java.net.URI
 import java.net.URISyntaxException
 
-/**
- * Only `https` URLs with a host are safe to open; anything else (unencrypted/custom schemes, relative
- * paths, malformed URIs) is rejected rather than crashing or launching an unintended target.
- * */
+/** Accepts only absolute HTTPS URLs before they are opened outside the app. */
 fun isSafeHttpUrl(url: String): Boolean =
     try {
         val uri = URI(url)

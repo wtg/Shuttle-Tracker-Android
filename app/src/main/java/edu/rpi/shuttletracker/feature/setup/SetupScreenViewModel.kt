@@ -13,11 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Backs [SetupScreen]. [completeCurrentPage] saves that page's acceptance (about/privacy policy)
- * to [UserPreferences] and advances to the next [SetupPage], or - on the last page - marks setup
- * complete and sets [SetupUiState.isComplete].
- * */
+/** Saves each accepted setup step and advances or completes the first-run flow. */
 @HiltViewModel
 class SetupScreenViewModel
     @Inject

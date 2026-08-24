@@ -47,12 +47,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/**
- * A summary of the most severe active announcement, colored to match its severity. Tapping it
- * opens [AnnouncementSheet] with the full list; the chevron is a pure "there's more" cue, not a
- * dismiss control - dismissal lives per-card in the sheet, where it's a deliberate action rather
- * than an easy-to-mis-tap icon on a compact row.
- * */
+/** Shows the highest-priority announcement and opens the full list when tapped. */
 @Composable
 fun AnnouncementStrip(
     announcements: List<Announcement>,
@@ -112,11 +107,7 @@ fun AnnouncementStrip(
     }
 }
 
-/**
- * Full-detail list of every active announcement, opened from [AnnouncementStrip].
- *
- * @param updatedAt when the list was last refreshed from the API; omitted while simulated.
- * */
+/** Shows all active announcements; [updatedAt] is omitted for simulated data. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnouncementSheet(

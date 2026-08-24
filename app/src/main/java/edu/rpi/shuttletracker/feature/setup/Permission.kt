@@ -6,11 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import edu.rpi.shuttletracker.R
 
-/**
- * One permission group shown in the first-run setup flow. [permissions] can be more than one
- * Android permission (e.g. fine + coarse location); [requiresAll] says whether every one of them
- * must be granted to count as "granted", or just one.
- * */
+/** A setup permission group; [requiresAll] controls whether every permission is required. */
 sealed class Permission(
     @param:StringRes val nameRes: Int,
     @param:StringRes val descriptionRes: Int,

@@ -11,10 +11,7 @@ import edu.rpi.shuttletracker.data.repository.ShuttleRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-/**
- * Mirrors app/src/test's fake of the same name. Duplicated here because androidTest and test are
- * separate source sets with no shared fixtures module in this project.
- * */
+/** Duplicated because `test` and `androidTest` do not share fakes. */
 class FakeShuttleRepository : ShuttleRepository {
     val vehicleLocations = MutableSharedFlow<NetworkResult<Map<String, VehicleLocation>>>(replay = 1)
     val vehicleEtas = MutableSharedFlow<NetworkResult<Map<String, VehicleStopEta>>>(replay = 1)

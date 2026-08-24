@@ -14,10 +14,7 @@ import java.util.Locale
 
 private val ANNOUNCEMENT_ZONE: ZoneId = ZoneId.of("America/New_York")
 
-/**
- * Accepts both zero-padded ("2026-01-15") and non-zero-padded ("2026-1-5") month/day values, with
- * optional seconds. Matches local timestamps the API sends without an offset.
- * */
+/** Accepts the API's padded or unpadded local timestamps, with optional seconds. */
 private val FLEXIBLE_LOCAL_DATE_TIME: DateTimeFormatter =
     DateTimeFormatterBuilder()
         .appendValue(ChronoField.YEAR, 4)
@@ -35,11 +32,7 @@ private val FLEXIBLE_LOCAL_DATE_TIME: DateTimeFormatter =
         .optionalEnd()
         .toFormatter(Locale.US)
 
-/**
- * Tolerantly parses announcement timestamps: offset/zoned ISO first, then a local timestamp
- * (zero-padded or not) interpreted in [ANNOUNCEMENT_ZONE]. Returns null instead of throwing so a
- * malformed or absent value never crashes the mapper.
- * */
+/** Parses offset timestamps first, then local API timestamps; malformed values return null. */
 fun parseAnnouncementInstant(raw: String?): Instant? {
     if (raw.isNullOrBlank()) return null
 
