@@ -88,6 +88,17 @@ class EtaComponentsTest {
     }
 
     @Test
+    fun etaChipShowsTheShuttleNameAndMinutes() {
+        composeRule.setContent {
+            ShuttleTrackerTheme(dynamicColor = false) {
+                EtaChip(vehicleName = "500", routeName = "NORTH", minutes = 2)
+            }
+        }
+
+        composeRule.onNodeWithText("500 · 2m").assertIsDisplayed()
+    }
+
+    @Test
     fun tappingARouteFilterInvokesTheCallbackWithThatRoute() {
         var selectedFilter: String? = null
         composeRule.setContent {
@@ -131,6 +142,7 @@ class EtaComponentsTest {
 
     @Test
     fun sheetShowsEveryVehicleEtaForTheSelectedStop() {
+        var clickedVehicleId: String? = null
         val futureEta = Instant.now().plusSeconds(120).toString()
         val stop =
             buildStopsWithEtas(
@@ -144,6 +156,7 @@ class EtaComponentsTest {
                     stop = stop,
                     sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                     onDismiss = {},
+                    onVehicleClick = { clickedVehicleId = it },
                 )
             }
         }
@@ -152,7 +165,8 @@ class EtaComponentsTest {
         composeRule.waitForIdle()
 
         composeRule.onNodeWithText("Student Union").assertIsDisplayed()
-        composeRule.onNodeWithText("NORTH Bus").assertIsDisplayed()
+        composeRule.onNodeWithText("NORTH Bus").performClick()
+        assertEquals("bus-1", clickedVehicleId)
     }
 
     @Test
@@ -169,6 +183,7 @@ class EtaComponentsTest {
                     stop = stop,
                     sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                     onDismiss = {},
+                    onVehicleClick = {},
                 )
             }
         }

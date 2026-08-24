@@ -56,29 +56,36 @@ class EtaUtilsTest {
                 vehicles = emptyList(),
             )
 
-        assertThat(stops.map { it.stopKey }).containsExactly("academy", "union")
+        assertThat(stops.map { it.stopKey }).containsExactly("union", "academy").inOrder()
         assertThat(stops.single { it.stopKey == "union" }.routeNames).containsExactly("NORTH", "WEST").inOrder()
     }
 
     @Test
     fun `route filter limits stops to that route`() {
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+        val northBus = vehicle("bus-1", "500", "NORTH", mapOf("union" to "2026-07-19T12:05:00Z"))
+        val westBus = vehicle("bus-2", "410", "WEST", mapOf("union" to "2026-07-19T12:06:00Z"))
         val stops =
             buildStopsWithEtas(
                 routes = mapOf("NORTH" to northRoute, "WEST" to westRoute),
-                vehicles = emptyList(),
+                vehicles = listOf(northBus, westBus),
                 routeFilter = "NORTH",
+                now = now,
             )
 
         assertThat(stops.map { it.stopKey }).containsExactly("academy", "union")
+        assertThat(stops.single { it.stopKey == "union" }.etas.map { it.routeName }).containsExactly("NORTH")
 
         val westOnly =
             buildStopsWithEtas(
                 routes = mapOf("NORTH" to northRoute, "WEST" to westRoute),
-                vehicles = emptyList(),
+                vehicles = listOf(northBus, westBus),
                 routeFilter = "WEST",
+                now = now,
             )
 
         assertThat(westOnly.map { it.stopKey }).containsExactly("union")
+        assertThat(westOnly.single().etas.map { it.routeName }).containsExactly("WEST")
     }
 
     @Test
@@ -110,10 +117,43 @@ class EtaUtilsTest {
             buildStopsWithEtas(
                 routes = mapOf("NORTH" to northRoute, "WEST" to westRoute),
                 vehicles = listOf(bus1, bus2),
+                now = Instant.parse("2026-07-19T12:00:00Z"),
             )
 
         val unionEtas = stops.single { it.stopKey == "union" }.etas
         assertThat(unionEtas.map { it.vehicleId }).containsExactly("bus-2", "bus-1").inOrder()
+    }
+
+    @Test
+    fun `etas stay visible for the configured grace period after passing`() {
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+        val graceSeconds = ETA_PAST_GRACE_PERIOD_MINUTES * 60
+        val withinGrace =
+            vehicle(
+                "bus-1",
+                "500",
+                "NORTH",
+                mapOf("union" to now.minusSeconds(graceSeconds - 1).toString()),
+            )
+        val expired =
+            vehicle(
+                "bus-2",
+                "410",
+                "NORTH",
+                mapOf("union" to now.minusSeconds(graceSeconds + 1).toString()),
+            )
+        val upcoming = vehicle("bus-3", "450", "NORTH", mapOf("union" to now.plusSeconds(60).toString()))
+
+        val stops =
+            buildStopsWithEtas(
+                routes = mapOf("NORTH" to northRoute),
+                vehicles = listOf(withinGrace, expired, upcoming),
+                now = now,
+            )
+
+        assertThat(stops.single { it.stopKey == "union" }.etas.map { it.vehicleName })
+            .containsExactly("500", "450")
+            .inOrder()
     }
 
     @Test

@@ -101,6 +101,7 @@
     <string name="etas_no_live_etas">No live ETAs</string>
     <string name="eta_now">now</string>
     <string name="eta_minutes_format">%1$dm</string>
+    <string name="eta_vehicle_format">%1$s · %2$s</string>
     <string name="etas_sheet_note">ETAs update automatically and may be off by a few minutes.</string>
 
     <!-- Schedule tab -->

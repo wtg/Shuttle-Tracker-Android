@@ -19,13 +19,14 @@ class ShuttleMappersTest {
     fun `vehicle location JSON uses the backend field names`() {
         val dto =
             Json.decodeFromString<VehicleLocationDto>(
-                """{"name":"North","latitude":42.73,"longitude":-73.68,"speed_mph":5.0,"timestamp":"2026-01-15T08:00:00-05:00","heading_degrees":90}""",
+                """{"name":"North","latitude":42.73,"longitude":-73.68,"speed_mph":5.0,"timestamp":"2026-01-15T08:00:00-05:00","heading_degrees":90.0}""",
             )
 
         val location = dto.toModel()
 
         assertEquals("North", location.name)
         assertEquals(42.73, location.latitude, 0.0)
+        assertEquals(90, location.headingDegrees)
     }
 
     @Test
@@ -37,7 +38,7 @@ class ShuttleMappersTest {
                 longitude = -73.68,
                 speedMph = 5.0,
                 timestamp = "2026-01-15T08:00:00-05:00",
-                headingDegrees = 90,
+                headingDegrees = 90.0,
             )
 
         assertThrows(IllegalArgumentException::class.java, dto::toModel)

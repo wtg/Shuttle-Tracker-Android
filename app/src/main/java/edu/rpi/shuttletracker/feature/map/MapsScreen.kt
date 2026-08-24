@@ -28,6 +28,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -75,6 +76,7 @@ fun MapsScreen(
     val pagerState = rememberPagerState { MainTab.entries.size }
     val selectedTab = MainTab.entries[pagerState.currentPage]
     var isAnnouncementsSheetVisible by rememberSaveable { mutableStateOf(false) }
+    var focusedVehicleId by remember { mutableStateOf<String?>(null) }
     val announcementsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Compact is a phone in portrait; anything wider (a rotated phone, a foldable, a tablet) gets
@@ -149,6 +151,8 @@ fun MapsScreen(
                             isAnnouncementsSheetVisible = isAnnouncementsSheetVisible,
                             onAnnouncementsSheetVisibleChange = { isAnnouncementsSheetVisible = it },
                             announcementsSheetState = announcementsSheetState,
+                            focusedVehicleId = focusedVehicleId,
+                            onFocusedVehicleHandled = { focusedVehicleId = null },
                         )
 
                     MainTab.Etas ->
@@ -163,6 +167,10 @@ fun MapsScreen(
                                 routes = uiState.routes,
                                 vehicles = uiState.vehicles + uiState.fakeVehicles,
                                 routesLoaded = uiState.routesLoaded,
+                                onVehicleClick = { vehicleId ->
+                                    focusedVehicleId = vehicleId
+                                    pagerState.requestScrollToPage(MainTab.Map.ordinal)
+                                },
                                 showTitle = !useNavigationRail,
                             )
                         }
@@ -199,6 +207,8 @@ private fun MapTab(
     isAnnouncementsSheetVisible: Boolean,
     onAnnouncementsSheetVisibleChange: (Boolean) -> Unit,
     announcementsSheetState: SheetState,
+    focusedVehicleId: String?,
+    onFocusedVehicleHandled: () -> Unit,
 ) {
     Box(Modifier.fillMaxSize()) {
         ShuttleMap(
@@ -207,6 +217,8 @@ private fun MapTab(
             onSettingsClick = onSettingsClick,
             onToggleMapTypeClick = viewModel::toggleMapType,
             onAnnouncementsClick = { onAnnouncementsSheetVisibleChange(true) },
+            focusedVehicleId = focusedVehicleId,
+            onFocusedVehicleHandled = onFocusedVehicleHandled,
         )
 
         AnnouncementSheet(

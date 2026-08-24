@@ -28,6 +28,7 @@ fun EtasScreen(
     routes: Map<String, Route>,
     vehicles: List<Vehicle>,
     routesLoaded: Boolean,
+    onVehicleClick: (String) -> Unit,
     showTitle: Boolean = true,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -52,6 +53,10 @@ fun EtasScreen(
             stop = selectedStop,
             sheetState = sheetState,
             onDismiss = { selectedStopKey = null },
+            onVehicleClick = { vehicleId ->
+                selectedStopKey = null
+                onVehicleClick(vehicleId)
+            },
         )
     }
 }

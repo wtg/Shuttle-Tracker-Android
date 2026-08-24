@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -65,6 +66,7 @@ private const val TILT_ZOOM = 18f
 // didn't mean to pan - only treat a gesture as a real pan (and drop out of follow mode) once it
 // moves the target further than incidental zoom/rotate drift would.
 private const val PAN_DETECTION_THRESHOLD_METERS = 20f
+private const val VEHICLE_FOCUS_ZOOM = 17f
 
 /**
  * Mirrors the stock Google Maps app's location FAB: [NotFollowing] until tapped, then
@@ -91,6 +93,8 @@ internal fun ShuttleMap(
     onSettingsClick: () -> Unit,
     onToggleMapTypeClick: () -> Unit,
     onAnnouncementsClick: () -> Unit,
+    focusedVehicleId: String?,
+    onFocusedVehicleHandled: () -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -110,6 +114,27 @@ internal fun ShuttleMap(
     var gestureStartTarget by remember { mutableStateOf<LatLng?>(null) }
     val useDarkMap = uiState.themeMode.isDarkTheme(isSystemInDarkTheme())
     val fallbackRouteColor = MaterialTheme.colorScheme.primary
+
+    LaunchedEffect(focusedVehicleId) {
+        val vehicleId = focusedVehicleId ?: return@LaunchedEffect
+        val vehicle =
+            (uiState.vehicles + uiState.fakeVehicles).firstOrNull { it.id == vehicleId }
+                ?: run {
+                    onFocusedVehicleHandled()
+                    return@LaunchedEffect
+                }
+
+        // Drop selection for one frame so repeatedly choosing the same shuttle reopens its window.
+        selectedDevVehicleId = null
+        withFrameNanos {}
+        selectedDevVehicleId = vehicle.id
+        followMode = LocationFollowMode.NotFollowing
+        cameraPositionState.animate(
+            CameraUpdateFactory.newLatLngZoom(vehicle.latLng(), VEHICLE_FOCUS_ZOOM),
+            durationMs = 1000,
+        )
+        onFocusedVehicleHandled()
+    }
 
     LaunchedEffect(cameraPositionState.isMoving) {
         if (cameraPositionState.isMoving) {
@@ -275,7 +300,7 @@ internal fun ShuttleMap(
                     selectedDevVehicleId = vehicle.id
                     coroutineScope.launch {
                         cameraPositionState.animate(
-                            CameraUpdateFactory.newLatLngZoom(vehicle.latLng(), 17f),
+                            CameraUpdateFactory.newLatLngZoom(vehicle.latLng(), VEHICLE_FOCUS_ZOOM),
                             durationMs = 1000,
                         )
                     }

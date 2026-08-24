@@ -30,6 +30,9 @@ data class StopWithEtas(
  * */
 val ETA_VISIBLE_ROUTES = listOf("NORTH", "WEST")
 
+/** How long a just-passed arrival remains visible in the ETA tab. */
+internal const val ETA_PAST_GRACE_PERIOD_MINUTES = 1L
+
 /**
  * Inverts each vehicle's [Vehicle.stopTimes] (stop key -> eta) into a per-stop view, one entry per
  * stop across [ETA_VISIBLE_ROUTES] (or just [routeFilter] if given), each carrying its own sorted
@@ -39,8 +42,10 @@ fun buildStopsWithEtas(
     routes: Map<String, Route>,
     vehicles: List<Vehicle>,
     routeFilter: String? = null,
+    now: Instant = Instant.now(),
 ): List<StopWithEtas> {
     val stopsByKey = linkedMapOf<String, Pair<Stop, MutableSet<String>>>()
+    val oldestVisibleEta = now.minusSeconds(ETA_PAST_GRACE_PERIOD_MINUTES * 60)
 
     for ((routeName, route) in routes) {
         if (routeName !in ETA_VISIBLE_ROUTES) continue
@@ -61,8 +66,10 @@ fun buildStopsWithEtas(
                 vehicles
                     .mapNotNull { vehicle ->
                         if (vehicle.routeName !in ETA_VISIBLE_ROUTES) return@mapNotNull null
+                        if (routeFilter != null && vehicle.routeName != routeFilter) return@mapNotNull null
                         val rawEta = vehicle.stopTimes[stopKey] ?: return@mapNotNull null
                         val etaInstant = rawEta.toEtaInstantOrNull() ?: return@mapNotNull null
+                        if (etaInstant.isBefore(oldestVisibleEta)) return@mapNotNull null
 
                         VehicleEta(
                             vehicleId = vehicle.id,
@@ -78,7 +85,7 @@ fun buildStopsWithEtas(
                 routeNames = routeNames.sorted(),
                 etas = etas,
             )
-        }.sortedBy { it.stop.name }
+        }
 }
 
 fun String.toEtaInstantOrNull(): Instant? = runCatching { OffsetDateTime.parse(trim()).toInstant() }.getOrNull()

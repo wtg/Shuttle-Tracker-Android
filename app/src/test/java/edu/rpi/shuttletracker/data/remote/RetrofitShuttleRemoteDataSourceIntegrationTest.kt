@@ -150,6 +150,32 @@ class RetrofitShuttleRemoteDataSourceIntegrationTest {
             assertThat(server.takeRequest().path).isEqualTo("/velocities")
         }
 
+    @Test
+    fun `velocity endpoint accepts an unmatched vehicle with no route`() =
+        runTest {
+            server.enqueue(
+                jsonResponse(
+                    """
+                    {
+                      "bus-1": {
+                        "speed_kmh": 0.0,
+                        "timestamp": "2026-08-24T14:06:55+00:00",
+                        "route_name": null,
+                        "segment_index": null,
+                        "polyline_index": null,
+                        "is_at_stop": false,
+                        "current_stop": null
+                      }
+                    }
+                    """.trimIndent(),
+                ),
+            )
+
+            val result = dataSource.getVehicleVelocities()
+
+            assertThat((result as NetworkResult.Success).data.getValue("bus-1").routeName).isNull()
+        }
+
     private fun resource(name: String): String =
         checkNotNull(javaClass.getResource("/api/$name")) { "Missing fixture $name" }.readText()
 

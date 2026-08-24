@@ -87,7 +87,7 @@ data class VehicleStopEta(
 
 /** The `/velocities` endpoint's data, one per vehicle: which route it's on and its stop status. */
 data class VehicleVelocities(
-    val routeName: String,
+    val routeName: String?,
     val isAtStop: Boolean,
     val currentStop: String?,
 )

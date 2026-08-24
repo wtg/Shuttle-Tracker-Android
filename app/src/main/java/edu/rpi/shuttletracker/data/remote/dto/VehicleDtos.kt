@@ -14,7 +14,7 @@ data class VehicleLocationDto(
     val longitude: Double,
     @SerialName("speed_mph") val speedMph: Double,
     val timestamp: String,
-    @SerialName("heading_degrees") val headingDegrees: Int? = null,
+    @SerialName("heading_degrees") val headingDegrees: Double? = null,
 )
 
 @Serializable
@@ -24,7 +24,7 @@ data class VehicleStopEtaDto(
 
 @Serializable
 data class VehicleVelocitiesDto(
-    @SerialName("route_name") val routeName: String,
+    @SerialName("route_name") val routeName: String?,
     @SerialName("is_at_stop") val isAtStop: Boolean,
     @SerialName("current_stop") val currentStop: String? = null,
 )
