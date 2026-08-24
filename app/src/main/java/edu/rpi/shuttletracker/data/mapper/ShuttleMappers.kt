@@ -27,7 +27,7 @@ fun VehicleLocationDto.toModel(): VehicleLocation {
     require(latitude.isFinite() && latitude in -90.0..90.0) { "Invalid vehicle latitude" }
     require(longitude.isFinite() && longitude in -180.0..180.0) { "Invalid vehicle longitude" }
     OffsetDateTime.parse(timestamp)
-    return VehicleLocation(name, latitude, longitude, speedMph, timestamp, headingDegrees)
+    return VehicleLocation(name, latitude, longitude, speedMph, timestamp, headingDegrees?.toInt())
 }
 
 fun VehicleStopEtaDto.toModel() = VehicleStopEta(stopTimes)
