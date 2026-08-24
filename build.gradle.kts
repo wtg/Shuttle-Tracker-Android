@@ -14,7 +14,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization) apply false
 }
 
-// pre commit hook to check kotlin style before commits
+// Install the repository's Kotlin style check before commits.
 tasks.register<Copy>("copyPreCommitHook") {
     description = "Copy pre-commit git hook from the scripts to the .git/hooks folder."
     group = "git hooks"

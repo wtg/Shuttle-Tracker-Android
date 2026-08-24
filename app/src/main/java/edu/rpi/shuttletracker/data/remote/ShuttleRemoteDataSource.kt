@@ -8,11 +8,7 @@ import edu.rpi.shuttletracker.data.models.VehicleLocation
 import edu.rpi.shuttletracker.data.models.VehicleStopEta
 import edu.rpi.shuttletracker.data.models.VehicleVelocities
 
-/**
- * Describes the app's remote shuttle operations.
- *
- * The interface lets tests replace the Retrofit implementation with a small fake.
- */
+/** Remote shuttle operations, separated from Retrofit for testing. */
 interface ShuttleRemoteDataSource {
     suspend fun getVehicleLocations(): NetworkResult<Map<String, VehicleLocation>>
 

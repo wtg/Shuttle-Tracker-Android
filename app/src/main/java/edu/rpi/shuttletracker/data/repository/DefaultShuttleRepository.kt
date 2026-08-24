@@ -7,12 +7,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import javax.inject.Inject
 
-/**
- * The real [ShuttleRepository]. The `observe*` functions just repeatedly call the matching
- * one-shot [ShuttleRemoteDataSource] function on a timer (`emit`, wait [pollMs], repeat) so
- * ViewModels can collect a live-updating [Flow][kotlinx.coroutines.flow.Flow] instead of polling
- * by hand.
- * */
+/** Production repository; `observe*` methods poll the matching remote call every [pollMs]. */
 class DefaultShuttleRepository
     @Inject
     constructor(

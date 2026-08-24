@@ -20,12 +20,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Singleton
 
-/**
- * Builds the networking stack the app talks to the backend with: an [OkHttpClient] (with a small
- * disk cache so recent responses are usable offline), a [Retrofit] instance configured for JSON,
- * and the generated [ShuttleApi] implementation. Everything here is a `@Singleton` - one instance
- * for the whole app.
- * */
+/** Provides the shared HTTP cache, client, JSON converter, and Shuttle API. */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -38,12 +33,9 @@ object NetworkModule {
             var request = chain.request()
 
             if (request.url.pathSegments.lastOrNull() in LivePolledPaths) {
-                // Vehicle locations/etas/velocities are meaningless once stale - never write them to
-                // the disk cache and never serve them from it, so going offline fails outright
-                // instead of silently replaying old vehicle positions as if they were live.
+                // Live vehicle data must never be replayed from cache.
                 request = request.newBuilder().header("Cache-Control", "no-store").build()
             } else if (!context.hasNetwork()) {
-                // 2 week cache for offline
                 request =
                     request
                         .newBuilder()
@@ -60,7 +52,6 @@ object NetworkModule {
         @ApplicationContext context: Context,
         cacheInterceptor: Interceptor,
     ): OkHttpClient {
-        // 5 mb of cache
         val cacheSize = (5 * 1024 * 1024).toLong()
         val myCache = Cache(context.cacheDir, cacheSize)
 
@@ -96,5 +87,5 @@ object NetworkModule {
     fun provideShuttleApi(retrofit: Retrofit): ShuttleApi = retrofit.create(ShuttleApi::class.java)
 }
 
-/** Endpoints that poll live vehicle state - these must never be cached or replayed while stale. */
+/** Live endpoints that must bypass the HTTP cache. */
 private val LivePolledPaths = setOf("locations", "etas", "velocities")

@@ -83,7 +83,6 @@ class EtaComponentsTest {
     fun stopsWithNoApproachingVehicleShowTheEmptyEtaMessage() {
         setListContent(routes = mapOf("NORTH" to testRoute()), vehicles = emptyList())
 
-        // Both of NORTH's stops (union, academy) lack a live eta here.
         composeRule.onAllNodesWithText("No live ETAs").assertCountEquals(2)
     }
 
@@ -161,7 +160,6 @@ class EtaComponentsTest {
             }
         }
 
-        // The sheet's appear animation runs as a coroutine, so give it a chance to settle.
         composeRule.waitForIdle()
 
         composeRule.onNodeWithText("Student Union").assertIsDisplayed()

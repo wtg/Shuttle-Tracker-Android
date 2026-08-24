@@ -41,11 +41,7 @@ import edu.rpi.shuttletracker.feature.etas.utils.buildStopsWithEtas
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Lets a user pick which stop one [EtaWidget] instance is configured to. Opens automatically when
- * a widget is placed (`android:configure` in `res/xml/eta_widget_info.xml`) or edited, and can also
- * be opened from inside the widget itself.
- * */
+/** Selects the stop shown by one widget instance during setup or editing. */
 @AndroidEntryPoint
 class EtaWidgetConfigureActivity : ComponentActivity() {
     @Inject

@@ -4,11 +4,7 @@ import com.google.maps.android.compose.MapType
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Reads and saves the user's app settings.
- *
- * The interface lets tests replace DataStore with an in-memory fake.
- */
+/** Reads and saves settings; tests replace this with an in-memory fake. */
 interface UserPreferences {
     fun getMapType(): Flow<MapType>
 

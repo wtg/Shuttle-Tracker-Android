@@ -6,10 +6,7 @@ import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-/**
- * Mirrors app/src/test's fake of the same name. Duplicated here because androidTest and test are
- * separate source sets with no shared fixtures module in this project.
- * */
+/** Duplicated because `test` and `androidTest` do not share fakes. */
 class FakeUserPreferences : UserPreferences {
     val mapType = MutableStateFlow(MapType.NORMAL)
     val privacyPolicyAccepted = MutableStateFlow(false)

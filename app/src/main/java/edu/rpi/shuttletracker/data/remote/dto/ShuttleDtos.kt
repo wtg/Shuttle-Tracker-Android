@@ -15,8 +15,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 
-// DTOs for the announcements, schedule, and generic error-body shapes returned by the API.
-
 @Serializable
 data class AnnouncementDto(
     val id: String,
@@ -32,11 +30,7 @@ data class AnnouncementsResponseDto(
     val announcements: List<AnnouncementDto> = emptyList(),
 )
 
-/**
- * The API is documented to return a wrapped `{"announcements": [...]}` object, but the live
- * endpoint has been observed returning a bare JSON array instead. Tolerate both shapes so a
- * mismatch between the documented and actual response never crashes decoding.
- * */
+/** Accepts both the documented wrapper and the bare array returned by the live endpoint. */
 object AnnouncementsResponseDtoSerializer : KSerializer<AnnouncementsResponseDto> {
     private val listSerializer = ListSerializer(AnnouncementDto.serializer())
 
@@ -55,9 +49,7 @@ object AnnouncementsResponseDtoSerializer : KSerializer<AnnouncementsResponseDto
         return AnnouncementsResponseDto(decodeAnnouncements(decoder.json, array))
     }
 
-    /**
-     * Decodes each entry independently so one malformed announcement can't sink the whole list.
-     * */
+    /** Skips malformed entries instead of rejecting the entire announcement list. */
     private fun decodeAnnouncements(
         json: Json,
         array: JsonArray,
@@ -77,7 +69,7 @@ object AnnouncementsResponseDtoSerializer : KSerializer<AnnouncementsResponseDto
     }
 }
 
-/** Each day maps to `[[departureTime, routeName], ...]` pairs - see `feature/schedule/utils/`. */
+/** Each day maps to `[departureTime, routeName]` pairs. */
 @Serializable
 data class ScheduleDto(
     @SerialName("MONDAY") val monday: String,

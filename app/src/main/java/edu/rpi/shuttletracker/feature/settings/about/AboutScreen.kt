@@ -39,11 +39,7 @@ import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.shuttleTrackerColorScheme
 import edu.rpi.shuttletracker.feature.settings.components.SettingsItem
 
-/**
- * The About screen: repo/issues/privacy links, the libraries list, and version info. Tapping the
- * version row 10 times calls [AboutViewModel.activateDevOptions], the classic Android "unlock
- * developer options" gesture - after that, [SettingsScreen] shows a Developer Options entry.
- * */
+/** Shows project details; tapping the version ten times unlocks developer options. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(

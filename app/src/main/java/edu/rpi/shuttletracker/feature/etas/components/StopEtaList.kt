@@ -41,10 +41,7 @@ import edu.rpi.shuttletracker.feature.etas.utils.StopWithEtas
 import edu.rpi.shuttletracker.feature.etas.utils.buildStopsWithEtas
 import edu.rpi.shuttletracker.feature.etas.utils.etaMinutesFromNow
 
-/**
- * The route picker + list of stops, each showing a preview of its soonest live etas. Has no
- * Scaffold/TopAppBar of its own so the caller controls that chrome.
- * */
+/** Route picker and stop ETA previews without screen-level chrome. */
 @Composable
 fun StopEtaList(
     routes: Map<String, Route>,

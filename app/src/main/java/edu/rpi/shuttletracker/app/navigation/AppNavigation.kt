@@ -29,12 +29,7 @@ private data object AboutRoute : NavKey
 @Serializable
 private data object DeveloperOptionsRoute : NavKey
 
-/**
- * Owns the app's complete navigation state and maps route keys to feature screens.
- *
- * Feature screens receive callbacks instead of a navigation object, keeping them easy to preview,
- * test, and reuse.
- */
+/** Maps route keys to screens and passes navigation callbacks into each feature. */
 @Composable
 fun AppNavigation(setupCompleted: Boolean) {
     val startRoute: NavKey = if (setupCompleted) MapsRoute else SetupRoute

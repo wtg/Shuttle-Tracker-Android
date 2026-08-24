@@ -67,11 +67,7 @@ private val XXLARGE = DpSize(320.dp, 390.dp)
 private val WIDE = DpSize(450.dp, 250.dp)
 private val WIDE_TALL = DpSize(450.dp, 390.dp)
 
-/**
- * Home-screen widget with two views: all stops' soonest arrivals, or one configured stop's full
- * live status. [EtaWidgetUpdater] fetches the data and saves it to Glance state; this class only
- * renders whatever's already stored, it never touches the network itself.
- * */
+/** Renders all-route or configured-stop data previously saved by [EtaWidgetUpdater]. */
 class EtaWidget : GlanceAppWidget() {
     override val stateDefinition = PreferencesGlanceStateDefinition
 
@@ -89,7 +85,6 @@ class EtaWidget : GlanceAppWidget() {
     }
 }
 
-/** Backs the manifest `<receiver>` entry; just points the framework at [EtaWidget]. */
 class EtaWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = EtaWidget()
 
@@ -137,7 +132,6 @@ private fun EtaWidgetContent() {
                 .padding(8.dp),
     ) {
         WidgetHeader(
-            // Ignored in all-routes mode - WidgetHeader shows the route filter there instead.
             title =
                 if (showingAllRoutes) {
                     ""
@@ -241,7 +235,6 @@ private fun ConfigurePrompt() {
     }
 }
 
-/** Opens [EtaWidgetConfigureActivity] to change this widget instance's stop. */
 @Composable
 private fun configureAction(): Action {
     val context = LocalContext.current
@@ -282,7 +275,6 @@ private fun WidgetHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (showingAllRoutes) {
-            // All-routes mode has no stop to name, so the route filter goes here instead.
             Text(
                 text = routeFilter?.lowercaseTitle() ?: context.getString(R.string.etas_route_all),
                 maxLines = 1,

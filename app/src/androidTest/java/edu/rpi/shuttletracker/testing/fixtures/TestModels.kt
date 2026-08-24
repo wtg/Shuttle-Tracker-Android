@@ -4,10 +4,7 @@ import edu.rpi.shuttletracker.data.models.Route
 import edu.rpi.shuttletracker.data.models.Schedule
 import edu.rpi.shuttletracker.data.models.Stop
 
-/**
- * Mirrors app/src/test's fixtures of the same name. Duplicated here because androidTest and test
- * are separate source sets with no shared fixtures module in this project.
- * */
+/** Duplicated because `test` and `androidTest` do not share fixtures. */
 fun testRoute() =
     Route(
         color = "#D32F2F",

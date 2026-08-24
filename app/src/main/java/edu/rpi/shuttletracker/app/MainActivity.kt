@@ -26,12 +26,7 @@ import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-/**
- * The app's one and only [android.app.Activity]. Every screen you see is Compose content set here
- * via [setContent] and hosted by [AppNavigation] - there is no second Activity to navigate to.
- * Also decides whether to show setup or the map first, based on [UserPreferences], and turns a
- * tapped push notification into either "just open the app" or an external URL.
- * */
+/** Hosts the Compose UI, selects the initial screen, and handles notification taps. */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject
@@ -86,12 +81,7 @@ class MainActivity : ComponentActivity() {
         handleNotificationTap(intent)
     }
 
-    /**
-     * The map is already the app's home screen, so a tapped push notification needs no
-     * navigation of its own - the only special case is an optional safe `url` to open instead.
-     * Covers both the foreground PendingIntent we build in [FirebaseService] and the intent FCM
-     * builds automatically for background/terminated taps, since both use the same extra name.
-     * */
+    /** Opens a notification's optional safe URL; otherwise the app stays on its home screen. */
     private fun handleNotificationTap(intent: Intent?) {
         val url = intent?.getStringExtra(FirebaseService.EXTRA_URL) ?: return
         intent.removeExtra(FirebaseService.EXTRA_URL)

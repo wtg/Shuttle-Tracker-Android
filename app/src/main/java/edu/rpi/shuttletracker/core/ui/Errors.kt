@@ -11,17 +11,7 @@ import androidx.compose.ui.res.stringResource
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.network.NetworkError
 
-/**
- * Drop this in a `Scaffold`'s `snackbarHost` slot alongside a ViewModel's error state fields.
- * Shows a snackbar with a Retry action for whichever error is non-null (at most one is shown at a
- * time), and calls back so the ViewModel can clear or retry. See `MapsScreen`/`ScheduleScreen` for
- * how features wire this up.
- *
- * @param error a network error, null if none
- *
- * @param ignoreErrorRequest: what happens when error is ignored
- * @param retryErrorRequest: what happens when you want to retry what caused the error
- * */
+/** Shows a network error in a snackbar with dismiss and retry actions. */
 @Composable
 fun CheckResponseError(
     error: NetworkError? = null,
@@ -56,12 +46,6 @@ fun CheckResponseError(
     )
 }
 
-/**
- * @param error: the error you want to display
- * @param onPrimaryRequest: what happens when you want to retry what caused the error
- *
- * @param errorType: What kind of error has occurred
- * */
 @Composable
 fun Error(
     error: Any?,

@@ -8,7 +8,6 @@ import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.state.updateAppWidgetState
 import edu.rpi.shuttletracker.feature.etas.utils.ETA_VISIBLE_ROUTES
 
-/** Refetches live data and updates every widget instance. Bound to the widget's refresh icon. */
 class RefreshAction : ActionCallback {
     override suspend fun onAction(
         context: Context,
@@ -19,7 +18,7 @@ class RefreshAction : ActionCallback {
     }
 }
 
-/** Cycles this instance's route filter through "every route" and each of [ETA_VISIBLE_ROUTES]. Just a display filter, no network call. */
+/** Cycles the local route filter without fetching data. */
 class ToggleRouteFilterAction : ActionCallback {
     override suspend fun onAction(
         context: Context,
@@ -41,7 +40,7 @@ class ToggleRouteFilterAction : ActionCallback {
     }
 }
 
-/** Flips this instance between the all-routes view and its configured single-stop view. Just a display switch, no network call. */
+/** Switches between all routes and the configured stop without fetching data. */
 class ToggleStopModeAction : ActionCallback {
     override suspend fun onAction(
         context: Context,

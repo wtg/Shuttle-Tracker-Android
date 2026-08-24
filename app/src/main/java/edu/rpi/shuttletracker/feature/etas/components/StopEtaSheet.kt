@@ -26,10 +26,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/**
- * Full-detail list of every vehicle's live eta for one stop, opened by tapping a row in
- * [StopEtaList].
- * */
+/** Shows every live vehicle relevant to the selected stop. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StopEtaSheet(

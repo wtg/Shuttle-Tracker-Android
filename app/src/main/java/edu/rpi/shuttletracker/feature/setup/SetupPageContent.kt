@@ -26,7 +26,6 @@ import androidx.core.content.ContextCompat
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.feature.setup.components.PermissionItem
 
-/** Renders whichever [SetupPage] the user is currently on. */
 @Composable
 fun SetupPageContent(page: SetupPage) {
     when (page) {
@@ -46,11 +45,7 @@ fun AboutPage() {
     }
 }
 
-/**
- * [R.array.privacy_page] is one paragraph per item, so each gets its own [Text] with real spacing
- * instead of running together. The first item (title + effective date) is de-emphasized since
- * [SetupPage]'s TopAppBar already shows "Privacy Policy" as the page title.
- * */
+/** Renders each privacy-policy array item as a separate paragraph. */
 @Composable
 fun PrivacyPolicyPage() {
     val paragraphs = stringArrayResource(R.array.privacy_page)
@@ -87,7 +82,6 @@ fun PermissionsPage() {
     }
 }
 
-/** One [Permission]'s row: tracks whether it's granted and launches the system permission dialog on tap. */
 @Composable
 fun PermissionBox(permission: Permission) {
     val context = LocalContext.current

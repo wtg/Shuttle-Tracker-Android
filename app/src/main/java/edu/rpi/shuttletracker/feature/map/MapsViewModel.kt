@@ -34,12 +34,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
 
-/**
- * Backs [MapsScreen]'s Map tab: loads [Route]s once, polls vehicle locations/etas/velocities into
- * [MapsUiState.vehicles] while [startVehiclePolling] is active, polls announcements separately
- * (its own interval, so it never competes with the 5-second vehicle polling), and mirrors the
- * user's map/theme/dev-mode preferences into UI state.
- * */
+/** Owns shared route, vehicle, announcement, and preference state for the home tabs. */
 @HiltViewModel
 class MapsViewModel
     @Inject
@@ -105,9 +100,7 @@ class MapsViewModel
                     var etas: Map<String, VehicleStopEta> = emptyMap()
                     var velocities: Map<String, VehicleVelocities> = emptyMap()
 
-                    // A live response this cycle proves whatever was wrong last cycle isn't
-                    // blocking us now - cleared here (not in readApiResponse) since that's shared
-                    // with the independent announcement/routes loads, which shouldn't affect it.
+                    // Clear vehicle errors only when a live vehicle endpoint recovers.
                     if (locationsResponse is NetworkResult.Success ||
                         etasResponse is NetworkResult.Success ||
                         velocitiesResponse is NetworkResult.Success
@@ -144,10 +137,7 @@ class MapsViewModel
             clearError(MapRequest.Vehicles)
         }
 
-        /**
-         * Polls announcements on its own low-frequency interval, independent of vehicle polling, so a
-         * banner refresh never has to compete with the 5 second vehicle updates.
-         * */
+        /** Polls announcements independently from frequent vehicle updates. */
         fun startAnnouncementRefresh() {
             if (announcementsJob?.isActive == true) return
 
@@ -155,7 +145,7 @@ class MapsViewModel
                 shuttleRepository
                     .observeAnnouncements(pollMs = ANNOUNCEMENT_POLL_MS)
                     .onEach { result ->
-                        // The dev menu's simulated banners take priority until it's turned back off.
+                        // Simulated banners take priority while enabled.
                         if (mapsUiState.value.simulateAnnouncements) return@onEach
 
                         // A failed refresh must not clear announcements already on screen.
@@ -177,12 +167,7 @@ class MapsViewModel
             clearError(MapRequest.Announcements)
         }
 
-        /**
-         * Ticks once a second, building fresh fake-shuttle positions from [buildFakeVehicles] and
-         * publishing them to [MapsUiState.fakeVehicles] - a separate field from
-         * [MapsUiState.vehicles] so fake and real vehicles never mix. Only started while developer
-         * options and the "fake shuttles" preference are both on (see [loadPreferences]).
-         * */
+        /** Updates developer-mode shuttles once per second without mixing them into live data. */
         private fun startFakeVehicles() {
             if (fakeVehiclesJob?.isActive == true) return
 
@@ -272,7 +257,7 @@ class MapsViewModel
                     if (simulateActive) {
                         _mapsUiState.update { it.copy(announcements = FakeAnnouncements.sample().displayable()) }
                     } else if (wasSimulating) {
-                        // Get a fresh real fetch immediately rather than waiting for the next poll tick.
+                        // Fetch real announcements immediately after simulation ends.
                         stopAnnouncementRefresh()
                         startAnnouncementRefresh()
                     }
@@ -308,7 +293,6 @@ class MapsViewModel
             updateMapType(next)
         }
 
-        /** On [NetworkResult.Success] calls [success]; on [NetworkResult.Failure] puts the error into UI state. */
         private fun <T> readApiResponse(
             response: NetworkResult<T>,
             request: MapRequest,
@@ -337,7 +321,6 @@ private enum class MapRequest {
     Announcements,
 }
 
-/** Everything the Map tab needs to render. See [MapsViewModel] for how each field gets filled in. */
 @Immutable
 data class MapsUiState(
     val vehicles: List<Vehicle> = emptyList(),

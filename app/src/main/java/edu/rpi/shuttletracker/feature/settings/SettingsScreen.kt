@@ -10,7 +10,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
-/** The Settings screen: wires [SettingsViewModel] state and actions into [SettingsContent]. */
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,

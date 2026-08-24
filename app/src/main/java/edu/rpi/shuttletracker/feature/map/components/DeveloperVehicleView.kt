@@ -27,12 +27,7 @@ import androidx.compose.ui.unit.dp
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Vehicle
 
-/**
- * Dev-mode-only panel listing every currently known [Vehicle] (real and fake), for inspecting
- * live shuttle data without needing a debugger - see issue #137. [onZoomToVehicle] both pans the
- * map camera to that vehicle and opens its marker's info window (wired up by the caller, since
- * both the camera and the markers live in [edu.rpi.shuttletracker.feature.map.MapContent]).
- * */
+/** Developer panel for inspecting vehicles and selecting one on the map. */
 @Composable
 internal fun DeveloperVehicleView(
     vehicles: List<Vehicle>,

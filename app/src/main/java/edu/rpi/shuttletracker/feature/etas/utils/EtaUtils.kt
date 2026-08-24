@@ -7,7 +7,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
 
-/** One vehicle's live ETA at a particular stop - one entry in [StopWithEtas.etas]. */
 data class VehicleEta(
     val vehicleId: String,
     val vehicleName: String,
@@ -15,7 +14,7 @@ data class VehicleEta(
     val etaInstant: Instant,
 )
 
-/** A stop plus every vehicle currently approaching it, soonest first. The list item the ETAs tab shows. */
+/** A stop and its approaching vehicles, in display order. */
 data class StopWithEtas(
     val stopKey: String,
     val stop: Stop,
@@ -23,21 +22,13 @@ data class StopWithEtas(
     val etas: List<VehicleEta>,
 )
 
-/**
- * Real routes the ETAs tab shows. Hardcoded so extra or test route entries from the API never
- * show up as stops, filter options, or eta chips here - a vehicle on a route outside this list is
- * excluded even if it happens to report an eta for a stop a visible route also serves.
- * */
+/** Public routes shown in ETA filters; unexpected API routes stay hidden. */
 val ETA_VISIBLE_ROUTES = listOf("NORTH", "WEST")
 
-/** How long a just-passed arrival remains visible in the ETA tab. */
+/** Grace period before a passed arrival disappears from the ETA list. */
 internal const val ETA_PAST_GRACE_PERIOD_MINUTES = 1L
 
-/**
- * Inverts each vehicle's [Vehicle.stopTimes] (stop key -> eta) into a per-stop view, one entry per
- * stop across [ETA_VISIBLE_ROUTES] (or just [routeFilter] if given), each carrying its own sorted
- * list of upcoming vehicle etas.
- * */
+/** Builds the route-ordered stop list by inverting each vehicle's stop-to-ETA map. */
 fun buildStopsWithEtas(
     routes: Map<String, Route>,
     vehicles: List<Vehicle>,
@@ -95,10 +86,10 @@ fun etaMinutesFromNow(
     now: Instant = Instant.now(),
 ): Long = Duration.between(now, etaInstant).toMinutes()
 
-/** How long a vehicle keeps showing for a stop after its own eta has passed - etas can be a little stale. */
+/** Extra tolerance for stale ETAs in the selected stop's live vehicle list. */
 private const val ETA_PAST_TOLERANCE_MINUTES = 2L
 
-/** Vehicles relevant to [stopKey] right now: currently there, or with an eta that hasn't expired past [ETA_PAST_TOLERANCE_MINUTES]. */
+/** Vehicles currently at [stopKey] or still within its ETA tolerance. */
 fun vehiclesForStop(
     vehicles: List<Vehicle>,
     stopKey: String,

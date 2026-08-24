@@ -62,30 +62,18 @@ private val CampusBounds =
 private const val TILTED_DEGREES = 60f
 private const val TILT_ZOOM = 18f
 
-// A pinch-zoom that isn't perfectly centered can nudge the target a little even though the user
-// didn't mean to pan - only treat a gesture as a real pan (and drop out of follow mode) once it
-// moves the target further than incidental zoom/rotate drift would.
+// Ignore small target drift caused by zooming or rotating while following the user.
 private const val PAN_DETECTION_THRESHOLD_METERS = 20f
 private const val VEHICLE_FOCUS_ZOOM = 17f
 
-/**
- * Mirrors the stock Google Maps app's location FAB: [NotFollowing] until tapped, then
- * [Following] the user north-up, then [FollowingTilted] into a 3D perspective on a second tap.
- * A user gesture that actually re-targets the camera (a pan) drops back to [NotFollowing]; a
- * gesture that only changes zoom/rotation in place does not, so the button never claims to be
- * following a camera the user just took over.
- * */
+/** Location button states: free camera, north-up follow, and tilted follow. */
 private enum class LocationFollowMode {
     NotFollowing,
     Following,
     FollowingTilted,
 }
 
-/**
- * The actual Google Map: draws stops ([StopMarker]), route polylines, and vehicles
- * ([VehicleMarker] - both real and, in dev mode, fake), plus the overlaid announcement strip,
- * settings/map-type buttons, and a recenter FAB. Used by [MapsScreen]'s Map tab.
- * */
+/** Draws routes, stops, vehicles, announcements, and map controls. */
 @Composable
 internal fun ShuttleMap(
     uiState: MapsUiState,
@@ -221,8 +209,6 @@ internal fun ShuttleMap(
                 }
             }
 
-            // Kept in a separate loop over its own uiState field so developer-mode fake shuttles
-            // never mix with real vehicle data from the API.
             uiState.fakeVehicles.forEach { vehicle ->
                 key(vehicle.id) {
                     VehicleMarker(
@@ -235,9 +221,7 @@ internal fun ShuttleMap(
             }
         }
 
-        // Announcements are status info and belong at the very top, first thing seen; settings
-        // and map-type are low-frequency controls that sit below in their own full-width row so
-        // they never collide structurally with the strip above them.
+        // Keep status information above the lower-priority map controls.
         Column(
             modifier =
                 Modifier
@@ -253,9 +237,7 @@ internal fun ShuttleMap(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            // A Box with independently-aligned children, not a Row with Arrangement.SpaceBetween -
-            // the chip can disappear/reappear on its own schedule, and SpaceBetween would shove the
-            // FAB stack over to the start edge whenever it's the Row's only remaining child.
+            // Independent alignment keeps controls fixed when the update chip disappears.
             Box(modifier = Modifier.fillMaxWidth()) {
                 LastUpdatedChip(
                     updatedAt = uiState.vehiclesUpdatedAt,
@@ -313,7 +295,6 @@ internal fun ShuttleMap(
             )
         }
 
-        // Schedule is reached via the bottom nav bar now, so Recenter is the map's only FAB.
         val (fabContainerColor, fabContentColor) = mapButtonColors()
         FloatingActionButton(
             onClick = handleClick@{
@@ -347,8 +328,7 @@ internal fun ShuttleMap(
                         }
                     }
 
-                    // Already centered north-up: tilt into a 3D perspective, like the stock app's
-                    // compass button does on a second tap.
+                    // A second tap switches north-up following to a tilted view.
                     LocationFollowMode.Following -> {
                         coroutineScope.launch {
                             cameraPositionState.animate(
@@ -366,8 +346,7 @@ internal fun ShuttleMap(
                         followMode = LocationFollowMode.FollowingTilted
                     }
 
-                    // Tilted: flatten back to north-up rather than dropping out of follow mode -
-                    // only an actual map drag should do that.
+                    // Flatten the view without leaving follow mode.
                     LocationFollowMode.FollowingTilted -> {
                         coroutineScope.launch {
                             cameraPositionState.animate(

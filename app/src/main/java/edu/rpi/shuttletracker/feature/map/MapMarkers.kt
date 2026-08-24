@@ -44,7 +44,7 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
 
-/** A stop's circle on the map. The actual [Marker] is invisible (`alpha = 0f`) - it only exists to catch taps and show the stop's name in an info window. */
+/** Draws a stop circle plus an invisible marker that handles taps and its info window. */
 @Composable
 internal fun StopMarker(
     stop: Stop,
@@ -75,13 +75,7 @@ internal fun StopMarker(
     )
 }
 
-/**
- * A shuttle's marker, colored by [Vehicle.routeName] (falls back to the last known color for a
- * while if the route briefly drops out, so the marker doesn't flash gray). Works for real vehicles
- * and fake ones alike - both are just [Vehicle] instances. [selected] opens the info window
- * automatically (used by the dev-mode shuttle inspector to jump to a specific vehicle), separate
- * from the normal tap-to-open behavior.
- * */
+/** Draws a shuttle, briefly retaining its route color if route data drops out. */
 @Composable
 internal fun VehicleMarker(
     vehicle: Vehicle,
@@ -162,7 +156,6 @@ internal fun VehicleMarker(
     )
 }
 
-/** A small round icon button that floats over the map (settings, map-type toggle, etc). */
 @Composable
 internal fun MapActionButton(
     @DrawableRes icon: Int,
@@ -186,14 +179,7 @@ internal fun MapActionButton(
 private val FLASH_WINDOW: Duration = Duration.ofSeconds(3)
 private val STALE_THRESHOLD: Duration = Duration.ofSeconds(30)
 
-/**
- * A translucent pill floating over the map opposite the [MapActionButton] stack - hidden almost
- * all the time, and never shown at all as long as polling keeps succeeding. It only appears once
- * [updatedAt] hasn't advanced in [STALE_THRESHOLD] (timed from first composition if a poll has
- * never succeeded yet), and then, once a poll finally does succeed again, flashes "Updated" for
- * [FLASH_WINDOW] before disappearing. A routine successful poll that was never stale never
- * triggers the flash - only a *recovery* from a stale state does.
- * */
+/** Shows stale status, then briefly confirms recovery after polling succeeds again. */
 @Composable
 internal fun LastUpdatedChip(
     updatedAt: Instant?,
@@ -248,11 +234,7 @@ internal fun LastUpdatedChip(
     }
 }
 
-/**
- * Shared colors for every button that floats over the map (the recenter FAB, [MapActionButton]).
- * In dark mode this matches the bottom nav bar's lighter tone instead of the near-black
- * background, so the buttons don't disappear against the map.
- * */
+/** Shared colors keep floating map controls visible in both themes. */
 @Composable
 internal fun mapButtonColors(): Pair<Color, Color> =
     if (MaterialTheme.colorScheme.background.luminance() > 0.5f) {

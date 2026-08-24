@@ -7,12 +7,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_DEFAULT
 import edu.rpi.shuttletracker.R
 
-/**
- * Creates the notification channel(s) the app posts to, and cleans up channels from
- * removed/never-shipped features so they don't linger in the user's system settings. Called once
- * from [edu.rpi.shuttletracker.app.ShuttleTrackerApplication] on startup. Based on the
- * notification generator for Tachiyomi.
- * */
+/** Creates current notification channels and removes obsolete ones at startup. */
 object Notifications {
     private const val GROUP_PUSH = "group_push"
     const val CHANNEL_PUSH = "push_channel"
@@ -34,11 +29,9 @@ object Notifications {
     fun createChannels(context: Context) {
         val notificationManager = NotificationManagerCompat.from(context)
 
-        // deletes channels/groups from removed or never-shipped features so they don't linger
         deprecatedChannels.forEach(notificationManager::deleteNotificationChannel)
         deprecatedGroups.forEach(notificationManager::deleteNotificationChannelGroup)
 
-        // creates notification groups
         notificationManager.createNotificationChannelGroupsCompat(
             listOf(
                 buildNotificationChannelGroup(
@@ -48,7 +41,6 @@ object Notifications {
             ),
         )
 
-        // create notification channels
         notificationManager.createNotificationChannelsCompat(
             listOf(
                 buildNotificationChannel(

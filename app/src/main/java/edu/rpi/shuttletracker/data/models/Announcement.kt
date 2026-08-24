@@ -2,9 +2,7 @@ package edu.rpi.shuttletracker.data.models
 
 import java.time.Instant
 
-/**
- * Severity is ordered so [severityRank] can drive display sorting: errors first, info last.
- * */
+/** Ordered from highest to lowest display priority. */
 enum class AnnouncementType(
     val severityRank: Int,
 ) {
@@ -23,7 +21,6 @@ enum class AnnouncementType(
     }
 }
 
-/** A service announcement, shown as a banner on the map. See [displayable] for which ones show. */
 data class Announcement(
     val id: String,
     val message: String,
@@ -33,16 +30,11 @@ data class Announcement(
     val createdAt: Instant? = null,
 )
 
-/**
- * An absent or unparseable [Announcement.expiresAt] must not hide an otherwise active announcement.
- * */
+/** Missing expiration dates do not hide active announcements. */
 fun Announcement.isDisplayable(now: Instant = Instant.now()): Boolean =
     active && (expiresAt == null || expiresAt.isAfter(now))
 
-/**
- * Severity first, then newest [Announcement.createdAt]; missing dates sort last within their severity
- * while staying stable relative to each other.
- * */
+/** Sorts by severity, then newest creation time; missing dates sort last. */
 val AnnouncementDisplayOrder: Comparator<Announcement> =
     compareBy<Announcement> { it.type.severityRank }
         .thenByDescending { it.createdAt ?: Instant.MIN }

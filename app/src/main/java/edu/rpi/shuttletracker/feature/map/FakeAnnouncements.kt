@@ -4,11 +4,7 @@ import edu.rpi.shuttletracker.data.models.Announcement
 import edu.rpi.shuttletracker.data.models.AnnouncementType
 import java.time.Instant
 
-/**
- * Sample banners covering every severity and a Markdown link, for exercising the map banner UI
- * when the shuttle API has nothing to show (e.g. summer break). Only reachable through the
- * developer menu's "Simulate announcements" toggle.
- * */
+/** Developer samples covering each banner severity and Markdown links. */
 object FakeAnnouncements {
     fun sample(now: Instant = Instant.now()): List<Announcement> =
         listOf(
