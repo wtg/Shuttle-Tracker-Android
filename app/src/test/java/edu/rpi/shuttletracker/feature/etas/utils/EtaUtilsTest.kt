@@ -110,10 +110,27 @@ class EtaUtilsTest {
             buildStopsWithEtas(
                 routes = mapOf("NORTH" to northRoute, "WEST" to westRoute),
                 vehicles = listOf(bus1, bus2),
+                now = Instant.parse("2026-07-19T12:00:00Z"),
             )
 
         val unionEtas = stops.single { it.stopKey == "union" }.etas
         assertThat(unionEtas.map { it.vehicleId }).containsExactly("bus-2", "bus-1").inOrder()
+    }
+
+    @Test
+    fun `past etas are excluded from the eta view`() {
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+        val pastBus = vehicle("bus-1", "500", "NORTH", mapOf("union" to "2026-07-19T11:59:59Z"))
+        val upcomingBus = vehicle("bus-2", "410", "NORTH", mapOf("union" to "2026-07-19T12:01:00Z"))
+
+        val stops =
+            buildStopsWithEtas(
+                routes = mapOf("NORTH" to northRoute),
+                vehicles = listOf(pastBus, upcomingBus),
+                now = now,
+            )
+
+        assertThat(stops.single { it.stopKey == "union" }.etas.map { it.vehicleName }).containsExactly("410")
     }
 
     @Test

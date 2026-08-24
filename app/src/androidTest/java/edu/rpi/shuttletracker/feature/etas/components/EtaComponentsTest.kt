@@ -88,6 +88,17 @@ class EtaComponentsTest {
     }
 
     @Test
+    fun etaChipShowsTheShuttleNameAndMinutes() {
+        composeRule.setContent {
+            ShuttleTrackerTheme(dynamicColor = false) {
+                EtaChip(vehicleName = "500", routeName = "NORTH", minutes = 2)
+            }
+        }
+
+        composeRule.onNodeWithText("500 · 2m").assertIsDisplayed()
+    }
+
+    @Test
     fun tappingARouteFilterInvokesTheCallbackWithThatRoute() {
         var selectedFilter: String? = null
         composeRule.setContent {

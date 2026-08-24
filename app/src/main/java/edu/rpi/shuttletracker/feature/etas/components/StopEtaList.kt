@@ -203,7 +203,11 @@ private fun StopEtaRow(
                 modifier = Modifier.padding(top = 6.dp),
             ) {
                 stop.etas.take(3).forEach { eta ->
-                    EtaChip(routeName = eta.routeName, minutes = etaMinutesFromNow(eta.etaInstant))
+                    EtaChip(
+                        vehicleName = eta.vehicleName,
+                        routeName = eta.routeName,
+                        minutes = etaMinutesFromNow(eta.etaInstant),
+                    )
                 }
             }
         }
@@ -217,6 +221,7 @@ private fun StopEtaRow(
 
 @Composable
 fun EtaChip(
+    vehicleName: String,
     routeName: String?,
     minutes: Long,
 ) {
@@ -227,7 +232,7 @@ fun EtaChip(
         shape = RoundedCornerShape(6.dp),
     ) {
         Text(
-            text = etaLabelText(minutes),
+            text = stringResource(R.string.eta_vehicle_format, vehicleName, etaLabelText(minutes)),
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
             style = MaterialTheme.typography.labelSmall,
             color = tagColor,

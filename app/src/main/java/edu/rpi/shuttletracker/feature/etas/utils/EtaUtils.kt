@@ -39,6 +39,7 @@ fun buildStopsWithEtas(
     routes: Map<String, Route>,
     vehicles: List<Vehicle>,
     routeFilter: String? = null,
+    now: Instant = Instant.now(),
 ): List<StopWithEtas> {
     val stopsByKey = linkedMapOf<String, Pair<Stop, MutableSet<String>>>()
 
@@ -63,6 +64,7 @@ fun buildStopsWithEtas(
                         if (vehicle.routeName !in ETA_VISIBLE_ROUTES) return@mapNotNull null
                         val rawEta = vehicle.stopTimes[stopKey] ?: return@mapNotNull null
                         val etaInstant = rawEta.toEtaInstantOrNull() ?: return@mapNotNull null
+                        if (etaInstant.isBefore(now)) return@mapNotNull null
 
                         VehicleEta(
                             vehicleId = vehicle.id,

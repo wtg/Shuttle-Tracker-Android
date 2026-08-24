@@ -103,7 +103,11 @@ private fun StopEtaDetailRow(eta: VehicleEta) {
                 )
             }
 
-            EtaChip(routeName = eta.routeName, minutes = etaMinutesFromNow(eta.etaInstant))
+            EtaChip(
+                vehicleName = eta.vehicleName,
+                routeName = eta.routeName,
+                minutes = etaMinutesFromNow(eta.etaInstant),
+            )
         }
     }
 }
