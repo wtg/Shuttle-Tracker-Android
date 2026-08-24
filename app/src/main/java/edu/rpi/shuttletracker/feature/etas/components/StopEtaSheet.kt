@@ -36,6 +36,7 @@ fun StopEtaSheet(
     stop: StopWithEtas?,
     sheetState: SheetState,
     onDismiss: () -> Unit,
+    onVehicleClick: (String) -> Unit,
 ) {
     if (stop == null) return
 
@@ -64,7 +65,7 @@ fun StopEtaSheet(
                 )
             } else {
                 stop.etas.forEach { eta ->
-                    StopEtaDetailRow(eta)
+                    StopEtaDetailRow(eta, onVehicleClick)
                 }
 
                 Text(
@@ -78,10 +79,14 @@ fun StopEtaSheet(
 }
 
 @Composable
-private fun StopEtaDetailRow(eta: VehicleEta) {
+private fun StopEtaDetailRow(
+    eta: VehicleEta,
+    onVehicleClick: (String) -> Unit,
+) {
     val tagColor = routeAccentColor(eta.routeName)
 
     Surface(
+        onClick = { onVehicleClick(eta.vehicleId) },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         color = tagColor.copy(alpha = 0.10f),

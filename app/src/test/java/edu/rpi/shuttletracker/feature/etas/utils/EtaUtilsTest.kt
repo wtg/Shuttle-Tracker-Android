@@ -56,7 +56,7 @@ class EtaUtilsTest {
                 vehicles = emptyList(),
             )
 
-        assertThat(stops.map { it.stopKey }).containsExactly("academy", "union")
+        assertThat(stops.map { it.stopKey }).containsExactly("union", "academy").inOrder()
         assertThat(stops.single { it.stopKey == "union" }.routeNames).containsExactly("NORTH", "WEST").inOrder()
     }
 
@@ -118,19 +118,35 @@ class EtaUtilsTest {
     }
 
     @Test
-    fun `past etas are excluded from the eta view`() {
+    fun `etas stay visible for the configured grace period after passing`() {
         val now = Instant.parse("2026-07-19T12:00:00Z")
-        val pastBus = vehicle("bus-1", "500", "NORTH", mapOf("union" to "2026-07-19T11:59:59Z"))
-        val upcomingBus = vehicle("bus-2", "410", "NORTH", mapOf("union" to "2026-07-19T12:01:00Z"))
+        val graceSeconds = ETA_PAST_GRACE_PERIOD_MINUTES * 60
+        val withinGrace =
+            vehicle(
+                "bus-1",
+                "500",
+                "NORTH",
+                mapOf("union" to now.minusSeconds(graceSeconds - 1).toString()),
+            )
+        val expired =
+            vehicle(
+                "bus-2",
+                "410",
+                "NORTH",
+                mapOf("union" to now.minusSeconds(graceSeconds + 1).toString()),
+            )
+        val upcoming = vehicle("bus-3", "450", "NORTH", mapOf("union" to now.plusSeconds(60).toString()))
 
         val stops =
             buildStopsWithEtas(
                 routes = mapOf("NORTH" to northRoute),
-                vehicles = listOf(pastBus, upcomingBus),
+                vehicles = listOf(withinGrace, expired, upcoming),
                 now = now,
             )
 
-        assertThat(stops.single { it.stopKey == "union" }.etas.map { it.vehicleName }).containsExactly("410")
+        assertThat(stops.single { it.stopKey == "union" }.etas.map { it.vehicleName })
+            .containsExactly("500", "450")
+            .inOrder()
     }
 
     @Test
