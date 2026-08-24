@@ -66,6 +66,7 @@ fun buildStopsWithEtas(
                 vehicles
                     .mapNotNull { vehicle ->
                         if (vehicle.routeName !in ETA_VISIBLE_ROUTES) return@mapNotNull null
+                        if (routeFilter != null && vehicle.routeName != routeFilter) return@mapNotNull null
                         val rawEta = vehicle.stopTimes[stopKey] ?: return@mapNotNull null
                         val etaInstant = rawEta.toEtaInstantOrNull() ?: return@mapNotNull null
                         if (etaInstant.isBefore(oldestVisibleEta)) return@mapNotNull null

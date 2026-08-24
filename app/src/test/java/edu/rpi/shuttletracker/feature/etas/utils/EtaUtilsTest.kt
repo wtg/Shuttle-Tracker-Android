@@ -62,23 +62,30 @@ class EtaUtilsTest {
 
     @Test
     fun `route filter limits stops to that route`() {
+        val now = Instant.parse("2026-07-19T12:00:00Z")
+        val northBus = vehicle("bus-1", "500", "NORTH", mapOf("union" to "2026-07-19T12:05:00Z"))
+        val westBus = vehicle("bus-2", "410", "WEST", mapOf("union" to "2026-07-19T12:06:00Z"))
         val stops =
             buildStopsWithEtas(
                 routes = mapOf("NORTH" to northRoute, "WEST" to westRoute),
-                vehicles = emptyList(),
+                vehicles = listOf(northBus, westBus),
                 routeFilter = "NORTH",
+                now = now,
             )
 
         assertThat(stops.map { it.stopKey }).containsExactly("academy", "union")
+        assertThat(stops.single { it.stopKey == "union" }.etas.map { it.routeName }).containsExactly("NORTH")
 
         val westOnly =
             buildStopsWithEtas(
                 routes = mapOf("NORTH" to northRoute, "WEST" to westRoute),
-                vehicles = emptyList(),
+                vehicles = listOf(northBus, westBus),
                 routeFilter = "WEST",
+                now = now,
             )
 
         assertThat(westOnly.map { it.stopKey }).containsExactly("union")
+        assertThat(westOnly.single().etas.map { it.routeName }).containsExactly("WEST")
     }
 
     @Test
