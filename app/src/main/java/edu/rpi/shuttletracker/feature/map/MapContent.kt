@@ -3,22 +3,26 @@ package edu.rpi.shuttletracker.feature.map
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.Location
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,52 +38,52 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.maps.android.compose.CameraMoveStartedReason
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapType
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Polyline
-import com.google.maps.android.compose.rememberCameraPositionState
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.feature.map.components.AnnouncementStrip
 import edu.rpi.shuttletracker.feature.map.components.DeveloperVehicleView
 import kotlinx.coroutines.launch
+import org.maplibre.compose.camera.CameraPosition
+import org.maplibre.compose.camera.CameraUpdate
+import org.maplibre.compose.expressions.dsl.const
+import org.maplibre.compose.interaction.ClickResult
+import org.maplibre.compose.interaction.MapInteractions
+import org.maplibre.compose.layers.LineLayer
+import org.maplibre.compose.layers.LocationIndicatorLayer
+import org.maplibre.compose.location.rememberLocationState
+import org.maplibre.compose.map.CameraConstraints
+import org.maplibre.compose.map.MaplibreMap
+import org.maplibre.compose.map.StyleLoadState
+import org.maplibre.compose.map.rememberMapState
+import org.maplibre.compose.overlay.AttributionLinks
+import org.maplibre.compose.overlay.ExpandingAttributionButton
+import org.maplibre.compose.overlay.MaplibreLogo
+import org.maplibre.compose.sources.GeoJsonData
+import org.maplibre.compose.sources.rememberGeoJsonSource
+import org.maplibre.compose.style.BaseStyle
+import org.maplibre.spatialk.geojson.BoundingBox
+import org.maplibre.spatialk.geojson.Position
 
-private val CampusCenter = LatLng(42.73068146020498, -73.67619731950525)
+private val CampusCenter = Position(longitude = -73.67619731950525, latitude = 42.73068146020498)
 private val CampusBounds =
-    LatLngBounds(
-        LatLng(42.72095724005504, -73.70196321825452),
-        LatLng(42.741173465236876, -73.6543446409232),
+    BoundingBox(
+        west = -73.70196321825452,
+        south = 42.72095724005504,
+        east = -73.6543446409232,
+        north = 42.741173465236876,
     )
-private const val TILTED_DEGREES = 60f
-private const val TILT_ZOOM = 18f
 
-// Ignore small target drift caused by zooming or rotating while following the user.
-private const val PAN_DETECTION_THRESHOLD_METERS = 20f
-private const val VEHICLE_FOCUS_ZOOM = 17f
+// MapLibre uses 512-dp tiles.
+private const val VEHICLE_FOCUS_ZOOM = 16.0
 
 /** Location button states: free camera, north-up follow, and tilted follow. */
-private enum class LocationFollowMode {
-    NotFollowing,
-    Following,
-    FollowingTilted,
-}
+private enum class LocationFollowMode { NotFollowing, Following, FollowingTilted }
 
-/** Draws routes, stops, vehicles, announcements, and map controls. */
 @Composable
 internal fun ShuttleMap(
     uiState: MapsUiState,
     contentPadding: PaddingValues,
     onSettingsClick: () -> Unit,
-    onToggleMapTypeClick: () -> Unit,
     onAnnouncementsClick: () -> Unit,
     focusedVehicleId: String?,
     onFocusedVehicleHandled: () -> Unit,
@@ -91,137 +95,171 @@ internal fun ShuttleMap(
         hasLocationPermission = context.hasLocationPermission()
         onPauseOrDispose {}
     }
-    val cameraPositionState =
-        rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(CampusCenter, 14.3f)
-        }
+    val locationState = rememberLocationState(enabled = hasLocationPermission)
     var selectedStop by remember { mutableStateOf<Stop?>(null) }
+    var selectedVehicleId by remember { mutableStateOf<String?>(null) }
     var isDevPanelOpen by remember { mutableStateOf(false) }
-    var selectedDevVehicleId by remember { mutableStateOf<String?>(null) }
     var followMode by remember { mutableStateOf(LocationFollowMode.NotFollowing) }
-    var gestureStartTarget by remember { mutableStateOf<LatLng?>(null) }
     val useDarkMap = uiState.themeMode.isDarkTheme(isSystemInDarkTheme())
+    var styleAttempt by remember(useDarkMap) { mutableIntStateOf(0) }
+    val styleUrl = openFreeMapStyle(useDarkMap) + if (styleAttempt == 0) "" else "?retry=$styleAttempt"
     val fallbackRouteColor = MaterialTheme.colorScheme.primary
+    val stopColor = MaterialTheme.colorScheme.onPrimaryContainer
+    val vehicles = uiState.vehicles + uiState.fakeVehicles
+    val vehiclePositions =
+        vehicles.associate { vehicle ->
+            vehicle.id to key(vehicle.id) { rememberVehiclePosition(vehicle, uiState.shuttleAnimationsEnabled) }
+        }
+    val uniqueStops =
+        remember(uiState.routes) {
+            uiState.routes.values
+                .flatMap { it.stopDetails.values }
+                .filter { it.coordinates.size >= 2 && it.coordinates.take(2).all(Double::isFinite) }
+                .distinctBy { it.coordinates.take(2) }
+        }
+    val mapState =
+        rememberMapState(
+            baseStyle = BaseStyle.Uri(styleUrl),
+            initialCameraPosition = CameraPosition(center = CampusCenter, zoom = 13.3),
+        ) {
+            uiState.routes.forEach { (routeId, route) ->
+                key(routeId) {
+                    val geometry = remember(route.coordinates) { route.mapGeometry() }
+                    if (geometry.coordinates.isNotEmpty()) {
+                        val source = rememberGeoJsonSource(GeoJsonData.Features(geometry))
+                        LineLayer(
+                            id = "route-$routeId",
+                            source = source,
+                            color = const(route.color.toComposeColorOrNull() ?: fallbackRouteColor),
+                            width = const(3.dp),
+                        )
+                    }
+                }
+            }
+            uniqueStops.forEachIndexed { index, stop ->
+                key(stop.coordinates.take(2)) {
+                    StopMarker(
+                        id = "stop-$index",
+                        stop = stop,
+                        color = stopColor,
+                        selected = stop == selectedStop,
+                        onSelected = {
+                            selectedStop = it
+                            selectedVehicleId = null
+                        },
+                    )
+                }
+            }
+            if (hasLocationPermission) LocationIndicatorLayer(id = "user-location", locationState = locationState)
+            vehicles.forEach { vehicle ->
+                key(vehicle.id) {
+                    VehicleMarker(
+                        vehicle = vehicle,
+                        position = vehiclePositions.getValue(vehicle.id),
+                        rotationEnabled = uiState.shuttleRotationEnabled,
+                        onSelected = {
+                            selectedVehicleId = vehicle.id
+                            selectedStop = null
+                        },
+                    )
+                }
+            }
+        }
 
     LaunchedEffect(focusedVehicleId) {
         val vehicleId = focusedVehicleId ?: return@LaunchedEffect
-        val vehicle =
-            (uiState.vehicles + uiState.fakeVehicles).firstOrNull { it.id == vehicleId }
-                ?: run {
-                    onFocusedVehicleHandled()
-                    return@LaunchedEffect
-                }
-
-        // Drop selection for one frame so repeatedly choosing the same shuttle reopens its window.
-        selectedDevVehicleId = null
-        withFrameNanos {}
-        selectedDevVehicleId = vehicle.id
-        followMode = LocationFollowMode.NotFollowing
-        cameraPositionState.animate(
-            CameraUpdateFactory.newLatLngZoom(vehicle.latLng(), VEHICLE_FOCUS_ZOOM),
-            durationMs = 1000,
-        )
+        val vehicle = vehicles.firstOrNull { it.id == vehicleId }
+        if (vehicle != null) {
+            selectedVehicleId = null
+            withFrameNanos {}
+            selectedVehicleId = vehicle.id
+            selectedStop = null
+            followMode = LocationFollowMode.NotFollowing
+            mapState.animateCamera(CameraUpdate(center = vehicle.mapPosition(), zoom = VEHICLE_FOCUS_ZOOM))
+        }
         onFocusedVehicleHandled()
     }
-
-    LaunchedEffect(cameraPositionState.isMoving) {
-        if (cameraPositionState.isMoving) {
-            if (cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) {
-                gestureStartTarget = cameraPositionState.position.target
-            }
-            return@LaunchedEffect
-        }
-
-        val start = gestureStartTarget ?: return@LaunchedEffect
-        gestureStartTarget = null
-        val end = cameraPositionState.position.target
-        val distanceMeters = FloatArray(1)
-        Location.distanceBetween(
-            start.latitude,
-            start.longitude,
-            end.latitude,
-            end.longitude,
-            distanceMeters,
+    LaunchedEffect(locationState.lastLocation?.position, followMode, hasLocationPermission) {
+        if (!hasLocationPermission) followMode = LocationFollowMode.NotFollowing
+        if (followMode == LocationFollowMode.NotFollowing) return@LaunchedEffect
+        val position = locationState.lastLocation?.position ?: return@LaunchedEffect
+        mapState.animateCamera(
+            CameraUpdate(
+                center = position,
+                pitch = if (followMode == LocationFollowMode.FollowingTilted) 60.0 else 0.0,
+                bearing = 0.0,
+                zoom =
+                    if (followMode ==
+                        LocationFollowMode.FollowingTilted
+                    ) {
+                        maxOf(mapState.cameraPosition.zoom, 17.0)
+                    } else {
+                        null
+                    },
+            ),
         )
-        if (distanceMeters[0] > PAN_DETECTION_THRESHOLD_METERS) {
-            followMode = LocationFollowMode.NotFollowing
-        }
     }
 
     Box(Modifier.fillMaxSize()) {
-        GoogleMap(
+        MaplibreMap(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = contentPadding,
-            cameraPositionState = cameraPositionState,
-            properties =
-                MapProperties(
-                    latLngBoundsForCameraTarget = CampusBounds,
-                    mapType = uiState.mapType,
-                    isBuildingEnabled = true,
-                    minZoomPreference = 14f,
-                    isMyLocationEnabled = hasLocationPermission,
-                    mapStyleOptions =
-                        if (useDarkMap) {
-                            MapStyleOptions.loadRawResourceStyle(context, R.raw.map_dark)
-                        } else {
-                            null
-                        },
-                ),
-            uiSettings =
-                MapUiSettings(
-                    zoomControlsEnabled = false,
-                    myLocationButtonEnabled = false,
-                ),
+            state = mapState,
+            viewportInsets = contentPadding,
+            cameraConstraints =
+                CameraConstraints {
+                    minZoom = 13.0
+                    boundingBox = CampusBounds
+                },
+            interactions =
+                MapInteractions {
+                    camera { pan { onStart { followMode = LocationFollowMode.NotFollowing } } }
+                    callbacks {
+                        click {
+                            onUnhandled {
+                                selectedStop = null
+                                selectedVehicleId = null
+                                ClickResult.Pass
+                            }
+                        }
+                    }
+                },
         ) {
-            val uniqueStops =
-                uiState.routes.values
-                    .flatMap { it.stopDetails.values }
-                    .filter { it.coordinates.size >= 2 }
-                    .distinctBy { it.coordinates.take(2) }
-
-            uniqueStops.forEach { stop ->
-                key(stop.coordinates.take(2)) {
-                    StopMarker(
-                        stop = stop,
-                        selected = stop.name == selectedStop?.name,
-                        onSelected = { selectedStop = it },
-                    )
-                }
+            Row(
+                modifier =
+                    Modifier
+                        .align(
+                            Alignment.BottomStart,
+                        ).padding(contentPadding)
+                        .padding(start = 8.dp, end = 80.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                MaplibreLogo()
+                ExpandingAttributionButton(
+                    contentAlignment = Alignment.BottomStart,
+                    expandedContent = { attributions, textStyle ->
+                        AttributionLinks(attributions, textStyle = textStyle, breakWithinAttribution = true)
+                    },
+                )
             }
-
-            uiState.routes.values.forEach { route ->
-                route.latLng().takeIf { it.isNotEmpty() }?.let { points ->
-                    Polyline(
-                        points = points,
-                        color = route.color.toComposeColorOrNull() ?: fallbackRouteColor,
-                    )
-                }
+            selectedStop?.let { stop ->
+                MapInfoCard(
+                    title = stop.name,
+                    modifier = Modifier.placedAt(stop.mapPosition(), Alignment.BottomCenter).padding(bottom = 20.dp),
+                )
             }
-
-            uiState.vehicles.forEach { vehicle ->
-                key(vehicle.id) {
-                    VehicleMarker(
-                        vehicle = vehicle,
-                        animationsEnabled = uiState.shuttleAnimationsEnabled,
-                        rotationEnabled = uiState.shuttleRotationEnabled,
-                        selected = vehicle.id == selectedDevVehicleId,
-                    )
-                }
-            }
-
-            uiState.fakeVehicles.forEach { vehicle ->
-                key(vehicle.id) {
-                    VehicleMarker(
-                        vehicle = vehicle,
-                        animationsEnabled = uiState.shuttleAnimationsEnabled,
-                        rotationEnabled = uiState.shuttleRotationEnabled,
-                        selected = vehicle.id == selectedDevVehicleId,
-                    )
-                }
+            vehicles.firstOrNull { it.id == selectedVehicleId }?.let { vehicle ->
+                VehicleInfoCard(
+                    vehicle = vehicle,
+                    modifier =
+                        Modifier
+                            .placedAt(
+                                vehiclePositions.getValue(vehicle.id),
+                                Alignment.BottomCenter,
+                            ).padding(bottom = 20.dp),
+                )
             }
         }
 
-        // Keep status information above the lower-priority map controls.
         Column(
             modifier =
                 Modifier
@@ -236,140 +274,66 @@ internal fun ShuttleMap(
                 onClick = onAnnouncementsClick,
                 modifier = Modifier.fillMaxWidth(),
             )
-
-            // Independent alignment keeps controls fixed when the update chip disappears.
-            Box(modifier = Modifier.fillMaxWidth()) {
-                LastUpdatedChip(
-                    updatedAt = uiState.vehiclesUpdatedAt,
-                    modifier = Modifier.align(Alignment.TopStart),
-                )
-
-                Column(
-                    modifier = Modifier.align(Alignment.TopEnd),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
+            if (mapState.style.loadState is StyleLoadState.Failed) {
+                Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.errorContainer) {
+                    Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.map_load_failed), modifier = Modifier.weight(1f))
+                        TextButton(onClick = { styleAttempt++ }) { Text(stringResource(R.string.retry)) }
+                    }
+                }
+            }
+            Box(Modifier.fillMaxWidth()) {
+                LastUpdatedChip(updatedAt = uiState.vehiclesUpdatedAt, modifier = Modifier.align(Alignment.TopStart))
+                Column(modifier = Modifier.align(Alignment.TopEnd), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     MapActionButton(
                         icon = R.drawable.ic_settings,
                         contentDescription = stringResource(R.string.map_open_settings),
                         onClick = onSettingsClick,
                     )
-                    MapActionButton(
-                        icon =
-                            if (uiState.mapType == MapType.NORMAL) {
-                                R.drawable.ic_layers
-                            } else {
-                                R.drawable.ic_layers_filled
-                            },
-                        contentDescription = stringResource(R.string.map_toggle_type),
-                        onClick = onToggleMapTypeClick,
-                    )
                     if (uiState.isDevModeEnabled) {
                         MapActionButton(
                             icon = R.drawable.ic_bug_report,
-                            contentDescription = stringResource(R.string.dev_shuttle_inspector),
-                            onClick = { isDevPanelOpen = !isDevPanelOpen },
+                            contentDescription =
+                                stringResource(
+                                    R.string.dev_shuttle_inspector,
+                                ),
+                            onClick = {
+                                isDevPanelOpen =
+                                    !isDevPanelOpen
+                            },
                         )
                     }
                 }
             }
         }
-
         if (uiState.isDevModeEnabled && isDevPanelOpen) {
             DeveloperVehicleView(
-                vehicles = uiState.vehicles + uiState.fakeVehicles,
+                vehicles = vehicles,
                 onClose = { isDevPanelOpen = false },
                 onZoomToVehicle = { vehicle ->
-                    selectedDevVehicleId = vehicle.id
+                    selectedVehicleId = vehicle.id
+                    selectedStop = null
+                    followMode = LocationFollowMode.NotFollowing
                     coroutineScope.launch {
-                        cameraPositionState.animate(
-                            CameraUpdateFactory.newLatLngZoom(vehicle.latLng(), VEHICLE_FOCUS_ZOOM),
-                            durationMs = 1000,
-                        )
+                        mapState.animateCamera(CameraUpdate(center = vehicle.mapPosition(), zoom = VEHICLE_FOCUS_ZOOM))
                     }
                 },
-                modifier =
-                    Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(contentPadding)
-                        .padding(16.dp),
+                modifier = Modifier.align(Alignment.CenterStart).padding(contentPadding).padding(16.dp),
             )
         }
-
         val (fabContainerColor, fabContentColor) = mapButtonColors()
         FloatingActionButton(
-            onClick = handleClick@{
-                if (!hasLocationPermission) return@handleClick
-
-                when (followMode) {
-                    LocationFollowMode.NotFollowing -> {
-                        try {
-                            LocationServices
-                                .getFusedLocationProviderClient(context)
-                                .lastLocation
-                                .addOnSuccessListener { location: Location? ->
-                                    location ?: return@addOnSuccessListener
-                                    coroutineScope.launch {
-                                        cameraPositionState.animate(
-                                            CameraUpdateFactory.newCameraPosition(
-                                                CameraPosition(
-                                                    LatLng(location.latitude, location.longitude),
-                                                    cameraPositionState.position.zoom,
-                                                    0f,
-                                                    0f,
-                                                ),
-                                            ),
-                                            durationMs = 1000,
-                                        )
-                                    }
-                                    followMode = LocationFollowMode.Following
-                                }
-                        } catch (_: SecurityException) {
-                            hasLocationPermission = false
+            onClick = {
+                if (hasLocationPermission) {
+                    followMode =
+                        when (followMode) {
+                            LocationFollowMode.NotFollowing -> LocationFollowMode.Following
+                            LocationFollowMode.Following -> LocationFollowMode.FollowingTilted
+                            LocationFollowMode.FollowingTilted -> LocationFollowMode.Following
                         }
-                    }
-
-                    // A second tap switches north-up following to a tilted view.
-                    LocationFollowMode.Following -> {
-                        coroutineScope.launch {
-                            cameraPositionState.animate(
-                                CameraUpdateFactory.newCameraPosition(
-                                    CameraPosition(
-                                        cameraPositionState.position.target,
-                                        maxOf(cameraPositionState.position.zoom, TILT_ZOOM),
-                                        TILTED_DEGREES,
-                                        cameraPositionState.position.bearing,
-                                    ),
-                                ),
-                                durationMs = 500,
-                            )
-                        }
-                        followMode = LocationFollowMode.FollowingTilted
-                    }
-
-                    // Flatten the view without leaving follow mode.
-                    LocationFollowMode.FollowingTilted -> {
-                        coroutineScope.launch {
-                            cameraPositionState.animate(
-                                CameraUpdateFactory.newCameraPosition(
-                                    CameraPosition(
-                                        cameraPositionState.position.target,
-                                        cameraPositionState.position.zoom,
-                                        0f,
-                                        cameraPositionState.position.bearing,
-                                    ),
-                                ),
-                                durationMs = 500,
-                            )
-                        }
-                        followMode = LocationFollowMode.Following
-                    }
                 }
             },
-            modifier =
-                Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(contentPadding)
-                    .padding(16.dp),
+            modifier = Modifier.align(Alignment.BottomEnd).padding(contentPadding).padding(16.dp),
             containerColor = fabContainerColor,
             contentColor = fabContentColor,
         ) {
@@ -397,12 +361,13 @@ internal fun ShuttleMap(
     }
 }
 
+internal fun openFreeMapStyle(dark: Boolean): String =
+    "https://tiles.openfreemap.org/styles/" + if (dark) "dark" else "liberty"
+
 private fun String.toComposeColorOrNull(): Color? = runCatching { Color(toColorInt()) }.getOrNull()
 
 private fun Context.hasLocationPermission(): Boolean =
     listOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
-    ).any { permission ->
-        ActivityCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
-    }
+    ).any { ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED }

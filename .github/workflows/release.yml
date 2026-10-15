@@ -43,10 +43,6 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      - name: Create local.properties
-        run: |
-          printf 'MAPS_API_KEY=%s\n' '${{ secrets.MAPS_API_KEY }}' > local.properties
-
       - name: Verify Release Sources
         run: >-
           ./gradlew
@@ -113,7 +109,3 @@ jobs:
           generate_release_notes: true
           draft: true
           prerelease: false
-
-      - name: Cleanup secrets
-        if: always()
-        run: rm -f local.properties

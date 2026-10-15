@@ -3,7 +3,6 @@ package edu.rpi.shuttletracker.feature.map
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.maps.android.compose.MapType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
@@ -214,14 +213,6 @@ class MapsViewModel
                 }.launchIn(viewModelScope)
 
             userPreferences
-                .getMapType()
-                .onEach { mapType ->
-                    _mapsUiState.update {
-                        it.copy(mapType = mapType)
-                    }
-                }.launchIn(viewModelScope)
-
-            userPreferences
                 .getShuttleAnimations()
                 .onEach { animationsEnable ->
                     _mapsUiState.update {
@@ -273,26 +264,6 @@ class MapsViewModel
                 }.launchIn(viewModelScope)
         }
 
-        private fun updateMapType(mapType: MapType) {
-            viewModelScope.launch {
-                userPreferences.saveMapType(mapType)
-                _mapsUiState.update {
-                    it.copy(mapType = mapType)
-                }
-            }
-        }
-
-        fun toggleMapType() {
-            val next =
-                if (mapsUiState.value.mapType == MapType.NORMAL) {
-                    MapType.HYBRID
-                } else {
-                    MapType.NORMAL
-                }
-
-            updateMapType(next)
-        }
-
         private fun <T> readApiResponse(
             response: NetworkResult<T>,
             request: MapRequest,
@@ -333,7 +304,6 @@ data class MapsUiState(
     val simulateAnnouncements: Boolean = false,
     val error: NetworkError? = null,
     val themeMode: ThemeMode = ThemeMode.System,
-    val mapType: MapType = MapType.NORMAL,
     val shuttleAnimationsEnabled: Boolean = false,
     val shuttleRotationEnabled: Boolean = true,
     val isDevModeEnabled: Boolean = false,

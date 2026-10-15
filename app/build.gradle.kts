@@ -6,15 +6,10 @@ plugins {
     id("com.google.android.gms.oss-licenses-plugin")
     id("com.google.gms.google-services")
     id("org.jlleitschuh.gradle.ktlint")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.serialization)
-}
-
-secrets {
-    defaultPropertiesFileName = "local.defaults.properties"
 }
 
 kotlin {
@@ -119,9 +114,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     // Maps
-    implementation(libs.maps.compose)
-    implementation(libs.play.services.maps)
-    implementation(libs.play.services.location)
+    implementation(libs.maplibre.compose)
+    runtimeOnly(libs.maplibre.compose.runtime)
     implementation(libs.google.oss.licenses)
 
     // DataStore

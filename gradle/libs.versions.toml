@@ -16,15 +16,12 @@ kotlinx-coroutines = "1.11.0"
 lifecycle-runtime-ktx = "2.11.0"
 logging-interceptor = "5.4.0"
 mockwebserver = "5.4.0"
-maps-compose = "8.4.0"
+maplibre-compose = "0.20.0"
 appcompat = "1.7.1"
-play-services-location = "21.4.0"
-play-services-maps = "20.0.0"
 retrofit = "3.0.0"
 truth = "1.4.5"
 turbine = "1.2.1"
 
-secrets-gradle-plugin = "2.0.1"
 
 compose-bom = "2026.06.01"
 
@@ -80,9 +77,8 @@ lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", v
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "logging-interceptor" }
 mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "mockwebserver" }
 
-maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "maps-compose" }
-play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
-play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "play-services-maps" }
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre-compose" }
+maplibre-compose-runtime = { module = "org.maplibre.compose:maplibre-compose-runtime-opengl-android", version.ref = "maplibre-compose" }
 
 navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
@@ -90,7 +86,6 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
-secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secrets-gradle-plugin" }
 ui = { module = "androidx.compose.ui:ui" }
 
 glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }

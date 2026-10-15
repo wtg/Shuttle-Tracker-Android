@@ -10,11 +10,9 @@ import android.util.LruCache
 import androidx.annotation.ColorInt
 import androidx.core.graphics.PathParser
 import androidx.core.graphics.createBitmap
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import kotlin.math.roundToInt
 
-// Google Maps markers require a bitmap, so draw the bus icon directly onto a Canvas.
+// Draw the bus icon onto a Canvas for the native symbol layer.
 
 private fun buildVehicleMarkerBitmap(
     pxSize: Int,
@@ -73,13 +71,13 @@ private fun buildVehicleMarkerBitmap(
 }
 
 /** Reuses marker bitmaps by size and color. */
-private object VehicleMarkerCache : LruCache<String, BitmapDescriptor>(8)
+private object VehicleMarkerCache : LruCache<String, Bitmap>(8)
 
-fun getVehicleMarkerDescriptor(
+fun getVehicleMarkerBitmap(
     context: Context,
     dpSize: Float,
     @ColorInt color: Int,
-): BitmapDescriptor {
+): Bitmap {
     val density = context.resources.displayMetrics.density
     val pxSize = (dpSize * density).roundToInt()
 
@@ -87,9 +85,7 @@ fun getVehicleMarkerDescriptor(
     VehicleMarkerCache.get(cacheKey)?.let { return it }
 
     val markerBitmap = buildVehicleMarkerBitmap(pxSize, color)
-    val markerDescriptor = BitmapDescriptorFactory.fromBitmap(markerBitmap)
+    VehicleMarkerCache.put(cacheKey, markerBitmap)
 
-    VehicleMarkerCache.put(cacheKey, markerDescriptor)
-
-    return markerDescriptor
+    return markerBitmap
 }

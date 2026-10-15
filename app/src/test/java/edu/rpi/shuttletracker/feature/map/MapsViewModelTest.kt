@@ -1,9 +1,9 @@
 package edu.rpi.shuttletracker.feature.map
 
 import com.google.common.truth.Truth.assertThat
-import com.google.maps.android.compose.MapType
 import edu.rpi.shuttletracker.core.network.NetworkError
 import edu.rpi.shuttletracker.core.network.NetworkResult
+import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.models.AnnouncementType
 import edu.rpi.shuttletracker.testing.coroutine.MainDispatcherRule
 import edu.rpi.shuttletracker.testing.fakes.FakeShuttleRepository
@@ -43,13 +43,12 @@ class MapsViewModelTest {
     @Test
     fun `initial load exposes routes and preferences`() =
         runTest {
-            preferences.mapType.value = MapType.HYBRID
-
+            preferences.themeMode.value = ThemeMode.Dark
             val viewModel = createViewModel()
             advanceUntilIdle()
 
             assertThat(viewModel.mapsUiState.value.routes).containsKey("NORTH")
-            assertThat(viewModel.mapsUiState.value.mapType).isEqualTo(MapType.HYBRID)
+            assertThat(viewModel.mapsUiState.value.themeMode).isEqualTo(ThemeMode.Dark)
         }
 
     @Test
@@ -373,19 +372,6 @@ class MapsViewModelTest {
             advanceUntilIdle()
 
             assertThat(viewModel.mapsUiState.value.announcementsUpdatedAt).isEqualTo(updatedAt)
-        }
-
-    @Test
-    fun `toggling map type persists the next value`() =
-        runTest {
-            val viewModel = createViewModel()
-            advanceUntilIdle()
-
-            viewModel.toggleMapType()
-            advanceUntilIdle()
-
-            assertThat(preferences.mapType.value).isEqualTo(MapType.HYBRID)
-            assertThat(viewModel.mapsUiState.value.mapType).isEqualTo(MapType.HYBRID)
         }
 
     // The fake ticker never ends, so advance its virtual clock by bounded amounts.

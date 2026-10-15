@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.testing.fakes
 
-import com.google.maps.android.compose.MapType
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.flow.Flow
@@ -8,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Duplicated because `test` and `androidTest` do not share fakes. */
 class FakeUserPreferences : UserPreferences {
-    val mapType = MutableStateFlow(MapType.NORMAL)
     val privacyPolicyAccepted = MutableStateFlow(false)
     val aboutAccepted = MutableStateFlow(false)
     val setupCompleted = MutableStateFlow(false)
@@ -18,12 +16,6 @@ class FakeUserPreferences : UserPreferences {
     val themeMode = MutableStateFlow(ThemeMode.System)
     val shuttleAnimations = MutableStateFlow(false)
     val shuttleRotation = MutableStateFlow(true)
-
-    override fun getMapType(): Flow<MapType> = mapType
-
-    override suspend fun saveMapType(mapType: MapType) {
-        this.mapType.value = mapType
-    }
 
     override fun getPrivacyPolicyAccepted(): Flow<Boolean> = privacyPolicyAccepted
 

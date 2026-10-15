@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.testing.fakes
 
-import com.google.maps.android.compose.MapType
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import edu.rpi.shuttletracker.data.local.preferences.UserPreferences
 import kotlinx.coroutines.CompletableDeferred
@@ -8,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeUserPreferences : UserPreferences {
-    val mapType = MutableStateFlow(MapType.NORMAL)
     val privacyPolicyAccepted = MutableStateFlow(false)
     val aboutAccepted = MutableStateFlow(false)
     val setupCompleted = MutableStateFlow(false)
@@ -23,12 +21,6 @@ class FakeUserPreferences : UserPreferences {
     var savePrivacyPolicyAcceptedCalls = 0
     var saveSetupCompletedCalls = 0
     var aboutSaveGate: CompletableDeferred<Unit>? = null
-
-    override fun getMapType(): Flow<MapType> = mapType
-
-    override suspend fun saveMapType(mapType: MapType) {
-        this.mapType.value = mapType
-    }
 
     override fun getPrivacyPolicyAccepted(): Flow<Boolean> = privacyPolicyAccepted
 

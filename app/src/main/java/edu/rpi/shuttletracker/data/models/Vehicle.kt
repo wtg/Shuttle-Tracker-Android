@@ -1,6 +1,5 @@
 package edu.rpi.shuttletracker.data.models
 
-import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -57,8 +56,6 @@ data class Vehicle(
             append("${s}s")
         }.trim().lowercase(Locale.ROOT)
     }
-
-    fun latLng() = LatLng(latitude, longitude)
 }
 
 data class VehicleLocation(

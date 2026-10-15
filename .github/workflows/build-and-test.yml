@@ -34,14 +34,6 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      - name: Create local.properties
-        env:
-          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
-        run: |
-          if [ -n "$MAPS_API_KEY" ]; then
-            echo "MAPS_API_KEY=$MAPS_API_KEY" > local.properties
-          fi
-
       - name: Run Build, Lint, and Test
         run: >-
           ./gradlew
@@ -51,7 +43,3 @@ jobs:
           :${{ env.MAIN_MODULE }}:assembleDebug
           :${{ env.MAIN_MODULE }}:testDebugUnitTest
           :${{ env.MAIN_MODULE }}:lintDebug
-
-      - name: Cleanup
-        if: always()
-        run: rm -f local.properties

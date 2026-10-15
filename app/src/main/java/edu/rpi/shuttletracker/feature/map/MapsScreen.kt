@@ -200,7 +200,6 @@ private fun MapTab(
             uiState = uiState,
             contentPadding = contentPadding,
             onSettingsClick = onSettingsClick,
-            onToggleMapTypeClick = viewModel::toggleMapType,
             onAnnouncementsClick = { onAnnouncementsSheetVisibleChange(true) },
             focusedVehicleId = focusedVehicleId,
             onFocusedVehicleHandled = onFocusedVehicleHandled,

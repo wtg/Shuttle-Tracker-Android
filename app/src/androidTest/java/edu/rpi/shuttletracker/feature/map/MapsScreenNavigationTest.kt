@@ -1,6 +1,8 @@
 package edu.rpi.shuttletracker.feature.map
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -31,9 +33,9 @@ class MapsScreenNavigationTest {
     fun allThreeTabsAreShown() {
         setContent()
 
-        composeRule.onNodeWithText("Map").assertIsDisplayed()
-        composeRule.onNodeWithText("ETAs").assertIsDisplayed()
-        composeRule.onNodeWithText("Schedule").assertIsDisplayed()
+        composeRule.onNode(hasText("Map") and hasClickAction()).assertIsDisplayed()
+        composeRule.onNode(hasText("ETAs") and hasClickAction()).assertIsDisplayed()
+        composeRule.onNode(hasText("Schedule") and hasClickAction()).assertIsDisplayed()
     }
 
     @Test
@@ -47,7 +49,7 @@ class MapsScreenNavigationTest {
     fun switchingToScheduleTabShowsScheduleContent() {
         setContent()
 
-        composeRule.onNodeWithText("Schedule").performClick()
+        composeRule.onNode(hasText("Schedule") and hasClickAction()).performClick()
 
         composeRule
             .onNodeWithText("Times are based on departures from the Student Union.", substring = true)
@@ -58,17 +60,17 @@ class MapsScreenNavigationTest {
     fun switchingToEtasTabShowsEtasContent() {
         setContent()
 
-        composeRule.onNodeWithText("ETAs").performClick()
+        composeRule.onNode(hasText("ETAs") and hasClickAction()).performClick()
 
-        composeRule.onNodeWithText("Student Union").assertIsDisplayed()
+        composeRule.onNode(hasText("Student Union") and hasClickAction()).assertIsDisplayed()
     }
 
     @Test
     fun switchingBackToMapRestoresMapContent() {
         setContent()
 
-        composeRule.onNodeWithText("Schedule").performClick()
-        composeRule.onNodeWithText("Map").performClick()
+        composeRule.onNode(hasText("Schedule") and hasClickAction()).performClick()
+        composeRule.onNode(hasText("Map") and hasClickAction()).performClick()
 
         composeRule.onNodeWithContentDescription("Open settings").assertIsDisplayed()
     }
@@ -89,8 +91,8 @@ class MapsScreenNavigationTest {
             )
         }
 
-        composeRule.onNodeWithText("ETAs").performClick()
-        composeRule.onNodeWithText("Student Union").performClick()
+        composeRule.onNode(hasText("ETAs") and hasClickAction()).performClick()
+        composeRule.onNode(hasText("Student Union") and hasClickAction()).performClick()
         composeRule.onNodeWithText("500").performClick()
 
         composeRule.onNodeWithContentDescription("Open settings").assertIsDisplayed()

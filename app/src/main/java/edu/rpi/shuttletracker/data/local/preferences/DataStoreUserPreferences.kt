@@ -5,7 +5,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.google.maps.android.compose.MapType
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -25,23 +24,8 @@ class DataStoreUserPreferences
             private val SIMULATE_ANNOUNCEMENTS = booleanPreferencesKey("simulate_announcements")
             private val FAKE_SHUTTLES_ENABLED = booleanPreferencesKey("fake_shuttles_enabled")
             private val THEME_MODE = stringPreferencesKey("theme_mode")
-            private val MAP_TYPE = stringPreferencesKey("map_type")
             private val SHUTTLE_ANIMATIONS = booleanPreferencesKey("shuttle-animations")
             private val SHUTTLE_ROTATION = booleanPreferencesKey("shuttle_rotation")
-        }
-
-        override fun getMapType(): Flow<MapType> =
-            dataStore.data.map {
-                when (it[MAP_TYPE]) {
-                    MapType.HYBRID.name -> MapType.HYBRID
-                    else -> MapType.NORMAL
-                }
-            }
-
-        override suspend fun saveMapType(mapType: MapType) {
-            dataStore.edit {
-                it[MAP_TYPE] = mapType.name
-            }
         }
 
         override fun getPrivacyPolicyAccepted(): Flow<Boolean> =

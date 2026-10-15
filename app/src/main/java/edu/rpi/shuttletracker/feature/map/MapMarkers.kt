@@ -3,9 +3,11 @@ package edu.rpi.shuttletracker.feature.map
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -21,94 +23,107 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.Circle
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.rememberUpdatedMarkerState
 import edu.rpi.shuttletracker.R
 import edu.rpi.shuttletracker.core.ui.theme.VehicleColors
 import edu.rpi.shuttletracker.data.models.Stop
 import edu.rpi.shuttletracker.data.models.Vehicle
-import edu.rpi.shuttletracker.feature.map.components.getVehicleMarkerDescriptor
+import edu.rpi.shuttletracker.feature.map.components.getVehicleMarkerBitmap
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.maplibre.compose.expressions.dsl.const
+import org.maplibre.compose.expressions.dsl.exponential
+import org.maplibre.compose.expressions.dsl.image
+import org.maplibre.compose.expressions.dsl.interpolate
+import org.maplibre.compose.expressions.dsl.zoom
+import org.maplibre.compose.expressions.value.CirclePitchAlignment
+import org.maplibre.compose.expressions.value.IconPitchAlignment
+import org.maplibre.compose.expressions.value.IconRotationAlignment
+import org.maplibre.compose.interaction.ClickResult
+import org.maplibre.compose.layers.CircleLayer
+import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.sources.GeoJsonData
+import org.maplibre.compose.sources.rememberGeoJsonSource
+import org.maplibre.compose.util.MaplibreComposable
+import org.maplibre.spatialk.geojson.Point
+import org.maplibre.spatialk.geojson.Position
 import java.time.Duration
 import java.time.Instant
+import kotlin.math.PI
+import kotlin.math.cos
 
-/** Draws a stop circle plus an invisible marker that handles taps and its info window. */
 @Composable
+@MaplibreComposable
 internal fun StopMarker(
+    id: String,
     stop: Stop,
+    color: Color,
     selected: Boolean,
     onSelected: (Stop) -> Unit,
 ) {
-    val markerState = rememberUpdatedMarkerState(position = stop.latLng())
-
-    Circle(
-        center = stop.latLng(),
-        radius = 15.0,
-        strokeColor = if (selected) Color(0xFF6699FF) else MaterialTheme.colorScheme.onPrimaryContainer,
-        strokeWidth = 8f,
-        zIndex = 1f,
-        fillColor = Color.Transparent,
-    )
-    Marker(
-        state = markerState,
-        title = stop.name,
-        anchor = Offset(0.5f, 0.5f),
-        alpha = 0f,
-        zIndex = 2f,
+    val source = rememberGeoJsonSource(GeoJsonData.Features(Point(stop.mapPosition())))
+    // Keep the stop radius at 15 metres.
+    val radiusAtZoomZero = (15.0 * 512.0 / (2.0 * PI * 6378137.0 * cos(stop.coordinates[0] * PI / 180.0))).toFloat()
+    CircleLayer(
+        id = id,
+        source = source,
+        color = const(Color.Transparent),
+        radius =
+            interpolate(
+                type = exponential(2f),
+                input = zoom(),
+                0 to const(radiusAtZoomZero.dp),
+                24 to const((radiusAtZoomZero * 16_777_216f).dp),
+            ),
+        pitchAlignment = const(CirclePitchAlignment.Map),
+        strokeColor = const(if (selected) Color(0xFF6699FF) else color),
+        strokeWidth = const(2.dp),
+        hitPadding = 12.dp,
         onClick = {
             onSelected(stop)
-            markerState.showInfoWindow()
-            true
+            ClickResult.Consume
         },
     )
 }
 
-/** Draws a shuttle, briefly retaining its route color if route data drops out. */
 @Composable
-internal fun VehicleMarker(
+internal fun rememberVehiclePosition(
     vehicle: Vehicle,
     animationsEnabled: Boolean,
-    rotationEnabled: Boolean,
-    selected: Boolean = false,
-) {
-    val context = LocalContext.current
-    val target = vehicle.latLng()
-    val latitude = remember { Animatable(target.latitude.toFloat()) }
-    val longitude = remember { Animatable(target.longitude.toFloat()) }
-    val markerState =
-        rememberUpdatedMarkerState(
-            position = LatLng(latitude.value.toDouble(), longitude.value.toDouble()),
-        )
-
-    LaunchedEffect(selected) {
-        if (selected) markerState.showInfoWindow()
-    }
-
-    LaunchedEffect(target, animationsEnabled) {
+): Position {
+    val latitude = remember { Animatable(vehicle.latitude.toFloat()) }
+    val longitude = remember { Animatable(vehicle.longitude.toFloat()) }
+    LaunchedEffect(vehicle.latitude, vehicle.longitude, animationsEnabled) {
         if (animationsEnabled) {
-            launch { latitude.animateTo(target.latitude.toFloat(), tween(2000)) }
-            launch { longitude.animateTo(target.longitude.toFloat(), tween(2000)) }
+            launch { latitude.animateTo(vehicle.latitude.toFloat(), tween(2000)) }
+            launch { longitude.animateTo(vehicle.longitude.toFloat(), tween(2000)) }
         } else {
-            latitude.snapTo(target.latitude.toFloat())
-            longitude.snapTo(target.longitude.toFloat())
+            latitude.snapTo(vehicle.latitude.toFloat())
+            longitude.snapTo(vehicle.longitude.toFloat())
         }
     }
-    LaunchedEffect(latitude.value, longitude.value) {
-        markerState.position = LatLng(latitude.value.toDouble(), longitude.value.toDouble())
-    }
+    return Position(longitude = longitude.value.toDouble(), latitude = latitude.value.toDouble())
+}
 
+@Composable
+@MaplibreComposable
+internal fun VehicleMarker(
+    vehicle: Vehicle,
+    position: Position,
+    rotationEnabled: Boolean,
+    onSelected: () -> Unit,
+) {
+    val context = LocalContext.current
     val routeColor =
         when (vehicle.routeName) {
             "NORTH" -> VehicleColors.North
@@ -125,35 +140,65 @@ internal fun VehicleMarker(
         }
     }
     val markerColor = routeColor ?: lastKnownRouteColor ?: VehicleColors.Default
-    val icon =
-        remember(markerColor) {
-            getVehicleMarkerDescriptor(context, 25f, markerColor.toArgb())
+    val painter =
+        remember(context, markerColor) {
+            BitmapPainter(getVehicleMarkerBitmap(context, 25f, markerColor.toArgb()).asImageBitmap())
         }
-    val timeAgoFlow = remember(vehicle.timestamp) { vehicle.getTimeAgo() }
-    val lastUpdated by timeAgoFlow.collectAsStateWithLifecycle(initialValue = "")
-    val snippet =
-        buildString {
-            append(stringResource(R.string.vehicle_speed, vehicle.speedMph))
-            if (lastUpdated.isNotBlank()) {
-                append(" • ")
-                append(lastUpdated)
-            }
-        }
-
-    Marker(
-        state = markerState,
-        title = stringResource(R.string.vehicle_number, vehicle.name),
-        icon = icon,
-        snippet = snippet,
-        anchor = Offset(0.5f, 0.5f),
-        zIndex = 3f,
-        rotation = if (rotationEnabled) vehicle.headingDegrees?.toFloat() ?: 0f else 0f,
-        flat = rotationEnabled,
+    val source = rememberGeoJsonSource(GeoJsonData.Features(Point(position)))
+    SymbolLayer(
+        id = "vehicle-${vehicle.id}",
+        source = source,
+        iconImage = image(painter, size = DpSize(25.dp, 25.dp)),
+        iconAllowOverlap = const(true),
+        iconIgnorePlacement = const(true),
+        iconRotate = const(if (rotationEnabled) vehicle.headingDegrees?.toFloat() ?: 0f else 0f),
+        iconRotationAlignment =
+            const(
+                if (rotationEnabled) IconRotationAlignment.Map else IconRotationAlignment.Viewport,
+            ),
+        iconPitchAlignment = const(if (rotationEnabled) IconPitchAlignment.Map else IconPitchAlignment.Viewport),
+        hitPadding = 12.dp,
         onClick = {
-            it.showInfoWindow()
-            true
+            onSelected()
+            ClickResult.Consume
         },
     )
+}
+
+@Composable
+internal fun VehicleInfoCard(
+    vehicle: Vehicle,
+    modifier: Modifier = Modifier,
+) {
+    val timeAgoFlow = remember(vehicle.timestamp) { vehicle.getTimeAgo() }
+    val lastUpdated by timeAgoFlow.collectAsStateWithLifecycle(initialValue = "")
+    val speed = stringResource(R.string.vehicle_speed, vehicle.speedMph)
+    MapInfoCard(
+        title = stringResource(R.string.vehicle_number, vehicle.name),
+        subtitle = if (lastUpdated.isBlank()) speed else "$speed • $lastUpdated",
+        modifier = modifier,
+    )
+}
+
+@Composable
+internal fun MapInfoCard(
+    title: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+) {
+    val (containerColor, contentColor) = mapButtonColors()
+    Surface(
+        modifier = modifier.widthIn(max = 260.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = containerColor,
+        contentColor = contentColor,
+        shadowElevation = 4.dp,
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodySmall)
+        }
+    }
 }
 
 @Composable

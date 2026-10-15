@@ -1,15 +1,10 @@
 package edu.rpi.shuttletracker.data.local.preferences
 
-import com.google.maps.android.compose.MapType
 import edu.rpi.shuttletracker.core.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
 /** Reads and saves settings; tests replace this with an in-memory fake. */
 interface UserPreferences {
-    fun getMapType(): Flow<MapType>
-
-    suspend fun saveMapType(mapType: MapType)
-
     fun getPrivacyPolicyAccepted(): Flow<Boolean>
 
     suspend fun savePrivacyPolicyAccepted(privacyPolicyAccepted: Boolean)
